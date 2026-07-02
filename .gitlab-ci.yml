@@ -1,0 +1,9 @@
+pages:
+  stage: deploy
+  script:
+    - cp -r web public
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
