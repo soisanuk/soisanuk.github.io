@@ -19,6 +19,13 @@ document.addEventListener("keydown", e => {
     else if (key === "v" || key === "V") showVocabList();
     else if (key === "t" || key === "T") startToneDrill();
     else if (key === "s" || key === "S") startSentSRS();
+    else if (key === "?") showTutorial();
+  }
+  if (document.getElementById("tutorial-overlay").classList.contains("open")) {
+    if (key === "Escape") closeTutorial();
+    if (key === "ArrowRight") _tutNext();
+    if (key === "ArrowLeft")  _tutPrev();
+    return;
   }
   if (document.getElementById("wc-overlay").classList.contains("open")) {
     if (key === "Escape") {
@@ -90,3 +97,4 @@ document.addEventListener("keydown", e => {
 
 // ─── init ──────────────────────────────────────────────────────────────────
 updateMenuStats();
+maybeShowTutorial();

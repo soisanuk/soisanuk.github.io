@@ -23,7 +23,7 @@ Thai vocabulary and script trainer with spaced repetition.
 Play a word via text-to-speech, identify which of the 5 Thai tones it uses.
 
 **Vocab list** (`V`)
-All 819 words in Thai alphabetical order with real-time search. Filter by category with progress rings showing % mature cards. Click any word for a detail card with audio, romanisation, example sentence, and character decomposition.
+All 876 words in Thai alphabetical order with real-time search. Filter by category with progress rings showing % mature cards. Click any word for a detail card with audio, romanisation, example sentence, and character decomposition. Clicking the Thai text on a flashcard opens the same detail view.
 
 **Statistics** (`0`)
 SRS summary, 7-day review forecast chart, per-category mature/seen counts, and progress export/import.
@@ -53,6 +53,7 @@ All shortcuts are active on the home screen.
 | `S` | Sentence SRS |
 | `V` | Vocab List |
 | `0` | Statistics |
+| `?` | Tutorial |
 
 Inside drills/cards: `Space`/`Enter` to reveal, `1–5` to rate, `U` to undo the last rating, `Escape` to exit.
 
@@ -66,7 +67,7 @@ web/
   icons/              PWA home screen icons
   js/                 classic scripts sharing globals (no modules — keeps file:// working)
     data.js           all Thai data — words, consonants, vowels, tones
-    examples.js       752 example sentences
+    examples.js       848 example sentences
     srs.js            SM-2 spaced repetition engine + queue/forecast helpers
     tokeniser.js      greedy longest-match Thai sentence tokeniser
     thai-script.js    character classification and cluster decomposition
