@@ -291,8 +291,11 @@ function _gDrawPattayaSign(ctx, W, H) {
   const lineH   = Math.round(fontSize * 1.35);
   const totalH  = _PATTAYA_ART.length * lineH;
   const signTop = H * 0.06;
-  const t       = _gTime * 0.0007;
-  const flicker = 0.80 + 0.20 * Math.abs(Math.sin(t));
+  // Layered neon flicker: slow drift + fast buzz + occasional dropout
+  const drift   = Math.abs(Math.sin(_gTime * 0.0011));
+  const buzz    = 0.5 + 0.5 * Math.abs(Math.sin(_gTime * 0.031));
+  const dropout = Math.sin(_gTime * 0.0019) > 0.82 ? 0.15 : 1.0;
+  const flicker = (0.45 + 0.35 * drift + 0.20 * buzz) * dropout;
 
   ctx.save();
   ctx.font         = `bold ${fontSize}px 'Courier New', Courier, monospace`;
@@ -337,7 +340,10 @@ function _gDrawGoGoSigns(ctx, W, H, groundY) {
     const cx      = bar.cx * W;
     // Place signs so their bottom aligns just above the street
     const baseY   = groundY - bar.art.length * lineH - 6;
-    const flicker = 0.70 + 0.30 * Math.abs(Math.sin(_gTime * 0.0008 + bar.cx * 19));
+    const drift   = Math.abs(Math.sin(_gTime * 0.0013 + bar.cx * 19));
+    const buzz    = 0.5 + 0.5 * Math.abs(Math.sin(_gTime * 0.028 + bar.cx * 7));
+    const dropout = Math.sin(_gTime * 0.0021 + bar.cx * 31) > 0.80 ? 0.12 : 1.0;
+    const flicker = (0.50 + 0.30 * drift + 0.20 * buzz) * dropout;
 
     ctx.shadowColor = bar.color;
     ctx.shadowBlur  = 14;
