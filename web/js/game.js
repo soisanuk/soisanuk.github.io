@@ -87,6 +87,77 @@ const _BUILDINGS = [
   [0.92, 0.08, 0.20],
 ];
 
+// ── 8-bit street sprites ──────────────────────────────────────────────────
+
+const _SPR = 3; // display pixels per sprite-pixel
+
+// Palm tree (7 × 11 sprite-pixels)
+const _PALM_ROWS = [
+  "..GGG..",
+  ".GGGGG.",
+  "GGGGGGG",
+  ".GGGGG.",
+  "..GGG..",
+  "...T...",
+  "...T...",
+  "...T...",
+  "...T...",
+  "..TTT..",
+  ".TTTTT.",
+];
+const _PALM_COL = { G: "#1e8c22", T: "#8b5010" };
+
+// Person (5 × 8 sprite-pixels, 2 walk frames, drawn facing right)
+const _WALK_FRAMES = [
+  [".OOO.", ".OOO.", "BBBBB", ".BBB.", "S...S", "S...S", "SS...", "....S"],
+  [".OOO.", ".OOO.", "BBBBB", ".BBB.", ".SSS.", ".SSS.", ".S...", "...S."],
+];
+const _WALK_SHIRTS = ["#cc3322","#2255cc","#22aa55","#cc8822","#7722cc","#cc2288"];
+const _WALK_BASE   = { O: "#ffcc88", S: "#441100" };
+
+// Motorbike (10 × 5 sprite-pixels, drawn facing right)
+const _MOTO_ROWS = [
+  ".....RR...",
+  "....RBB...",
+  "FBBBBBBBB.",
+  ".WBB....WW",
+  ".WW.....WW",
+];
+const _MOTO_COL = { F: "#999999", B: "#888888", R: "#ff4400", W: "#111122" };
+
+// Baht bus / songthaew (14 × 6 sprite-pixels, drawn facing right, cab at right)
+const _BUS_ROWS = [
+  "..........CCCC",
+  "RRRRRRRRRRCCCC",
+  "RRRRRRRRRRCCCC",
+  "RRRRRRRRRRCCCC",
+  "..WW......WWWW",
+  "..WW......WWWW",
+];
+const _BUS_COL = { C: "#223366", R: "#cc2222", W: "#111122" };
+
+// Draw a pixel-art sprite. flipX mirrors it horizontally.
+function _gDrawSprite(ctx, rows, colors, x, y, flipX) {
+  const s  = _SPR;
+  const cw = rows[0].length;
+  ctx.save();
+  if (flipX) {
+    ctx.translate(Math.round(x) + cw * s, Math.round(y));
+    ctx.scale(-1, 1);
+  } else {
+    ctx.translate(Math.round(x), Math.round(y));
+  }
+  for (let r = 0; r < rows.length; r++) {
+    for (let c = 0; c < rows[r].length; c++) {
+      const ch = rows[r][c];
+      if (ch === "." || !colors[ch]) continue;
+      ctx.fillStyle = colors[ch];
+      ctx.fillRect(c * s, r * s, s, s);
+    }
+  }
+  ctx.restore();
+}
+
 // ── State ──────────────────────────────────────────────────────────────────
 
 // Per-letter hint state: 0 = show, 1 = warn (blink on next spawn), 2 = gone
@@ -99,6 +170,8 @@ let _gScore     = 0, _gLives = 3, _gLevel = 1, _gPopped = 0;
 let _gAnimId    = null, _gLastSpawn = 0;
 let _gSpawnMs   = 2200, _gSpeed = 0.55;
 let _gTime      = 0;
+let _gStreetSprites = [], _gPalmTrees = [];
+let _gLastStreetSpawn = 0, _gNextStreetIn = 0;
 
 // ── Init ───────────────────────────────────────────────────────────────────
 
@@ -126,6 +199,13 @@ function _gReset() {
   _gLastSpawn = 0; _gSpawnMs = 2200; _gSpeed = 0.55;
   _gTime = 0;
   _gHintMode.fill(0);
+  _gStreetSprites = [];
+  _gLastStreetSpawn = 0;
+  _gNextStreetIn = 800 + Math.random() * 1200;
+  // Palm trees at fixed fractional x positions
+  _gPalmTrees = [0.05, 0.20, 0.47, 0.66, 0.86].map(fx => ({
+    x: Math.round(fx * Math.max(1, _gCanvas.width - _PALM_ROWS[0].length * _SPR)),
+  }));
   _gHUD();
 }
 
@@ -161,6 +241,13 @@ function _gTick(now) {
   _gTime = now;
 
   if (now - _gLastSpawn > _gSpawnMs) _gSpawn(now);
+
+  // Street sprites
+  if (now - _gLastStreetSpawn > _gNextStreetIn) _gSpawnStreetSprite(now);
+  for (const s of _gStreetSprites) s.x += s.vx;
+  _gStreetSprites = _gStreetSprites.filter(s =>
+    s.vx > 0 ? s.x < _gCanvas.width + 160 : s.x > -160
+  );
 
   // Update bubbles
   const dead = [];
@@ -430,6 +517,7 @@ function _gDrawBubble(ctx, b) {
 function _gDraw() {
   const ctx = _gCtx, W = _gCanvas.width, H = _gCanvas.height;
   _gDrawBg(ctx, W, H);
+  _gDrawStreet(ctx, W, H);
   for (const b of _gBubbles) _gDrawBubble(ctx, b);
 
   for (const p of _gParticles) {
@@ -443,6 +531,68 @@ function _gDraw() {
   }
   ctx.globalAlpha = 1;
   ctx.shadowBlur  = 0;
+}
+
+// ── Street sprites ────────────────────────────────────────────────────────
+
+function _gSpawnStreetSprite(now) {
+  const W       = _gCanvas.width;
+  const goRight = Math.random() < 0.5;
+  const roll    = Math.random();
+  let type, vx, rows, colors, shirtIdx;
+
+  if (roll < 0.50) {
+    // Person walking
+    type     = "person";
+    vx       = (0.8 + Math.random() * 0.7) * (goRight ? 1 : -1);
+    rows     = null; // chosen at draw time from _WALK_FRAMES
+    shirtIdx = Math.floor(Math.random() * _WALK_SHIRTS.length);
+    colors   = Object.assign({ B: _WALK_SHIRTS[shirtIdx] }, _WALK_BASE);
+  } else if (roll < 0.85) {
+    // Motorbike
+    type   = "moto";
+    vx     = (2.5 + Math.random() * 2.0) * (goRight ? 1 : -1);
+    rows   = _MOTO_ROWS;
+    colors = _MOTO_COL;
+  } else {
+    // Baht bus (songthaew) — rarer
+    type   = "bus";
+    vx     = (1.2 + Math.random() * 1.0) * (goRight ? 1 : -1);
+    rows   = _BUS_ROWS;
+    colors = _BUS_COL;
+  }
+
+  const sprW = (rows || _WALK_FRAMES[0])[0].length * _SPR;
+  _gStreetSprites.push({
+    type, vx, rows, colors,
+    x: goRight ? -sprW - 10 : W + 10,
+  });
+
+  _gLastStreetSpawn = now;
+  _gNextStreetIn    = 800 + Math.random() * 2200;
+}
+
+function _gDrawStreet(ctx, W, H) {
+  const groundY = H * 0.82;
+
+  // Static palm trees
+  for (const palm of _gPalmTrees) {
+    const y = groundY - _PALM_ROWS.length * _SPR;
+    _gDrawSprite(ctx, _PALM_ROWS, _PALM_COL, palm.x, y, false);
+  }
+
+  // Moving sprites — feet at groundY
+  for (const s of _gStreetSprites) {
+    const flipX = s.vx < 0; // flip sprite to face direction of travel
+    if (s.type === "person") {
+      const frame = _WALK_FRAMES[Math.floor(_gTime / 220) % 2];
+      const y     = groundY - frame.length * _SPR;
+      _gDrawSprite(ctx, frame, s.colors, s.x, y, flipX);
+    } else {
+      const y = groundY - s.rows.length * _SPR;
+      _gDrawSprite(ctx, s.rows, s.colors, s.x, y, flipX);
+    }
+  }
 }
 
 // ── Particles ──────────────────────────────────────────────────────────────
