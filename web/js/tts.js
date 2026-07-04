@@ -5,6 +5,13 @@ const _tts = (() => {
   let _voice = null;
   let _ready = false;
 
+  // Uses local state directly — safe to call before _tts is assigned.
+  function _applyNotice() {
+    const el = document.getElementById("voice-notice");
+    if (!el) return;
+    el.style.display = _ready && !_voice ? "" : "none";
+  }
+
   function _findVoice() {
     const voices = speechSynthesis.getVoices();
     // Chrome loads voices async: an empty list means "not loaded yet",
@@ -14,7 +21,7 @@ const _tts = (() => {
     _voice = voices.find(v => v.lang === "th-TH") ||
              voices.find(v => v.lang.startsWith("th")) ||
              null;
-    _updateVoiceNotice();
+    _applyNotice();
   }
 
   if (typeof speechSynthesis !== "undefined") {
@@ -22,7 +29,7 @@ const _tts = (() => {
     speechSynthesis.addEventListener("voiceschanged", _findVoice);
   }
   // Fallback: if no voice list ever arrives, treat TTS as unavailable
-  setTimeout(() => { _ready = true; _updateVoiceNotice(); }, 2000);
+  setTimeout(() => { _ready = true; _applyNotice(); }, 2000);
 
   return {
     ready() { return _ready; },
@@ -43,14 +50,6 @@ const _tts = (() => {
     },
   };
 })();
-
-// Shown on the home screen when the device has no Thai TTS voice, so the
-// audio features don't just silently do nothing.
-function _updateVoiceNotice() {
-  const el = document.getElementById("voice-notice");
-  if (!el) return;
-  el.style.display = _tts.ready() && !_tts.available() ? "" : "none";
-}
 
 function _flashSpeakSet(text) {
   const btn = document.getElementById("flash-speak-btn");
