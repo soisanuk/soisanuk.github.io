@@ -230,8 +230,9 @@ function _gSpawn(now) {
     speed:      _gSpeed * (0.8 + Math.random() * 0.4),
     popped:     false, popT: 0,
     wrongFlash: 0,
-    showHint:   mode !== 2,   // false once hint permanently removed
-    blink:      mode === 1,   // true on the one warning fall
+    showHint:   mode !== 2,
+    blink:      mode === 1,
+    bounced:    false, vx: 0, vy: 0,
   });
   _gLastSpawn = now;
 }
@@ -242,29 +243,68 @@ function _gTick(now) {
 
   if (now - _gLastSpawn > _gSpawnMs) _gSpawn(now);
 
-  // Street sprites
+  // Street sprites — move + knocked physics
   if (now - _gLastStreetSpawn > _gNextStreetIn) _gSpawnStreetSprite(now);
-  for (const s of _gStreetSprites) s.x += s.vx;
-  _gStreetSprites = _gStreetSprites.filter(s =>
-    s.vx > 0 ? s.x < _gCanvas.width + 160 : s.x > -160
-  );
+  const H = _gCanvas.height, W = _gCanvas.width;
+  const groundY = H * 0.82;
+  for (const s of _gStreetSprites) {
+    s.x += s.vx;
+    if (s.knocked) { s.dy += s.vy; s.vy += 0.38; s.rot += s.rotV; }
+  }
+  _gStreetSprites = _gStreetSprites.filter(s => {
+    if (s.knocked) return groundY + s.dy < H + 120;
+    return s.vx > 0 ? s.x < W + 160 : s.x > -160;
+  });
 
   // Update bubbles
   const dead = [];
   for (const b of _gBubbles) {
     if (b.popped) { b.popT += 0.07; if (b.popT >= 1) dead.push(b); continue; }
     if (b.wrongFlash > 0) b.wrongFlash--;
-    b.y += b.speed;
-    if (b.y - b.r > _gCanvas.height) {
-      _gResolve(b);
-      _gLives--;
-      _gHUD();
-      _gMissParticles(b.x, _gCanvas.height - 15);
-      dead.push(b);
-      if (_gLives <= 0) {
-        for (const d of dead) { const i = _gBubbles.indexOf(d); if (i >= 0) _gBubbles.splice(i, 1); }
-        _gOver();
-        return;
+    if (b.bounced) {
+      b.x += b.vx; b.y += b.vy; b.vy += 0.12;
+      const offScreen = b.y - b.r > _gCanvas.height ||
+                        b.x + b.r < 0 || b.x - b.r > _gCanvas.width;
+      if (offScreen) dead.push(b); // no life penalty
+    } else {
+      b.y += b.speed;
+      if (b.y - b.r > _gCanvas.height) {
+        _gResolve(b);
+        _gLives--;
+        _gHUD();
+        _gMissParticles(b.x, _gCanvas.height - 15);
+        dead.push(b);
+        if (_gLives <= 0) {
+          for (const d of dead) { const i = _gBubbles.indexOf(d); if (i >= 0) _gBubbles.splice(i, 1); }
+          _gOver();
+          return;
+        }
+      }
+    }
+  }
+  // Collision: bubble vs street sprite
+  for (const b of _gBubbles) {
+    if (b.popped || b.bounced) continue;
+    for (const s of _gStreetSprites) {
+      if (s.knocked) continue;
+      const rows = s.type === "person" ? _WALK_FRAMES[0] : s.rows;
+      const sW   = rows[0].length * _SPR;
+      const sH   = rows.length    * _SPR;
+      const sX   = s.x, sY = groundY - sH;
+      const nearX = Math.max(sX, Math.min(b.x, sX + sW));
+      const nearY = Math.max(sY, Math.min(b.y, sY + sH));
+      if (Math.hypot(b.x - nearX, b.y - nearY) < b.r) {
+        // Bounce the bubble
+        b.bounced = true;
+        b.vx      = (Math.random() - 0.5) * 9;
+        b.vy      = 2 + Math.random() * 3;
+        _gBounceParticles(b.x, b.y, b.color);
+        // Knock the sprite off screen
+        s.knocked = true;
+        s.vy      = -(4 + Math.random() * 5);
+        s.vx     += (Math.random() - 0.5) * 8;
+        s.rotV    = (Math.random() - 0.5) * 0.25;
+        break;
       }
     }
   }
@@ -566,6 +606,7 @@ function _gSpawnStreetSprite(now) {
   _gStreetSprites.push({
     type, vx, rows, colors,
     x: goRight ? -sprW - 10 : W + 10,
+    knocked: false, dy: 0, vy: 0, rot: 0, rotV: 0,
   });
 
   _gLastStreetSpawn = now;
@@ -583,14 +624,20 @@ function _gDrawStreet(ctx, W, H) {
 
   // Moving sprites — feet at groundY
   for (const s of _gStreetSprites) {
-    const flipX = s.vx < 0; // flip sprite to face direction of travel
-    if (s.type === "person") {
-      const frame = _WALK_FRAMES[Math.floor(_gTime / 220) % 2];
-      const y     = groundY - frame.length * _SPR;
-      _gDrawSprite(ctx, frame, s.colors, s.x, y, flipX);
+    const flipX = s.vx < 0;
+    const rows  = s.type === "person" ? _WALK_FRAMES[Math.floor(_gTime / 220) % 2] : s.rows;
+    const sW    = rows[0].length * _SPR;
+    const sH    = rows.length    * _SPR;
+    const baseY = groundY - sH + s.dy;
+
+    if (s.knocked && s.rot !== 0) {
+      ctx.save();
+      ctx.translate(s.x + sW / 2, baseY + sH / 2);
+      ctx.rotate(s.rot);
+      _gDrawSprite(ctx, rows, s.colors, -sW / 2, -sH / 2, flipX);
+      ctx.restore();
     } else {
-      const y = groundY - s.rows.length * _SPR;
-      _gDrawSprite(ctx, s.rows, s.colors, s.x, y, flipX);
+      _gDrawSprite(ctx, rows, s.colors, s.x, baseY, flipX);
     }
   }
 }
@@ -603,6 +650,15 @@ function _gPopParticles(x, y, color) {
     const spd   = 1.5 + Math.random() * 4;
     _gParticles.push({ x, y, vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd - 2,
       r: 2 + Math.random() * 3, c: color, a: 1 });
+  }
+}
+
+function _gBounceParticles(x, y, color) {
+  for (let i = 0; i < 8; i++) {
+    const angle = Math.PI + (Math.random() - 0.5) * Math.PI; // downward fan
+    const spd   = 2 + Math.random() * 3;
+    _gParticles.push({ x, y, vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd,
+      r: 2 + Math.random() * 2, c: color, a: 1 });
   }
 }
 
