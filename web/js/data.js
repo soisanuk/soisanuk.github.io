@@ -1,5 +1,5 @@
-// Auto-generated from thaicab/data/thai_script.py and thaicab/data/words.py
-// Do not edit manually.
+// All Thai data — words, consonants, vowels, tones. This file is the source of truth.
+// (Originally generated from a Python app that has since been removed.)
 
 const CONSONANTS = [
   ["ก", "k", "mid", "ไก่", "k", "k"],
