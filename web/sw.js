@@ -5,6 +5,7 @@ const CACHE = "thaicab-dev";
 
 const PRECACHE = [
   "./index.html",
+  "./favicon.svg",
   "./js/data.js",
   "./js/srs.js",
   "./js/examples.js",

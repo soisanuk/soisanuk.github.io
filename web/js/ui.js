@@ -427,3 +427,44 @@ function showExample(containerId, vocabWord) {
     span.addEventListener("click", () => openWordModal(w));
   });
 }
+
+// ─── tutorial ────────────────────────────────────────────────────────────────
+const _TUT_KEY = "thaicab_seen_tutorial";
+const _TUT_TOTAL = 4;
+let _tutStep = 0;
+
+function showTutorial() {
+  _tutStep = 0;
+  _tutRender();
+  document.getElementById("tutorial-overlay").classList.add("open");
+}
+
+function closeTutorial() {
+  document.getElementById("tutorial-overlay").classList.remove("open");
+  localStorage.setItem(_TUT_KEY, "1");
+}
+
+function _tutRender() {
+  document.querySelectorAll(".tutorial-slide").forEach((s, i) =>
+    s.classList.toggle("active", i === _tutStep));
+  document.querySelectorAll(".tutorial-dot").forEach((d, i) =>
+    d.classList.toggle("active", i === _tutStep));
+  document.getElementById("tutorial-prev").style.visibility = _tutStep === 0 ? "hidden" : "";
+  document.getElementById("tutorial-next").textContent =
+    _tutStep === _TUT_TOTAL - 1 ? "Done ✓" : "Next →";
+}
+
+function _tutNext() {
+  if (_tutStep < _TUT_TOTAL - 1) { _tutStep++; _tutRender(); }
+  else closeTutorial();
+}
+
+function _tutPrev() {
+  if (_tutStep > 0) { _tutStep--; _tutRender(); }
+}
+
+function _tutGoTo(i) { _tutStep = i; _tutRender(); }
+
+function maybeShowTutorial() {
+  if (!localStorage.getItem(_TUT_KEY)) showTutorial();
+}

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1a1008">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <title>ภาษาไทย Thai Trainer</title>
 <style>
 /* ── Thai traditional palette ────────────────────────────────────────────── */
@@ -45,6 +46,7 @@ body {
   min-height: 100vh;
   border-left: 2px solid var(--gold);
   border-right: 2px solid var(--gold);
+  box-shadow: 0 0 60px rgba(212,175,54,0.08), inset 0 0 60px rgba(0,0,0,0.2);
 }
 
 /* Persistent left sidebar — always visible on wide screens */
@@ -54,7 +56,7 @@ body {
   border-right: 2px solid var(--gold);
   display: flex;
   flex-direction: column;
-  background: var(--surface);
+  background: linear-gradient(180deg, #2e1c0c 0%, #1a1008 100%);
 }
 
 #sidebar-title {
@@ -64,6 +66,7 @@ body {
   font-weight: bold;
   text-align: center;
   border-bottom: 1px solid var(--border);
+  text-shadow: 0 0 20px rgba(212,175,54,0.5);
 }
 #sidebar-subtitle {
   text-align: center;
@@ -84,7 +87,7 @@ body {
 .sidebar-section {
   padding: 0.7rem 1.2rem 0.1rem;
   font-size: 0.72rem;
-  color: var(--border);
+  color: var(--deep-saffron);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -95,25 +98,30 @@ body {
 .sidebar-list li {
   padding: 0.5rem 1.2rem;
   cursor: pointer;
-  color: var(--dim);
+  color: var(--text);
   font-size: 0.88rem;
   transition: background 0.12s, color 0.12s;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
-.sidebar-list li:hover  { background: #2e1e0a; color: var(--text); }
-.sidebar-list li.active { background: #3a2810; color: var(--gold); }
+.sidebar-list li:hover  { background: #3a2212; color: var(--saffron); }
+.sidebar-list li.active {
+  background: linear-gradient(90deg, #4a3018 0%, #2e1e0a 100%);
+  color: var(--gold);
+  border-left: 3px solid var(--gold);
+  padding-left: calc(1.2rem - 3px);
+}
 .sidebar-key {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 1.3rem;
   height: 1.3rem;
-  background: #1a1008;
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  color: var(--deep-saffron);
+  background: #0d0805;
+  border: 1px solid var(--deep-saffron);
+  border-radius: 4px;
+  color: var(--saffron);
   font-size: 0.75rem;
   font-weight: bold;
   flex-shrink: 0;
@@ -132,11 +140,11 @@ body {
   color: var(--dim);
   padding: 0.3rem 0.8rem;
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 5px;
   font-size: 0.8rem;
-  transition: color 0.1s;
+  transition: color 0.15s, border-color 0.15s;
 }
-#sidebar-footer button:hover { color: var(--text); }
+#sidebar-footer button:hover { color: var(--saffron); border-color: var(--gold); }
 
 /* Main content area — takes remaining width */
 #content-area {
@@ -157,20 +165,22 @@ body {
 
 .screen-header {
   border-bottom: 2px solid var(--gold);
-  padding: 0.5rem 1.5rem;
+  padding: 0.65rem 1.5rem;
   text-align: center;
-  color: var(--lotus);
+  color: var(--saffron);
   font-size: 0.9rem;
   letter-spacing: 0.05em;
+  background: linear-gradient(90deg, rgba(212,175,54,0.07) 0%, transparent 40%, transparent 60%, rgba(212,175,54,0.07) 100%);
 }
 
 .screen-title {
   border-bottom: 2px solid var(--royal-blue);
-  padding: 0.6rem 1.5rem;
+  padding: 0.7rem 1.5rem;
   text-align: center;
   color: var(--gold);
   font-weight: bold;
-  font-size: 1.15rem;
+  font-size: 1.2rem;
+  background: linear-gradient(90deg, rgba(65,105,225,0.08) 0%, transparent 50%);
 }
 
 .screen-footer {
@@ -180,6 +190,7 @@ body {
   color: var(--dim);
   font-size: 0.8rem;
   margin-top: auto;
+  background: linear-gradient(90deg, rgba(212,175,54,0.04) 0%, transparent 40%);
 }
 
 /* ── Thai big character display ─────────────────────────────────────────── */
@@ -188,13 +199,18 @@ body {
   line-height: 1.1;
   text-align: center;
   color: var(--saffron);
-  padding: 1.5rem 0 0.5rem;
+  padding: 1.5rem 1rem 0.8rem;
   font-family: 'Noto Sans Thai', 'Leelawadee UI', serif;
-  text-shadow: 0 0 30px rgba(244,196,48,0.4);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
   min-height: 10rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 1rem 1.5rem 0.5rem;
+  background: linear-gradient(180deg, #2a1a0a 0%, #1c1006 100%);
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(212,175,54,0.12);
 }
 
 .rtgs {
@@ -233,11 +249,11 @@ body {
 .menu-list li {
   padding: 0.5rem 0;
   cursor: pointer;
-  color: var(--dim);
+  color: var(--text);
   font-size: 1rem;
   transition: color 0.15s;
 }
-.menu-list li:hover { color: var(--text); }
+.menu-list li:hover { color: var(--saffron); }
 .menu-list .menu-key {
   display: inline-block;
   width: 1.6rem;
@@ -247,7 +263,7 @@ body {
 .menu-section {
   padding: 0.7rem 2rem 0.15rem;
   font-size: 0.78rem;
-  color: var(--border);
+  color: var(--deep-saffron);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -257,7 +273,7 @@ body {
   #sidebar { display: none; }
   #menu-screen { display: flex; }
   .screen { padding: 0 0 2rem; }
-  .thai-big { font-size: 6rem; min-height: 8rem; }
+  .thai-big { font-size: 6rem; min-height: 8rem; margin: 0.75rem 0.75rem 0.5rem; }
 }
 
 /* ── Category picker ─────────────────────────────────────────────────────── */
@@ -271,15 +287,16 @@ body {
   padding: 0.4rem 1rem;
   cursor: pointer;
   font-size: 0.9rem;
-  border-radius: 3px;
-  color: var(--dim);
+  border-radius: 5px;
+  color: var(--text);
   transition: background 0.1s, color 0.1s;
   display: flex;
   justify-content: space-between;
 }
 .cat-list li.selectable:hover, .cat-list li.selected {
-  background: #3a2810;
-  color: var(--text);
+  background: linear-gradient(90deg, #4a3018 0%, #2e1e0a 100%);
+  color: var(--saffron);
+  border-color: var(--gold);
 }
 .cat-list li.separator {
   color: var(--border);
@@ -288,7 +305,7 @@ body {
   cursor: default;
   padding-top: 0.7rem;
 }
-.cat-count { color: var(--dim); font-size: 0.8rem; }
+.cat-count { color: var(--gold); font-size: 0.8rem; }
 
 /* ── Flash card ──────────────────────────────────────────────────────────── */
 .card-body {
@@ -329,13 +346,15 @@ body {
   color: var(--text);
   padding: 0.4rem 0.9rem;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 0.85rem;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s;
 }
-.rating-btn:hover { background: #3a2810; }
+.rating-btn:hover { background: #3a2810; border-color: var(--gold); }
 .rating-btn.good { border-color: var(--jade); color: var(--jade); }
+.rating-btn.good:hover { background: rgba(46,139,87,0.18); }
 .rating-btn.bad  { border-color: var(--thai-red); color: var(--thai-red); }
+.rating-btn.bad:hover  { background: rgba(165,0,33,0.18); }
 
 /* ── Quiz ─────────────────────────────────────────────────────────────────── */
 .quiz-choices {
@@ -346,14 +365,14 @@ body {
   padding: 0.55rem 1rem;
   margin: 0.3rem 0;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 7px;
   cursor: pointer;
   font-size: 0.95rem;
   transition: background 0.15s, border-color 0.15s;
   display: flex;
   gap: 0.7rem;
 }
-.quiz-choices li:hover { background: #3a2810; }
+.quiz-choices li:hover { background: #3a2810; border-color: var(--gold); }
 .quiz-choices li.correct { border-color: var(--jade); background: #0e2a1a; color: var(--jade); }
 .quiz-choices li.wrong   { border-color: var(--thai-red); background: #2a0a0a; color: var(--thai-red); }
 .quiz-num { color: var(--deep-saffron); font-weight: bold; min-width: 1.2rem; }
@@ -396,9 +415,10 @@ body {
   padding: 1rem 1.5rem;
 }
 .stat-box {
-  background: var(--surface);
+  background: linear-gradient(180deg, rgba(212,175,54,0.07) 0%, var(--surface) 100%);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-top: 2px solid var(--gold);
+  border-radius: 8px;
   padding: 0.8rem;
   text-align: center;
 }
@@ -413,12 +433,17 @@ body {
   color: var(--text);
   padding: 0.5rem 1.2rem;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 0.9rem;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s;
 }
-.btn:hover { background: #3a2810; }
-.btn-primary { border-color: var(--gold); color: var(--gold); }
+.btn:hover { background: #3a2810; border-color: var(--gold); }
+.btn-primary {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(212,175,54,0.12);
+}
+.btn-primary:hover { background: rgba(212,175,54,0.25); }
 .btn-row {
   display: flex;
   justify-content: center;
@@ -456,14 +481,15 @@ body {
 
 /* ── Progress bar ────────────────────────────────────────────────────────── */
 .progress-bar-wrap {
-  height: 3px;
+  height: 4px;
   background: var(--surface);
   margin: 0 1.5rem 0.3rem;
 }
 .progress-bar-fill {
   height: 100%;
-  background: var(--gold);
+  background: linear-gradient(90deg, var(--gold), var(--deep-saffron));
   transition: width 0.3s;
+  border-radius: 2px;
 }
 
 /* ── English front card ──────────────────────────────────────────────────── */
@@ -485,10 +511,10 @@ body {
 
 /* ── Example sentence block ──────────────────────────────────────────────── */
 .example-block {
-  background: #1e1208;
+  background: linear-gradient(90deg, rgba(244,196,48,0.06) 0%, #1e1208 30%);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--gold);
-  border-radius: 4px;
+  border-left: 3px solid var(--saffron);
+  border-radius: 6px;
   padding: 0.7rem 1rem;
   margin: 0.5rem 0 0.3rem;
 }
@@ -569,12 +595,15 @@ body {
 .vocab-list-item {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: 7px;
   padding: 0.5rem 0.6rem;
   cursor: pointer;
-  transition: border-color 0.12s, background 0.12s;
+  transition: border-color 0.15s, background 0.15s;
 }
-.vocab-list-item:hover { border-color: var(--gold); background: #2e1e0a; }
+.vocab-list-item:hover {
+  border-color: var(--gold);
+  background: linear-gradient(135deg, #3a2810 0%, #2a1a08 100%);
+}
 .vocab-list-item .vli-thai {
   font-family: 'Noto Sans Thai', serif;
   font-size: 1.15rem;
@@ -583,7 +612,7 @@ body {
 }
 .vocab-list-item .vli-en {
   font-size: 0.72rem;
-  color: var(--dim);
+  color: var(--saffron);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -895,6 +924,71 @@ body {
   flex-wrap: wrap;
   padding: 0.6rem 0;
 }
+
+/* ── Tutorial ────────────────────────────────────────────────────────────── */
+#tutorial-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.85);
+}
+#tutorial-overlay.open { display: flex; }
+#tutorial-card {
+  background: var(--surface);
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  padding: 1.8rem 2rem 1.4rem;
+  max-width: 460px;
+  width: 92%;
+  position: relative;
+}
+#tutorial-close-btn {
+  position: absolute;
+  top: 0.7rem; right: 0.9rem;
+  background: none; border: none;
+  color: var(--dim); font-size: 1.1rem; cursor: pointer;
+}
+.tutorial-slide { display: none; }
+.tutorial-slide.active { display: block; min-height: 200px; }
+.tutorial-slide h2 { color: var(--saffron); font-size: 1.15rem; margin-bottom: 0.7rem; }
+.tutorial-slide p { font-size: 0.9rem; line-height: 1.6; margin-bottom: 0.5rem; }
+.tut-icon { font-family:'Noto Sans Thai',serif; font-size:3rem; color:var(--saffron); text-align:center; margin-bottom:0.4rem; }
+kbd.tut-key {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 3px; padding: 0.05rem 0.3rem;
+  font-size: 0.82rem; font-family: monospace; color: var(--saffron);
+}
+.tut-decomp-demo {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.6rem 0.8rem; margin-top: 0.7rem;
+  text-align: center;
+}
+.tut-cluster {
+  display: inline-block;
+  font-family: 'Noto Sans Thai', serif;
+  font-size: 1.7rem; color: var(--saffron);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.05rem 0.4rem; margin: 0 0.15rem;
+}
+.tutorial-dots {
+  display: flex; justify-content: center; gap: 0.5rem; margin: 1.2rem 0 0.9rem;
+}
+.tutorial-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--border); cursor: pointer;
+}
+.tutorial-dot.active { background: var(--saffron); }
+#tutorial-nav { display: flex; justify-content: space-between; }
+#tutorial-nav button {
+  background: none; border: 1px solid var(--border);
+  color: var(--text); border-radius: 5px;
+  padding: 0.4rem 1.1rem; cursor: pointer; font-size: 0.9rem;
+}
+#tutorial-nav button:hover { border-color: var(--gold); color: var(--saffron); }
+#tutorial-prev { visibility: hidden; }
 </style>
 </head>
 <body>
@@ -970,6 +1064,7 @@ body {
     <li onclick="startSentSRS()">  <span class="menu-key">S</span> Sentence SRS</li>
     <li onclick="showVocabList()"> <span class="menu-key">V</span> Vocab List</li>
     <li onclick="showStats()">     <span class="menu-key">0</span> Statistics</li>
+    <li onclick="showTutorial()">  <span class="menu-key">?</span> How to use this app</li>
   </ul>
   <div class="screen-footer">❀ สวัสดี ❀</div>
 </div>
@@ -1162,6 +1257,53 @@ body {
 
 </div><!-- #content-area -->
 </div><!-- #app-shell -->
+
+<!-- ═══ TUTORIAL ══════════════════════════════════════════════════════════════ -->
+<div id="tutorial-overlay">
+  <div id="tutorial-card">
+    <button id="tutorial-close-btn" onclick="closeTutorial()" title="Skip">✕</button>
+
+    <div class="tutorial-slide">
+      <div class="tut-icon">ก</div>
+      <h2>Welcome to Thai Trainer</h2>
+      <p>Your personal Thai tutor: 819 vocabulary words, 60+ consonants &amp; vowels, and SM‑2 spaced repetition — all in one app.</p>
+      <p>This quick tour highlights the key features. Find it again any time under <strong>Other → How to use</strong>.</p>
+    </div>
+
+    <div class="tutorial-slide">
+      <h2>📚 Flashcards &amp; SRS Review</h2>
+      <p>Start with <strong>Flashcards Thai→English</strong> (key <kbd class="tut-key">1</kbd>). Reveal the answer, then rate yourself 1–5.</p>
+      <p>The SM‑2 algorithm schedules each card's next review so you see it right before you'd forget it. <strong>SRS Review</strong> (key <kbd class="tut-key">4</kbd>) shows only what's due today.</p>
+    </div>
+
+    <div class="tutorial-slide">
+      <h2>✨ Tap Thai text to explore</h2>
+      <p>In any flashcard or vocab list, <strong style="color:var(--saffron)">tap the Thai word</strong> to open its detail card — romanisation, audio, and an example sentence in context.</p>
+      <p>Then <strong style="color:var(--saffron)">tap the Thai word inside the card</strong> to decompose it into syllable clusters. Every character is labelled and hoverable.</p>
+      <div class="tut-decomp-demo">
+        <span class="tut-cluster">ส</span><span class="tut-cluster">วั</span><span class="tut-cluster">ส</span><span class="tut-cluster">ดี</span>
+        <div style="font-size:0.75rem;color:var(--dim);margin-top:0.5rem">สวัสดี — "hello" · tap to decompose each cluster</div>
+      </div>
+    </div>
+
+    <div class="tutorial-slide">
+      <h2>📖 Vocab List &amp; Script</h2>
+      <p><strong>Vocab List</strong> (key <kbd class="tut-key">V</kbd>) shows all 819 words — search, filter by category, tap any word for the detail card with decomposition.</p>
+      <p><strong>Script cards</strong> (keys <kbd class="tut-key">5</kbd>–<kbd class="tut-key">9</kbd>) teach consonants and vowels with SRS. <strong>Tone Drill</strong> (<kbd class="tut-key">T</kbd>) plays audio and asks you to identify the tone class.</p>
+    </div>
+
+    <div class="tutorial-dots">
+      <div class="tutorial-dot" onclick="_tutGoTo(0)"></div>
+      <div class="tutorial-dot" onclick="_tutGoTo(1)"></div>
+      <div class="tutorial-dot" onclick="_tutGoTo(2)"></div>
+      <div class="tutorial-dot" onclick="_tutGoTo(3)"></div>
+    </div>
+    <div id="tutorial-nav">
+      <button id="tutorial-prev" onclick="_tutPrev()">← Back</button>
+      <button id="tutorial-next" onclick="_tutNext()">Next →</button>
+    </div>
+  </div>
+</div>
 
 <script src="js/data.js"></script>
 <script src="js/srs.js"></script>
