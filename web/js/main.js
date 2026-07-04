@@ -20,7 +20,13 @@ document.addEventListener("keydown", e => {
     else if (key === "t" || key === "T") startToneDrill();
     else if (key === "s" || key === "S") startSentSRS();
     else if (key === "g" || key === "G") startGame();
+    else if (key === "k" || key === "K") startTutor();
     else if (key === "?") showTutorial();
+  }
+  if (active === "tutor-screen") {
+    if (_tType(key)) return;
+    if (key === "Escape") endSession();
+    return;
   }
   if (active === "game-screen") {
     if (_gKey(key)) return;
