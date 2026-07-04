@@ -85,6 +85,7 @@ function _tPool() {
 
 function _tNext() {
   if (_tFlashId) { clearTimeout(_tFlashId); _tFlashId = null; }
+  if (!document.getElementById('tutor-screen').classList.contains('active')) return;
   const pool = _tPool();
   let pick, tries = 0;
   do { pick = pool[Math.floor(Math.random() * pool.length)]; }
@@ -126,7 +127,7 @@ function _tType(eKey) {
     _tStreak++;
     document.querySelector('.tkey.t-target')?.classList.replace('t-target', 't-ok');
     _tUpdateStats();
-    _tFlashId = setTimeout(_tNext, 320);
+    _tFlashId = setTimeout(_tNext, 700);
   } else {
     _tStreak = 0;
     _tUpdateStats();
