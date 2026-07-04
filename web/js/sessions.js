@@ -24,6 +24,28 @@ function _startFlash(mode, wordList) {
   showScreen("flash-screen", mode === "th2en" ? "1" : "2");
 }
 
+let _flashThaiHandler = null;
+
+function _flashThaiMakeClickable(word) {
+  const el = document.getElementById("flash-thai");
+  if (_flashThaiHandler) el.removeEventListener("click", _flashThaiHandler);
+  _flashThaiHandler = () => openWordModal(word);
+  el.addEventListener("click", _flashThaiHandler);
+  el.style.cursor = "pointer";
+  el.title = "Click for details";
+  el.setAttribute("role", "button");
+  el.setAttribute("tabindex", "0");
+}
+
+function _flashThaiClearClickable() {
+  const el = document.getElementById("flash-thai");
+  if (_flashThaiHandler) { el.removeEventListener("click", _flashThaiHandler); _flashThaiHandler = null; }
+  el.style.cursor = "";
+  el.title = "";
+  el.removeAttribute("role");
+  el.removeAttribute("tabindex");
+}
+
 function flashShow() {
   const { mode, deck, idx, wordList } = session;
   if (idx >= deck.length) { showSessionEnd(); return; }
@@ -50,6 +72,7 @@ function flashShow() {
       session.backText ? session.backText[idx] : english;
     _flashSpeakSet(thai);
     _tts.speak(thai);
+    if (mode === "th2en") _flashThaiMakeClickable(word); else _flashThaiClearClickable();
   } else {
     // en2th: show English, hide Thai until reveal
     document.getElementById("flash-thai").textContent = "?";
@@ -57,6 +80,7 @@ function flashShow() {
     document.getElementById("flash-prompt").textContent = english;
     document.getElementById("flash-answer").textContent = `${thai}  (${rtgs})`;
     _flashSpeakSet(null);
+    _flashThaiClearClickable();
   }
 
   const card = peekCard(progress, key);
@@ -86,6 +110,7 @@ function flashReveal() {
     document.getElementById("flash-rtgs").textContent = `(${word[1]})`;
     _flashSpeakSet(word[0]);
     _tts.speak(word[0]);
+    _flashThaiMakeClickable(word);
   }
   document.getElementById("flash-answer-area").style.display = "";
   document.getElementById("flash-reveal-area").style.display = "none";
@@ -150,6 +175,7 @@ function _scriptFlashShow() {
   document.getElementById("flash-counter").textContent = `${label}  ${idx + 1} / ${deck.length}`;
   document.getElementById("flash-thai").textContent  = thai;
   document.getElementById("flash-rtgs").textContent  = `(${rtgs})`;
+  _flashThaiClearClickable();
   document.getElementById("flash-prompt").textContent = `What is this ${label.toLowerCase()}?`;
   document.getElementById("flash-answer").textContent = answer;
   const card = peekCard(progress, key);

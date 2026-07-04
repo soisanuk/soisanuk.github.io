@@ -36,9 +36,17 @@ const _tts = (() => {
     available() { return _ready && !!_voice; },
     speak(text, btn) {
       if (!_voice) return;
+      // Re-fetch voices each call: Chrome's cached voice reference goes stale
+      // after the first utterance, causing silent playback.
+      const voices = speechSynthesis.getVoices();
+      const voice = voices.find(v => v.lang === "th-TH") ||
+                    voices.find(v => v.lang.startsWith("th")) ||
+                    _voice;
+      // resume() before cancel() in case Chrome left synthesis paused.
+      speechSynthesis.resume();
       speechSynthesis.cancel();
       const utt = new SpeechSynthesisUtterance(text);
-      utt.voice = _voice;
+      utt.voice = voice;
       utt.lang  = "th-TH";
       utt.rate  = 0.85;
       if (btn) {
