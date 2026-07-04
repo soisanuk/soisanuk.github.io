@@ -1,0 +1,49 @@
+// Pure Thai-script analysis: character classification and
+// cluster decomposition. No DOM access (unit-tested via node:vm).
+
+// ── word decomposition ────────────────────────────────────────────────────
+function _thaiCharKind(cp) {
+  if (cp >= 0x0E01 && cp <= 0x0E2E) return "cons";
+  if (cp === 0x0E40 || cp === 0x0E41 || cp === 0x0E42 || cp === 0x0E43 || cp === 0x0E44) return "vowel"; // leading
+  if (cp >= 0x0E30 && cp <= 0x0E3A) return "vowel";
+  if (cp >= 0x0E47 && cp <= 0x0E4B) return "tone";
+  if (cp >= 0x0E4C && cp <= 0x0E4E) return "diac";
+  return "other";
+}
+
+function _buildDecomposition(word) {
+  // Split word into clusters: (optional leading vowel) + consonant + (diacritics/vowels/tone marks)
+  const chars = [...word];
+  const clusters = [];
+  let i = 0;
+  while (i < chars.length) {
+    const cp = chars[i].codePointAt(0);
+    const kind = _thaiCharKind(cp);
+    if (kind === "vowel" && (cp >= 0x0E40 && cp <= 0x0E44)) {
+      // leading vowel — attach to next consonant if there is one
+      const cluster = [chars[i]];
+      i++;
+      if (i < chars.length && _thaiCharKind(chars[i].codePointAt(0)) === "cons") {
+        cluster.push(chars[i]); i++;
+      }
+      // collect trailing diacritics
+      while (i < chars.length) {
+        const k2 = _thaiCharKind(chars[i].codePointAt(0));
+        if (k2 === "vowel" || k2 === "tone" || k2 === "diac") { cluster.push(chars[i]); i++; }
+        else break;
+      }
+      clusters.push(cluster);
+    } else if (kind === "cons") {
+      const cluster = [chars[i]]; i++;
+      while (i < chars.length) {
+        const k2 = _thaiCharKind(chars[i].codePointAt(0));
+        if (k2 === "vowel" || k2 === "tone" || k2 === "diac") { cluster.push(chars[i]); i++; }
+        else break;
+      }
+      clusters.push(cluster);
+    } else {
+      clusters.push([chars[i]]); i++;
+    }
+  }
+  return clusters;
+}

@@ -1,53 +1,20 @@
-// Tests for Thai character classification and decomposition logic from index.html
-// Run with: node --test tests/js/test_thai_char.js
+// Tests for Thai character classification and decomposition in
+// web/js/thai-script.js. The real source file is evaluated via node:vm (it's
+// a classic browser script, not a module), so these tests exercise exactly
+// the code that ships.
+// Run with: node --test tests/js/
 
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
 
-// ── inline the character logic (mirrors index.html) ───────────────────────────
-
-function thaiCharKind(cp) {
-  if (cp >= 0x0E01 && cp <= 0x0E2E) return "cons";
-  if (cp === 0x0E40 || cp === 0x0E41 || cp === 0x0E42 || cp === 0x0E43 || cp === 0x0E44) return "vowel";
-  if (cp >= 0x0E30 && cp <= 0x0E3A) return "vowel";
-  if (cp >= 0x0E47 && cp <= 0x0E4B) return "tone";
-  if (cp >= 0x0E4C && cp <= 0x0E4E) return "diac";
-  return "other";
-}
-
-function buildDecomposition(word) {
-  const chars = [...word];
-  const clusters = [];
-  let i = 0;
-  while (i < chars.length) {
-    const cp = chars[i].codePointAt(0);
-    const kind = thaiCharKind(cp);
-    if (kind === "vowel" && (cp >= 0x0E40 && cp <= 0x0E44)) {
-      const cluster = [chars[i]];
-      i++;
-      if (i < chars.length && thaiCharKind(chars[i].codePointAt(0)) === "cons") {
-        cluster.push(chars[i]); i++;
-      }
-      while (i < chars.length) {
-        const k2 = thaiCharKind(chars[i].codePointAt(0));
-        if (k2 === "vowel" || k2 === "tone" || k2 === "diac") { cluster.push(chars[i]); i++; }
-        else break;
-      }
-      clusters.push(cluster);
-    } else if (kind === "cons") {
-      const cluster = [chars[i]]; i++;
-      while (i < chars.length) {
-        const k2 = thaiCharKind(chars[i].codePointAt(0));
-        if (k2 === "vowel" || k2 === "tone" || k2 === "diac") { cluster.push(chars[i]); i++; }
-        else break;
-      }
-      clusters.push(cluster);
-    } else {
-      clusters.push([chars[i]]); i++;
-    }
-  }
-  return clusters;
-}
+// Evaluate in this realm so returned objects share our prototypes
+vm.runInThisContext(
+  readFileSync(new URL("../../web/js/thai-script.js", import.meta.url), "utf8"),
+  { filename: "thai-script.js" }
+);
+const { _thaiCharKind: thaiCharKind, _buildDecomposition: buildDecomposition } = globalThis;
 
 // ── thaiCharKind ─────────────────────────────────────────────────────────────
 

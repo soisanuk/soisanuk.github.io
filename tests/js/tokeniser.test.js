@@ -1,40 +1,19 @@
-// Tests for the Thai sentence tokeniser logic from index.html
-// Run with: node --test tests/js/test_tokeniser.js
+// Tests for the Thai sentence tokeniser in web/js/tokeniser.js.
+// The real source file is evaluated via node:vm (it's a classic browser
+// script, not a module), so these tests exercise exactly the code that ships.
+// Run with: node --test tests/js/
 
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
 
-// ── inline the tokeniser (mirrors _tokenise in index.html) ───────────────────
-
-function makeTokeniser(wordMap) {
-  const keys = Object.keys(wordMap).sort((a, b) => b.length - a.length);
-  return function tokenise(sentence) {
-    const tokens = [];
-    let i = 0;
-    while (i < sentence.length) {
-      let matched = false;
-      for (const key of keys) {
-        if (sentence.startsWith(key, i)) {
-          tokens.push({ text: key, word: wordMap[key] });
-          i += key.length;
-          matched = true;
-          break;
-        }
-      }
-      if (!matched) {
-        if (tokens.length && !tokens[tokens.length - 1].word) {
-          tokens[tokens.length - 1].text += sentence[i];
-        } else {
-          tokens.push({ text: sentence[i], word: null });
-        }
-        i++;
-      }
-    }
-    return tokens;
-  };
-}
-
-// ── tests ─────────────────────────────────────────────────────────────────────
+// Evaluate in this realm so returned objects share our prototypes
+vm.runInThisContext(
+  readFileSync(new URL("../../web/js/tokeniser.js", import.meta.url), "utf8"),
+  { filename: "tokeniser.js" }
+);
+const { makeTokeniser } = globalThis;
 
 describe("tokeniser", () => {
   test("matches a single known word", () => {
@@ -104,5 +83,18 @@ describe("tokeniser", () => {
     assert.equal(result[0].word, null); // "!"
     assert.equal(result[1].text, "ดี");
     assert.equal(result[2].word, null); // "!"
+  });
+});
+
+describe("_tokenise app wrapper", () => {
+  test("lazily builds a tokeniser over the global WORD_MAP", () => {
+    // In the app WORD_MAP is defined after tokeniser.js loads; the wrapper
+    // must not touch it until first call. The script above was evaluated
+    // without WORD_MAP, so defining it now proves the lazy lookup.
+    globalThis.WORD_MAP = { "ไป": ["ไป", "pai", "go"] };
+    const result = globalThis._tokenise("ไปx");
+    assert.equal(result.length, 2);
+    assert.equal(result[0].text, "ไป");
+    assert.equal(result[1].word, null);
   });
 });

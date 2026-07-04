@@ -1,57 +1,22 @@
-// Tests for the SM-2 SRS logic mirrored in web/js/srs.js
-// Run with: node --test tests/js/test_srs.js
+// Tests for the SM-2 SRS engine in web/js/srs.js.
+// The real source file is evaluated via node:vm (it's a classic browser
+// script, not a module), so these tests exercise exactly the code that ships.
+// Run with: node --test tests/js/
 
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
 
-// ── inline the SRS logic (mirrors srs.js exactly) ────────────────────────────
-
-function defaultCard() {
-  return { interval: 1, repetitions: 0, easeFactor: 2.5, due: 0, totalReviews: 0, correctStreak: 0 };
-}
-
-function getCard(p, key) {
-  if (!p[key]) p[key] = defaultCard();
-  return p[key];
-}
-
-function reviewCard(card, quality) {
-  const now = Date.now() / 1000;
-  card.totalReviews++;
-  if (quality >= 3) {
-    if (card.repetitions === 0) card.interval = 1;
-    else if (card.repetitions === 1) card.interval = 6;
-    else card.interval = Math.round(card.interval * card.easeFactor);
-    card.repetitions++;
-    card.correctStreak++;
-  } else {
-    card.repetitions = 0;
-    card.interval = 1;
-    card.correctStreak = 0;
-  }
-  card.easeFactor = Math.max(1.3,
-    card.easeFactor + 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
-  card.due = now + card.interval * 86400;
-}
-
-function dueCards(p, keys) {
-  const now = Date.now() / 1000;
-  return keys.filter(k => getCard(p, k).due <= now);
-}
-
-function newCards(p, keys, limit = 10) {
-  return keys.filter(k => !p[k] || p[k].repetitions === 0).slice(0, limit);
-}
-
-function srsStats(p) {
-  const now = Date.now() / 1000;
-  const cards = Object.values(p);
-  return {
-    totalSeen: cards.length,
-    dueNow: cards.filter(c => c.due <= now).length,
-    mature: cards.filter(c => c.interval >= 21).length,
-  };
-}
+// Evaluate in this realm so returned objects share our prototypes
+vm.runInThisContext(
+  readFileSync(new URL("../../web/js/srs.js", import.meta.url), "utf8"),
+  { filename: "srs.js" }
+);
+const {
+  defaultCard, getCard, peekCard, reviewCard,
+  dueCards, newCards, requeue, dueForecast, srsStats,
+} = globalThis;
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -149,7 +114,7 @@ describe("reviewCard", () => {
   });
 });
 
-// ── getCard ───────────────────────────────────────────────────────────────────
+// ── getCard / peekCard ────────────────────────────────────────────────────────
 
 describe("getCard", () => {
   test("returns default card for new key", () => {
@@ -177,6 +142,20 @@ describe("getCard", () => {
   });
 });
 
+describe("peekCard", () => {
+  test("returns default card for new key without inserting", () => {
+    const p = {};
+    const card = peekCard(p, "ไป");
+    assert.equal(card.repetitions, 0);
+    assert.ok(!("ไป" in p));
+  });
+
+  test("returns existing card", () => {
+    const p = { "ไป": makeCard({ repetitions: 3 }) };
+    assert.equal(peekCard(p, "ไป").repetitions, 3);
+  });
+});
+
 // ── dueCards ──────────────────────────────────────────────────────────────────
 
 describe("dueCards", () => {
@@ -190,8 +169,14 @@ describe("dueCards", () => {
     assert.ok(!dueCards(p, ["ไป"]).includes("ไป"));
   });
 
-  test("unseen card (due=0) is included", () => {
-    assert.ok(dueCards({}, ["ไป"]).includes("ไป"));
+  test("unseen card is excluded (that's newCards' job)", () => {
+    assert.ok(!dueCards({}, ["ไป"]).includes("ไป"));
+  });
+
+  test("does not create records in the progress store", () => {
+    const p = {};
+    dueCards(p, ["ไป", "มา", "ดี"]);
+    assert.deepEqual(Object.keys(p), []);
   });
 
   test("only requested keys are checked", () => {
@@ -233,6 +218,74 @@ describe("newCards", () => {
   test("default limit is 10", () => {
     const keys = Array.from({ length: 50 }, (_, i) => String(i));
     assert.equal(newCards({}, keys).length, 10);
+  });
+});
+
+// ── requeue (same-session relearning) ─────────────────────────────────────────
+
+describe("requeue", () => {
+  test("inserts the card gap positions ahead", () => {
+    const deck = ["a", "b", "c", "d", "e", "f", "g"];
+    const at = requeue(deck, 0, "a");
+    assert.equal(at, 4);
+    assert.equal(deck[4], "a");
+    assert.equal(deck.length, 8);
+  });
+
+  test("clamps to end of deck when near the end", () => {
+    const deck = ["a", "b"];
+    const at = requeue(deck, 1, "b");
+    assert.equal(at, 2);
+    assert.deepEqual(deck, ["a", "b", "b"]);
+  });
+
+  test("custom gap is honoured", () => {
+    const deck = ["a", "b", "c", "d", "e"];
+    requeue(deck, 1, "b", 2);
+    assert.equal(deck[3], "b");
+  });
+
+  test("does not disturb cards before the insertion point", () => {
+    const deck = ["a", "b", "c", "d", "e", "f"];
+    requeue(deck, 2, "c");
+    assert.deepEqual(deck.slice(0, 5), ["a", "b", "c", "d", "e"]);
+  });
+});
+
+// ── dueForecast ───────────────────────────────────────────────────────────────
+
+describe("dueForecast", () => {
+  const now = () => Date.now() / 1000;
+
+  test("empty progress gives all-zero buckets", () => {
+    assert.deepEqual(dueForecast({}, 7), [0, 0, 0, 0, 0, 0, 0, 0]);
+  });
+
+  test("overdue and due-now cards land in bucket 0", () => {
+    const p = {
+      a: makeCard({ due: now() - 99999 }),
+      b: makeCard({ due: now() - 1 }),
+    };
+    assert.equal(dueForecast(p, 7)[0], 2);
+  });
+
+  test("card due tomorrow lands in bucket 1", () => {
+    const p = { a: makeCard({ due: now() + 86400 / 2 }) };
+    assert.equal(dueForecast(p, 7)[1], 1);
+  });
+
+  test("card due in 3 days lands in bucket 3", () => {
+    const p = { a: makeCard({ due: now() + 2.5 * 86400 }) };
+    assert.equal(dueForecast(p, 7)[3], 1);
+  });
+
+  test("card beyond the horizon is not counted", () => {
+    const p = { a: makeCard({ due: now() + 30 * 86400 }) };
+    assert.deepEqual(dueForecast(p, 7), [0, 0, 0, 0, 0, 0, 0, 0]);
+  });
+
+  test("returns days + 1 buckets", () => {
+    assert.equal(dueForecast({}, 14).length, 15);
   });
 });
 

@@ -11,6 +11,8 @@ Thai vocabulary and script trainer with spaced repetition.
 - Multiple-choice quiz
 - SRS review (SM-2 spaced repetition)
 - Sentence SRS — fill in a blanked target word in context (`S`)
+- Same-session relearning: cards rated Forgot/Hard come back a few cards later until you pass them
+- Undo last rating (`U` or the ↩ Undo button) in flashcard and SRS sessions
 
 **Script**
 - Consonant and vowel flashcards with SRS
@@ -24,10 +26,10 @@ Play a word via text-to-speech, identify which of the 5 Thai tones it uses.
 All 819 words in Thai alphabetical order with real-time search. Filter by category with progress rings showing % mature cards. Click any word for a detail card with audio, romanisation, example sentence, and character decomposition.
 
 **Statistics** (`0`)
-SRS summary, per-category mature/seen counts, and progress export/import.
+SRS summary, 7-day review forecast chart, per-category mature/seen counts, and progress export/import.
 
 **Audio**
-All Thai text is speakable via the Web Speech API (requires a Thai TTS voice — available in Chrome/Edge on desktop and Android).
+All Thai text is speakable via the Web Speech API (requires a Thai TTS voice — available in Chrome/Edge on desktop and Android). If no Thai voice is found, the home screen shows a notice instead of failing silently.
 
 **PWA / offline**
 Add to home screen on mobile. Works fully offline after first load.
@@ -52,20 +54,27 @@ All shortcuts are active on the home screen.
 | `V` | Vocab List |
 | `0` | Statistics |
 
-Inside drills/cards: `Space`/`Enter` to reveal, `1–5` to rate, `Escape` to exit.
+Inside drills/cards: `Space`/`Enter` to reveal, `1–5` to rate, `U` to undo the last rating, `Escape` to exit.
 
 ## File structure
 
 ```
 web/
-  index.html          main app (HTML + CSS + JS, ~2600 lines)
+  index.html          HTML + CSS shell (screens, styles)
   manifest.json       PWA manifest
-  sw.js               service worker (offline caching)
+  sw.js               service worker (offline caching; cache name stamped by CI)
   icons/              PWA home screen icons
-  js/
+  js/                 classic scripts sharing globals (no modules — keeps file:// working)
     data.js           all Thai data — words, consonants, vowels, tones
-    srs.js            SM-2 spaced repetition engine
     examples.js       752 example sentences
+    srs.js            SM-2 spaced repetition engine + queue/forecast helpers
+    tokeniser.js      greedy longest-match Thai sentence tokeniser
+    thai-script.js    character classification and cluster decomposition
+    app.js            app state, navigation, category picker, export/import
+    tts.js            Web Speech API wrapper + voice availability notice
+    ui.js             vocab list, word modal, tooltips, examples, statistics
+    sessions.js       flashcards, quiz, drills, SRS sessions, rating/undo
+    main.js           keyboard shortcuts and init (loaded last)
 ```
 
 ## Run locally
@@ -84,4 +93,4 @@ SRS progress is stored in `localStorage` under key `thaicab_progress`. It persis
 
 ## Deployment
 
-Pushes to `main` deploy automatically to GitHub Pages via `.github/workflows/pages.yml`.
+Pushes to `main` deploy automatically to GitHub Pages via `.github/workflows/pages.yml`. The workflow rewrites the service-worker cache name (`thaicab-dev` → `thaicab-<commit sha>`) so every deploy invalidates the previous offline cache — no manual version bump needed.
