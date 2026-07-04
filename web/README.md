@@ -22,6 +22,9 @@ Thai vocabulary and script trainer with spaced repetition.
 **Tone listening drill** (`T`)
 Play a word via text-to-speech, identify which of the 5 Thai tones it uses.
 
+**Walking Street game** (`G`)
+Neon consonant-drop game set in Pattaya. Bubbles fall carrying Thai consonants; type the correct key (Kedmanee layout) to pop each one. Every 5 pops a random consonant's key hint is scheduled for removal — the next time it falls it blinks as a warning, then the hint is gone permanently. All 10 hints disappear across a long game, leaving you reading consonants cold.
+
 **Vocab list** (`V`)
 All 876 words in Thai alphabetical order with real-time search. Filter by category with progress rings showing % mature cards. Click any word for a detail card with audio, romanisation, example sentence, and character decomposition. Clicking the Thai text on a flashcard opens the same detail view.
 
@@ -51,6 +54,7 @@ All shortcuts are active on the home screen.
 | `9` | Script SRS |
 | `T` | Tone Listening Drill |
 | `S` | Sentence SRS |
+| `G` | Walking Street game |
 | `V` | Vocab List |
 | `0` | Statistics |
 | `?` | Tutorial |

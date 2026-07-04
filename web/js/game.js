@@ -1,0 +1,513 @@
+// Walking Street — Pattaya Consonant Drop
+// Thai consonants mapped to Kedmanee keyboard positions.
+// Type the key shown to pop each neon sign before it hits the ground.
+// Every 5 pops a random letter loses its key hint (warned by blinking first).
+
+const GAME_LETTERS = [
+  { thai: "ก", key: "d" },
+  { thai: "น", key: "o" },
+  { thai: "ส", key: "l" },
+  { thai: "ท", key: "m" },
+  { thai: "ป", key: "x" },
+  { thai: "ร", key: "i" },
+  { thai: "พ", key: "r" },
+  { thai: "ห", key: "s" },
+  { thai: "ด", key: "f" },
+  { thai: "ย", key: "p" },
+];
+
+const _NEON = [
+  "#ff1493","#00e5ff","#bf5fff","#ffe600",
+  "#00ff7f","#ff6600","#ff4060","#00bfff",
+  "#ff69b4","#7fff00",
+];
+
+// ── ASCII background art ───────────────────────────────────────────────────
+
+// Pattaya hillside sign — rendered as canvas text in monospace
+const _PATTAYA_ART = [
+  "   *   *   *   *   *   *   *   *   *   *   *  ",
+  " *                                             *",
+  "   +===========================================+  ",
+  "   |   * *   P A T T A Y A   * *             |  ",
+  "   +===========================================+  ",
+  " *                                             *",
+  "   *   *   *   *   *   *   *   *   *   *   *  ",
+];
+
+// Three Walking Street go-go bars, each with a neon color and ASCII box art
+const _GOGO_BARS = [
+  {
+    cx: 0.13, color: "#ff1493",
+    art: [
+      "+---------------+",
+      "| * BUTTERFLY * |",
+      "|   GO-GO BAR   |",
+      "+---------------+",
+    ],
+  },
+  {
+    cx: 0.50, color: "#bf5fff",
+    art: [
+      "+----------------+",
+      "| * SUGAR SUGAR *|",
+      "|   A-GO-GO BAR  |",
+      "+----------------+",
+    ],
+  },
+  {
+    cx: 0.84, color: "#00e5ff",
+    art: [
+      "+---------------+",
+      "| * EDEN CLUB * |",
+      "|   A-GO-GO BAR |",
+      "+---------------+",
+    ],
+  },
+];
+
+// Static background lights (twinkling neon / distant signs)
+const _BG_LIGHTS = Array.from({ length: 55 }, () => ({
+  x:        Math.random(),
+  y:        Math.random() * 0.68,
+  r:        0.8 + Math.random() * 2,
+  phase:    Math.random() * Math.PI * 2,
+  colorIdx: Math.floor(Math.random() * _NEON.length),
+}));
+
+// Building silhouettes [normX, normWidth, normHeight]
+const _BUILDINGS = [
+  [0.00, 0.08, 0.28], [0.07, 0.05, 0.18],
+  [0.13, 0.09, 0.35], [0.21, 0.06, 0.22],
+  [0.27, 0.05, 0.15], [0.32, 0.09, 0.30],
+  [0.40, 0.05, 0.20], [0.45, 0.08, 0.38],
+  [0.53, 0.06, 0.19], [0.59, 0.09, 0.27],
+  [0.68, 0.05, 0.23], [0.73, 0.08, 0.32],
+  [0.81, 0.04, 0.17], [0.85, 0.07, 0.25],
+  [0.92, 0.08, 0.20],
+];
+
+// ── State ──────────────────────────────────────────────────────────────────
+
+// Per-letter hint state: 0 = show, 1 = warn (blink on next spawn), 2 = gone
+const _gHintMode = new Array(GAME_LETTERS.length).fill(0);
+
+let _gRunning   = false;
+let _gCanvas    = null, _gCtx = null;
+let _gBubbles   = [], _gParticles = [];
+let _gScore     = 0, _gLives = 3, _gLevel = 1, _gPopped = 0;
+let _gAnimId    = null, _gLastSpawn = 0;
+let _gSpawnMs   = 2200, _gSpeed = 0.55;
+let _gTime      = 0;
+
+// ── Init ───────────────────────────────────────────────────────────────────
+
+function startGame() {
+  showScreen("game-screen", "G");
+  _gCanvas = document.getElementById("game-canvas");
+  _gCtx    = _gCanvas.getContext("2d");
+  _gResize();
+  _gReset();
+  document.getElementById("game-over-panel").style.display = "none";
+  _gRunning = true;
+  requestAnimationFrame(_gTick);
+  _buildGameRef();
+}
+
+function _gResize() {
+  const wrap      = document.getElementById("game-canvas-wrap");
+  _gCanvas.width  = wrap.clientWidth;
+  _gCanvas.height = wrap.clientHeight;
+}
+
+function _gReset() {
+  _gBubbles = []; _gParticles = [];
+  _gScore = 0; _gLives = 3; _gLevel = 1; _gPopped = 0;
+  _gLastSpawn = 0; _gSpawnMs = 2200; _gSpeed = 0.55;
+  _gTime = 0;
+  _gHintMode.fill(0);
+  _gHUD();
+}
+
+function _gHUD() {
+  document.getElementById("game-score").textContent = _gScore;
+  document.getElementById("game-lives").textContent = "🍺".repeat(_gLives);
+  document.getElementById("game-level").textContent = _gLevel;
+}
+
+// ── Game loop ──────────────────────────────────────────────────────────────
+
+function _gSpawn(now) {
+  const idx  = Math.floor(Math.random() * GAME_LETTERS.length);
+  const mode = _gHintMode[idx];
+  const r    = 36;
+  const x    = r + 20 + Math.random() * (_gCanvas.width - 2 * r - 40);
+  _gBubbles.push({
+    letter:    GAME_LETTERS[idx],
+    letterIdx: idx,
+    color:     _NEON[idx],
+    x, y: -r - 10, r,
+    speed:      _gSpeed * (0.8 + Math.random() * 0.4),
+    popped:     false, popT: 0,
+    wrongFlash: 0,
+    showHint:   mode !== 2,   // false once hint permanently removed
+    blink:      mode === 1,   // true on the one warning fall
+  });
+  _gLastSpawn = now;
+}
+
+function _gTick(now) {
+  if (!_gRunning) return;
+  _gTime = now;
+
+  if (now - _gLastSpawn > _gSpawnMs) _gSpawn(now);
+
+  // Update bubbles
+  const dead = [];
+  for (const b of _gBubbles) {
+    if (b.popped) { b.popT += 0.07; if (b.popT >= 1) dead.push(b); continue; }
+    if (b.wrongFlash > 0) b.wrongFlash--;
+    b.y += b.speed;
+    if (b.y - b.r > _gCanvas.height) {
+      _gResolve(b);
+      _gLives--;
+      _gHUD();
+      _gMissParticles(b.x, _gCanvas.height - 15);
+      dead.push(b);
+      if (_gLives <= 0) {
+        for (const d of dead) { const i = _gBubbles.indexOf(d); if (i >= 0) _gBubbles.splice(i, 1); }
+        _gOver();
+        return;
+      }
+    }
+  }
+  for (const b of dead) { const i = _gBubbles.indexOf(b); if (i >= 0) _gBubbles.splice(i, 1); }
+
+  // Update particles
+  for (const p of _gParticles) { p.x += p.vx; p.y += p.vy; p.vy += 0.14; p.a -= 0.032; }
+  _gParticles = _gParticles.filter(p => p.a > 0);
+
+  _gDraw();
+  _gAnimId = requestAnimationFrame(_gTick);
+}
+
+// Called when a warning bubble resolves — transitions hint from warn → gone
+function _gResolve(b) {
+  if (b.blink && _gHintMode[b.letterIdx] === 1) {
+    _gHintMode[b.letterIdx] = 2;
+    _gDimRefCard(b.letterIdx);
+  }
+}
+
+function _gOver() {
+  _gRunning = false;
+  cancelAnimationFrame(_gAnimId);
+  document.getElementById("game-final-score").textContent = _gScore;
+  document.getElementById("game-over-panel").style.display = "flex";
+}
+
+// ── Background ─────────────────────────────────────────────────────────────
+
+function _gDrawBg(ctx, W, H) {
+  const groundY = H * 0.82;
+
+  // Night sky
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, "#03000e");
+  sky.addColorStop(0.65, "#09001e");
+  sky.addColorStop(1, "#14000e");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H);
+
+  // Pratumnak hill silhouette behind the sign
+  ctx.fillStyle = "#060016";
+  ctx.beginPath();
+  ctx.moveTo(0, groundY);
+  ctx.bezierCurveTo(W * 0.18, groundY * 0.99, W * 0.38, H * 0.07, W * 0.50, H * 0.09);
+  ctx.bezierCurveTo(W * 0.62, H * 0.07, W * 0.82, groundY * 0.99, W, groundY);
+  ctx.closePath();
+  ctx.fill();
+
+  // Pattaya hilltop sign
+  _gDrawPattayaSign(ctx, W, H);
+
+  // Twinkling neon lights / distant signs
+  for (const l of _BG_LIGHTS) {
+    const flicker = 0.35 + 0.65 * Math.abs(Math.sin(_gTime * 0.0009 + l.phase));
+    ctx.globalAlpha = flicker * 0.55;
+    ctx.fillStyle = _NEON[l.colorIdx];
+    ctx.beginPath();
+    ctx.arc(l.x * W, l.y * H, l.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // Building silhouettes with lit windows
+  ctx.fillStyle = "#050010";
+  for (const [bx, bw, bh] of _BUILDINGS) {
+    const px = bx * W, pw = bw * W, ph = bh * H;
+    ctx.fillRect(px, groundY - ph, pw, ph);
+    const cols = Math.max(1, Math.floor(pw / 11));
+    const rows = Math.max(1, Math.floor(ph / 15));
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (Math.sin(bx * 91 + r * 7.3 + c * 11.7 + _gTime * 0.00015) <= 0.1) continue;
+        const wi = Math.floor((bx * 10 + r + c) % _NEON.length);
+        ctx.fillStyle = _NEON[wi] + "50";
+        ctx.fillRect(px + 3 + c * 11, groundY - ph + 4 + r * 15, 7, 9);
+      }
+    }
+  }
+
+  // Go-go bar signs on the street
+  _gDrawGoGoSigns(ctx, W, H, groundY);
+
+  // Street surface
+  const street = ctx.createLinearGradient(0, groundY, 0, H);
+  street.addColorStop(0, "#130020");
+  street.addColorStop(1, "#08000e");
+  ctx.fillStyle = street;
+  ctx.fillRect(0, groundY, W, H - groundY);
+
+  // Wet-street neon reflections
+  ctx.globalAlpha = 0.1;
+  for (const l of _BG_LIGHTS.slice(0, 14)) {
+    ctx.fillStyle = _NEON[l.colorIdx];
+    ctx.fillRect(l.x * W - 1.5, groundY, 3, H - groundY);
+  }
+  ctx.globalAlpha = 1;
+
+  // Danger zone line
+  ctx.strokeStyle = "rgba(255,20,147,0.22)";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([8, 5]);
+  ctx.beginPath(); ctx.moveTo(0, H - 6); ctx.lineTo(W, H - 6); ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function _gDrawPattayaSign(ctx, W, H) {
+  const cx     = W / 2;
+  const signCY = H * 0.21;
+  const lineH  = 11;
+  const t      = _gTime * 0.0007;
+  const flicker = 0.72 + 0.28 * Math.abs(Math.sin(t));
+
+  ctx.save();
+  ctx.font         = "9px 'Courier New', Courier, monospace";
+  ctx.textAlign    = "center";
+  ctx.textBaseline = "top";
+
+  for (let i = 0; i < _PATTAYA_ART.length; i++) {
+    const line  = _PATTAYA_ART[i];
+    const y     = signCY + (i - _PATTAYA_ART.length / 2) * lineH;
+    const isBorder = line.includes("+") || line.includes("=");
+    const isText   = line.includes("P A T T A Y A");
+
+    if (isText) {
+      ctx.fillStyle = `rgba(255,245,190,${0.70 * flicker})`;
+    } else if (isBorder) {
+      ctx.fillStyle = `rgba(210,185,255,${0.32 * flicker})`;
+    } else {
+      ctx.fillStyle = `rgba(170,190,255,${0.20 * flicker})`;
+    }
+    ctx.fillText(line, cx, y);
+  }
+  ctx.restore();
+}
+
+function _gDrawGoGoSigns(ctx, W, H, groundY) {
+  const lineH = 10;
+  ctx.save();
+  ctx.font         = "8px 'Courier New', Courier, monospace";
+  ctx.textAlign    = "center";
+  ctx.textBaseline = "top";
+
+  for (const bar of _GOGO_BARS) {
+    const cx      = bar.cx * W;
+    const baseY   = groundY - bar.art.length * lineH - 8;
+    const flicker = 0.50 + 0.50 * Math.abs(Math.sin(_gTime * 0.0008 + bar.cx * 19));
+
+    for (let i = 0; i < bar.art.length; i++) {
+      const isBorder = bar.art[i].includes("+") || bar.art[i].includes("-");
+      const alpha    = (isBorder ? 0.22 : 0.38) * flicker;
+      ctx.fillStyle  = bar.color + Math.round(alpha * 255).toString(16).padStart(2, "0");
+      ctx.fillText(bar.art[i], cx, baseY + i * lineH);
+    }
+  }
+  ctx.restore();
+}
+
+// ── Bubbles ────────────────────────────────────────────────────────────────
+
+function _gDrawBubble(ctx, b) {
+  ctx.save();
+  const shake = b.wrongFlash > 0 ? (Math.random() - 0.5) * 6 : 0;
+  ctx.translate(b.x + shake, b.y);
+
+  if (b.popped) {
+    ctx.scale(1 + b.popT * 0.9, 1 + b.popT * 0.9);
+    ctx.globalAlpha = 1 - b.popT;
+  }
+
+  const c = b.wrongFlash > 0 ? "#ff0040" : b.color;
+  const r = b.r;
+
+  // Outer glow rings
+  for (let g = 4; g >= 1; g--) {
+    ctx.beginPath();
+    ctx.arc(0, 0, r + g * 5, 0, Math.PI * 2);
+    ctx.fillStyle = c + Math.floor(14 / g).toString(16).padStart(2, "0");
+    ctx.fill();
+  }
+
+  // Dark fill
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.fillStyle = "#07001a";
+  ctx.fill();
+
+  // Neon border — soft wide + crisp thin
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.strokeStyle = c + "55";
+  ctx.lineWidth = 7;
+  ctx.stroke();
+  ctx.strokeStyle = c;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Thai character
+  ctx.shadowColor  = c;
+  ctx.shadowBlur   = 14;
+  ctx.fillStyle    = "#ffffff";
+  ctx.font         = "bold 28px 'Noto Sans Thai','Leelawadee UI',serif";
+  ctx.textAlign    = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(b.letter.thai, 0, -5);
+  ctx.shadowBlur = 0;
+
+  // Key hint — blinking on warning fall, hidden once gone
+  if (b.showHint) {
+    const blinkOn = !b.blink || (Math.floor(_gTime / 130) % 2 === 0);
+    if (blinkOn) {
+      if (b.blink) {
+        // White flash to signal "this hint is about to disappear"
+        const pulse = 0.6 + 0.4 * Math.abs(Math.sin(_gTime * 0.013));
+        ctx.fillStyle = `rgba(255,255,255,${pulse})`;
+      } else {
+        ctx.fillStyle = c + "cc";
+      }
+      ctx.font = "bold 11px 'Segoe UI', monospace, sans-serif";
+      ctx.fillText(b.letter.key, 0, 16);
+    }
+  }
+
+  ctx.restore();
+}
+
+function _gDraw() {
+  const ctx = _gCtx, W = _gCanvas.width, H = _gCanvas.height;
+  _gDrawBg(ctx, W, H);
+  for (const b of _gBubbles) _gDrawBubble(ctx, b);
+
+  for (const p of _gParticles) {
+    ctx.globalAlpha = p.a;
+    ctx.shadowColor = p.c;
+    ctx.shadowBlur  = 8;
+    ctx.fillStyle   = p.c;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur  = 0;
+}
+
+// ── Particles ──────────────────────────────────────────────────────────────
+
+function _gPopParticles(x, y, color) {
+  for (let i = 0; i < 14; i++) {
+    const angle = (i / 14) * Math.PI * 2 + Math.random() * 0.3;
+    const spd   = 1.5 + Math.random() * 4;
+    _gParticles.push({ x, y, vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd - 2,
+      r: 2 + Math.random() * 3, c: color, a: 1 });
+  }
+}
+
+function _gMissParticles(x, y) {
+  for (let i = 0; i < 10; i++) {
+    _gParticles.push({ x: x + (Math.random() - 0.5) * 40, y,
+      vx: (Math.random() - 0.5) * 3, vy: -2 - Math.random() * 3,
+      r: 2 + Math.random() * 2, c: "#ff0040", a: 1 });
+  }
+}
+
+// ── Input ──────────────────────────────────────────────────────────────────
+
+function _gKey(key) {
+  if (!_gRunning) return false;
+  const k = key.toLowerCase();
+  if (!GAME_LETTERS.some(l => l.key === k)) return false;
+
+  // Target the lowest matching bubble (most urgent)
+  let target = null;
+  for (const b of _gBubbles) {
+    if (!b.popped && b.letter.key === k && (!target || b.y > target.y)) target = b;
+  }
+
+  if (target) {
+    _gResolve(target);
+    _gPopParticles(target.x, target.y, target.color);
+    target.popped = true;
+    _gScore += 10 * _gLevel;
+    _gPopped++;
+
+    // Every 5 pops: schedule a random consonant for hint removal
+    if (_gPopped % 5 === 0) {
+      const eligible = GAME_LETTERS.map((_, i) => i).filter(i => _gHintMode[i] === 0);
+      if (eligible.length > 0) {
+        _gHintMode[eligible[Math.floor(Math.random() * eligible.length)]] = 1;
+      }
+    }
+
+    // Every 10 pops: level up
+    if (_gPopped % 10 === 0) {
+      _gLevel++;
+      _gSpawnMs = Math.max(650, _gSpawnMs - 250);
+      _gSpeed   = Math.min(3.2, _gSpeed + 0.22);
+    }
+
+    _gHUD();
+  } else {
+    // Valid key but no matching bubble — shake everything
+    for (const b of _gBubbles) { if (!b.popped) b.wrongFlash = 6; }
+  }
+  return true;
+}
+
+// ── Reference strip ────────────────────────────────────────────────────────
+
+function _buildGameRef() {
+  const ref = document.getElementById("game-ref");
+  ref.innerHTML = "";
+  for (let i = 0; i < GAME_LETTERS.length; i++) {
+    const l   = GAME_LETTERS[i];
+    const c   = _NEON[i];
+    const div = document.createElement("div");
+    div.className = "game-ref-card";
+    div.id        = "game-ref-" + i;
+    div.style.borderColor = c + "70";
+    div.innerHTML =
+      `<span class="game-ref-thai" style="color:${c};text-shadow:0 0 8px ${c}">${l.thai}</span>` +
+      `<span class="game-ref-key" id="game-ref-key-${i}" style="color:${c}bb">${l.key}</span>`;
+    ref.appendChild(div);
+  }
+}
+
+// Dim a reference card's key label when that hint is permanently removed
+function _gDimRefCard(idx) {
+  const el = document.getElementById("game-ref-key-" + idx);
+  if (!el) return;
+  el.style.opacity        = "0.18";
+  el.style.textDecoration = "line-through";
+}

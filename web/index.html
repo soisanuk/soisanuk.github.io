@@ -989,6 +989,75 @@ kbd.tut-key {
 }
 #tutorial-nav button:hover { border-color: var(--gold); color: var(--saffron); }
 #tutorial-prev { visibility: hidden; }
+
+/* ── Walking Street game ─────────────────────────────────────────────────── */
+#game-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #ff1493;
+  background: #05001a;
+  border-bottom: 1px solid #ff149344;
+  text-shadow: 0 0 8px #ff1493;
+}
+#game-hud strong { color: #ffe600; text-shadow: 0 0 8px #ffe600; }
+#game-lives { font-size: 1.05rem; letter-spacing: 0.2em; text-shadow: none; }
+#game-canvas-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+#game-canvas { display: block; width: 100%; height: 100%; }
+#game-over-panel {
+  position: absolute;
+  inset: 0;
+  background: rgba(5,0,26,0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.game-over-box {
+  background: #08001a;
+  border: 2px solid #ff1493;
+  border-radius: 14px;
+  padding: 2rem 2.5rem;
+  text-align: center;
+  box-shadow: 0 0 50px #ff149350, inset 0 0 40px rgba(255,20,147,0.04);
+}
+.game-over-title {
+  font-size: 2rem;
+  color: #ff1493;
+  font-weight: bold;
+  text-shadow: 0 0 20px #ff1493;
+  margin-bottom: 0.3rem;
+}
+.game-over-sub { color: #bf5fff; font-size: 0.95rem; margin-bottom: 0.5rem; text-shadow: 0 0 8px #bf5fff; }
+.game-over-score { font-size: 1.5rem; color: #ffe600; font-weight: bold; text-shadow: 0 0 12px #ffe600; margin-bottom: 1.5rem; }
+#game-ref {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.45rem 0.8rem;
+  background: #05001a;
+  border-top: 1px solid #ff149330;
+}
+.game-ref-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #0a001a;
+  border: 1px solid;
+  border-radius: 6px;
+  padding: 0.25rem 0.55rem;
+  min-width: 2.5rem;
+}
+.game-ref-thai { font-family: 'Noto Sans Thai','Leelawadee UI',serif; font-size: 1.1rem; line-height: 1.5; }
+.game-ref-key  { font-size: 0.68rem; font-weight: bold; font-family: monospace; margin-top: 0.05rem; }
 </style>
 </head>
 <body>
@@ -1023,6 +1092,7 @@ kbd.tut-key {
     <li id="nav-S" onclick="startSentSRS()">        Sentence SRS</li>
     <li id="nav-V" onclick="showVocabList()">       Vocab List</li>
     <li id="nav-0" onclick="showStats()">           Statistics</li>
+    <li id="nav-G" onclick="startGame()">          🌙 Walking Street</li>
   </ul>
 
   <div id="sidebar-footer">
@@ -1065,6 +1135,7 @@ kbd.tut-key {
     <li onclick="showVocabList()"> <span class="menu-key">V</span> Vocab List</li>
     <li onclick="showStats()">     <span class="menu-key">0</span> Statistics</li>
     <li onclick="showTutorial()">  <span class="menu-key">?</span> How to use this app</li>
+    <li onclick="startGame()">     <span class="menu-key">G</span> 🌙 Walking Street</li>
   </ul>
   <div class="screen-footer">❀ สวัสดี ❀</div>
 </div>
@@ -1255,6 +1326,36 @@ kbd.tut-key {
   </div>
 </div>
 
+<!-- ═══ WALKING STREET GAME ═══════════════════════════════════════════════════ -->
+<div id="game-screen" class="screen">
+  <div class="screen-header" style="background:#05001a;color:#ff1493;border-color:#ff1493;text-shadow:0 0 10px #ff1493;letter-spacing:0.08em">
+    🌙 Walking Street — พัทยา
+  </div>
+  <div id="game-hud">
+    <span>฿ <strong id="game-score">0</strong></span>
+    <span id="game-lives">🍺🍺🍺</span>
+    <span id="game-level-label">Night <strong id="game-level">1</strong></span>
+  </div>
+  <div id="game-canvas-wrap">
+    <canvas id="game-canvas"></canvas>
+    <div id="game-over-panel" style="display:none">
+      <div class="game-over-box">
+        <div class="game-over-title">เมาแล้ว! 🍺</div>
+        <div class="game-over-sub">Time to go home, ฝรั่ง</div>
+        <div class="game-over-score">฿ <span id="game-final-score">0</span></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="startGame()">อีกครั้ง</button>
+          <button class="btn" onclick="endSession()">กลับบ้าน</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="game-ref"></div>
+  <div class="screen-footer" style="background:#05001a;border-color:#ff149340;color:#bf5fff">
+    Type the key shown on each sign · <button class="btn" style="padding:0.15rem 0.6rem;font-size:0.8rem;border-color:#ff149360;color:#ff1493" onclick="endSession()">Quit (Esc)</button>
+  </div>
+</div>
+
 </div><!-- #content-area -->
 </div><!-- #app-shell -->
 
@@ -1314,6 +1415,7 @@ kbd.tut-key {
 <script src="js/tts.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/sessions.js"></script>
+<script src="js/game.js"></script>
 <script src="js/main.js"></script>
 <!-- ═══ WORD DETAIL MODAL ════════════════════════════════════════════════════ -->
 <div id="wc-overlay"></div>
