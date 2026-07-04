@@ -1058,6 +1058,50 @@ kbd.tut-key {
 }
 .game-ref-thai { font-family: 'Noto Sans Thai','Leelawadee UI',serif; font-size: 1.1rem; line-height: 1.5; }
 .game-ref-key  { font-size: 0.68rem; font-weight: bold; font-family: monospace; margin-top: 0.05rem; }
+
+/* ── Thai Keyboard Tutor ─────────────────────────────────────────────────── */
+#tutor-screen { display:flex; flex-direction:column; background:#05001a; }
+#tutor-body   { display:flex; flex-direction:column; align-items:center; gap:.6rem; padding:.6rem .5rem 0; overflow-y:auto; flex:1; }
+#tutor-modes  { display:flex; gap:.4rem; }
+.t-mbtn {
+  background:#08001a; border:1px solid #00e5ff30; color:#00e5ff60;
+  border-radius:6px; padding:.25rem .75rem; font:.8rem sans-serif; cursor:pointer; transition:all .15s;
+}
+.t-mbtn:hover { border-color:#00e5ff60; color:#00e5ff; }
+.t-mbtn.active { border-color:#00e5ff; color:#00e5ff; background:#0a0025; box-shadow:0 0 8px #00e5ff30; }
+#tutor-prompt { text-align:center; padding:.4rem 0 0; }
+#t-char {
+  font: bold 76px 'Noto Sans Thai','Leelawadee UI',serif;
+  color:#00e5ff; text-shadow:0 0 22px #00e5ff, 0 0 44px #00e5ff40;
+  line-height:1.15; min-height:96px; display:flex; align-items:center; justify-content:center;
+}
+#t-name { color:#00e5ff45; font:.78rem sans-serif; margin-top:.1rem; letter-spacing:.04em; }
+#t-kbd  { display:flex; flex-direction:column; gap:3px; width:100%; max-width:400px; }
+.t-row  { display:flex; justify-content:center; gap:3px; }
+.tkey   {
+  flex:0 0 auto; width:36px; height:40px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:#07001e; border:1px solid #00e5ff18; border-radius:5px;
+  position:relative; transition:box-shadow .1s, border-color .1s, background .1s; overflow:hidden;
+}
+.tkey-lat { font:.48rem monospace; color:#00e5ff30; position:absolute; top:2px; left:3px; line-height:1; }
+.tkey-th  { font:.95rem 'Noto Sans Thai',sans-serif; color:#00e5ff55; line-height:1; }
+.tkey.dim .tkey-th  { color:#ffffff12; }
+.tkey.dim .tkey-lat { color:#ffffff08; }
+.tkey.t-target { border-color:#00e5ff90; box-shadow:0 0 10px #00e5ff50; }
+.tkey.t-target .tkey-th { color:#00e5ff; text-shadow:0 0 8px #00e5ff; }
+.tkey.t-ok { border-color:#00ff7f; box-shadow:0 0 12px #00ff7f60; background:#00130a; }
+.tkey.t-ok .tkey-th { color:#00ff7f; text-shadow:0 0 8px #00ff7f; }
+.tkey.t-wrong { border-color:#ff1493; box-shadow:0 0 12px #ff149350; background:#1a0010; }
+.tkey.t-wrong .tkey-th { color:#ff1493; }
+.tkey.t-hint { border-color:#ffe600; box-shadow:0 0 12px #ffe60050; }
+.tkey.t-hint .tkey-th { color:#ffe600; text-shadow:0 0 8px #ffe600; }
+#tutor-stats {
+  display:flex; gap:2rem; color:#00e5ff55; font:.82rem sans-serif;
+  padding:.3rem 0; border-top:1px solid #00e5ff12; width:100%; max-width:400px;
+  justify-content:center;
+}
+#tutor-stats strong { color:#00e5ff; }
 </style>
 </head>
 <body>
@@ -1093,6 +1137,7 @@ kbd.tut-key {
     <li id="nav-V" onclick="showVocabList()">       Vocab List</li>
     <li id="nav-0" onclick="showStats()">           Statistics</li>
     <li id="nav-G" onclick="startGame()">          🌙 Walking Street</li>
+    <li id="nav-K" onclick="startTutor()">         ⌨️ Thai Keyboard</li>
   </ul>
 
   <div id="sidebar-footer">
@@ -1136,6 +1181,7 @@ kbd.tut-key {
     <li onclick="showStats()">     <span class="menu-key">0</span> Statistics</li>
     <li onclick="showTutorial()">  <span class="menu-key">?</span> How to use this app</li>
     <li onclick="startGame()">     <span class="menu-key">G</span> 🌙 Walking Street</li>
+    <li onclick="startTutor()">   <span class="menu-key">K</span> ⌨️ Thai Keyboard</li>
   </ul>
   <div class="screen-footer">❀ สวัสดี ❀</div>
 </div>
@@ -1356,6 +1402,32 @@ kbd.tut-key {
   </div>
 </div>
 
+<!-- ═══ THAI KEYBOARD TUTOR ══════════════════════════════════════════════════ -->
+<div id="tutor-screen" class="screen">
+  <div class="screen-header" style="background:#05001a;color:#00e5ff;text-shadow:0 0 12px #00e5ff;border-bottom:1px solid #00e5ff28;">
+    ⌨️ Thai Keyboard — คีย์บอร์ดไทย
+  </div>
+  <div id="tutor-body">
+    <div id="tutor-modes">
+      <button class="t-mbtn active" id="t-mbtn-con" onclick="_tSetMode('consonants')">Consonants</button>
+      <button class="t-mbtn" id="t-mbtn-all" onclick="_tSetMode('all')">All Keys</button>
+    </div>
+    <div id="tutor-prompt">
+      <div id="t-char"></div>
+      <div id="t-name"></div>
+    </div>
+    <div id="t-kbd"></div>
+    <div id="tutor-stats">
+      <span>🔥 <strong id="t-streak">0</strong></span>
+      <span>Accuracy <strong id="t-acc">—</strong></span>
+    </div>
+  </div>
+  <div class="screen-footer" style="background:#05001a;border-top:1px solid #00e5ff18;color:#00e5ff50;font-size:.78rem;text-align:center;padding:.5rem;">
+    Type the key for each character &nbsp;·&nbsp;
+    <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#00e5ff40;color:#00e5ff80" onclick="endSession()">Quit (Esc)</button>
+  </div>
+</div>
+
 </div><!-- #content-area -->
 </div><!-- #app-shell -->
 
@@ -1415,6 +1487,7 @@ kbd.tut-key {
 <script src="js/tts.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/sessions.js"></script>
+<script src="js/tutor.js"></script>
 <script src="js/game.js"></script>
 <script src="js/main.js"></script>
 <!-- ═══ WORD DETAIL MODAL ════════════════════════════════════════════════════ -->
