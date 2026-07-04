@@ -286,54 +286,70 @@ function _gDrawBg(ctx, W, H) {
 }
 
 function _gDrawPattayaSign(ctx, W, H) {
-  const cx     = W / 2;
-  const signCY = H * 0.21;
-  const lineH  = 11;
-  const t      = _gTime * 0.0007;
-  const flicker = 0.72 + 0.28 * Math.abs(Math.sin(t));
+  const cx      = W / 2;
+  const fontSize = Math.max(12, Math.round(W / 30));
+  const lineH   = Math.round(fontSize * 1.35);
+  const totalH  = _PATTAYA_ART.length * lineH;
+  const signTop = H * 0.06;
+  const t       = _gTime * 0.0007;
+  const flicker = 0.80 + 0.20 * Math.abs(Math.sin(t));
 
   ctx.save();
-  ctx.font         = "9px 'Courier New', Courier, monospace";
+  ctx.font         = `bold ${fontSize}px 'Courier New', Courier, monospace`;
   ctx.textAlign    = "center";
   ctx.textBaseline = "top";
 
   for (let i = 0; i < _PATTAYA_ART.length; i++) {
-    const line  = _PATTAYA_ART[i];
-    const y     = signCY + (i - _PATTAYA_ART.length / 2) * lineH;
+    const line     = _PATTAYA_ART[i];
+    const y        = signTop + i * lineH;
     const isBorder = line.includes("+") || line.includes("=");
     const isText   = line.includes("P A T T A Y A");
 
     if (isText) {
-      ctx.fillStyle = `rgba(255,245,190,${0.70 * flicker})`;
+      ctx.shadowColor = "rgba(255,245,150,0.9)";
+      ctx.shadowBlur  = 12;
+      ctx.fillStyle   = `rgba(255,250,200,${flicker})`;
     } else if (isBorder) {
-      ctx.fillStyle = `rgba(210,185,255,${0.32 * flicker})`;
+      ctx.shadowColor = "rgba(180,160,255,0.7)";
+      ctx.shadowBlur  = 8;
+      ctx.fillStyle   = `rgba(210,190,255,${0.75 * flicker})`;
     } else {
-      ctx.fillStyle = `rgba(170,190,255,${0.20 * flicker})`;
+      ctx.shadowColor = "rgba(150,170,255,0.4)";
+      ctx.shadowBlur  = 4;
+      ctx.fillStyle   = `rgba(180,200,255,${0.50 * flicker})`;
     }
     ctx.fillText(line, cx, y);
   }
+  ctx.shadowBlur = 0;
   ctx.restore();
 }
 
 function _gDrawGoGoSigns(ctx, W, H, groundY) {
-  const lineH = 10;
+  const fontSize = Math.max(11, Math.round(W / 36));
+  const lineH   = Math.round(fontSize * 1.4);
+
   ctx.save();
-  ctx.font         = "8px 'Courier New', Courier, monospace";
+  ctx.font         = `bold ${fontSize}px 'Courier New', Courier, monospace`;
   ctx.textAlign    = "center";
   ctx.textBaseline = "top";
 
   for (const bar of _GOGO_BARS) {
     const cx      = bar.cx * W;
-    const baseY   = groundY - bar.art.length * lineH - 8;
-    const flicker = 0.50 + 0.50 * Math.abs(Math.sin(_gTime * 0.0008 + bar.cx * 19));
+    // Place signs so their bottom aligns just above the street
+    const baseY   = groundY - bar.art.length * lineH - 6;
+    const flicker = 0.70 + 0.30 * Math.abs(Math.sin(_gTime * 0.0008 + bar.cx * 19));
+
+    ctx.shadowColor = bar.color;
+    ctx.shadowBlur  = 14;
 
     for (let i = 0; i < bar.art.length; i++) {
       const isBorder = bar.art[i].includes("+") || bar.art[i].includes("-");
-      const alpha    = (isBorder ? 0.22 : 0.38) * flicker;
+      const alpha    = isBorder ? 0.65 * flicker : 0.90 * flicker;
       ctx.fillStyle  = bar.color + Math.round(alpha * 255).toString(16).padStart(2, "0");
       ctx.fillText(bar.art[i], cx, baseY + i * lineH);
     }
   }
+  ctx.shadowBlur = 0;
   ctx.restore();
 }
 
