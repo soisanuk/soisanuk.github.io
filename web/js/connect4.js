@@ -194,8 +194,7 @@ function _c4MakeQuiz() {
   const others = pool.filter(v => v !== answer && v[1] !== answer[1]);
   const distractors = others.sort(() => Math.random() - 0.5).slice(0, 3);
   const choices = [answer, ...distractors].sort(() => Math.random() - 0.5);
-  const dir = Math.random() < 0.5 ? "sym2rom" : "rom2sym";
-  return { dir, answer, choices };
+  return { answer, choices };
 }
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -204,6 +203,7 @@ let _c4Girl    = null;
 let _c4Board   = null;
 let _c4Phase   = "pick";   // pick | quiz | drop | ai | end
 let _c4Quiz    = null;
+let _c4Replays = 0;        // replay-button presses for the current quiz
 let _c4Wins    = 0;
 let _c4Losses  = 0;
 let _c4Tab     = 0;        // lady-drink tab in baht
@@ -328,35 +328,39 @@ function _c4Render(winCells) {
 // ── Turn cycle ─────────────────────────────────────────────────────────────
 
 function _c4NextQuiz() {
-  _c4Phase = "quiz";
-  _c4Quiz  = _c4MakeQuiz();
+  _c4Phase   = "quiz";
+  _c4Quiz    = _c4MakeQuiz();
+  _c4Replays = 0;
   _c4Say(_c4Girl.level === 2 ? "Your vowel, ที่รัก. No pressure 😈" : "Your turn! Answer for your shot 🍸");
   const q = _c4Quiz;
   const el = document.getElementById("c4-quiz");
   const letters = ["1", "2", "3", "4"];
-  const speakBtn = `<button class="c4-speak" title="Replay" aria-label="Replay vowel">🔊</button>`;
-  if (q.dir === "sym2rom") {
-    el.innerHTML = `
-      <div class="c4-q-prompt">Which sound is this vowel?</div>
-      <div class="c4-q-symrow"><span class="c4-q-sym">${_c4Esc(vowelDisp(q.answer[0]))}</span>${speakBtn}</div>
-      <div class="c4-choices">` + q.choices.map((v, i) => `
-        <button class="c4-choice" data-i="${i}">
-          <span class="c4-cletter">${letters[i]}</span> ${_c4Esc(v[1])} — ${_c4Esc(v[2])}
-        </button>`).join("") + `</div>`;
-  } else {
-    el.innerHTML = `
-      <div class="c4-q-prompt">Which vowel is <strong>${_c4Esc(q.answer[1])}</strong> — ${_c4Esc(q.answer[2])}? ${speakBtn}</div>
-      <div class="c4-choices c4-choices-sym">` + q.choices.map((v, i) => `
-        <button class="c4-choice c4-choice-sym" data-i="${i}">
-          <span class="c4-cletter">${letters[i]}</span> <span class="c4-sym">${_c4Esc(vowelDisp(v[0]))}</span>
-        </button>`).join("") + `</div>`;
-  }
+  // Listening quiz: the vowel is heard, not shown. Without a Thai voice
+  // the romanisation is shown instead of playing audio.
+  const hasTts = _tts.available();
+  const prompt = hasTts
+    ? `Which vowel do you hear? <button class="c4-speak" title="Replay" aria-label="Replay vowel">🔊</button>`
+    : `Which vowel is <strong>${_c4Esc(q.answer[1])}</strong> — ${_c4Esc(q.answer[2])}?`;
+  el.innerHTML = `
+    <div class="c4-q-prompt">${prompt}</div>
+    <div class="c4-q-hint" id="c4-q-hint"></div>
+    <div class="c4-choices c4-choices-sym">` + q.choices.map((v, i) => `
+      <button class="c4-choice c4-choice-sym" data-i="${i}">
+        <span class="c4-cletter">${letters[i]}</span> <span class="c4-sym">${_c4Esc(vowelDisp(v[0]))}</span>
+      </button>`).join("") + `</div>`;
   el.querySelectorAll(".c4-choice").forEach(btn =>
     btn.addEventListener("click", () => _c4Answer(+btn.dataset.i)));
-  el.querySelector(".c4-speak").addEventListener("click", () => _c4Speak(q.answer));
+  el.querySelector(".c4-speak")?.addEventListener("click", () => {
+    _c4Speak(q.answer);
+    // A second replay earns the romanisation as a hint
+    if (++_c4Replays >= 2) {
+      document.getElementById("c4-q-hint").textContent =
+        `${q.answer[1]} — ${q.answer[2]}`;
+    }
+  });
   _c4Render();
   // Sound the vowel at the start of every player turn (letter, pause, name)
-  _c4Speak(q.answer);
+  if (hasTts) _c4Speak(q.answer);
 }
 
 function _c4Answer(i) {

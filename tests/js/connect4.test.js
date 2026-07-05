@@ -147,7 +147,6 @@ describe("_c4MakeQuiz", () => {
   test("four distinct choices including the answer, unambiguous romanisations", () => {
     for (let i = 0; i < 200; i++) {
       const q = _c4MakeQuiz();
-      assert.ok(["sym2rom", "rom2sym"].includes(q.dir));
       assert.equal(q.choices.length, 4);
       assert.ok(q.choices.includes(q.answer));
       assert.equal(new Set(q.choices).size, 4);
