@@ -20,25 +20,31 @@ for (const f of ["game.js", "tutor.js"]) {
 
 // ── GAME_LETTERS ──────────────────────────────────────────────────────────────
 
-describe("GAME_LETTERS", () => {
-  test("thai characters and keys are unique", () => {
-    assert.equal(new Set(GAME_LETTERS.map(l => l.thai)).size, GAME_LETTERS.length);
-    assert.equal(new Set(GAME_LETTERS.map(l => l.key)).size, GAME_LETTERS.length);
+describe("game letter pool", () => {
+  test("ten defaults plus night-unlocked extras", () => {
+    assert.equal(GAME_LETTERS.length, 10);
+    assert.ok(_GAME_EXTRA.length >= 1);
+    assert.equal(_GAME_ALL.length, GAME_LETTERS.length + _GAME_EXTRA.length);
+  });
+
+  test("thai characters and keys are unique across the full pool", () => {
+    assert.equal(new Set(_GAME_ALL.map(l => l.thai)).size, _GAME_ALL.length);
+    assert.equal(new Set(_GAME_ALL.map(l => l.key)).size, _GAME_ALL.length);
   });
 
   test("every letter is a Thai consonant", () => {
-    for (const l of GAME_LETTERS) {
+    for (const l of _GAME_ALL) {
       const c = l.thai.codePointAt(0);
       assert.ok(c >= 0x0e01 && c <= 0x0e2e, `${l.thai} is not a Thai consonant`);
     }
   });
 
   test("each letter has a neon colour", () => {
-    assert.ok(_NEON.length >= GAME_LETTERS.length);
+    assert.ok(_NEON.length >= _GAME_ALL.length);
   });
 
   test("key mapping agrees with the keyboard tutor (Kedmanee)", () => {
-    for (const l of GAME_LETTERS) {
+    for (const l of _GAME_ALL) {
       const t = TUTOR_ALL.find(e => e.thai === l.thai);
       assert.ok(t, `${l.thai} missing from TUTOR_ALL`);
       assert.equal(l.key, t.key, `key mismatch for ${l.thai}`);

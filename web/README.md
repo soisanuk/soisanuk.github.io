@@ -23,7 +23,7 @@ Thai vocabulary and script trainer with spaced repetition.
 Play a word via text-to-speech, identify which of the 5 Thai tones it uses.
 
 **Walking Street game** (`G`)
-Neon consonant-drop game set in Pattaya. Bubbles fall carrying Thai consonants; type the correct key (Kedmanee layout) to pop each one — on touch devices, tap the sign instead. Every 5 pops a random consonant's key hint is scheduled for removal — the next time it falls it blinks as a warning, then the hint is gone permanently. All 10 hints disappear across a long game, leaving you reading consonants cold. The street below features animated 8-bit pedestrians, motorbikes, baht buses, and palm trees; bubbles that hit them bounce off harmlessly (knocking the unlucky sprite off screen).
+Neon consonant-drop game set in Pattaya. Bubbles fall carrying Thai consonants; type the correct key (Kedmanee layout) to pop each one — on touch devices, the tutor's on-screen Kedmanee keyboard appears instead: tap the key of the falling consonant (playable keys glow in their bubble's neon colour, locked keys stay subdued), and every tapped key is pronounced aloud. You start with 10 consonants; each new night adds one more, up to 15. Every 5 pops a random consonant's key hint is scheduled for removal — the next time it falls it blinks as a warning, then the hint is gone permanently. All 10 hints disappear across a long game, leaving you reading consonants cold. The street below features animated 8-bit pedestrians, motorbikes, baht buses, and palm trees; bubbles that hit them bounce off harmlessly (knocking the unlucky sprite off screen).
 
 **Soi Buakhao game** (`B`)
 Dialogue-driven visual novel: a 3-night bar crawl where a hostess asks simple questions in Thai (with audio) and you pick the best of four responses. Answer ≥60% correctly each night for a happy ending; the 3-night record determines the grand finale. Thai text is tokenised — tap any known word for its detail card. In-game: `1–4` select an answer, `Enter`/`Space` advances.
@@ -38,7 +38,7 @@ All 876 words in Thai alphabetical order with real-time search. Filter by catego
 SRS summary, 7-day review forecast chart, per-category mature/seen counts, and progress export/import.
 
 **Audio**
-All Thai text is speakable via the Web Speech API (requires a Thai TTS voice — available in Chrome/Edge on desktop and Android, and in iOS Safari). On iOS, speech is unlocked by the first touch, as required by the platform. If no Thai voice is found, the home screen shows a notice instead of failing silently. When packaged as a native app with Capacitor, speech routes through the native TTS plugin instead (Android's WebView has no Web Speech API).
+Individual letters are always spoken as sound + traditional name with a slight pause — e.g. ก is read "ก, ก ไก่", า as "อา, สระอา" — consistently across the keyboard tutor, Walking Street, script flashcards, drills, and script SRS. All Thai text is speakable via the Web Speech API (requires a Thai TTS voice — available in Chrome/Edge on desktop and Android, and in iOS Safari). On iOS, speech is unlocked by the first touch, as required by the platform. If no Thai voice is found, the home screen shows a notice instead of failing silently. When packaged as a native app with Capacitor, speech routes through the native TTS plugin instead (Android's WebView has no Web Speech API).
 
 **PWA / offline**
 Add to home screen on mobile. Works fully offline after first load.

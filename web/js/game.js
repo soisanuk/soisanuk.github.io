@@ -16,10 +16,24 @@ const GAME_LETTERS = [
   { thai: "ย", key: "p" },
 ];
 
+// Unlocked one per night beyond the defaults (common consonants first).
+// Keys follow the same Kedmanee mapping as TUTOR_ALL.
+const _GAME_EXTRA = [
+  { thai: "ม", key: "," },
+  { thai: "ว", key: ";" },
+  { thai: "อ", key: "v" },
+  { thai: "ฟ", key: "a" },
+  { thai: "ผ", key: "z" },
+];
+
+const _GAME_ALL = GAME_LETTERS.concat(_GAME_EXTRA);
+
 const _NEON = [
   "#ff1493","#00e5ff","#bf5fff","#ffe600",
   "#00ff7f","#ff6600","#ff4060","#00bfff",
   "#ff69b4","#7fff00",
+  // extras
+  "#ffaa00","#00ffcc","#d0ff00","#ff77ff","#66aaff",
 ];
 
 // ── ASCII background art ───────────────────────────────────────────────────
@@ -161,7 +175,8 @@ function _gDrawSprite(ctx, rows, colors, x, y, flipX) {
 // ── State ──────────────────────────────────────────────────────────────────
 
 // Per-letter hint state: 0 = show, 1 = warn (blink on next spawn), 2 = gone
-const _gHintMode = new Array(GAME_LETTERS.length).fill(0);
+const _gHintMode = new Array(_GAME_ALL.length).fill(0);
+let _gPool = GAME_LETTERS.length; // letters currently in play; grows each night
 
 let _gRunning   = false;
 let _gCanvas    = null, _gCtx = null;
@@ -175,22 +190,17 @@ let _gLastStreetSpawn = 0, _gNextStreetIn = 0;
 
 // ── Init ───────────────────────────────────────────────────────────────────
 
-let _gTapBound = false;
-
 function startGame() {
   showScreen("game-screen", "G");
   _gCanvas = document.getElementById("game-canvas");
   _gCtx    = _gCanvas.getContext("2d");
-  if (IS_MOBILE && !_gTapBound) {
-    _gTapBound = true;
-    _gCanvas.addEventListener("pointerdown", _gTap);
-  }
   _gResize();
   _gReset();
   document.getElementById("game-over-panel").style.display = "none";
   _gRunning = true;
   requestAnimationFrame(_gTick);
   _buildGameRef();
+  if (IS_MOBILE) _gBuildKbd();
 }
 
 function _gResize() {
@@ -205,6 +215,7 @@ function _gReset() {
   _gLastSpawn = 0; _gSpawnMs = 2200; _gSpeed = 0.55;
   _gTime = 0;
   _gHintMode.fill(0);
+  _gPool = GAME_LETTERS.length;
   _gStreetSprites = [];
   _gLastStreetSpawn = 0;
   _gNextStreetIn = 800 + Math.random() * 1200;
@@ -224,12 +235,12 @@ function _gHUD() {
 // ── Game loop ──────────────────────────────────────────────────────────────
 
 function _gSpawn(now) {
-  const idx  = Math.floor(Math.random() * GAME_LETTERS.length);
+  const idx  = Math.floor(Math.random() * _gPool);
   const mode = _gHintMode[idx];
   const r    = 36;
   const x    = r + 20 + Math.random() * (_gCanvas.width - 2 * r - 40);
   _gBubbles.push({
-    letter:    GAME_LETTERS[idx],
+    letter:    _GAME_ALL[idx],
     letterIdx: idx,
     color:     _NEON[idx],
     x, y: -r - 10, r,
@@ -538,11 +549,14 @@ function _gDrawBubble(ctx, b) {
   ctx.font         = "bold 28px 'Noto Sans Thai','Leelawadee UI',serif";
   ctx.textAlign    = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(b.letter.thai, 0, -5);
+  // textAlign centres the advance width, but Thai glyphs carry uneven side
+  // bearings, so the visible ink sits right of centre. Offset by the ink box.
+  ctx.fillText(b.letter.thai, _gGlyphDx(ctx, b.letter.thai), -5);
   ctx.shadowBlur = 0;
 
-  // Key hint — blinking on warning fall, hidden once gone
-  if (b.showHint) {
+  // Key hint — blinking on warning fall, hidden once gone.
+  // Mobile input is the Thai key row, so Latin hints are never drawn there.
+  if (b.showHint && !IS_MOBILE) {
     const blinkOn = !b.blink || (Math.floor(_gTime / 130) % 2 === 0);
     if (blinkOn) {
       if (b.blink) {
@@ -558,6 +572,37 @@ function _gDrawBubble(ctx, b) {
   }
 
   ctx.restore();
+}
+
+// Horizontal offset that centres a glyph's ink on x=0 (with textAlign:center
+// already set). measureText's bounding boxes lie on some platforms (Android
+// synthetic-bolds Thai and widens strokes without reporting it), so rasterise
+// the glyph once to a scratch canvas and scan the actual pixels instead.
+const _gGlyphDxCache = {};
+function _gGlyphDx(ctx, ch) {
+  if (!(ch in _gGlyphDxCache)) {
+    const S = 64;
+    const scratch = document.createElement("canvas");
+    scratch.width = scratch.height = S;
+    const sctx = scratch.getContext("2d", { willReadFrequently: true });
+    sctx.font = ctx.font;
+    sctx.textAlign = "center";
+    sctx.textBaseline = "middle";
+    sctx.fillStyle = "#fff";
+    sctx.fillText(ch, S / 2, S / 2);
+    const px = sctx.getImageData(0, 0, S, S).data;
+    let minX = S, maxX = -1;
+    for (let y = 0; y < S; y++) {
+      for (let x = 0; x < S; x++) {
+        if (px[(y * S + x) * 4 + 3] > 10) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+        }
+      }
+    }
+    _gGlyphDxCache[ch] = maxX < 0 ? 0 : S / 2 - (minX + maxX + 1) / 2;
+  }
+  return _gGlyphDxCache[ch];
 }
 
 function _gDraw() {
@@ -681,7 +726,7 @@ function _gMissParticles(x, y) {
 function _gKey(key) {
   if (!_gRunning) return false;
   const k = key.toLowerCase();
-  if (!GAME_LETTERS.some(l => l.key === k)) return false;
+  if (!_GAME_ALL.some((l, i) => i < _gPool && l.key === k)) return false;
 
   // Target the lowest matching bubble (most urgent)
   let target = null;
@@ -707,35 +752,87 @@ function _gPopBubble(target) {
 
   // Every 5 pops: schedule a random consonant for hint removal
   if (_gPopped % 5 === 0) {
-    const eligible = GAME_LETTERS.map((_, i) => i).filter(i => _gHintMode[i] === 0);
+    const eligible = _GAME_ALL.map((_, i) => i)
+      .filter(i => i < _gPool && _gHintMode[i] === 0);
     if (eligible.length > 0) {
       _gHintMode[eligible[Math.floor(Math.random() * eligible.length)]] = 1;
     }
   }
 
-  // Every 10 pops: level up
+  // Every 10 pops: level up — faster, and one new consonant joins the pool
   if (_gPopped % 10 === 0) {
     _gLevel++;
     _gSpawnMs = Math.max(650, _gSpawnMs - 250);
     _gSpeed   = Math.min(3.2, _gSpeed + 0.22);
+    if (_gPool < _GAME_ALL.length) {
+      _gPool++;
+      _buildGameRef();               // desktop strip gains the new card
+      if (IS_MOBILE) _gStyleKbd();   // its key lights up on the keyboard
+    }
   }
 
   _gHUD();
 }
 
-// Touch input: on mobile there is no keyboard, so tapping a sign pops it.
-function _gTap(e) {
+// Touch input: on mobile the game shows the tutor's Kedmanee keyboard
+// (built via _tBuildKbdInto from tutor.js). Tapping the key of a falling
+// consonant pops it — same rules as typing it on desktop. Every tapped key
+// is pronounced, right or wrong.
+function _gBuildKbd() {
+  _tBuildKbdInto(document.getElementById("game-kbd"), _gKbdPress);
+  _gStyleKbd();
+}
+
+// (Re)apply key styling for the current pool: playable keys glow in their
+// bubble's neon colour, locked/unused keys are subdued. Called again whenever
+// a night unlocks a new consonant, so its key lights up mid-game.
+function _gStyleKbd() {
+  const keyToIdx = Object.fromEntries(
+    _GAME_ALL.slice(0, _gPool).map((l, i) => [l.key, i])
+  );
+  document.querySelectorAll("#game-kbd .tkey").forEach(el => {
+    const idx = keyToIdx[el.dataset.key];
+    const th  = el.querySelector(".tkey-th");
+    if (idx === undefined) {
+      el.classList.add("dim");
+      th.style.color = ""; th.style.textShadow = ""; el.style.borderColor = "";
+      return;
+    }
+    el.classList.remove("dim");
+    const c = _NEON[idx];
+    th.style.color       = c;
+    th.style.textShadow  = `0 0 8px ${c}`;
+    el.style.borderColor = c + "70";
+  });
+}
+
+function _gKbdPress(key) {
+  const entry = TUTOR_ALL.find(e => e.key === key);
+  if (entry) _tts.speak(letterSpeech(entry.thai));
+  const idx = _GAME_ALL.findIndex((l, i) => i < _gPool && l.key === key);
+  if (idx === -1) return; // locked/unused key: pronunciation only
+  _gKeyIdx(idx);
+}
+
+function _gKeyIdx(idx) {
   if (!_gRunning) return;
-  const rect = _gCanvas.getBoundingClientRect();
-  const x = (e.clientX - rect.left) * (_gCanvas.width  / rect.width);
-  const y = (e.clientY - rect.top)  * (_gCanvas.height / rect.height);
-  let target = null, best = Infinity;
+
+  let target = null;
   for (const b of _gBubbles) {
-    if (b.popped || b.bounced) continue;
-    const d = Math.hypot(b.x - x, b.y - y);
-    if (d < b.r + 16 && d < best) { best = d; target = b; }
+    if (!b.popped && b.letterIdx === idx && (!target || b.y > target.y)) target = b;
   }
-  if (target) _gPopBubble(target);
+
+  if (target) {
+    _gPopBubble(target);
+  } else {
+    // Wrong key — shake the bubbles and flash the tapped key
+    for (const b of _gBubbles) { if (!b.popped) b.wrongFlash = 6; }
+    const el = document.querySelector(`#game-kbd .tkey[data-key="${_GAME_ALL[idx].key}"]`);
+    if (el) {
+      el.classList.add("t-wrong");
+      setTimeout(() => el.classList.remove("t-wrong"), 350);
+    }
+  }
 }
 
 // ── Reference strip ────────────────────────────────────────────────────────
@@ -743,8 +840,8 @@ function _gTap(e) {
 function _buildGameRef() {
   const ref = document.getElementById("game-ref");
   ref.innerHTML = "";
-  for (let i = 0; i < GAME_LETTERS.length; i++) {
-    const l   = GAME_LETTERS[i];
+  for (let i = 0; i < _gPool; i++) {
+    const l   = _GAME_ALL[i];
     const c   = _NEON[i];
     const div = document.createElement("div");
     div.className = "game-ref-card";
@@ -754,6 +851,8 @@ function _buildGameRef() {
       `<span class="game-ref-thai" style="color:${c};text-shadow:0 0 8px ${c}">${l.thai}</span>` +
       `<span class="game-ref-key" id="game-ref-key-${i}" style="color:${c}bb">${l.key}</span>`;
     ref.appendChild(div);
+    // Rebuilt mid-game when a night unlocks a letter — keep removed hints dim
+    if (_gHintMode[i] === 2) _gDimRefCard(i);
   }
 }
 
