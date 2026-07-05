@@ -47,6 +47,26 @@ describe("board mechanics", () => {
     assert.equal(_c4DropRow(b, 0), -1);
     assert.ok(!_c4ValidCols(b).includes(0));
   });
+
+  test("a full board with no four-in-a-row is a draw", () => {
+    // Columns fill with vertical pair-stripes; the centre column's phase is
+    // shifted by two, which breaks every horizontal and diagonal run
+    // (pattern verified against _c4Winner by exhaustive search).
+    const phases = [0, 0, 0, 2, 0, 0, 0];
+    const b = _c4NewBoard();
+    for (let c = 0; c < 7; c++) {
+      for (let r = 0; r < 6; r++) {
+        b[r][c] = ((r + phases[c]) % 4 < 2) ? 1 : 2;
+      }
+    }
+    assert.ok(_c4Full(b));
+    assert.equal(_c4Winner(b), null);
+    assert.deepEqual(_c4ValidCols(b), []);
+  });
+
+  test("empty board is not full", () => {
+    assert.ok(!_c4Full(_c4NewBoard()));
+  });
 });
 
 // ── win detection ─────────────────────────────────────────────────────────────

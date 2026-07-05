@@ -17,6 +17,7 @@ Thai vocabulary and script trainer with spaced repetition.
 **Script**
 - Consonant and vowel flashcards with SRS
 - Consonant and vowel/tone drills
+- Vowel patterns display on a ก host (กา, เกะ) — the data's ◌ placeholder renders as a tofu box in many system fonts
 - Per-character decomposition with hover tooltips (consonant class, vowel description, tone marks)
 
 **Tone listening drill** (`T`)
@@ -47,7 +48,7 @@ Individual letters are always spoken as sound + traditional name with a slight p
 Add to home screen on mobile. Works fully offline after first load.
 
 **Mobile / touch**
-Touch devices (detected via `pointer: coarse`) get an adapted UI automatically: keyboard-shortcut badges and hints are hidden, tap targets are enlarged, the games take touch input (tap signs in Walking Street, tap on-screen keys in the tutor), and safe-area insets keep content clear of notches.
+Touch devices (detected via `pointer: coarse`) get an adapted UI automatically: keyboard-shortcut badges and hints are hidden, tap targets are enlarged, the games take touch input (Walking Street shows the tutor's on-screen Kedmanee keyboard, the tutor's keys are tappable, Connect สี่ and Soi Buakhao are button-driven), and safe-area insets keep content clear of notches.
 
 ## Keyboard shortcuts
 
