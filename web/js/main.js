@@ -22,7 +22,13 @@ document.addEventListener("keydown", e => {
     else if (key === "g" || key === "G") startGame();
     else if (key === "k" || key === "K") startTutor();
     else if (key === "b" || key === "B") startSoiBuakhao();
+    else if (key === "c" || key === "C") startConnect4();
     else if (key === "?") showTutorial();
+  }
+  if (active === "c4-screen") {
+    if (_c4Key(key)) return;
+    if (key === "Escape") endSession();
+    return;
   }
   if (active === "soi-screen") {
     if (_sbKey(key)) return;
