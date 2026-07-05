@@ -574,13 +574,33 @@ function _gDrawBubble(ctx, b) {
   ctx.restore();
 }
 
-// Horizontal offset that centres a glyph's ink box on x=0 (with
-// textAlign:center already set). Measured once per character.
+// Horizontal offset that centres a glyph's ink on x=0 (with textAlign:center
+// already set). measureText's bounding boxes lie on some platforms (Android
+// synthetic-bolds Thai and widens strokes without reporting it), so rasterise
+// the glyph once to a scratch canvas and scan the actual pixels instead.
 const _gGlyphDxCache = {};
 function _gGlyphDx(ctx, ch) {
   if (!(ch in _gGlyphDxCache)) {
-    const m = ctx.measureText(ch);
-    _gGlyphDxCache[ch] = (m.actualBoundingBoxLeft - m.actualBoundingBoxRight) / 2;
+    const S = 64;
+    const scratch = document.createElement("canvas");
+    scratch.width = scratch.height = S;
+    const sctx = scratch.getContext("2d", { willReadFrequently: true });
+    sctx.font = ctx.font;
+    sctx.textAlign = "center";
+    sctx.textBaseline = "middle";
+    sctx.fillStyle = "#fff";
+    sctx.fillText(ch, S / 2, S / 2);
+    const px = sctx.getImageData(0, 0, S, S).data;
+    let minX = S, maxX = -1;
+    for (let y = 0; y < S; y++) {
+      for (let x = 0; x < S; x++) {
+        if (px[(y * S + x) * 4 + 3] > 10) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+        }
+      }
+    }
+    _gGlyphDxCache[ch] = maxX < 0 ? 0 : S / 2 - (minX + maxX + 1) / 2;
   }
   return _gGlyphDxCache[ch];
 }
