@@ -1102,6 +1102,123 @@ kbd.tut-key {
   justify-content:center;
 }
 #tutor-stats strong { color:#00e5ff; }
+
+/* ── Soi Buakhao Dialogue Game ───────────────────────────────────────────── */
+#soi-screen { flex-direction:column; background:#0d0015; }
+#soi-header {
+  background:#0d0015; border-bottom:1px solid #ff006640;
+  padding:.55rem 1rem; display:flex; flex-direction:column; gap:.1rem;
+}
+#soi-night-label {
+  color:#ff1493; font-size:1rem; font-weight:700; letter-spacing:.06em;
+  text-shadow:0 0 12px #ff1493;
+}
+#soi-sub-label { color:#bf5fff; font-size:.78rem; min-height:.9rem; }
+#soi-body {
+  flex:1; overflow-y:auto; padding:1rem;
+  display:flex; flex-direction:column; align-items:center; gap:1rem;
+}
+.sb-bar-sign {
+  font-size:1.3rem; font-weight:800; color:#ffe600; letter-spacing:.1em;
+  text-shadow:0 0 18px #ffe600, 0 0 36px #ff660080; text-align:center;
+  border:2px solid #ffe60030; border-radius:8px; padding:.5rem 1.5rem;
+  background:#1a1200; width:100%; max-width:520px;
+}
+.sb-host-intro {
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  text-align:center;
+}
+.sb-host-emoji { font-size:3rem; line-height:1; }
+.sb-host-name  { font-size:1.2rem; font-weight:700; color:#ff80c8; }
+.sb-host-th    { color:#bf5fff; font-size:1rem; }
+.sb-host-desc  { color:#c090b0; font-size:.88rem; font-style:italic; max-width:340px; }
+.sb-scene-text {
+  color:#c0a0c0; font-size:.88rem; line-height:1.65; text-align:center;
+  max-width:420px; border-left:2px solid #ff006630; padding:.5rem .8rem;
+  background:#18001a; border-radius:0 8px 8px 0;
+}
+.sb-btn {
+  background: linear-gradient(135deg,#4a0060,#7a0040);
+  border:1px solid #ff006680; color:#ffb0e0; font-size:.9rem; font-weight:700;
+  padding:.55rem 1.4rem; border-radius:24px; cursor:pointer; letter-spacing:.04em;
+  transition:all .15s; text-shadow:0 0 8px #ff006640;
+}
+.sb-btn:hover { border-color:#ff1493; color:#fff; box-shadow:0 0 16px #ff006650; }
+.sb-btn-ghost {
+  background:transparent; border-color:#ff006630; color:#bf5fff80; font-size:.8rem;
+}
+.sb-btn-ghost:hover { border-color:#ff006660; color:#bf5fff; }
+.sb-btn-nxt { margin-top:.3rem; }
+/* Bubble / question layout */
+.sb-bubble-wrap { display:flex; gap:.7rem; align-items:flex-start; width:100%; max-width:520px; }
+.sb-avatar { font-size:2rem; flex-shrink:0; }
+.sb-bubble {
+  background:#1a0028; border:1px solid #ff006640; border-radius:0 14px 14px 14px;
+  padding:.7rem .9rem; flex:1;
+}
+.sb-bname  { color:#ff80c8; font-size:.78rem; font-weight:700; margin-bottom:.3rem; }
+.sb-q-thai {
+  font-size:1.15rem; color:#ffcce8; line-height:1.5;
+  font-family:'Noto Sans Thai','Leelawadee UI',sans-serif;
+}
+.sb-q-thai .sb-w { cursor:pointer; border-bottom:1px dotted #ff006660; }
+.sb-q-thai .sb-w:hover { color:#fff; border-bottom-color:#ff1493; }
+.sb-rom  { color:#bf5fff80; font-size:.75rem; margin-top:.3rem; font-style:italic; }
+.sb-en   { color:#c090b080; font-size:.78rem; margin-top:.2rem; }
+/* Choices */
+.sb-choices { display:flex; flex-direction:column; gap:.5rem; width:100%; max-width:520px; }
+.sb-choice {
+  display:flex; align-items:flex-start; gap:.6rem; text-align:left;
+  background:#12001e; border:1px solid #ff006628; border-radius:10px;
+  padding:.6rem .8rem; cursor:pointer; transition:all .12s; width:100%;
+}
+.sb-choice:hover:not([disabled]) { border-color:#ff006680; background:#1e0030; }
+.sb-cletter {
+  font-size:.75rem; font-weight:700; color:#bf5fff; background:#2a0040;
+  border-radius:4px; padding:.1rem .35rem; flex-shrink:0; margin-top:.1rem;
+}
+.sb-cbody { display:flex; flex-direction:column; gap:.1rem; }
+.sb-cth  { font-size:.95rem; color:#e8c0d8; font-family:'Noto Sans Thai','Leelawadee UI',sans-serif; }
+.sb-crom { font-size:.7rem; color:#bf5fff60; font-style:italic; }
+.sb-cen  { font-size:.72rem; color:#a080a060; }
+.sb-choice.sb-ok    { border-color:#00cc66; background:#001a0a; }
+.sb-choice.sb-ok .sb-cth { color:#00ff88; }
+.sb-choice.sb-wrong { border-color:#ff3355; background:#1a0008; }
+.sb-choice.sb-wrong .sb-cth { color:#ff6680; }
+/* Hostess reaction */
+.sb-react {
+  font-size:.9rem; width:100%; max-width:520px; padding:.55rem .9rem;
+  border-radius:8px; border-left:3px solid;
+}
+.sb-react-ok  { background:#002010; border-color:#00cc66; color:#88ffbb; }
+.sb-react-bad { background:#1a0008; border-color:#ff3355; color:#ff99aa; }
+/* Progress bar */
+.sb-prog-wrap { width:100%; max-width:520px; height:3px; background:#ffffff12; border-radius:2px; }
+.sb-prog-bar  { height:100%; background:linear-gradient(90deg,#bf5fff,#ff1493); border-radius:2px; transition:width .3s; }
+/* Night end */
+.sb-night-end {
+  display:flex; flex-direction:column; align-items:center; gap:.8rem; text-align:center;
+  padding:1.5rem 1rem; border:1px solid; border-radius:16px; width:100%; max-width:480px;
+}
+.sb-he { background:#001812; border-color:#00cc6640; }
+.sb-se { background:#180010; border-color:#ff006640; }
+.sb-end-avatar { font-size:3rem; }
+.sb-end-title  { font-size:1.2rem; font-weight:700; color:#ffcce8; }
+.sb-end-score  { color:#bf5fff; font-size:.85rem; }
+.sb-end-scene  { color:#c0a0c0; font-size:.85rem; line-height:1.7; max-width:360px; }
+/* Finale */
+.sb-finale {
+  display:flex; flex-direction:column; align-items:center; gap:.9rem; text-align:center;
+  padding:1.5rem 1rem; width:100%; max-width:480px;
+}
+.sb-finale-emoji  { font-size:2.5rem; letter-spacing:.2em; }
+.sb-finale-title  { font-size:1.1rem; font-weight:700; color:#ffe600;
+                    text-shadow:0 0 14px #ffe60080; }
+.sb-finale-nights { display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; }
+.sb-nb     { font-size:.8rem; padding:.2rem .55rem; border-radius:20px; border:1px solid; }
+.sb-nb-ok  { border-color:#00cc6640; color:#00ff88; background:#001a0a; }
+.sb-nb-bad { border-color:#ff006640; color:#ff6680; background:#1a0008; }
+.sb-finale-text { color:#c0a0c0; font-size:.88rem; line-height:1.7; max-width:380px; }
 </style>
 </head>
 <body>
@@ -1136,8 +1253,13 @@ kbd.tut-key {
     <li id="nav-S" onclick="startSentSRS()">        Sentence SRS</li>
     <li id="nav-V" onclick="showVocabList()">       Vocab List</li>
     <li id="nav-0" onclick="showStats()">           Statistics</li>
-    <li id="nav-G" onclick="startGame()">          🌙 Walking Street</li>
     <li id="nav-K" onclick="startTutor()">         ⌨️ Thai Keyboard</li>
+  </ul>
+
+  <div class="sidebar-section">Games</div>
+  <ul class="sidebar-list">
+    <li id="nav-G" onclick="startGame()">          🌙 Walking Street</li>
+    <li id="nav-B" onclick="startSoiBuakhao()">   🌺 Soi Buakhao</li>
   </ul>
 
   <div id="sidebar-footer">
@@ -1180,8 +1302,12 @@ kbd.tut-key {
     <li onclick="showVocabList()"> <span class="menu-key">V</span> Vocab List</li>
     <li onclick="showStats()">     <span class="menu-key">0</span> Statistics</li>
     <li onclick="showTutorial()">  <span class="menu-key">?</span> How to use this app</li>
-    <li onclick="startGame()">     <span class="menu-key">G</span> 🌙 Walking Street</li>
-    <li onclick="startTutor()">   <span class="menu-key">K</span> ⌨️ Thai Keyboard</li>
+    <li onclick="startTutor()">    <span class="menu-key">K</span> ⌨️ Thai Keyboard</li>
+  </ul>
+  <div class="menu-section">Games</div>
+  <ul class="menu-list">
+    <li onclick="startGame()">        <span class="menu-key">G</span> 🌙 Walking Street</li>
+    <li onclick="startSoiBuakhao()">  <span class="menu-key">B</span> 🌺 Soi Buakhao</li>
   </ul>
   <div class="screen-footer">❀ สวัสดี ❀</div>
 </div>
@@ -1402,6 +1528,19 @@ kbd.tut-key {
   </div>
 </div>
 
+<!-- ═══ SOI BUAKHAO DIALOGUE GAME ════════════════════════════════════════════ -->
+<div id="soi-screen" class="screen">
+  <div id="soi-header">
+    <div id="soi-night-label">🌙 Soi Buakhao</div>
+    <div id="soi-sub-label"></div>
+  </div>
+  <div id="soi-body"></div>
+  <div class="screen-footer" style="background:#0d0015;border-top:1px solid #ff006630;color:#bf5fff50;font-size:.78rem;text-align:center;padding:.5rem;">
+    1–4 select · Enter/Space advance &nbsp;·&nbsp;
+    <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640;color:#ff149380" onclick="endSession()">Quit (Esc)</button>
+  </div>
+</div>
+
 <!-- ═══ THAI KEYBOARD TUTOR ══════════════════════════════════════════════════ -->
 <div id="tutor-screen" class="screen">
   <div class="screen-header" style="background:#05001a;color:#00e5ff;text-shadow:0 0 12px #00e5ff;border-bottom:1px solid #00e5ff28;">
@@ -1488,6 +1627,7 @@ kbd.tut-key {
 <script src="js/ui.js"></script>
 <script src="js/sessions.js"></script>
 <script src="js/tutor.js"></script>
+<script src="js/soi-buakhao.js"></script>
 <script src="js/game.js"></script>
 <script src="js/main.js"></script>
 <!-- ═══ WORD DETAIL MODAL ════════════════════════════════════════════════════ -->
