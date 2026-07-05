@@ -103,7 +103,7 @@ function _tNext() {
 function _tRender() {
   document.getElementById('t-char').textContent = _tDisp(_tCurrent.thai);
   document.getElementById('t-name').textContent = _tCurrent.name;
-  _tts.speak(letterSpeech(_tCurrent.thai));
+  _tts.speak(letterSpeechParts(_tCurrent.thai));
   document.querySelectorAll('.tkey').forEach(el =>
     el.classList.remove('t-target','t-ok','t-wrong','t-hint')
   );
@@ -126,7 +126,7 @@ function _tType(eKey) {
   if (!TUTOR_ALL.some(e => e.key === k)) return false;
 
   _tTotal++;
-  _tts.speak(letterSpeech(_tCurrent.thai));
+  _tts.speak(letterSpeechParts(_tCurrent.thai));
   if (k === _tCurrent.key) {
     _tCorrect++;
     _tStreak++;
