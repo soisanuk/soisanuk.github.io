@@ -268,10 +268,13 @@ body {
   text-transform: uppercase;
 }
 
-/* ── Narrow/mobile: hide sidebar, show menu screen ──────────────────────── */
+/* ── Narrow/mobile: hide sidebar ────────────────────────────────────────── */
+/* NOTE: no `#menu-screen { display:flex }` here — the ID selector would beat
+   `.screen { display:none }` and keep the menu permanently rendered under
+   every other screen (content pushed below the fold / invisible screens).
+   The menu starts as `.screen.active` and showMenu() handles the rest. */
 @media (max-width: 700px) {
   #sidebar { display: none; }
-  #menu-screen { display: flex; }
   .screen { padding: 0 0 2rem; }
   .thai-big { font-size: 6rem; min-height: 8rem; margin: 0.75rem 0.75rem 0.5rem; }
 }
@@ -1231,34 +1234,32 @@ body.mobile {
   touch-action: manipulation;              /* no 300ms delay / double-tap zoom */
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;          /* stop Safari inflating text */
-  /* Lock body to viewport so only screens scroll, not the page */
-  height: 100%;
-  overflow: hidden;
 }
-html:has(body.mobile) { height: 100%; overflow: hidden; }
 
-/* Shell fills the viewport exactly on mobile. Without this the sidebar being
-   hidden means the shell collapses to content height, so screens don't fill
-   the viewport and users have to page-scroll to reach buttons/content. */
+/* position: fixed gives the shell an unambiguous height from its positioning
+   geometry (top/bottom), bypassing the unreliable flex-height chain on mobile
+   Chrome. The flex-height approaches (height:100dvh, height:100%) failed because
+   Chrome doesn't resolve percentage heights reliably inside flex containers when
+   the parent height comes from align-items:stretch rather than an explicit rule. */
 body.mobile #app-shell {
-  height: 100%;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
   min-height: unset;
+  max-width: none;
+  border-left: none;
+  border-right: none;
   overflow: hidden;
-}
-/* dvh overrides if supported (avoids the mobile browser chrome issue) */
-@supports (height: 100dvh) {
-  body.mobile #app-shell { height: 100dvh; }
 }
 
 body.mobile #content-area {
-  /* min-height: 0 is required for a flex child to shrink below its content
-     size; without it the content-area grows past the shell and causes scroll */
+  flex: 1;
   min-height: 0;
   overflow: hidden;
 }
 
-/* Each active screen fills the content-area and scrolls internally */
+/* Each active screen fills the content-area and scrolls its own content. */
 body.mobile .screen.active {
+  flex: 1;
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -1284,13 +1285,13 @@ body.mobile .sb-bar-sign { font-size: 1.05rem; padding: 0.5rem 0.8rem; }
 body.mobile .sb-q-thai   { font-size: 1.25rem; }
 body.mobile .sb-cth      { font-size: 1.05rem; }
 
-/* Notched phones (viewport-fit=cover). Top inset matters in a packaged
-   (Capacitor) fullscreen webview, where no browser chrome shields the notch. */
+/* Notched phones: use safe-area insets as the fixed positioning offset so the
+   shell hugs the safe area without padding (which would shrink the content). */
 body.mobile #app-shell {
-  padding-top:    env(safe-area-inset-top);
-  padding-left:   env(safe-area-inset-left);
-  padding-right:  env(safe-area-inset-right);
-  padding-bottom: env(safe-area-inset-bottom);
+  top:    env(safe-area-inset-top,    0px);
+  left:   env(safe-area-inset-left,   0px);
+  right:  env(safe-area-inset-right,  0px);
+  bottom: env(safe-area-inset-bottom, 0px);
 }
 </style>
 </head>
