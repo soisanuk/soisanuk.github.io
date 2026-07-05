@@ -172,6 +172,21 @@ describe("letterSpeech", () => {
   });
 });
 
+// ── letterSpeechParts ────────────────────────────────────────────────────────
+
+describe("letterSpeechParts", () => {
+  test("sound and name become separate utterance parts", () => {
+    assert.deepEqual(letterSpeechParts("ก"), ["ก", "ก ไก่"]);
+    assert.deepEqual(letterSpeechParts("า"), ["อา", "สระอา"]);
+    assert.deepEqual(letterSpeechParts("เ◌าะ"), ["เอาะ", "สระเอาะ"]);
+  });
+
+  test("name-only marks and pass-through text stay a single part", () => {
+    assert.deepEqual(letterSpeechParts("่"), ["ไม้เอก"]);
+    assert.deepEqual(letterSpeechParts("สวัสดี"), ["สวัสดี"]);
+  });
+});
+
 // ── vowelDisp ────────────────────────────────────────────────────────────────
 
 describe("vowelDisp", () => {

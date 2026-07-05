@@ -254,7 +254,7 @@ function _c4Speak(v) {
   // TTS must never break the game state machine
   try {
     const named = letterSpeech(v[0]);
-    if (named !== v[0].replace(/◌/g, "")) { _tts.speak(named); return; }
+    if (named !== v[0].replace(/◌/g, "")) { _tts.speak(letterSpeechParts(v[0])); return; }
     const head = (v[3].match(/^([^\s(（]+)/) || [])[1];
     if (head) _tts.speak(head);
   } catch (_) {}

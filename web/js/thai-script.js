@@ -111,3 +111,11 @@ function letterSpeech(ch) {
   }
   return _LETTER_SPEECH_EXTRA[ch] || ch;
 }
+
+// letterSpeech split for _tts.speak: each part becomes its own utterance
+// with a pause between (sound … name). Thai TTS voices read a comma inside
+// one utterance straight through, so "ก, ก ไก่" as a single string comes
+// out as three flat syllables. Non-letters pass through as one part.
+function letterSpeechParts(ch) {
+  return letterSpeech(ch).split(", ");
+}
