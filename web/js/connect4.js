@@ -337,7 +337,7 @@ function _c4NextQuiz() {
   if (q.dir === "sym2rom") {
     el.innerHTML = `
       <div class="c4-q-prompt">Which sound is this vowel?</div>
-      <div class="c4-q-sym">${_c4Esc(q.answer[0])}</div>
+      <div class="c4-q-sym">${_c4Esc(vowelDisp(q.answer[0]))}</div>
       <div class="c4-choices">` + q.choices.map((v, i) => `
         <button class="c4-choice" data-i="${i}">
           <span class="c4-cletter">${letters[i]}</span> ${_c4Esc(v[1])} — ${_c4Esc(v[2])}
@@ -347,7 +347,7 @@ function _c4NextQuiz() {
       <div class="c4-q-prompt">Which vowel is <strong>${_c4Esc(q.answer[1])}</strong> — ${_c4Esc(q.answer[2])}?</div>
       <div class="c4-choices c4-choices-sym">` + q.choices.map((v, i) => `
         <button class="c4-choice c4-choice-sym" data-i="${i}">
-          <span class="c4-cletter">${letters[i]}</span> <span class="c4-sym">${_c4Esc(v[0])}</span>
+          <span class="c4-cletter">${letters[i]}</span> <span class="c4-sym">${_c4Esc(vowelDisp(v[0]))}</span>
         </button>`).join("") + `</div>`;
   }
   el.querySelectorAll(".c4-choice").forEach(btn =>
@@ -368,7 +368,7 @@ function _c4Answer(i) {
     _c4Say(_c4Line("right") + "  — pick your column!");
     // Collapse the quiz to one line so the board is visible for the drop
     document.getElementById("c4-quiz").innerHTML =
-      `<div class="c4-q-mini">✓ ${_c4Esc(q.answer[0])} — ${_c4Esc(q.answer[1])} (${_c4Esc(q.answer[2])})</div>`;
+      `<div class="c4-q-mini">✓ ${_c4Esc(vowelDisp(q.answer[0]))} — ${_c4Esc(q.answer[1])} (${_c4Esc(q.answer[2])})</div>`;
     _c4Render();
   } else {
     btns[i]?.classList.add("c4-bad");
