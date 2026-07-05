@@ -250,10 +250,13 @@ function _c4HUD() {
 // Speak a vowel: single marks get the letterSpeech name, compounds fall
 // back to the example word (same convention as the vowel drill).
 function _c4Speak(v) {
-  const named = letterSpeech(v[0]);
-  if (named !== v[0].replace(/◌/g, "")) { _tts.speak(named); return; }
-  const head = (v[3].match(/^([^\s(（]+)/) || [])[1];
-  if (head) _tts.speak(head);
+  // TTS must never break the game state machine
+  try {
+    const named = letterSpeech(v[0]);
+    if (named !== v[0].replace(/◌/g, "")) { _tts.speak(named); return; }
+    const head = (v[3].match(/^([^\s(（]+)/) || [])[1];
+    if (head) _tts.speak(head);
+  } catch (_) {}
 }
 
 // ── Entry / hostess pick ───────────────────────────────────────────────────
@@ -360,7 +363,6 @@ function _c4Answer(i) {
   btns.forEach(b => b.disabled = true);
   const correctIdx = q.choices.indexOf(q.answer);
   btns[correctIdx]?.classList.add("c4-ok");
-  _c4Speak(q.answer);
   if (chosen === q.answer) {
     _c4Phase = "drop";
     _c4Say(_c4Line("right") + "  — pick your column!");
@@ -378,6 +380,8 @@ function _c4Answer(i) {
       _c4Place(col, 1, true);
     });
   }
+  // Speak last: the phase transition above must never depend on TTS
+  _c4Speak(q.answer);
 }
 
 function _c4PlayerDrop(col) {
