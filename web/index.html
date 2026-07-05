@@ -1228,7 +1228,6 @@ kbd.tut-key {
 body.mobile .kb-hint      { display: none; }
 body.mobile .touch-hint   { display: inline; }
 body.mobile .menu-key     { display: none; }
-body.mobile .game-ref-key { display: none; }
 
 body.mobile {
   touch-action: manipulation;              /* no 300ms delay / double-tap zoom */
@@ -1267,18 +1266,19 @@ body.mobile .screen.active {
 
 body.mobile #game-canvas { touch-action: none; } /* don't scroll while playing */
 
-/* Walking Street on mobile: the reference strip IS the keyboard — tap the
-   consonant matching a falling sign to pop it. Finger-sized, with feedback. */
-body.mobile .game-ref-card {
-  min-width: 2.9rem;
-  min-height: 44px;
-  justify-content: center;
-  cursor: pointer;
-  touch-action: manipulation;
+/* Walking Street on mobile: the tutor's Kedmanee keyboard replaces the
+   reference strip — tap the key of a falling consonant to pop it. */
+#game-kbd { display: none; }
+body.mobile #game-ref { display: none; }
+body.mobile #game-kbd {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 0.45rem 0.4rem;
+  background: #05001a;
+  border-top: 1px solid #ff149330;
 }
-body.mobile .game-ref-card:active { background: #1c0836; }
-body.mobile .game-ref-thai { font-size: 1.45rem; }
-.game-ref-card.wrong { background: #3a0010; box-shadow: 0 0 10px #ff0040; }
 
 /* Finger-sized targets */
 body.mobile .menu-list li  { padding: 0.7rem 0; }
@@ -1610,6 +1610,7 @@ body.mobile #app-shell {
     </div>
   </div>
   <div id="game-ref"></div>
+  <div id="game-kbd"></div>
   <div class="screen-footer" style="background:#05001a;border-color:#ff149340;color:#bf5fff">
     <span class="kb-hint">Type the key shown on each sign · </span><span class="touch-hint">Tap the matching key below · </span><button class="btn" style="padding:0.15rem 0.6rem;font-size:0.8rem;border-color:#ff149360;color:#ff1493" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
   </div>
