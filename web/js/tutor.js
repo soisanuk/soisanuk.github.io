@@ -159,8 +159,9 @@ const _T_ROWS = [
   ['z','x','c','v','b','n','m',',','.'],
 ];
 
-function _tBuildKbd() {
-  const container = document.getElementById('t-kbd');
+// Generic Kedmanee keyboard builder — also used by the Walking Street game
+// on mobile. onKey receives the Latin key of the tapped .tkey.
+function _tBuildKbdInto(container, onKey) {
   if (container.childElementCount > 0) return; // already built
   const byKey = Object.fromEntries(TUTOR_ALL.map(k => [k.key, k]));
   for (const row of _T_ROWS) {
@@ -174,11 +175,15 @@ function _tBuildKbd() {
       el.innerHTML =
         `<span class="tkey-lat">${k}</span>` +
         `<span class="tkey-th">${entry ? entry.thai : ''}</span>`;
-      el.addEventListener('click', () => _tType(k));
+      el.addEventListener('click', () => onKey(k));
       rowEl.appendChild(el);
     }
     container.appendChild(rowEl);
   }
+}
+
+function _tBuildKbd() {
+  _tBuildKbdInto(document.getElementById('t-kbd'), _tType);
 }
 
 function _tApplyDim() {

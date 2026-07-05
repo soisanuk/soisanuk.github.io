@@ -185,6 +185,7 @@ function startGame() {
   _gRunning = true;
   requestAnimationFrame(_gTick);
   _buildGameRef();
+  if (IS_MOBILE) _gBuildKbd();
 }
 
 function _gResize() {
@@ -718,9 +719,34 @@ function _gPopBubble(target) {
   _gHUD();
 }
 
-// Touch input: on mobile the reference strip is a tappable Thai keyboard.
-// Tapping the consonant that matches a falling sign pops it — same rules as
-// typing its Kedmanee key on desktop.
+// Touch input: on mobile the game shows the tutor's Kedmanee keyboard
+// (built via _tBuildKbdInto from tutor.js). Tapping the key of a falling
+// consonant pops it — same rules as typing it on desktop. Every tapped key
+// is pronounced, right or wrong.
+function _gBuildKbd() {
+  const kbd = document.getElementById("game-kbd");
+  _tBuildKbdInto(kbd, _gKbdPress);
+  const keyToIdx = Object.fromEntries(GAME_LETTERS.map((l, i) => [l.key, i]));
+  kbd.querySelectorAll(".tkey").forEach(el => {
+    const idx = keyToIdx[el.dataset.key];
+    if (idx === undefined) { el.classList.add("dim"); return; }
+    // Tie each playable key to its bubble's neon colour
+    const c  = _NEON[idx];
+    const th = el.querySelector(".tkey-th");
+    th.style.color      = c;
+    th.style.textShadow = `0 0 8px ${c}`;
+    el.style.borderColor = c + "70";
+  });
+}
+
+function _gKbdPress(key) {
+  const entry = TUTOR_ALL.find(e => e.key === key);
+  if (entry) _tts.speak(entry.thai);
+  const idx = GAME_LETTERS.findIndex(l => l.key === key);
+  if (idx === -1) return; // dimmed key: pronunciation only
+  _gKeyIdx(idx);
+}
+
 function _gKeyIdx(idx) {
   if (!_gRunning) return;
 
@@ -732,12 +758,12 @@ function _gKeyIdx(idx) {
   if (target) {
     _gPopBubble(target);
   } else {
-    // Wrong key — shake the bubbles and flash the tapped card
+    // Wrong key — shake the bubbles and flash the tapped key
     for (const b of _gBubbles) { if (!b.popped) b.wrongFlash = 6; }
-    const card = document.getElementById("game-ref-" + idx);
-    if (card) {
-      card.classList.add("wrong");
-      setTimeout(() => card.classList.remove("wrong"), 350);
+    const el = document.querySelector(`#game-kbd .tkey[data-key="${GAME_LETTERS[idx].key}"]`);
+    if (el) {
+      el.classList.add("t-wrong");
+      setTimeout(() => el.classList.remove("t-wrong"), 350);
     }
   }
 }
@@ -757,7 +783,6 @@ function _buildGameRef() {
     div.innerHTML =
       `<span class="game-ref-thai" style="color:${c};text-shadow:0 0 8px ${c}">${l.thai}</span>` +
       `<span class="game-ref-key" id="game-ref-key-${i}" style="color:${c}bb">${l.key}</span>`;
-    if (IS_MOBILE) div.addEventListener("pointerdown", () => _gKeyIdx(i));
     ref.appendChild(div);
   }
 }
