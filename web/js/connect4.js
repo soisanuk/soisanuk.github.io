@@ -204,6 +204,7 @@ let _c4Board   = null;
 let _c4Phase   = "pick";   // pick | quiz | drop | ai | end
 let _c4Quiz    = null;
 let _c4Replays = 0;        // replay-button presses for the current quiz
+let _c4LastDrop = null;    // {r, c} of the newest token, for the fall animation
 let _c4Wins    = 0;
 let _c4Losses  = 0;
 let _c4Tab     = 0;        // lady-drink tab in baht
@@ -242,7 +243,7 @@ function _c4Line(kind) {
 
 function _c4HUD() {
   document.getElementById("c4-hud").innerHTML =
-    `<span>🔵 You <strong>${_c4Wins}</strong></span>` +
+    `<span>🟡 You <strong>${_c4Wins}</strong></span>` +
     `<span>${_c4Girl ? _c4Girl.e : ""} ${_c4Girl ? _c4Esc(_c4Girl.name) : ""} <strong>${_c4Losses}</strong></span>` +
     `<span>🍹 Tab <strong>฿${_c4Tab}</strong></span>`;
 }
@@ -323,6 +324,18 @@ function _c4Render(winCells) {
   el.innerHTML = html;
   el.querySelectorAll(".c4-col").forEach(col =>
     col.addEventListener("click", () => _c4PlayerDrop(+col.dataset.col)));
+
+  // Animate the newest token falling from above the board into its row
+  if (_c4LastDrop) {
+    const { r, c } = _c4LastDrop;
+    _c4LastDrop = null;
+    const cell = el.children[c] && el.children[c].children[r];
+    if (cell) {
+      const h = cell.offsetHeight || 42;
+      cell.style.setProperty("--fall", `-${(r + 1) * (h + 4) + 10}px`);
+      cell.classList.add("c4-drop");
+    }
+  }
 }
 
 // ── Turn cycle ─────────────────────────────────────────────────────────────
@@ -402,6 +415,7 @@ function _c4Place(col, p, wasRandom) {
   const r = _c4DropRow(_c4Board, col);
   if (r < 0) return;
   _c4Board[r][col] = p;
+  _c4LastDrop = { r, c: col }; // every downstream path re-renders
   document.getElementById("c4-quiz").innerHTML = "";
   const won = _c4Winner(_c4Board);
   if (won) { _c4End(won); return; }

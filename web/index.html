@@ -1294,31 +1294,42 @@ kbd.tut-key {
   font-family:'Noto Sans Thai','Leelawadee UI',sans-serif;
 }
 .c4-choice.c4-bad { border-color:#ff3355; background:#1a0008; color:#ff6680; }
-/* board */
+/* board — classic Connect 4: neon-blue frame, black holes */
 #c4-board {
-  display:flex; gap:4px; background:#12001e; padding:7px;
-  border:2px solid #ff149355; border-radius:12px; box-shadow:0 0 26px #ff149325;
+  display:flex; gap:4px; padding:7px;
+  background:linear-gradient(180deg, #1b2fb0 0%, #14219a 55%, #0e1878 100%);
+  border:2px solid #4169e1; border-radius:12px;
+  box-shadow:0 0 26px #4169e160, inset 0 0 20px #000a4a90;
+  overflow:hidden; /* clips tokens dropping in from above */
 }
 .c4-col { display:flex; flex-direction:column; gap:4px; border-radius:6px; padding:2px; }
 .c4-col.c4-live { cursor:pointer; }
-.c4-col.c4-live:hover { background:#ff149322; }
+.c4-col.c4-live:hover { background:#00e5ff26; }
 .c4-cell {
   width:min(46px, calc((100vw - 78px) / 7));
   aspect-ratio:1; border-radius:50%;
-  background:#07001a; border:1px solid #ffffff14;
+  background:#03010c; border:1px solid #00000080;
+  box-shadow:inset 0 2px 5px #000000c0;
 }
 .c4-cell.p1 {
-  background:radial-gradient(circle at 35% 30%, #aaffff, #00e5ff 55%, #007a99);
-  border-color:#00e5ff; box-shadow:0 0 9px #00e5ff70;
+  background:radial-gradient(circle at 35% 30%, #fff9c0, #ffe600 55%, #a88f00);
+  border-color:#ffe600; box-shadow:0 0 9px #ffe60080;
 }
 .c4-cell.p2 {
   background:radial-gradient(circle at 35% 30%, #ffb0dd, #ff1493 55%, #99004f);
   border-color:#ff1493; box-shadow:0 0 9px #ff149370;
 }
+/* token drop: falls in from above the board (JS sets --fall per row) */
+.c4-cell.c4-drop { animation:c4fall .45s cubic-bezier(.25, .9, .35, 1.18); }
+@keyframes c4fall {
+  from { transform:translateY(var(--fall, -300px)); }
+  to   { transform:translateY(0); }
+}
+/* winning four pulse white so it reads on both yellow and pink tokens */
 .c4-cell.c4-wincell { animation:c4pulse .7s ease-in-out infinite alternate; }
 @keyframes c4pulse {
-  from { box-shadow:0 0 8px #ffe60080; }
-  to   { box-shadow:0 0 22px #ffe600; border-color:#ffe600; }
+  from { box-shadow:0 0 8px #ffffff80; }
+  to   { box-shadow:0 0 24px #ffffff; border-color:#ffffff; }
 }
 /* end panel */
 .c4-end { display:flex; flex-direction:column; align-items:center; gap:.5rem; padding:.3rem 0; }
