@@ -70,8 +70,10 @@ function flashShow() {
       "What does this mean?";
     document.getElementById("flash-answer").textContent =
       session.backText ? session.backText[idx] : english;
-    _flashSpeakSet(thai);
-    _tts.speak(thai);
+    // Script cards speak "letter, letter name" (e.g. "ก, ก ไก่")
+    const spoken = (mode === "consonant" || mode === "vowel") ? letterSpeech(thai) : thai;
+    _flashSpeakSet(spoken);
+    _tts.speak(spoken);
     if (mode === "th2en") _flashThaiMakeClickable(word); else _flashThaiClearClickable();
   } else {
     // en2th: show English, hide Thai until reveal
@@ -291,7 +293,7 @@ function drillShowConsonant() {
   document.getElementById("drill-counter").textContent = `${rank} / ${total}`;
   document.getElementById("drill-thai").textContent = thai;
   document.getElementById("drill-rtgs").textContent = `(${rtgs})`;
-  _tts.speak(thai);
+  _tts.speak(letterSpeech(thai));
 
   const clsCls = cls === "mid" ? "cls-mid" : cls === "high" ? "cls-high" : "cls-low";
   let freqCls = isRare ? "freq-rare" : rank <= total / 3 ? "freq-common" : "freq-mid";
@@ -348,10 +350,14 @@ function drillShowVowelTone() {
     `${item.rank} / ${item.total}  (${idx + 1} / ${deck.length} total)`;
   document.getElementById("drill-thai").textContent = symbol;
   document.getElementById("drill-rtgs").textContent = `(${rtgs})`;
-  // symbol contains ◌ placeholder — speak the example word instead (text before space/bracket)
-  const speakText = symbol.includes("◌")
-    ? (example.match(/^([^\s(（]+)/) || [])[1] || ""
-    : symbol;
+  // Single marks get the "sound, name" form (e.g. ◌า → "อา, สระอา");
+  // compound patterns fall back to speaking the example word.
+  const named = letterSpeech(symbol);
+  const speakText = named !== symbol.replace(/◌/g, "")
+    ? named
+    : symbol.includes("◌")
+      ? (example.match(/^([^\s(（]+)/) || [])[1] || ""
+      : symbol;
   if (speakText) _tts.speak(speakText);
 
   let freqHtml = "";
@@ -441,7 +447,7 @@ function srsShow() {
   document.getElementById("srs-thai").textContent  = thai;
   document.getElementById("srs-rtgs").textContent  = `(${rtgs})`;
   document.getElementById("srs-prompt").textContent = "Do you know this?";
-  if (!thai.includes("◌")) _tts.speak(thai);
+  if (!thai.includes("◌")) _tts.speak(letterSpeech(thai));
 
   const card = peekCard(progress, key);
   document.getElementById("srs-meta").textContent =

@@ -9,11 +9,14 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-// Evaluate in this realm so returned objects share our prototypes
-vm.runInThisContext(
-  readFileSync(new URL("../../web/js/thai-script.js", import.meta.url), "utf8"),
-  { filename: "thai-script.js" }
-);
+// Evaluate in this realm so returned objects share our prototypes.
+// data.js provides CONSONANTS, which letterSpeech looks up at call time.
+for (const f of ["data.js", "thai-script.js"]) {
+  vm.runInThisContext(
+    readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"),
+    { filename: f }
+  );
+}
 const { _thaiCharKind: thaiCharKind, _buildDecomposition: buildDecomposition } = globalThis;
 
 // ── thaiCharKind ─────────────────────────────────────────────────────────────
@@ -115,5 +118,44 @@ describe("buildDecomposition", () => {
     const clusters = buildDecomposition("A");
     assert.equal(clusters.length, 1);
     assert.equal(clusters[0][0], "A");
+  });
+});
+
+// ── letterSpeech ─────────────────────────────────────────────────────────────
+
+describe("letterSpeech", () => {
+  test("consonants get sound + traditional name", () => {
+    assert.equal(letterSpeech("ก"), "ก, ก ไก่");
+    assert.equal(letterSpeech("ข"), "ข, ข ไข่");
+    assert.equal(letterSpeech("ม"), "ม, ม ม้า");
+  });
+
+  test("every consonant in the data gets an enhanced form", () => {
+    for (const row of CONSONANTS) {
+      const out = letterSpeech(row[0]);
+      assert.equal(out, `${row[0]}, ${row[0]} ${row[3]}`);
+    }
+  });
+
+  test("vowels are recited with the อ carrier", () => {
+    assert.equal(letterSpeech("า"), "อา, สระอา");
+    assert.equal(letterSpeech("ั"), "อะ, ไม้หันอากาศ");
+    assert.equal(letterSpeech("ไ"), "ไอ, สระไอไม้มลาย");
+  });
+
+  test("◌ placeholder is stripped before lookup", () => {
+    assert.equal(letterSpeech("◌า"), "อา, สระอา");
+    assert.equal(letterSpeech("◌ี"), "อี, สระอี");
+  });
+
+  test("tone marks speak the name only", () => {
+    assert.equal(letterSpeech("่"), "ไม้เอก");
+    assert.equal(letterSpeech("้"), "ไม้โท");
+  });
+
+  test("words and unknown input pass through unchanged", () => {
+    assert.equal(letterSpeech("สวัสดี"), "สวัสดี");
+    assert.equal(letterSpeech("เ◌ะ"), "เะ"); // compound: no single-mark name
+    assert.equal(letterSpeech("A"), "A");
   });
 });

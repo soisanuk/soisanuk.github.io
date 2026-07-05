@@ -808,7 +808,7 @@ function _gStyleKbd() {
 
 function _gKbdPress(key) {
   const entry = TUTOR_ALL.find(e => e.key === key);
-  if (entry) _tts.speak(entry.thai);
+  if (entry) _tts.speak(letterSpeech(entry.thai));
   const idx = _GAME_ALL.findIndex((l, i) => i < _gPool && l.key === key);
   if (idx === -1) return; // locked/unused key: pronunciation only
   _gKeyIdx(idx);

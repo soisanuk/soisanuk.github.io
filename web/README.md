@@ -38,7 +38,7 @@ All 876 words in Thai alphabetical order with real-time search. Filter by catego
 SRS summary, 7-day review forecast chart, per-category mature/seen counts, and progress export/import.
 
 **Audio**
-All Thai text is speakable via the Web Speech API (requires a Thai TTS voice — available in Chrome/Edge on desktop and Android, and in iOS Safari). On iOS, speech is unlocked by the first touch, as required by the platform. If no Thai voice is found, the home screen shows a notice instead of failing silently. When packaged as a native app with Capacitor, speech routes through the native TTS plugin instead (Android's WebView has no Web Speech API).
+Individual letters are always spoken as sound + traditional name with a slight pause — e.g. ก is read "ก, ก ไก่", า as "อา, สระอา" — consistently across the keyboard tutor, Walking Street, script flashcards, drills, and script SRS. All Thai text is speakable via the Web Speech API (requires a Thai TTS voice — available in Chrome/Edge on desktop and Android, and in iOS Safari). On iOS, speech is unlocked by the first touch, as required by the platform. If no Thai voice is found, the home screen shows a notice instead of failing silently. When packaged as a native app with Capacitor, speech routes through the native TTS plugin instead (Android's WebView has no Web Speech API).
 
 **PWA / offline**
 Add to home screen on mobile. Works fully offline after first load.
