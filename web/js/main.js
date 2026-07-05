@@ -5,6 +5,22 @@ document.addEventListener("keydown", e => {
   const key = e.key;
   const active = document.querySelector(".screen.active")?.id;
 
+  // Overlays swallow all keys and must be checked before any screen block —
+  // the word modal can open over game screens (Soi Buakhao, Connect สี่).
+  if (document.getElementById("tutorial-overlay").classList.contains("open")) {
+    if (key === "Escape") closeTutorial();
+    if (key === "ArrowRight") _tutNext();
+    if (key === "ArrowLeft")  _tutPrev();
+    return;
+  }
+  if (document.getElementById("wc-overlay").classList.contains("open")) {
+    if (key === "Escape") {
+      const layers = document.querySelectorAll("#wc-overlay .wc-layer");
+      if (layers.length) _wcPop(layers[layers.length - 1]);
+    }
+    return;
+  }
+
   if (active === "menu-screen") {
     if (key === "1") startVocab("th2en");
     else if (key === "2") startVocab("en2th");
@@ -43,19 +59,6 @@ document.addEventListener("keydown", e => {
   if (active === "game-screen") {
     if (_gKey(key)) return;
     if (key === "Escape") endSession();
-    return;
-  }
-  if (document.getElementById("tutorial-overlay").classList.contains("open")) {
-    if (key === "Escape") closeTutorial();
-    if (key === "ArrowRight") _tutNext();
-    if (key === "ArrowLeft")  _tutPrev();
-    return;
-  }
-  if (document.getElementById("wc-overlay").classList.contains("open")) {
-    if (key === "Escape") {
-      const layers = document.querySelectorAll("#wc-overlay .wc-layer");
-      if (layers.length) _wcPop(layers[layers.length - 1]);
-    }
     return;
   }
   if (active === "flash-screen") {

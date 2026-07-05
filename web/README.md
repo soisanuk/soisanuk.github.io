@@ -36,7 +36,7 @@ Connect 4 against a bar hostess — three difficulty levels, three girls (sweet 
 Learn the Kedmanee typing layout. A Thai character is shown (and spoken); type it on your keyboard — or tap the on-screen key on touch devices. Consonants-only or all-keys mode, with streak and accuracy tracking.
 
 **Vocab list** (`V`)
-All 876 words in Thai alphabetical order with real-time search. Filter by category with progress rings showing % mature cards. Click any word for a detail card with audio, romanisation, example sentence, and character decomposition. Clicking the Thai text on a flashcard opens the same detail view.
+All 878 words in Thai alphabetical order with real-time search. Filter by category with progress rings showing % mature cards. Click any word for a detail card with audio, romanisation, example sentence, and character decomposition. Clicking the Thai text on a flashcard opens the same detail view.
 
 **Statistics** (`0`)
 SRS summary, 7-day review forecast chart, per-category mature/seen counts, and progress export/import.
