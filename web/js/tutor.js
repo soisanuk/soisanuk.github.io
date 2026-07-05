@@ -169,6 +169,7 @@ function _tBuildKbd() {
       el.innerHTML =
         `<span class="tkey-lat">${k}</span>` +
         `<span class="tkey-th">${entry ? entry.thai : ''}</span>`;
+      el.addEventListener('click', () => _tType(k));
       rowEl.appendChild(el);
     }
     container.appendChild(rowEl);
