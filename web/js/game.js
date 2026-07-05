@@ -175,16 +175,10 @@ let _gLastStreetSpawn = 0, _gNextStreetIn = 0;
 
 // ── Init ───────────────────────────────────────────────────────────────────
 
-let _gTapBound = false;
-
 function startGame() {
   showScreen("game-screen", "G");
   _gCanvas = document.getElementById("game-canvas");
   _gCtx    = _gCanvas.getContext("2d");
-  if (IS_MOBILE && !_gTapBound) {
-    _gTapBound = true;
-    _gCanvas.addEventListener("pointerdown", _gTap);
-  }
   _gResize();
   _gReset();
   document.getElementById("game-over-panel").style.display = "none";
@@ -541,8 +535,9 @@ function _gDrawBubble(ctx, b) {
   ctx.fillText(b.letter.thai, 0, -5);
   ctx.shadowBlur = 0;
 
-  // Key hint — blinking on warning fall, hidden once gone
-  if (b.showHint) {
+  // Key hint — blinking on warning fall, hidden once gone.
+  // Mobile input is the Thai key row, so Latin hints are never drawn there.
+  if (b.showHint && !IS_MOBILE) {
     const blinkOn = !b.blink || (Math.floor(_gTime / 130) % 2 === 0);
     if (blinkOn) {
       if (b.blink) {
@@ -723,19 +718,28 @@ function _gPopBubble(target) {
   _gHUD();
 }
 
-// Touch input: on mobile there is no keyboard, so tapping a sign pops it.
-function _gTap(e) {
+// Touch input: on mobile the reference strip is a tappable Thai keyboard.
+// Tapping the consonant that matches a falling sign pops it — same rules as
+// typing its Kedmanee key on desktop.
+function _gKeyIdx(idx) {
   if (!_gRunning) return;
-  const rect = _gCanvas.getBoundingClientRect();
-  const x = (e.clientX - rect.left) * (_gCanvas.width  / rect.width);
-  const y = (e.clientY - rect.top)  * (_gCanvas.height / rect.height);
-  let target = null, best = Infinity;
+
+  let target = null;
   for (const b of _gBubbles) {
-    if (b.popped || b.bounced) continue;
-    const d = Math.hypot(b.x - x, b.y - y);
-    if (d < b.r + 16 && d < best) { best = d; target = b; }
+    if (!b.popped && b.letterIdx === idx && (!target || b.y > target.y)) target = b;
   }
-  if (target) _gPopBubble(target);
+
+  if (target) {
+    _gPopBubble(target);
+  } else {
+    // Wrong key — shake the bubbles and flash the tapped card
+    for (const b of _gBubbles) { if (!b.popped) b.wrongFlash = 6; }
+    const card = document.getElementById("game-ref-" + idx);
+    if (card) {
+      card.classList.add("wrong");
+      setTimeout(() => card.classList.remove("wrong"), 350);
+    }
+  }
 }
 
 // ── Reference strip ────────────────────────────────────────────────────────
@@ -753,6 +757,7 @@ function _buildGameRef() {
     div.innerHTML =
       `<span class="game-ref-thai" style="color:${c};text-shadow:0 0 8px ${c}">${l.thai}</span>` +
       `<span class="game-ref-key" id="game-ref-key-${i}" style="color:${c}bb">${l.key}</span>`;
+    if (IS_MOBILE) div.addEventListener("pointerdown", () => _gKeyIdx(i));
     ref.appendChild(div);
   }
 }

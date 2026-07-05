@@ -1267,6 +1267,19 @@ body.mobile .screen.active {
 
 body.mobile #game-canvas { touch-action: none; } /* don't scroll while playing */
 
+/* Walking Street on mobile: the reference strip IS the keyboard — tap the
+   consonant matching a falling sign to pop it. Finger-sized, with feedback. */
+body.mobile .game-ref-card {
+  min-width: 2.9rem;
+  min-height: 44px;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+body.mobile .game-ref-card:active { background: #1c0836; }
+body.mobile .game-ref-thai { font-size: 1.45rem; }
+.game-ref-card.wrong { background: #3a0010; box-shadow: 0 0 10px #ff0040; }
+
 /* Finger-sized targets */
 body.mobile .menu-list li  { padding: 0.7rem 0; }
 body.mobile .cat-list li   { padding: 0.65rem 1rem; }
@@ -1598,7 +1611,7 @@ body.mobile #app-shell {
   </div>
   <div id="game-ref"></div>
   <div class="screen-footer" style="background:#05001a;border-color:#ff149340;color:#bf5fff">
-    <span class="kb-hint">Type the key shown on each sign · </span><span class="touch-hint">Tap a sign to pop it · </span><button class="btn" style="padding:0.15rem 0.6rem;font-size:0.8rem;border-color:#ff149360;color:#ff1493" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
+    <span class="kb-hint">Type the key shown on each sign · </span><span class="touch-hint">Tap the matching key below · </span><button class="btn" style="padding:0.15rem 0.6rem;font-size:0.8rem;border-color:#ff149360;color:#ff1493" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
   </div>
 </div>
 
