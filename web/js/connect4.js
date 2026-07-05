@@ -334,17 +334,18 @@ function _c4NextQuiz() {
   const q = _c4Quiz;
   const el = document.getElementById("c4-quiz");
   const letters = ["1", "2", "3", "4"];
+  const speakBtn = `<button class="c4-speak" title="Replay" aria-label="Replay vowel">🔊</button>`;
   if (q.dir === "sym2rom") {
     el.innerHTML = `
       <div class="c4-q-prompt">Which sound is this vowel?</div>
-      <div class="c4-q-sym">${_c4Esc(vowelDisp(q.answer[0]))}</div>
+      <div class="c4-q-symrow"><span class="c4-q-sym">${_c4Esc(vowelDisp(q.answer[0]))}</span>${speakBtn}</div>
       <div class="c4-choices">` + q.choices.map((v, i) => `
         <button class="c4-choice" data-i="${i}">
           <span class="c4-cletter">${letters[i]}</span> ${_c4Esc(v[1])} — ${_c4Esc(v[2])}
         </button>`).join("") + `</div>`;
   } else {
     el.innerHTML = `
-      <div class="c4-q-prompt">Which vowel is <strong>${_c4Esc(q.answer[1])}</strong> — ${_c4Esc(q.answer[2])}?</div>
+      <div class="c4-q-prompt">Which vowel is <strong>${_c4Esc(q.answer[1])}</strong> — ${_c4Esc(q.answer[2])}? ${speakBtn}</div>
       <div class="c4-choices c4-choices-sym">` + q.choices.map((v, i) => `
         <button class="c4-choice c4-choice-sym" data-i="${i}">
           <span class="c4-cletter">${letters[i]}</span> <span class="c4-sym">${_c4Esc(vowelDisp(v[0]))}</span>
@@ -352,7 +353,10 @@ function _c4NextQuiz() {
   }
   el.querySelectorAll(".c4-choice").forEach(btn =>
     btn.addEventListener("click", () => _c4Answer(+btn.dataset.i)));
+  el.querySelector(".c4-speak").addEventListener("click", () => _c4Speak(q.answer));
   _c4Render();
+  // Sound the vowel at the start of every player turn (letter, pause, name)
+  _c4Speak(q.answer);
 }
 
 function _c4Answer(i) {
