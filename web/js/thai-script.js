@@ -90,7 +90,19 @@ function vowelDisp(sym) {
   return sym.replace(/◌/g, "ก");
 }
 
+// Compound vowel patterns (keyed by their canonical ◌ form in VOWELS);
+// single marks are handled by _LETTER_SPEECH_EXTRA after ◌-stripping.
+const _VOWEL_PATTERN_SPEECH = {
+  "เ◌าะ": "เอาะ, สระเอาะ",
+  "◌ัว":  "อัว, สระอัว",
+  "เ◌ีย": "เอีย, สระเอีย",
+  "เ◌ือ": "เอือ, สระเอือ",
+  "เ◌า":  "เอา, สระเอา",
+  "◌อ":   "ออ, สระออ",
+};
+
 function letterSpeech(ch) {
+  if (_VOWEL_PATTERN_SPEECH[ch]) return _VOWEL_PATTERN_SPEECH[ch];
   ch = ch.replace(/◌/g, ""); // vowel entries write combining marks as "◌า" etc.
   if ([...ch].length !== 1) return ch;
   if (typeof CONSONANTS !== "undefined") {
