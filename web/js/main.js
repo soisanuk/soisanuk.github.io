@@ -116,3 +116,18 @@ document.addEventListener("keydown", e => {
 // ─── init ──────────────────────────────────────────────────────────────────
 updateMenuStats();
 maybeShowTutorial();
+
+// Android hardware back button (Capacitor only): behave like Escape, and
+// exit the app only from the top-level menu. Registering a listener is what
+// suppresses Capacitor's default exit-on-back behaviour.
+const _capApp = window.Capacitor?.Plugins?.App;
+if (_capApp?.addListener) {
+  _capApp.addListener("backButton", () => {
+    const atMenu =
+      document.querySelector(".screen.active")?.id === "menu-screen" &&
+      !document.getElementById("tutorial-overlay").classList.contains("open") &&
+      !document.getElementById("wc-overlay").classList.contains("open");
+    if (atMenu) _capApp.exitApp();
+    else document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+  });
+}

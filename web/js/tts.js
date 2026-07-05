@@ -5,11 +5,17 @@ const _tts = (() => {
   let _voice = null;
   let _ready = false;
 
+  // Native TTS when packaged with Capacitor. Android's System WebView has no
+  // speechSynthesis at all, so the @capacitor-community/text-to-speech plugin
+  // is the only audio path there. Absent (plain browser), this is null.
+  const _capTTS = () =>
+    (typeof window !== "undefined" && window.Capacitor?.Plugins?.TextToSpeech) || null;
+
   // Uses local state directly — safe to call before _tts is assigned.
   function _applyNotice() {
     const el = document.getElementById("voice-notice");
     if (!el) return;
-    el.style.display = _ready && !_voice ? "" : "none";
+    el.style.display = _ready && !_voice && !_capTTS() ? "" : "none";
   }
 
   function _findVoice() {
@@ -46,9 +52,18 @@ const _tts = (() => {
   }
 
   return {
-    ready() { return _ready; },
-    available() { return _ready && !!_voice; },
+    ready() { return _ready || !!_capTTS(); },
+    available() { return (_ready && !!_voice) || !!_capTTS(); },
     speak(text, btn) {
+      const cap = _capTTS();
+      if (cap) {
+        if (btn) btn.classList.add("speaking");
+        cap.stop().catch(() => {});
+        cap.speak({ text, lang: "th-TH", rate: 0.85 })
+          .catch(() => {})
+          .finally(() => { if (btn) btn.classList.remove("speaking"); });
+        return;
+      }
       if (!_voice) return;
       // Re-fetch voices each call: Chrome's cached voice reference goes stale
       // after the first utterance, causing silent playback.

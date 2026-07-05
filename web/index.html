@@ -1256,8 +1256,10 @@ body.mobile .sb-cth      { font-size: 1.05rem; }
 @supports (height: 100dvh) {
   body.mobile, body.mobile #app-shell { min-height: 100dvh; }
 }
-/* Notched phones (viewport-fit=cover) */
+/* Notched phones (viewport-fit=cover). Top inset matters in a packaged
+   (Capacitor) fullscreen webview, where no browser chrome shields the notch. */
 body.mobile #app-shell {
+  padding-top:    env(safe-area-inset-top);
   padding-left:   env(safe-area-inset-left);
   padding-right:  env(safe-area-inset-right);
   padding-bottom: env(safe-area-inset-bottom);
@@ -1686,7 +1688,9 @@ body.mobile #app-shell {
 </div>
 
 <script>
-if ("serviceWorker" in navigator) {
+// Under Capacitor the assets are bundled with the app, so the offline
+// cache is pointless — skip registration there.
+if ("serviceWorker" in navigator && !window.Capacitor) {
   window.addEventListener("load", () =>
     navigator.serviceWorker.register("./sw.js").catch(() => {})
   );
