@@ -1231,7 +1231,39 @@ body.mobile {
   touch-action: manipulation;              /* no 300ms delay / double-tap zoom */
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;          /* stop Safari inflating text */
+  /* Lock body to viewport so only screens scroll, not the page */
+  height: 100%;
+  overflow: hidden;
 }
+html:has(body.mobile) { height: 100%; overflow: hidden; }
+
+/* Shell fills the viewport exactly on mobile. Without this the sidebar being
+   hidden means the shell collapses to content height, so screens don't fill
+   the viewport and users have to page-scroll to reach buttons/content. */
+body.mobile #app-shell {
+  height: 100%;
+  min-height: unset;
+  overflow: hidden;
+}
+/* dvh overrides if supported (avoids the mobile browser chrome issue) */
+@supports (height: 100dvh) {
+  body.mobile #app-shell { height: 100dvh; }
+}
+
+body.mobile #content-area {
+  /* min-height: 0 is required for a flex child to shrink below its content
+     size; without it the content-area grows past the shell and causes scroll */
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Each active screen fills the content-area and scrolls internally */
+body.mobile .screen.active {
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 body.mobile #game-canvas { touch-action: none; } /* don't scroll while playing */
 
 /* Finger-sized targets */
@@ -1252,10 +1284,6 @@ body.mobile .sb-bar-sign { font-size: 1.05rem; padding: 0.5rem 0.8rem; }
 body.mobile .sb-q-thai   { font-size: 1.25rem; }
 body.mobile .sb-cth      { font-size: 1.05rem; }
 
-/* Mobile browser chrome eats vh; prefer the dynamic viewport unit */
-@supports (height: 100dvh) {
-  body.mobile, body.mobile #app-shell { min-height: 100dvh; }
-}
 /* Notched phones (viewport-fit=cover). Top inset matters in a packaged
    (Capacitor) fullscreen webview, where no browser chrome shields the notch. */
 body.mobile #app-shell {

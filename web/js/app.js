@@ -83,6 +83,9 @@ function showScreen(id, navKey) {
     if (el) el.classList.add("active");
   }
   window.scrollTo(0, 0);
+  // On mobile, the screen itself scrolls (not the page), so reset it too.
+  const screen = document.getElementById(id);
+  if (screen) screen.scrollTop = 0;
 }
 
 function showMenu() {
