@@ -31,6 +31,20 @@ const _tts = (() => {
   // Fallback: if no voice list ever arrives, treat TTS as unavailable
   setTimeout(() => { _ready = true; _applyNotice(); }, 2000);
 
+  // iOS refuses to speak until speechSynthesis is first used inside a user
+  // gesture. Fire a silent utterance on the first touch to unlock it.
+  if (typeof IS_IOS !== "undefined" && IS_IOS && typeof speechSynthesis !== "undefined") {
+    const unlock = () => {
+      const utt = new SpeechSynthesisUtterance("");
+      utt.volume = 0;
+      speechSynthesis.speak(utt);
+      document.removeEventListener("touchend", unlock);
+      document.removeEventListener("click", unlock);
+    };
+    document.addEventListener("touchend", unlock);
+    document.addEventListener("click", unlock);
+  }
+
   return {
     ready() { return _ready; },
     available() { return _ready && !!_voice; },
@@ -53,8 +67,14 @@ const _tts = (() => {
         btn.classList.add("speaking");
         utt.onend = utt.onerror = () => btn.classList.remove("speaking");
       }
-      // Chrome requires a short delay after cancel() before speak() works reliably
-      setTimeout(() => speechSynthesis.speak(utt), 50);
+      // Chrome requires a short delay after cancel() before speak() works
+      // reliably — but on iOS the delay pushes speak() out of the user-gesture
+      // call stack and the utterance is silently dropped, so speak directly.
+      if (typeof IS_IOS !== "undefined" && IS_IOS) {
+        speechSynthesis.speak(utt);
+      } else {
+        setTimeout(() => speechSynthesis.speak(utt), 50);
+      }
     },
   };
 })();
