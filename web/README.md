@@ -23,7 +23,13 @@ Thai vocabulary and script trainer with spaced repetition.
 Play a word via text-to-speech, identify which of the 5 Thai tones it uses.
 
 **Walking Street game** (`G`)
-Neon consonant-drop game set in Pattaya. Bubbles fall carrying Thai consonants; type the correct key (Kedmanee layout) to pop each one. Every 5 pops a random consonant's key hint is scheduled for removal — the next time it falls it blinks as a warning, then the hint is gone permanently. All 10 hints disappear across a long game, leaving you reading consonants cold.
+Neon consonant-drop game set in Pattaya. Bubbles fall carrying Thai consonants; type the correct key (Kedmanee layout) to pop each one — on touch devices, tap the sign instead. Every 5 pops a random consonant's key hint is scheduled for removal — the next time it falls it blinks as a warning, then the hint is gone permanently. All 10 hints disappear across a long game, leaving you reading consonants cold. The street below features animated 8-bit pedestrians, motorbikes, baht buses, and palm trees; bubbles that hit them bounce off harmlessly (knocking the unlucky sprite off screen).
+
+**Soi Buakhao game** (`B`)
+Dialogue-driven visual novel: a 3-night bar crawl where a hostess asks simple questions in Thai (with audio) and you pick the best of four responses. Answer ≥60% correctly each night for a happy ending; the 3-night record determines the grand finale. Thai text is tokenised — tap any known word for its detail card. In-game: `1–4` select an answer, `Enter`/`Space` advances.
+
+**Thai Keyboard tutor** (`K`)
+Learn the Kedmanee typing layout. A Thai character is shown (and spoken); type it on your keyboard — or tap the on-screen key on touch devices. Consonants-only or all-keys mode, with streak and accuracy tracking.
 
 **Vocab list** (`V`)
 All 876 words in Thai alphabetical order with real-time search. Filter by category with progress rings showing % mature cards. Click any word for a detail card with audio, romanisation, example sentence, and character decomposition. Clicking the Thai text on a flashcard opens the same detail view.
@@ -32,10 +38,13 @@ All 876 words in Thai alphabetical order with real-time search. Filter by catego
 SRS summary, 7-day review forecast chart, per-category mature/seen counts, and progress export/import.
 
 **Audio**
-All Thai text is speakable via the Web Speech API (requires a Thai TTS voice — available in Chrome/Edge on desktop and Android). If no Thai voice is found, the home screen shows a notice instead of failing silently.
+All Thai text is speakable via the Web Speech API (requires a Thai TTS voice — available in Chrome/Edge on desktop and Android, and in iOS Safari). On iOS, speech is unlocked by the first touch, as required by the platform. If no Thai voice is found, the home screen shows a notice instead of failing silently. When packaged as a native app with Capacitor, speech routes through the native TTS plugin instead (Android's WebView has no Web Speech API).
 
 **PWA / offline**
 Add to home screen on mobile. Works fully offline after first load.
+
+**Mobile / touch**
+Touch devices (detected via `pointer: coarse`) get an adapted UI automatically: keyboard-shortcut badges and hints are hidden, tap targets are enlarged, the games take touch input (tap signs in Walking Street, tap on-screen keys in the tutor), and safe-area insets keep content clear of notches.
 
 ## Keyboard shortcuts
 
@@ -55,6 +64,8 @@ All shortcuts are active on the home screen.
 | `T` | Tone Listening Drill |
 | `S` | Sentence SRS |
 | `G` | Walking Street game |
+| `B` | Soi Buakhao game |
+| `K` | Thai Keyboard tutor |
 | `V` | Vocab List |
 | `0` | Statistics |
 | `?` | Tutorial |
@@ -70,16 +81,20 @@ web/
   sw.js               service worker (offline caching; cache name stamped by CI)
   icons/              PWA home screen icons
   js/                 classic scripts sharing globals (no modules — keeps file:// working)
+    mobile.js         touch/iOS detection — IS_MOBILE, IS_IOS, body.mobile class (loaded first)
     data.js           all Thai data — words, consonants, vowels, tones
     examples.js       848 example sentences
     srs.js            SM-2 spaced repetition engine + queue/forecast helpers
     tokeniser.js      greedy longest-match Thai sentence tokeniser
     thai-script.js    character classification and cluster decomposition
     app.js            app state, navigation, category picker, export/import
-    tts.js            Web Speech API wrapper + voice availability notice
+    tts.js            TTS: Capacitor plugin → Web Speech API; voice notice
     ui.js             vocab list, word modal, tooltips, examples, statistics
     sessions.js       flashcards, quiz, drills, SRS sessions, rating/undo
-    main.js           keyboard shortcuts and init (loaded last)
+    tutor.js          Thai keyboard (Kedmanee) typing tutor
+    soi-buakhao.js    Soi Buakhao dialogue game — data + game flow
+    game.js           Walking Street consonant-drop game (canvas)
+    main.js           keyboard shortcuts, Android back button, init (loaded last)
 ```
 
 ## Run locally

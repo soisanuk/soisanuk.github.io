@@ -34,9 +34,14 @@ const TUTOR_ALL = [
 ];
 
 // Combining marks (diacritics) need a host consonant to display.
+// Leading vowels (เแโใไ, U+0E40–0E44) render standalone and are excluded —
+// prefixing a host would also put it on the wrong side of them.
 function _tDisp(thai) {
   const c = thai.charCodeAt(0);
-  return (c >= 0x0E31 && c <= 0x0E4E) ? 'ก' + thai : thai;
+  const combining = c === 0x0E31 ||                 // mai han akat
+                    (c >= 0x0E33 && c <= 0x0E3A) || // sara am..phinthu
+                    (c >= 0x0E47 && c <= 0x0E4E);   // maitaikhu..yamakkan
+  return combining ? 'ก' + thai : thai;
 }
 
 // ── State ──────────────────────────────────────────────────────────────────
