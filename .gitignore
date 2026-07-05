@@ -1,0 +1,9 @@
+node_modules/
+
+# Capacitor build outputs (platform source is committed, build artefacts are not)
+android/app/build/
+android/.gradle/
+android/build/
+ios/App/Pods/
+ios/App/build/
+*.xcworkspace/xcuserdata/
