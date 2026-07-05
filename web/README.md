@@ -28,6 +28,9 @@ Neon consonant-drop game set in Pattaya. Bubbles fall carrying Thai consonants; 
 **Soi Buakhao game** (`B`)
 Dialogue-driven visual novel: a 3-night bar crawl where a hostess asks simple questions in Thai (with audio) and you pick the best of four responses. Answer ≥60% correctly each night for a happy ending; the 3-night record determines the grand finale. Thai text is tokenised — tap any known word for its detail card. In-game: `1–4` select an answer, `Enter`/`Space` advances.
 
+**Soi 6: Connect สี่** (`C`)
+Connect 4 against a bar hostess — three difficulty levels, three girls (sweet trainee Nong, sharp Pim, and the undefeated Mamasan, Madam Oy, who plays a real lookahead AI and takes the first move). Each turn is a listening quiz: the vowel is spoken (sound + name), and you pick the matching Thai script from four choices to aim your own drop — get it wrong and the bar drops your token in a random column. Replaying the audio twice reveals the romanisation as a hint; with no Thai TTS voice, the romanisation is shown instead of audio. Losses go on your lady-drink tab. In-game: `1–4` answer, `1–7` pick a column, 🔊 replay.
+
 **Thai Keyboard tutor** (`K`)
 Learn the Kedmanee typing layout. A Thai character is shown (and spoken); type it on your keyboard — or tap the on-screen key on touch devices. Consonants-only or all-keys mode, with streak and accuracy tracking.
 
@@ -65,6 +68,7 @@ All shortcuts are active on the home screen.
 | `S` | Sentence SRS |
 | `G` | Walking Street game |
 | `B` | Soi Buakhao game |
+| `C` | Soi 6: Connect สี่ game |
 | `K` | Thai Keyboard tutor |
 | `V` | Vocab List |
 | `0` | Statistics |
@@ -93,6 +97,7 @@ web/
     sessions.js       flashcards, quiz, drills, SRS sessions, rating/undo
     tutor.js          Thai keyboard (Kedmanee) typing tutor
     soi-buakhao.js    Soi Buakhao dialogue game — data + game flow
+    connect4.js       Soi 6 Connect สี่ — vowel-quiz Connect 4 vs hostess AI
     game.js           Walking Street consonant-drop game (canvas)
     main.js           keyboard shortcuts, Android back button, init (loaded last)
 ```

@@ -1223,6 +1223,109 @@ kbd.tut-key {
 .sb-nb-bad { border-color:#ff006640; color:#ff6680; background:#1a0008; }
 .sb-finale-text { color:#c0a0c0; font-size:.88rem; line-height:1.7; max-width:380px; }
 
+/* ── Soi 6 Connect สี่ (vowel Connect 4) ─────────────────────────────────── */
+#c4-screen { flex-direction:column; background:#0d0015; }
+#c4-hud {
+  display:flex; justify-content:center; gap:1.8rem; padding:.4rem .8rem;
+  background:#0d0015; border-bottom:1px solid #ff006630;
+  color:#bf5fff; font-size:.85rem;
+}
+#c4-hud strong { color:#ffe600; }
+#c4-status {
+  min-height:2.3rem; display:flex; align-items:center; justify-content:center;
+  gap:.4rem; text-align:center; padding:.35rem .9rem;
+  color:#ffcce8; font-size:.9rem; border-bottom:1px solid #ff006618;
+}
+.c4-face { font-size:1.2rem; }
+#c4-body {
+  flex:1; overflow-y:auto; padding:.7rem .6rem 1rem;
+  display:flex; flex-direction:column; align-items:center; gap:.7rem;
+}
+/* hostess pick */
+.c4-pick { display:flex; flex-direction:column; gap:.7rem; width:100%; max-width:440px; }
+.c4-girl {
+  display:flex; flex-direction:column; gap:.15rem; text-align:left;
+  background:#12001e; border:1px solid #ff006635; border-radius:12px;
+  padding:.7rem .9rem; cursor:pointer; transition:all .15s; color:inherit;
+  font-family:inherit;
+}
+.c4-girl:hover { border-color:#ff1493; background:#1e0030; box-shadow:0 0 14px #ff149340; }
+.c4-girl-e    { font-size:1.7rem; }
+.c4-girl-name { color:#ff80c8; font-weight:700; font-size:1.05rem; }
+.c4-girl-th   { color:#bf5fff; font-weight:400; font-size:.9rem; }
+.c4-girl-lv   { color:#ffe600; font-size:.75rem; letter-spacing:.05em; text-transform:uppercase; }
+.c4-girl-blurb{ color:#c090b0; font-size:.8rem; font-style:italic; }
+.c4-stakes {
+  color:#bf5fff90; font-size:.8rem; text-align:center; max-width:400px; line-height:1.6;
+  border-top:1px solid #ff006620; padding-top:.7rem;
+}
+/* quiz */
+#c4-quiz { width:100%; max-width:440px; display:flex; flex-direction:column; gap:.5rem; align-items:center; }
+.c4-q-prompt { color:#ffcce8; font-size:.92rem; text-align:center; }
+.c4-q-hint {
+  min-height:1.15rem; color:#ffe600; font-size:.85rem; font-style:italic;
+  text-shadow:0 0 8px #ffe60050;
+}
+.c4-speak {
+  background:#12001e; border:1px solid #00e5ff40; color:#00e5ff;
+  border-radius:50%; width:2.2rem; height:2.2rem; flex:0 0 auto;
+  cursor:pointer; font-size:1rem; vertical-align:middle;
+  transition:all .15s;
+}
+.c4-speak:hover { border-color:#00e5ff; box-shadow:0 0 10px #00e5ff50; }
+.c4-choices { display:flex; flex-direction:column; gap:.4rem; width:100%; }
+.c4-choices-sym { flex-direction:row; flex-wrap:wrap; justify-content:center; }
+.c4-choice {
+  background:#12001e; border:1px solid #ff006628; border-radius:9px; color:#e8c0d8;
+  padding:.5rem .8rem; cursor:pointer; text-align:left; font-size:.88rem; transition:all .12s;
+  font-family:inherit;
+}
+.c4-choice:hover:not([disabled]) { border-color:#ff006680; background:#1e0030; }
+.c4-choice-sym { text-align:center; flex:0 0 auto; }
+.c4-sym { font:700 1.6rem 'Noto Sans Thai','Leelawadee UI',sans-serif; }
+.c4-cletter {
+  font-size:.72rem; font-weight:700; color:#bf5fff; background:#2a0040;
+  border-radius:4px; padding:.05rem .3rem; margin-right:.3rem;
+}
+.c4-choice.c4-ok  { border-color:#00cc66; background:#001a0a; color:#00ff88; }
+.c4-q-mini {
+  color:#00ff88; font-size:.9rem; padding:.25rem .8rem;
+  border:1px solid #00cc6640; border-radius:20px; background:#001a0a;
+  font-family:'Noto Sans Thai','Leelawadee UI',sans-serif;
+}
+.c4-choice.c4-bad { border-color:#ff3355; background:#1a0008; color:#ff6680; }
+/* board */
+#c4-board {
+  display:flex; gap:4px; background:#12001e; padding:7px;
+  border:2px solid #ff149355; border-radius:12px; box-shadow:0 0 26px #ff149325;
+}
+.c4-col { display:flex; flex-direction:column; gap:4px; border-radius:6px; padding:2px; }
+.c4-col.c4-live { cursor:pointer; }
+.c4-col.c4-live:hover { background:#ff149322; }
+.c4-cell {
+  width:min(46px, calc((100vw - 78px) / 7));
+  aspect-ratio:1; border-radius:50%;
+  background:#07001a; border:1px solid #ffffff14;
+}
+.c4-cell.p1 {
+  background:radial-gradient(circle at 35% 30%, #aaffff, #00e5ff 55%, #007a99);
+  border-color:#00e5ff; box-shadow:0 0 9px #00e5ff70;
+}
+.c4-cell.p2 {
+  background:radial-gradient(circle at 35% 30%, #ffb0dd, #ff1493 55%, #99004f);
+  border-color:#ff1493; box-shadow:0 0 9px #ff149370;
+}
+.c4-cell.c4-wincell { animation:c4pulse .7s ease-in-out infinite alternate; }
+@keyframes c4pulse {
+  from { box-shadow:0 0 8px #ffe60080; }
+  to   { box-shadow:0 0 22px #ffe600; border-color:#ffe600; }
+}
+/* end panel */
+.c4-end { display:flex; flex-direction:column; align-items:center; gap:.5rem; padding:.3rem 0; }
+.c4-end-title { color:#ffe600; font-size:1.15rem; font-weight:700; text-shadow:0 0 12px #ffe60080; }
+.c4-end-tab   { color:#ff80c8; font-size:.85rem; }
+.c4-end-btns  { display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; }
+
 /* ── Mobile (touch) adjustments — body.mobile is set by js/mobile.js ─────── */
 .touch-hint { display: none; }
 body.mobile .kb-hint      { display: none; }
@@ -1352,6 +1455,7 @@ body.mobile #app-shell {
   <ul class="sidebar-list">
     <li id="nav-G" onclick="startGame()">          🌙 Walking Street</li>
     <li id="nav-B" onclick="startSoiBuakhao()">   🌺 Soi Buakhao</li>
+    <li id="nav-C" onclick="startConnect4()">     🍹 Soi 6: Connect สี่</li>
   </ul>
 
   <div id="sidebar-footer">
@@ -1400,6 +1504,7 @@ body.mobile #app-shell {
   <ul class="menu-list">
     <li onclick="startGame()">        <span class="menu-key">G</span> 🌙 Walking Street</li>
     <li onclick="startSoiBuakhao()">  <span class="menu-key">B</span> 🌺 Soi Buakhao</li>
+    <li onclick="startConnect4()">    <span class="menu-key">C</span> 🍹 Soi 6: Connect สี่</li>
   </ul>
   <div class="screen-footer">❀ สวัสดี ❀</div>
 </div>
@@ -1621,6 +1726,20 @@ body.mobile #app-shell {
   </div>
 </div>
 
+<!-- ═══ SOI 6 CONNECT สี่ (VOWEL CONNECT 4) ══════════════════════════════════ -->
+<div id="c4-screen" class="screen">
+  <div class="screen-header" style="background:#0d0015;color:#ff1493;border-color:#ff1493;text-shadow:0 0 10px #ff1493;letter-spacing:0.08em">
+    🍹 Soi 6 — Connect สี่
+  </div>
+  <div id="c4-hud"></div>
+  <div id="c4-status"></div>
+  <div id="c4-body"></div>
+  <div class="screen-footer" style="background:#0d0015;border-top:1px solid #ff006630;color:#bf5fff50;font-size:.78rem;text-align:center;padding:.5rem;">
+    <span class="kb-hint">1–4 answer · 1–7 drop column &nbsp;·&nbsp;</span>
+    <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640;color:#ff149380" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
+  </div>
+</div>
+
 <!-- ═══ SOI BUAKHAO DIALOGUE GAME ════════════════════════════════════════════ -->
 <div id="soi-screen" class="screen">
   <div id="soi-header">
@@ -1722,6 +1841,7 @@ body.mobile #app-shell {
 <script src="js/sessions.js"></script>
 <script src="js/tutor.js"></script>
 <script src="js/soi-buakhao.js"></script>
+<script src="js/connect4.js"></script>
 <script src="js/game.js"></script>
 <script src="js/main.js"></script>
 <!-- ═══ WORD DETAIL MODAL ════════════════════════════════════════════════════ -->

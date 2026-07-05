@@ -62,7 +62,7 @@ function flashShow() {
 
   const isTh2en = (mode === "th2en") || (mode === "consonant") || (mode === "vowel");
   if (isTh2en || mode === "consonant" || mode === "vowel") {
-    document.getElementById("flash-thai").textContent = thai;
+    document.getElementById("flash-thai").textContent = vowelDisp(thai);
     document.getElementById("flash-rtgs").textContent = `(${rtgs})`;
     document.getElementById("flash-prompt").textContent =
       mode === "consonant" ? "What is this consonant?" :
@@ -175,7 +175,7 @@ function _scriptFlashShow() {
 
   setProgress("flash-prog", idx, deck.length);
   document.getElementById("flash-counter").textContent = `${label}  ${idx + 1} / ${deck.length}`;
-  document.getElementById("flash-thai").textContent  = thai;
+  document.getElementById("flash-thai").textContent  = vowelDisp(thai);
   document.getElementById("flash-rtgs").textContent  = `(${rtgs})`;
   _flashThaiClearClickable();
   document.getElementById("flash-prompt").textContent = `What is this ${label.toLowerCase()}?`;
@@ -348,7 +348,7 @@ function drillShowVowelTone() {
   document.getElementById("drill-section-label").textContent = sectionLabel;
   document.getElementById("drill-counter").textContent =
     `${item.rank} / ${item.total}  (${idx + 1} / ${deck.length} total)`;
-  document.getElementById("drill-thai").textContent = symbol;
+  document.getElementById("drill-thai").textContent = vowelDisp(symbol);
   document.getElementById("drill-rtgs").textContent = `(${rtgs})`;
   // Single marks get the "sound, name" form (e.g. ◌า → "อา, สระอา");
   // compound patterns fall back to speaking the example word.
@@ -444,7 +444,7 @@ function srsShow() {
 
   setProgress("srs-prog", idx, deck.length);
   document.getElementById("srs-counter").textContent = `${session.title}  ${idx + 1} / ${deck.length}`;
-  document.getElementById("srs-thai").textContent  = thai;
+  document.getElementById("srs-thai").textContent  = vowelDisp(thai);
   document.getElementById("srs-rtgs").textContent  = `(${rtgs})`;
   document.getElementById("srs-prompt").textContent = "Do you know this?";
   if (!thai.includes("◌")) _tts.speak(letterSpeech(thai));

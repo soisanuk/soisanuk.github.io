@@ -153,9 +153,38 @@ describe("letterSpeech", () => {
     assert.equal(letterSpeech("้"), "ไม้โท");
   });
 
+  test("compound vowel patterns get sound + name", () => {
+    assert.equal(letterSpeech("เ◌าะ"), "เอาะ, สระเอาะ");
+    assert.equal(letterSpeech("◌ัว"), "อัว, สระอัว");
+    assert.equal(letterSpeech("เ◌ีย"), "เอีย, สระเอีย");
+    assert.equal(letterSpeech("◌อ"), "ออ, สระออ");
+  });
+
+  test("every vowel in the data gets an enhanced spoken form", () => {
+    for (const [sym] of VOWELS) {
+      assert.notEqual(letterSpeech(sym), sym.replace(/◌/g, ""), `no spoken form for ${sym}`);
+    }
+  });
+
   test("words and unknown input pass through unchanged", () => {
     assert.equal(letterSpeech("สวัสดี"), "สวัสดี");
-    assert.equal(letterSpeech("เ◌ะ"), "เะ"); // compound: no single-mark name
     assert.equal(letterSpeech("A"), "A");
+  });
+});
+
+// ── vowelDisp ────────────────────────────────────────────────────────────────
+
+describe("vowelDisp", () => {
+  test("◌ placeholder becomes a ก host", () => {
+    assert.equal(vowelDisp("◌ุ"), "กุ");
+    assert.equal(vowelDisp("◌า"), "กา");
+    assert.equal(vowelDisp("เ◌ะ"), "เกะ");
+    assert.equal(vowelDisp("เ◌ีย"), "เกีย");
+  });
+
+  test("identity for text without the placeholder", () => {
+    assert.equal(vowelDisp("ก"), "ก");
+    assert.equal(vowelDisp("สวัสดี"), "สวัสดี");
+    assert.equal(vowelDisp("เอก"), "เอก"); // tone drill names untouched
   });
 });
