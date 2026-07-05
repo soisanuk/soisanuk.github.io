@@ -175,10 +175,16 @@ let _gLastStreetSpawn = 0, _gNextStreetIn = 0;
 
 // ── Init ───────────────────────────────────────────────────────────────────
 
+let _gTapBound = false;
+
 function startGame() {
   showScreen("game-screen", "G");
   _gCanvas = document.getElementById("game-canvas");
   _gCtx    = _gCanvas.getContext("2d");
+  if (IS_MOBILE && !_gTapBound) {
+    _gTapBound = true;
+    _gCanvas.addEventListener("pointerdown", _gTap);
+  }
   _gResize();
   _gReset();
   document.getElementById("game-over-panel").style.display = "none";
@@ -684,33 +690,52 @@ function _gKey(key) {
   }
 
   if (target) {
-    _gResolve(target);
-    _gPopParticles(target.x, target.y, target.color);
-    target.popped = true;
-    _gScore += 10 * _gLevel;
-    _gPopped++;
-
-    // Every 5 pops: schedule a random consonant for hint removal
-    if (_gPopped % 5 === 0) {
-      const eligible = GAME_LETTERS.map((_, i) => i).filter(i => _gHintMode[i] === 0);
-      if (eligible.length > 0) {
-        _gHintMode[eligible[Math.floor(Math.random() * eligible.length)]] = 1;
-      }
-    }
-
-    // Every 10 pops: level up
-    if (_gPopped % 10 === 0) {
-      _gLevel++;
-      _gSpawnMs = Math.max(650, _gSpawnMs - 250);
-      _gSpeed   = Math.min(3.2, _gSpeed + 0.22);
-    }
-
-    _gHUD();
+    _gPopBubble(target);
   } else {
     // Valid key but no matching bubble — shake everything
     for (const b of _gBubbles) { if (!b.popped) b.wrongFlash = 6; }
   }
   return true;
+}
+
+function _gPopBubble(target) {
+  _gResolve(target);
+  _gPopParticles(target.x, target.y, target.color);
+  target.popped = true;
+  _gScore += 10 * _gLevel;
+  _gPopped++;
+
+  // Every 5 pops: schedule a random consonant for hint removal
+  if (_gPopped % 5 === 0) {
+    const eligible = GAME_LETTERS.map((_, i) => i).filter(i => _gHintMode[i] === 0);
+    if (eligible.length > 0) {
+      _gHintMode[eligible[Math.floor(Math.random() * eligible.length)]] = 1;
+    }
+  }
+
+  // Every 10 pops: level up
+  if (_gPopped % 10 === 0) {
+    _gLevel++;
+    _gSpawnMs = Math.max(650, _gSpawnMs - 250);
+    _gSpeed   = Math.min(3.2, _gSpeed + 0.22);
+  }
+
+  _gHUD();
+}
+
+// Touch input: on mobile there is no keyboard, so tapping a sign pops it.
+function _gTap(e) {
+  if (!_gRunning) return;
+  const rect = _gCanvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) * (_gCanvas.width  / rect.width);
+  const y = (e.clientY - rect.top)  * (_gCanvas.height / rect.height);
+  let target = null, best = Infinity;
+  for (const b of _gBubbles) {
+    if (b.popped || b.bounced) continue;
+    const d = Math.hypot(b.x - x, b.y - y);
+    if (d < b.r + 16 && d < best) { best = d; target = b; }
+  }
+  if (target) _gPopBubble(target);
 }
 
 // ── Reference strip ────────────────────────────────────────────────────────

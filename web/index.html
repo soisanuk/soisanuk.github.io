@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1a1008">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -1219,6 +1219,51 @@ kbd.tut-key {
 .sb-nb-ok  { border-color:#00cc6640; color:#00ff88; background:#001a0a; }
 .sb-nb-bad { border-color:#ff006640; color:#ff6680; background:#1a0008; }
 .sb-finale-text { color:#c0a0c0; font-size:.88rem; line-height:1.7; max-width:380px; }
+
+/* ── Mobile (touch) adjustments — body.mobile is set by js/mobile.js ─────── */
+.touch-hint { display: none; }
+body.mobile .kb-hint      { display: none; }
+body.mobile .touch-hint   { display: inline; }
+body.mobile .menu-key     { display: none; }
+body.mobile .game-ref-key { display: none; }
+
+body.mobile {
+  touch-action: manipulation;              /* no 300ms delay / double-tap zoom */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;          /* stop Safari inflating text */
+}
+body.mobile #game-canvas { touch-action: none; } /* don't scroll while playing */
+
+/* Finger-sized targets */
+body.mobile .menu-list li  { padding: 0.7rem 0; }
+body.mobile .cat-list li   { padding: 0.65rem 1rem; }
+body.mobile .btn           { min-height: 44px; }
+body.mobile .rating-btn    { min-height: 46px; padding: 0.4rem 0.7rem; }
+body.mobile .quiz-choices li { padding: 0.75rem 1rem; }
+body.mobile .sb-choice     { padding: 0.75rem 0.8rem; }
+
+/* Keyboard tutor: fill the phone width with finger-sized tappable keys */
+body.mobile .tkey    { width: calc((100vw - 44px) / 10); max-width: 40px; height: 48px; }
+body.mobile .tkey-th { font-size: 1.1rem; }
+body.mobile #t-char  { font-size: 60px; min-height: 76px; }
+
+/* Font adjustments for small screens */
+body.mobile .sb-bar-sign { font-size: 1.05rem; padding: 0.5rem 0.8rem; }
+body.mobile .sb-q-thai   { font-size: 1.25rem; }
+body.mobile .sb-cth      { font-size: 1.05rem; }
+
+/* Mobile browser chrome eats vh; prefer the dynamic viewport unit */
+@supports (height: 100dvh) {
+  body.mobile, body.mobile #app-shell { min-height: 100dvh; }
+}
+/* Notched phones (viewport-fit=cover). Top inset matters in a packaged
+   (Capacitor) fullscreen webview, where no browser chrome shields the notch. */
+body.mobile #app-shell {
+  padding-top:    env(safe-area-inset-top);
+  padding-left:   env(safe-area-inset-left);
+  padding-right:  env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+}
 </style>
 </head>
 <body>
@@ -1524,7 +1569,7 @@ kbd.tut-key {
   </div>
   <div id="game-ref"></div>
   <div class="screen-footer" style="background:#05001a;border-color:#ff149340;color:#bf5fff">
-    Type the key shown on each sign · <button class="btn" style="padding:0.15rem 0.6rem;font-size:0.8rem;border-color:#ff149360;color:#ff1493" onclick="endSession()">Quit (Esc)</button>
+    <span class="kb-hint">Type the key shown on each sign · </span><span class="touch-hint">Tap a sign to pop it · </span><button class="btn" style="padding:0.15rem 0.6rem;font-size:0.8rem;border-color:#ff149360;color:#ff1493" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
   </div>
 </div>
 
@@ -1536,8 +1581,8 @@ kbd.tut-key {
   </div>
   <div id="soi-body"></div>
   <div class="screen-footer" style="background:#0d0015;border-top:1px solid #ff006630;color:#bf5fff50;font-size:.78rem;text-align:center;padding:.5rem;">
-    1–4 select · Enter/Space advance &nbsp;·&nbsp;
-    <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640;color:#ff149380" onclick="endSession()">Quit (Esc)</button>
+    <span class="kb-hint">1–4 select · Enter/Space advance &nbsp;·&nbsp;</span>
+    <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640;color:#ff149380" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
   </div>
 </div>
 
@@ -1562,8 +1607,8 @@ kbd.tut-key {
     </div>
   </div>
   <div class="screen-footer" style="background:#05001a;border-top:1px solid #00e5ff18;color:#00e5ff50;font-size:.78rem;text-align:center;padding:.5rem;">
-    Type the key for each character &nbsp;·&nbsp;
-    <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#00e5ff40;color:#00e5ff80" onclick="endSession()">Quit (Esc)</button>
+    <span class="kb-hint">Type the key for each character &nbsp;·&nbsp;</span><span class="touch-hint">Tap the key for each character &nbsp;·&nbsp;</span>
+    <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#00e5ff40;color:#00e5ff80" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
   </div>
 </div>
 
@@ -1584,8 +1629,8 @@ kbd.tut-key {
 
     <div class="tutorial-slide">
       <h2>📚 Flashcards &amp; SRS Review</h2>
-      <p>Start with <strong>Flashcards Thai→English</strong> (key <kbd class="tut-key">1</kbd>). Reveal the answer, then rate yourself 1–5.</p>
-      <p>The SM‑2 algorithm schedules each card's next review so you see it right before you'd forget it. <strong>SRS Review</strong> (key <kbd class="tut-key">4</kbd>) shows only what's due today.</p>
+      <p>Start with <strong>Flashcards Thai→English</strong><span class="kb-hint"> (key <kbd class="tut-key">1</kbd>)</span>. Reveal the answer, then rate yourself 1–5.</p>
+      <p>The SM‑2 algorithm schedules each card's next review so you see it right before you'd forget it. <strong>SRS Review</strong><span class="kb-hint"> (key <kbd class="tut-key">4</kbd>)</span> shows only what's due today.</p>
     </div>
 
     <div class="tutorial-slide">
@@ -1600,8 +1645,8 @@ kbd.tut-key {
 
     <div class="tutorial-slide">
       <h2>📖 Vocab List &amp; Script</h2>
-      <p><strong>Vocab List</strong> (key <kbd class="tut-key">V</kbd>) shows all 819 words — search, filter by category, tap any word for the detail card with decomposition.</p>
-      <p><strong>Script cards</strong> (keys <kbd class="tut-key">5</kbd>–<kbd class="tut-key">9</kbd>) teach consonants and vowels with SRS. <strong>Tone Drill</strong> (<kbd class="tut-key">T</kbd>) plays audio and asks you to identify the tone class.</p>
+      <p><strong>Vocab List</strong><span class="kb-hint"> (key <kbd class="tut-key">V</kbd>)</span> shows all 819 words — search, filter by category, tap any word for the detail card with decomposition.</p>
+      <p><strong>Script cards</strong><span class="kb-hint"> (keys <kbd class="tut-key">5</kbd>–<kbd class="tut-key">9</kbd>)</span> teach consonants and vowels with SRS. <strong>Tone Drill</strong><span class="kb-hint"> (<kbd class="tut-key">T</kbd>)</span> plays audio and asks you to identify the tone class.</p>
     </div>
 
     <div class="tutorial-dots">
@@ -1617,6 +1662,7 @@ kbd.tut-key {
   </div>
 </div>
 
+<script src="js/mobile.js"></script>
 <script src="js/data.js"></script>
 <script src="js/srs.js"></script>
 <script src="js/examples.js"></script>
@@ -1642,7 +1688,9 @@ kbd.tut-key {
 </div>
 
 <script>
-if ("serviceWorker" in navigator) {
+// Under Capacitor the assets are bundled with the app, so the offline
+// cache is pointless — skip registration there.
+if ("serviceWorker" in navigator && !window.Capacitor) {
   window.addEventListener("load", () =>
     navigator.serviceWorker.register("./sw.js").catch(() => {})
   );
