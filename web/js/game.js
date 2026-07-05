@@ -549,7 +549,9 @@ function _gDrawBubble(ctx, b) {
   ctx.font         = "bold 28px 'Noto Sans Thai','Leelawadee UI',serif";
   ctx.textAlign    = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(b.letter.thai, 0, -5);
+  // textAlign centres the advance width, but Thai glyphs carry uneven side
+  // bearings, so the visible ink sits right of centre. Offset by the ink box.
+  ctx.fillText(b.letter.thai, _gGlyphDx(ctx, b.letter.thai), -5);
   ctx.shadowBlur = 0;
 
   // Key hint — blinking on warning fall, hidden once gone.
@@ -570,6 +572,17 @@ function _gDrawBubble(ctx, b) {
   }
 
   ctx.restore();
+}
+
+// Horizontal offset that centres a glyph's ink box on x=0 (with
+// textAlign:center already set). Measured once per character.
+const _gGlyphDxCache = {};
+function _gGlyphDx(ctx, ch) {
+  if (!(ch in _gGlyphDxCache)) {
+    const m = ctx.measureText(ch);
+    _gGlyphDxCache[ch] = (m.actualBoundingBoxLeft - m.actualBoundingBoxRight) / 2;
+  }
+  return _gGlyphDxCache[ch];
 }
 
 function _gDraw() {
