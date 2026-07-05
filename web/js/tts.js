@@ -51,15 +51,35 @@ const _tts = (() => {
     document.addEventListener("click", unlock);
   }
 
+  // Pause between the parts of a multi-part utterance (letter sound → name).
+  const _GAP = 400;
+  // Generation counter: a new speak() invalidates any pending chained parts
+  // from the previous one (cancel() alone can't stop a queued setTimeout).
+  let _gen = 0;
+
   return {
     ready() { return _ready || !!_capTTS(); },
     available() { return (_ready && !!_voice) || !!_capTTS(); },
+    // text may be a string or an array of parts. Parts are spoken as
+    // separate utterances with a real pause between them — a comma inside
+    // one utterance is read straight through by Thai voices, flattening
+    // "ก, ก ไก่" into three even syllables.
     speak(text, btn) {
+      const parts = (Array.isArray(text) ? text : [text]).filter(Boolean);
+      if (!parts.length) return;
+      const gen = ++_gen;
       const cap = _capTTS();
       if (cap) {
         if (btn) btn.classList.add("speaking");
         cap.stop().catch(() => {});
-        cap.speak({ text, lang: "th-TH", rate: 0.85 })
+        (async () => {
+          for (let i = 0; i < parts.length; i++) {
+            if (gen !== _gen) return;
+            if (i) await new Promise(r => setTimeout(r, _GAP));
+            if (gen !== _gen) return;
+            await cap.speak({ text: parts[i], lang: "th-TH", rate: 0.85 });
+          }
+        })()
           .catch(() => {})
           .finally(() => { if (btn) btn.classList.remove("speaking"); });
         return;
@@ -74,21 +94,33 @@ const _tts = (() => {
       // resume() before cancel() in case Chrome left synthesis paused.
       speechSynthesis.resume();
       speechSynthesis.cancel();
-      const utt = new SpeechSynthesisUtterance(text);
-      utt.voice = voice;
-      utt.lang  = "th-TH";
-      utt.rate  = 0.85;
+      const utts = parts.map(p => {
+        const u = new SpeechSynthesisUtterance(p);
+        u.voice = voice;
+        u.lang  = "th-TH";
+        u.rate  = 0.85;
+        return u;
+      });
+      const last = utts[utts.length - 1];
       if (btn) {
         btn.classList.add("speaking");
-        utt.onend = utt.onerror = () => btn.classList.remove("speaking");
+        last.onend = last.onerror = () => btn.classList.remove("speaking");
       }
       // Chrome requires a short delay after cancel() before speak() works
       // reliably — but on iOS the delay pushes speak() out of the user-gesture
-      // call stack and the utterance is silently dropped, so speak directly.
+      // call stack and the utterance is silently dropped, so all parts are
+      // queued directly there (the utterance boundary still gives a pause).
       if (typeof IS_IOS !== "undefined" && IS_IOS) {
-        speechSynthesis.speak(utt);
+        utts.forEach(u => speechSynthesis.speak(u));
       } else {
-        setTimeout(() => speechSynthesis.speak(utt), 50);
+        for (let i = 0; i < utts.length - 1; i++) {
+          const next = utts[i + 1];
+          utts[i].onend = () => setTimeout(() => {
+            if (gen === _gen) speechSynthesis.speak(next);
+          }, _GAP);
+          utts[i].onerror = () => { if (btn) btn.classList.remove("speaking"); };
+        }
+        setTimeout(() => { if (gen === _gen) speechSynthesis.speak(utts[0]); }, 50);
       }
     },
   };

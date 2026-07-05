@@ -4,8 +4,8 @@
   "description": "Thai vocabulary and script trainer with SRS",
   "start_url": "/thaicab/",
   "display": "standalone",
-  "background_color": "#1a1008",
-  "theme_color": "#1a1008",
+  "background_color": "#0d0015",
+  "theme_color": "#0d0015",
   "icons": [
     {
       "src": "icons/icon-192.png",
