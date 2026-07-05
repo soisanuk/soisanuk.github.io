@@ -460,6 +460,12 @@ function _c4End(won) {
         <button class="sb-btn sb-btn-ghost" onclick="endSession()">กลับบ้าน — Go home</button>
       </div>
     </div>`;
+
+  // She won: teach the phrase she just used — vocab modal + audio for
+  // ชนะแล้ว ("won!"), after her win line has had a moment to land.
+  if (won && won.p === 2 && WORD_MAP["ชนะแล้ว"]) {
+    _c4Later(1200, () => openWordModal(WORD_MAP["ชนะแล้ว"]));
+  }
 }
 
 // ── Keyboard (desktop) ─────────────────────────────────────────────────────

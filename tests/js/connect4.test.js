@@ -161,6 +161,16 @@ describe("AI", () => {
   });
 });
 
+// ── vocab tie-in ──────────────────────────────────────────────────────────────
+
+describe("hostess-win phrase", () => {
+  test("ชนะแล้ว and the base verb ชนะ exist in the vocab", () => {
+    // _c4End opens the vocab modal for ชนะแล้ว when the hostess wins
+    assert.ok(WORDS.some(w => w[0] === "ชนะแล้ว"), "ชนะแล้ว missing from WORDS");
+    assert.ok(WORDS.some(w => w[0] === "ชนะ"), "ชนะ missing from WORDS");
+  });
+});
+
 // ── vowel quiz ────────────────────────────────────────────────────────────────
 
 describe("_c4MakeQuiz", () => {
