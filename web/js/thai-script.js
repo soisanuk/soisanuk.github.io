@@ -50,7 +50,7 @@ function _buildDecomposition(word) {
 
 // ── letter pronunciation ──────────────────────────────────────────────────
 // Spoken form of a single Thai letter: its sound, a slight pause (comma),
-// then its traditional name — e.g. ก → "ก, ก ไก่". Anything that is not a
+// then its traditional name spelled solid — e.g. ก → "ก, กอไก่". Anything that is not a
 // single known letter is returned unchanged, so callers can wrap all speech
 // through this unconditionally.
 
@@ -107,14 +107,17 @@ function letterSpeech(ch) {
   if ([...ch].length !== 1) return ch;
   if (typeof CONSONANTS !== "undefined") {
     const row = CONSONANTS.find(r => r[0] === ch);
-    if (row) return `${ch}, ${ch} ${row[3]}`;
+    // The name is spelled solid with the อ vowel written out (ก → กอไก่):
+    // "ก ไก่" is read as two clipped tokens, while กอไก่ gets natural word
+    // prosody and the correct tone from its spelling.
+    if (row) return `${ch}, ${ch}อ${row[3]}`;
   }
   return _LETTER_SPEECH_EXTRA[ch] || ch;
 }
 
 // letterSpeech split for _tts.speak: each part becomes its own utterance
 // with a pause between (sound … name). Thai TTS voices read a comma inside
-// one utterance straight through, so "ก, ก ไก่" as a single string comes
+// one utterance straight through, so "ก, กอไก่" as a single string comes
 // out as three flat syllables. Non-letters pass through as one part.
 function letterSpeechParts(ch) {
   return letterSpeech(ch).split(", ");

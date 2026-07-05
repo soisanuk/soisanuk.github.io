@@ -125,15 +125,15 @@ describe("buildDecomposition", () => {
 
 describe("letterSpeech", () => {
   test("consonants get sound + traditional name", () => {
-    assert.equal(letterSpeech("ก"), "ก, ก ไก่");
-    assert.equal(letterSpeech("ข"), "ข, ข ไข่");
-    assert.equal(letterSpeech("ม"), "ม, ม ม้า");
+    assert.equal(letterSpeech("ก"), "ก, กอไก่");
+    assert.equal(letterSpeech("ข"), "ข, ขอไข่");
+    assert.equal(letterSpeech("ม"), "ม, มอม้า");
   });
 
   test("every consonant in the data gets an enhanced form", () => {
     for (const row of CONSONANTS) {
       const out = letterSpeech(row[0]);
-      assert.equal(out, `${row[0]}, ${row[0]} ${row[3]}`);
+      assert.equal(out, `${row[0]}, ${row[0]}อ${row[3]}`);
     }
   });
 
@@ -176,7 +176,7 @@ describe("letterSpeech", () => {
 
 describe("letterSpeechParts", () => {
   test("sound and name become separate utterance parts", () => {
-    assert.deepEqual(letterSpeechParts("ก"), ["ก", "ก ไก่"]);
+    assert.deepEqual(letterSpeechParts("ก"), ["ก", "กอไก่"]);
     assert.deepEqual(letterSpeechParts("า"), ["อา", "สระอา"]);
     assert.deepEqual(letterSpeechParts("เ◌าะ"), ["เอาะ", "สระเอาะ"]);
   });

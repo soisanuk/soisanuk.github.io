@@ -63,7 +63,7 @@ const _tts = (() => {
     // text may be a string or an array of parts. Parts are spoken as
     // separate utterances with a real pause between them — a comma inside
     // one utterance is read straight through by Thai voices, flattening
-    // "ก, ก ไก่" into three even syllables.
+    // "ก, กอไก่" into even syllables.
     speak(text, btn) {
       const parts = (Array.isArray(text) ? text : [text]).filter(Boolean);
       if (!parts.length) return;
@@ -106,20 +106,21 @@ const _tts = (() => {
         btn.classList.add("speaking");
         last.onend = last.onerror = () => btn.classList.remove("speaking");
       }
+      for (let i = 0; i < utts.length - 1; i++) {
+        const next = utts[i + 1];
+        utts[i].onend = () => setTimeout(() => {
+          if (gen === _gen) speechSynthesis.speak(next);
+        }, _GAP);
+        utts[i].onerror = () => { if (btn) btn.classList.remove("speaking"); };
+      }
       // Chrome requires a short delay after cancel() before speak() works
       // reliably — but on iOS the delay pushes speak() out of the user-gesture
-      // call stack and the utterance is silently dropped, so all parts are
-      // queued directly there (the utterance boundary still gives a pause).
+      // call stack and the utterance is silently dropped, so the first part is
+      // spoken directly there. Chained parts are fine on iOS: only the first
+      // utterance of an unlocked page must be inside a gesture.
       if (typeof IS_IOS !== "undefined" && IS_IOS) {
-        utts.forEach(u => speechSynthesis.speak(u));
+        speechSynthesis.speak(utts[0]);
       } else {
-        for (let i = 0; i < utts.length - 1; i++) {
-          const next = utts[i + 1];
-          utts[i].onend = () => setTimeout(() => {
-            if (gen === _gen) speechSynthesis.speak(next);
-          }, _GAP);
-          utts[i].onerror = () => { if (btn) btn.classList.remove("speaking"); };
-        }
         setTimeout(() => { if (gen === _gen) speechSynthesis.speak(utts[0]); }, 50);
       }
     },
