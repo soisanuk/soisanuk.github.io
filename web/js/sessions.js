@@ -60,21 +60,16 @@ function flashShow() {
   document.getElementById("flash-counter").textContent =
     `${session.type === "script" ? "Script" : "Vocab"}  ${idx + 1} / ${deck.length}`;
 
-  const isTh2en = (mode === "th2en") || (mode === "consonant") || (mode === "vowel");
-  if (isTh2en || mode === "consonant" || mode === "vowel") {
+  // Consonant/vowel cards render via _scriptFlashShow, not here — flashShow
+  // only ever sees th2en/en2th.
+  if (mode === "th2en") {
     document.getElementById("flash-thai").textContent = vowelDisp(thai);
     document.getElementById("flash-rtgs").textContent = `(${rtgs})`;
-    document.getElementById("flash-prompt").textContent =
-      mode === "consonant" ? "What is this consonant?" :
-      mode === "vowel"     ? "What is this vowel pattern?" :
-      "What does this mean?";
-    document.getElementById("flash-answer").textContent =
-      session.backText ? session.backText[idx] : english;
-    // Script cards speak "letter … letter name" (e.g. ก → "ก", "ก ไก่")
-    const spoken = (mode === "consonant" || mode === "vowel") ? letterSpeechParts(thai) : thai;
-    _flashSpeakSet(spoken);
-    _tts.speak(spoken);
-    if (mode === "th2en") _flashThaiMakeClickable(word); else _flashThaiClearClickable();
+    document.getElementById("flash-prompt").textContent = "What does this mean?";
+    document.getElementById("flash-answer").textContent = english;
+    _flashSpeakSet(thai);
+    _tts.speak(thai);
+    _flashThaiMakeClickable(word);
   } else {
     // en2th: show English, hide Thai until reveal
     document.getElementById("flash-thai").textContent = "?";
@@ -129,21 +124,10 @@ function startConsonantFlash() {
   const fresh = newCards(progress, keys, 10);
   const deck  = shuffle([...new Set([...due, ...fresh])].length ?
     [...new Set([...due, ...fresh])] : keys.slice(0, 15));
-  const backMap = {};
+  const map = {};
   for (const c of CONSONANTS)
-    backMap[`sc:${c[0]}`] = `${c[2]} class  ·  ${c[3]}  ·  /${c[4]}/ → /${c[5]}/`;
-  session = {
-    mode: "consonant", type: "script",
-    wordList: CONSONANT_SORTED.map(c => [`sc:${c[0]}`, c[0], c[1], backMap[`sc:${c[0]}`], "script", ""]),
-    deck, idx: 0, correct: 0,
-    backText: deck.map(k => backMap[k] || ""),
-  };
-  // Override word lookup to use consonant deck
-  session._map = {};
-  for (const c of CONSONANTS)
-    session._map[`sc:${c[0]}`] = [c[0], c[1], backMap[`sc:${c[0]}`]];
-
-  _startScriptFlash(deck, session._map, "Consonant");
+    map[`sc:${c[0]}`] = [c[0], c[1], `${c[2]} class  ·  ${c[3]}  ·  /${c[4]}/ → /${c[5]}/`];
+  _startScriptFlash(deck, map, "Consonant");
 }
 
 function startVowelFlash() {
@@ -178,6 +162,13 @@ function _scriptFlashShow() {
   document.getElementById("flash-thai").textContent  = vowelDisp(thai);
   document.getElementById("flash-rtgs").textContent  = `(${rtgs})`;
   _flashThaiClearClickable();
+  // Reset shared flash-screen state left over from a vocab session: the 🔊
+  // button would otherwise replay the previous session's word, and the
+  // revealed example sentence would reappear inside the answer area.
+  document.getElementById("flash-example").style.display = "none";
+  const spoken = map[key] ? letterSpeechParts(thai) : null;
+  _flashSpeakSet(spoken);
+  if (spoken) _tts.speak(spoken);
   document.getElementById("flash-prompt").textContent = `What is this ${label.toLowerCase()}?`;
   document.getElementById("flash-answer").textContent = answer;
   const card = peekCard(progress, key);
