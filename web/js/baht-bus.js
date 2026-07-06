@@ -572,7 +572,7 @@ function _bbSceneStart() {
   _bbLadies = _BB_LADY_POS.map(px => ({
     px,
     shirt: _BB_LADY_SHIRTS[Math.floor(Math.random() * _BB_LADY_SHIRTS.length)],
-    gone: false, returnAt: 0, heartUntil: 0,
+    gone: false, walking: false, returnAt: 0, heartUntil: 0,
   }));
   if (!_bbAnimId) _bbAnimId = requestAnimationFrame(_bbFrame);
 }
@@ -765,7 +765,7 @@ function _bbFrame(now) {
       ctx.font = "13px sans-serif";
       ctx.fillText("💕", W * L.px + 26, roadY - 36);
     }
-    if (!L.gone) {
+    if (!L.gone && !L.walking) {
       _bbSprite(ctx, _WALK_FRAMES[0], { ..._WALK_BASE, B: L.shirt },
         W * L.px + 30, roadY - 26, 3, L.px > 0.6);
     }
@@ -783,13 +783,11 @@ function _bbFrame(now) {
         a.haggledLady = null;
         a.pauseUntil = 0;
         const L = _bbLadies[li];
-        if (prog >= 0.6 && !L.gone && Math.random() < 0.35) {
-          // successful deal — both leave together
-          L.heartUntil = now + 1800;
-          L.gone = true;
-          L.returnAt = now + 9000 + Math.random() * 8000;
-          _bbAmbient.splice(i, 1);
-          continue;
+        if (prog >= 0.6 && !L.gone && !L.walking && Math.random() < 0.35) {
+          // successful deal — walk off together (ped stays, lady walks beside it)
+          L.heartUntil = now + 1600;
+          L.walking = true;
+          a.leavingWith = li;
         }
       }
       if (!paused) {
@@ -807,9 +805,21 @@ function _bbFrame(now) {
           }
         }
       }
-      if (a.x < -100 || a.x > W + 100) { _bbAmbient.splice(i, 1); continue; }
+      if (a.x < -100 || a.x > W + 100) {
+        if (a.leavingWith != null) {
+          const L = _bbLadies[a.leavingWith];
+          L.walking = false; L.gone = true;
+          L.returnAt = now + 9000 + Math.random() * 8000;
+        }
+        _bbAmbient.splice(i, 1); continue;
+      }
       _bbSprite(ctx, _WALK_FRAMES[paused ? 0 : ambFrame], { ..._WALK_BASE, B: a.shirt },
         a.x, roadY - 26, 3, a.vx < 0);
+      if (a.leavingWith != null) {
+        const Lw = _bbLadies[a.leavingWith];
+        _bbSprite(ctx, _WALK_FRAMES[ambFrame], { ..._WALK_BASE, B: Lw.shirt },
+          a.x + (a.vx < 0 ? 14 : -14), roadY - 26, 3, a.vx < 0);
+      }
       if (paused) {
         ctx.font = "bold 9px monospace";
         ctx.fillStyle = "#ffe600";
