@@ -154,6 +154,23 @@ function _bbSpeakBaht(n, suffix) {
   try { _tts.speak(_bbThaiNum(n) + "บาท" + (suffix || "")); } catch (_) {}
 }
 
+// Reference chart of the number building blocks, docked under the game.
+// Lives outside #bb-body so phase changes never wipe it; tap a cell to hear it.
+function _bbBuildChart() {
+  const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 100];
+  const el = document.getElementById("bb-chart");
+  el.innerHTML = `<div class="bb-chart-title">เลขไทย — tap a number to hear it</div>
+    <div class="bb-chart-grid">` + nums.map(n => `
+      <button class="bb-chart-cell" data-n="${n}">
+        <span class="bb-chart-num">${n}</span>
+        <span class="bb-chart-th">${_bbThaiNum(n)}</span>
+      </button>`).join("") + `</div>`;
+  el.querySelectorAll(".bb-chart-cell").forEach(b =>
+    b.addEventListener("click", () => {
+      try { _tts.speak(_bbThaiNum(+b.dataset.n)); } catch (_) {}
+    }));
+}
+
 // ── Entry / shift flow ─────────────────────────────────────────────────────
 
 function startBahtBus() {
@@ -163,6 +180,7 @@ function startBahtBus() {
   _bbPhase = "idle";
   _bbHUD();
   _bbSceneStart();
+  _bbBuildChart();
   document.getElementById("bb-body").innerHTML = `
     <div class="bb-caption">🌅 Evening shift on the Beach Road loop.
     ฿${_BB_FARE} a head — charters pay what you can talk them into.</div>`;
@@ -428,23 +446,40 @@ function _bbKey(key) {
 }
 
 // ── Canvas scene: sunset Beach Road ────────────────────────────────────────
-// Sky → sun → sea → sand (palm silhouettes) → promenade → road, with the
-// baht bus sliding in and out and dropped-off riders walking away. All state
-// transitions are driven from the RAF loop via _bbStopReady/_bbNextStop.
+// Sky → sun → sea → beach (tented loungers left, neon palms) → boardwalk →
+// road, with the baht bus sliding in and out, dropped-off riders joining the
+// boardwalk strollers, and far-lane traffic passing behind the parked bus.
+// All state transitions are driven from the RAF loop via _bbStopReady/
+// _bbNextStop.
 
 let _bbCanvas = null, _bbCtx = null, _bbAnimId = null;
 let _bbBusX = -1, _bbLeavers = [], _bbWaiter = false, _bbSpawnedLeavers = false;
+let _bbAmbient = [], _bbNextAmb = 0;
 
+// Tall palm, neon-green fronds over a warm trunk
 const _BB_PALM = [
-  "..LL.LLL.LL..",
-  ".L..LLLLL..L.",
-  "L..L.LTL.L..L",
-  "......T......",
+  "..G.gGG.G....",
+  ".GGgGGGgGG...",
+  "GGg.GGG.gGG..",
+  ".g..GTG...g..",
+  "....gT.g.....",
   ".....T.......",
   ".....T.......",
-  "....TT.......",
+  "....T........",
+  "....T........",
+  "....T........",
+  "...T.........",
+  "...TT........",
 ];
-const _BB_PALM_COL = { L: "#301a58", T: "#241040" };
+const _BB_PALM_COL = { G: "#39ff7f", g: "#00c957", T: "#4e2f1a" };
+
+// Brown beach lounger, profile, backrest toward the sea breeze
+const _BB_CHAIR = [
+  "B....",
+  "BBBB.",
+  "bBBBb",
+];
+const _BB_CHAIR_COL = { B: "#9c6b3d", b: "#5f3d20" };
 
 function _bbSprite(ctx, rows, colors, x, y, scale, flipX) {
   ctx.save();
@@ -465,8 +500,32 @@ function _bbSceneStart() {
   _bbCtx = _bbCanvas.getContext("2d");
   _bbBusX = -0.3;
   _bbLeavers = [];
+  _bbAmbient = [];
+  _bbNextAmb = 0;
   _bbWaiter = false;
   if (!_bbAnimId) _bbAnimId = requestAnimationFrame(_bbFrame);
+}
+
+// Ambient street life: strollers on the boardwalk (both ways), motorbikes
+// and the odd rival songthaew in the far lane (always heading left, so they
+// pass behind the parked player bus instead of rear-ending it).
+function _bbSpawnAmbient(W) {
+  const r = Math.random();
+  if (r < 0.6) {
+    const dir = Math.random() < 0.5 ? 1 : -1;
+    _bbAmbient.push({
+      kind: "ped", x: dir === 1 ? -20 : W + 20,
+      vx: dir * (0.3 + Math.random() * 0.25),
+      shirt: _WALK_SHIRTS[Math.floor(Math.random() * _WALK_SHIRTS.length)],
+    });
+  } else if (r < 0.9) {
+    _bbAmbient.push({
+      kind: "moto", x: W + 40, vx: -(1.0 + Math.random() * 0.8),
+      colors: Math.random() < 0.3 ? _MOTO_GRAB_COL : _MOTO_COL,
+    });
+  } else {
+    _bbAmbient.push({ kind: "bus", x: W + 80, vx: -(0.6 + Math.random() * 0.4) });
+  }
 }
 
 function _bbSceneArrive() {
@@ -491,48 +550,96 @@ function _bbFrame(now) {
   const ctx = _bbCtx;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
+  // layout bands
+  const seaY = H * 0.50, beachY = H * 0.64, walkY = H * 0.76, roadY = H * 0.84;
+
   // sky
-  const sky = ctx.createLinearGradient(0, 0, 0, H * 0.62);
+  const sky = ctx.createLinearGradient(0, 0, 0, seaY);
   sky.addColorStop(0, "#1a0b3d");
   sky.addColorStop(0.55, "#7a2a58");
   sky.addColorStop(1, "#ff9b5e");
   ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, W, H * 0.62);
+  ctx.fillRect(0, 0, W, seaY);
 
   // sun on the horizon
-  const sunX = W * 0.72, seaY = H * 0.52;
+  const sunX = W * 0.72;
   ctx.save();
   ctx.shadowColor = "#ffce7a"; ctx.shadowBlur = 26;
   ctx.fillStyle = "#ffd98a";
   ctx.beginPath(); ctx.arc(sunX, seaY - 12, 15, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 
-  // sea, with a shimmering sun column
-  const sea = ctx.createLinearGradient(0, seaY, 0, H * 0.7);
+  // sea, with a shimmering sun column and a foam line on the sand
+  const sea = ctx.createLinearGradient(0, seaY, 0, beachY);
   sea.addColorStop(0, "#4a2a6e"); sea.addColorStop(1, "#221540");
   ctx.fillStyle = sea;
-  ctx.fillRect(0, seaY, W, H * 0.7 - seaY);
+  ctx.fillRect(0, seaY, W, beachY - seaY);
   ctx.fillStyle = "rgba(255,200,120,0.35)";
-  for (let i = 0; i < 6; i++) {
-    const y = seaY + 4 + i * ((H * 0.7 - seaY) / 6);
+  for (let i = 0; i < 5; i++) {
+    const y = seaY + 4 + i * ((beachY - seaY) / 5);
     const w = 14 + 10 * Math.sin(now * 0.002 + i * 2.1);
     ctx.fillRect(sunX - w / 2, y, w, 2);
   }
-
-  // sand + palms + promenade
-  ctx.fillStyle = "#6e4f63";
-  ctx.fillRect(0, H * 0.7, W, H * 0.12);
-  for (const px of [0.08, 0.3, 0.9]) {
-    _bbSprite(ctx, _BB_PALM, _BB_PALM_COL, W * px, H * 0.7 - 24, 4, px > 0.5);
+  ctx.fillStyle = "rgba(230,220,255,0.30)";
+  for (let x = 0; x < W; x += 26) {
+    ctx.fillRect(x + 6 * Math.sin(now * 0.0012 + x), beachY - 2, 14, 2);
   }
-  ctx.fillStyle = "#3a2450";
-  ctx.fillRect(0, H * 0.82, W, 4);
+
+  // beach
+  ctx.fillStyle = "#7d5a60";
+  ctx.fillRect(0, beachY, W, walkY - beachY);
+
+  // tented lounger group on the left third, facing the sea
+  const tentX0 = W * 0.03, tentX1 = W * 0.30;
+  ctx.fillStyle = "#5f3d20";
+  ctx.fillRect(tentX0 + 2, beachY + 5, 2, walkY - beachY - 5);
+  ctx.fillRect(tentX1 - 4, beachY + 5, 2, walkY - beachY - 5);
+  const nChairs = Math.max(2, Math.floor((tentX1 - tentX0 - 14) / 24));
+  for (let i = 0; i < nChairs; i++) {
+    _bbSprite(ctx, _BB_CHAIR, _BB_CHAIR_COL, tentX0 + 9 + i * 24, walkY - 11, 3, false);
+  }
+  ctx.fillStyle = "#d8c9a8";
+  ctx.fillRect(tentX0, beachY + 1, tentX1 - tentX0, 5);
+  ctx.fillStyle = "#b03a3a";
+  ctx.fillRect(tentX0, beachY + 1, tentX1 - tentX0, 2);
+
+  // tall neon palms rooted at the boardwalk edge, crowns up in the sunset
+  for (const px of [0.34, 0.55, 0.75, 0.94]) {
+    _bbSprite(ctx, _BB_PALM, _BB_PALM_COL, W * px, walkY - 58, 5, px > 0.6);
+  }
+
+  // boardwalk: planks with seams
+  ctx.fillStyle = "#7a4a30";
+  ctx.fillRect(0, walkY, W, roadY - walkY);
+  ctx.fillStyle = "#5f3d20";
+  ctx.fillRect(0, walkY, W, 2);
+  for (let x = 8; x < W; x += 16) ctx.fillRect(x, walkY + 2, 1, roadY - walkY - 2);
 
   // road
   ctx.fillStyle = "#171226";
-  ctx.fillRect(0, H * 0.82 + 4, W, H);
+  ctx.fillRect(0, roadY, W, H - roadY);
   ctx.fillStyle = "rgba(255,255,255,0.12)";
   for (let x = (now * 0.01) % 40 - 40; x < W; x += 40) ctx.fillRect(x, H * 0.93, 18, 2);
+
+  // ambient street life (far lane vehicles first, so they pass behind the bus)
+  if (now > _bbNextAmb) {
+    _bbSpawnAmbient(W);
+    _bbNextAmb = now + 1800 + Math.random() * 2800;
+  }
+  const ambFrame = Math.floor(now / 360) % 2;
+  for (let i = _bbAmbient.length - 1; i >= 0; i--) {
+    const a = _bbAmbient[i];
+    a.x += a.vx;
+    if (a.x < -100 || a.x > W + 100) { _bbAmbient.splice(i, 1); continue; }
+    if (a.kind === "ped") {
+      _bbSprite(ctx, _WALK_FRAMES[ambFrame], { ..._WALK_BASE, B: a.shirt },
+        a.x, roadY - 26, 3, a.vx < 0);
+    } else if (a.kind === "moto") {
+      _bbSprite(ctx, _MOTO_ROWS, a.colors, a.x, roadY - 6, 3, true);
+    } else {
+      _bbSprite(ctx, _BUS_ROWS, _BUS_COL, a.x, roadY - 18, 4, true);
+    }
+  }
 
   // bus movement per phase
   const target = 0.42;
@@ -559,23 +666,23 @@ function _bbFrame(now) {
     }
   }
 
-  // dropped-off riders walking away
-  const walkFrame = Math.floor(now / 360) % 2;
+  // dropped-off riders join the boardwalk, walking away
   for (let i = _bbLeavers.length - 1; i >= 0; i--) {
     const p = _bbLeavers[i];
     p.x += p.vx;
     if (p.x < -20) { _bbLeavers.splice(i, 1); continue; }
-    _bbSprite(ctx, _WALK_FRAMES[walkFrame], { ..._WALK_BASE, B: p.shirt },
-      p.x, H * 0.82 + 4 - 24, 3, true);
+    _bbSprite(ctx, _WALK_FRAMES[ambFrame], { ..._WALK_BASE, B: p.shirt },
+      p.x, roadY - 26, 3, true);
   }
 
-  // charter passenger waiting ahead of the bus
+  // charter passenger waiting on the boardwalk ahead of the bus
   if (_bbWaiter) {
     _bbSprite(ctx, _WALK_FRAMES[0], { ..._WALK_BASE, B: "#cc2288" },
-      W * target + 14 * 5 + 26, H * 0.82 + 4 - 24, 3, true);
+      W * target + 14 * 5 + 26, roadY - 26, 3, true);
   }
 
-  // the bus (gentle idle bob while parked)
-  const bob = _bbPhase === "wait" ? Math.round(Math.sin(now * 0.004)) : 0;
-  _bbSprite(ctx, _BUS_ROWS, _BUS_COL, _bbBusX * W, H * 0.82 + 4 - 7 * 5 + 14 + bob, 5, false);
+  // the player's bus, near lane (gentle idle bob while parked at a stop)
+  const parked = _bbPhase === "fare" || _bbPhase === "charter" || _bbPhase === "counter";
+  const bob = parked ? Math.round(Math.sin(now * 0.004)) : 0;
+  _bbSprite(ctx, _BUS_ROWS, _BUS_COL, _bbBusX * W, H - 38 + bob, 5, false);
 }

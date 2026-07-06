@@ -1235,6 +1235,7 @@ kbd.tut-key {
 }
 #bb-hud strong { color:#ffe600; }
 #bb-canvas { display:block; width:100%; height:190px; background:#1a0b3d; flex:0 0 auto; }
+body.mobile #bb-canvas { height:150px; } /* leave room for the tray + chart */
 #bb-body {
   flex:1; overflow-y:auto; padding:.8rem .9rem 1.1rem; width:100%; max-width:560px;
   margin:0 auto; box-sizing:border-box; display:flex; flex-direction:column;
@@ -1282,6 +1283,26 @@ kbd.tut-key {
 .bb-choice.bb-bad { border-color:#ff006640; color:#ff6680; background:#1a0008; }
 .bb-cletter { color:#ff8c42; font-size:.75rem; font-weight:700; }
 .bb-choice .bb-thai { font-size:1.08rem; }
+#bb-chart {
+  flex:0 0 auto; border-top:1px solid #ff8c4230; background:#12061f;
+  padding:.45rem .7rem .6rem;
+}
+.bb-chart-title {
+  text-align:center; color:#b08a9a; font-size:.7rem; letter-spacing:.06em;
+  margin-bottom:.35rem;
+}
+.bb-chart-grid {
+  display:grid; grid-template-columns:repeat(6,1fr); gap:.35rem;
+  max-width:560px; margin:0 auto;
+}
+.bb-chart-cell {
+  background:#1c0b2e; border:1px solid #ff8c4225; border-radius:8px;
+  padding:.28rem .15rem; cursor:pointer; display:flex; flex-direction:column;
+  align-items:center; gap:.08rem; font-family:inherit; transition:all .12s;
+}
+.bb-chart-cell:hover { border-color:#ff8c42; box-shadow:0 0 8px #ff8c4230; }
+.bb-chart-num { color:#ffe600; font-weight:700; font-size:.92rem; }
+.bb-chart-th { color:#ffd9c0; font-size:.78rem; }
 .bb-end { text-align:center; display:flex; flex-direction:column; gap:.6rem; align-items:center; padding-top:.5rem; }
 .bb-end-title { font-size:1.3rem; color:#ff8c42; text-shadow:0 0 12px #ff8c4280; }
 .bb-end-earn { font-size:2rem; color:#ffe600; font-weight:800; text-shadow:0 0 14px #ffe60060; }
@@ -1811,6 +1832,7 @@ body.mobile #app-shell {
   <div id="bb-hud"></div>
   <canvas id="bb-canvas"></canvas>
   <div id="bb-body"></div>
+  <div id="bb-chart"></div>
   <div class="screen-footer" style="background:#160822;border-top:1px solid #ff8c4230;color:#ffb37a80;font-size:.78rem;text-align:center;padding:.5rem;">
     <span class="kb-hint">1–7 money · Enter give · 1–4 quote · R replay &nbsp;·&nbsp;</span>
     <button class="btn audio-mute-btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff8c4240" onclick="this.textContent=_audio.toggleMute()?'🔇':'🔊'">🔊</button>
