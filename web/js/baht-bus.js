@@ -34,7 +34,7 @@ function _bbRomanNum(n) {
 
 const _BB_FARE  = 15;                          // baht per person on the loop
 const _BB_STOPS = 10;                          // stops in a shift
-const _BB_TRAY  = [1, 2, 5, 10, 20, 50, 100];  // your money tray
+const _BB_TRAY  = [5, 10, 20, 50, 100];         // your money tray (฿1/฿2 not in use)
 
 // Real Thai money colours (note faces; ฿10 is the gold-centred coin)
 const _BB_MONEY_COL = {
@@ -240,23 +240,23 @@ function _bbFareUI() {
         : `<strong class="bb-thai">${_bbThaiNum(c.paid)}บาท</strong>`}
       <span class="bb-hint" id="bb-hint"></span></div>
     <div class="bb-caption bb-dim">Give the right change — or take it with a wai if it's exact.</div>
-    <div class="bb-money" id="bb-coins"></div>
-    <div class="bb-money" id="bb-notes"></div>
+    <div class="bb-money" id="bb-tray"></div>
     <div class="bb-given-row">
       <div class="bb-given" id="bb-given"></div>
+      <button class="btn bb-clear" id="bb-clear" title="Clear all">✕</button>
       <button class="btn btn-primary bb-confirm" id="bb-confirm">✓</button>
     </div>`;
-  const coins = document.getElementById("bb-coins");
-  const notes = document.getElementById("bb-notes");
+  const tray = document.getElementById("bb-tray");
   _BB_TRAY.forEach((d, i) => {
     const b = document.createElement("button");
     b.className = d <= 10 ? "bb-coin" : "bb-note";
     b.style.background = _BB_MONEY_COL[d];
     b.innerHTML = `<span class="kb-hint bb-key">${i + 1}</span>฿${d}`;
     b.onclick = () => _bbTrayAdd(d);
-    (d <= 10 ? coins : notes).appendChild(b);
+    tray.appendChild(b);
   });
   document.getElementById("bb-confirm").onclick = _bbConfirmChange;
+  document.getElementById("bb-clear").onclick = () => { _bbSel = []; _bbRenderGiven(); };
   body.querySelector(".bb-speak")?.addEventListener("click", () => {
     _bbSpeakBaht(c.paid);
     // like Connect สี่: replays gradually reveal the answer as text
@@ -447,7 +447,7 @@ function _bbEnd() {
 function _bbKey(key) {
   if (!_bbActive()) return false;
   if (_bbPhase === "fare") {
-    const i = "1234567".indexOf(key);
+    const i = "12345".indexOf(key);
     if (i >= 0) { _bbTrayAdd(_BB_TRAY[i]); return true; }
     if (key === "Backspace") { _bbSel.pop(); _bbRenderGiven(); return true; }
     if (key === "Enter") { _bbConfirmChange(); return true; }
