@@ -1235,7 +1235,13 @@ kbd.tut-key {
 }
 #bb-hud strong { color:#ffe600; }
 #bb-canvas { display:block; width:100%; height:190px; background:#1a0b3d; flex:0 0 auto; }
-body.mobile #bb-canvas { height:150px; } /* leave room for the tray + chart */
+body.mobile #bb-canvas { height:150px; }
+/* Number chart: collapsed on mobile by default; tap the title row to expand */
+body.mobile #bb-chart .bb-chart-grid { display: none; }
+body.mobile #bb-chart.bb-chart-open .bb-chart-grid { display: grid; }
+body.mobile .bb-chart-title { cursor: pointer; user-select: none; -webkit-user-select: none; }
+/* Tighter body padding on mobile so tray fits without scrolling */
+body.mobile #bb-body { padding: .4rem .5rem .5rem; gap: .4rem; }
 #bb-body {
   flex:1; overflow-y:auto; padding:.8rem .9rem 1.1rem; width:100%; max-width:560px;
   margin:0 auto; box-sizing:border-box; display:flex; flex-direction:column;
