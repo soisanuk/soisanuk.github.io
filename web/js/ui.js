@@ -336,7 +336,7 @@ function showStats() {
     <div class="btn-row export-import-row" style="margin-top:1rem;">
       <button class="btn" onclick="exportProgress()">⬇ Export Progress</button>
       <button class="btn" onclick="document.getElementById('import-file-input').click()">⬆ Import Progress</button>
-      <button class="btn" onclick="if(confirm('Reset ALL progress?')) { localStorage.removeItem('thaicab_progress'); progress={}; showStats(); updateMenuStats(); }">
+      <button class="btn" onclick="if(confirm('Reset ALL progress?')) { localStorage.removeItem('soisanuk_progress'); progress={}; showStats(); updateMenuStats(); }">
         Reset
       </button>
     </div>
@@ -429,7 +429,7 @@ function showExample(containerId, vocabWord) {
 }
 
 // ─── tutorial ────────────────────────────────────────────────────────────────
-const _TUT_KEY = "thaicab_seen_tutorial";
+const _TUT_KEY = "soisanuk_seen_tutorial";
 const _TUT_TOTAL = 4;
 let _tutStep = 0;
 

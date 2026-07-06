@@ -2,7 +2,7 @@
 
 Thai vocabulary and script trainer with spaced repetition.
 
-**Live:** https://mari0d.github.io/thaicab/
+**Live:** https://soisanuk.github.io/
 
 ## Features
 
@@ -132,8 +132,8 @@ Or open `index.html` directly — all data is local script tags, no network requ
 
 ## Progress storage
 
-SRS progress is stored in `localStorage` under key `thaicab_progress`. It persists across sessions in the same browser. Export/import via **Statistics** to move progress between devices or make backups.
+SRS progress is stored in `localStorage` under key `soisanuk_progress`. It persists across sessions in the same browser. Export/import via **Statistics** to move progress between devices or make backups.
 
 ## Deployment
 
-Pushes to `main` deploy automatically to GitHub Pages via `.github/workflows/pages.yml`. The workflow rewrites the service-worker cache name (`thaicab-dev` → `thaicab-<commit sha>`) so every deploy invalidates the previous offline cache — no manual version bump needed.
+Pushes to `main` deploy automatically to GitHub Pages via `.github/workflows/pages.yml`. The workflow rewrites the service-worker cache name (`soisanuk-dev` → `soisanuk-<commit sha>`) so every deploy invalidates the previous offline cache — no manual version bump needed.
