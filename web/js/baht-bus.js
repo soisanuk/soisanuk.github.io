@@ -164,16 +164,29 @@ function _bbBuildChart() {
   // it's also the only label wide enough to wrap the mobile grid.
   const label = n => (n === 100 ? "ร้อย" : _bbThaiNum(n));
   const el = document.getElementById("bb-chart");
-  el.innerHTML = `<div class="bb-chart-title">เลขไทย — tap a number to hear it</div>
+  el.innerHTML = `
+    <div class="bb-chart-title" id="bb-chart-hdr">
+      เลขไทย — tap a number to hear it
+      <span class="touch-hint" id="bb-chart-tog" style="font-size:.68rem;color:#b08a9a;margin-left:.5rem">▶ show</span>
+    </div>
     <div class="bb-chart-grid">` + nums.map(n => `
       <button class="bb-chart-cell" data-n="${n}">
         <span class="bb-chart-num">${n}</span>
         <span class="bb-chart-th">${label(n)}</span>
       </button>`).join("") + `</div>`;
   el.querySelectorAll(".bb-chart-cell").forEach(b =>
-    b.addEventListener("click", () => {
+    b.addEventListener("click", e => {
+      e.stopPropagation();
       try { _tts.speak(label(+b.dataset.n)); } catch (_) {}
     }));
+  // mobile: tap the header row to reveal/hide the grid
+  const hdr = document.getElementById("bb-chart-hdr");
+  const tog = document.getElementById("bb-chart-tog");
+  hdr.style.cursor = "pointer";
+  hdr.addEventListener("click", () => {
+    el.classList.toggle("bb-chart-open");
+    if (tog) tog.textContent = el.classList.contains("bb-chart-open") ? "▼ hide" : "▶ show";
+  });
 }
 
 // ── Entry / shift flow ─────────────────────────────────────────────────────
@@ -227,19 +240,21 @@ function _bbFareUI() {
         : `<strong class="bb-thai">${_bbThaiNum(c.paid)}บาท</strong>`}
       <span class="bb-hint" id="bb-hint"></span></div>
     <div class="bb-caption bb-dim">Give the right change — or take it with a wai if it's exact.</div>
-    <div class="bb-money" id="bb-tray"></div>
+    <div class="bb-money" id="bb-coins"></div>
+    <div class="bb-money" id="bb-notes"></div>
     <div class="bb-given-row">
       <div class="bb-given" id="bb-given"></div>
       <button class="btn btn-primary bb-confirm" id="bb-confirm">✓</button>
     </div>`;
-  const tray = document.getElementById("bb-tray");
+  const coins = document.getElementById("bb-coins");
+  const notes = document.getElementById("bb-notes");
   _BB_TRAY.forEach((d, i) => {
     const b = document.createElement("button");
-    b.className = d >= 20 ? "bb-note" : "bb-coin";
+    b.className = d <= 10 ? "bb-coin" : "bb-note";
     b.style.background = _BB_MONEY_COL[d];
     b.innerHTML = `<span class="kb-hint bb-key">${i + 1}</span>฿${d}`;
     b.onclick = () => _bbTrayAdd(d);
-    tray.appendChild(b);
+    (d <= 10 ? coins : notes).appendChild(b);
   });
   document.getElementById("bb-confirm").onclick = _bbConfirmChange;
   body.querySelector(".bb-speak")?.addEventListener("click", () => {
@@ -450,6 +465,42 @@ function _bbKey(key) {
   return false;
 }
 
+// ── Sky colour helpers ─────────────────────────────────────────────────────
+
+function _bbLerpCol(h1, h2, t) {
+  const h = s => parseInt(s, 16);
+  const [r1,g1,b1] = [h(h1.slice(1,3)), h(h1.slice(3,5)), h(h1.slice(5,7))];
+  const [r2,g2,b2] = [h(h2.slice(1,3)), h(h2.slice(3,5)), h(h2.slice(5,7))];
+  return `rgb(${Math.round(r1+(r2-r1)*t)},${Math.round(g1+(g2-g1)*t)},${Math.round(b1+(b2-b1)*t)})`;
+}
+
+// Five keyframes across the 10-stop shift: golden hour → orange dusk → twilight → night
+const _BB_SKY_KF = [
+  { p:0.00, top:"#1a0b3d", mid:"#7a2a58", hor:"#ff9b5e" },
+  { p:0.40, top:"#150930", mid:"#6a1a40", hor:"#e05520" },
+  { p:0.70, top:"#080520", mid:"#320a2a", hor:"#903040" },
+  { p:0.85, top:"#030210", mid:"#150520", hor:"#4a1838" },
+  { p:1.00, top:"#010008", mid:"#06001a", hor:"#120628" },
+];
+
+function _bbSkyAt(prog) {
+  for (let i = 1; i < _BB_SKY_KF.length; i++) {
+    const a = _BB_SKY_KF[i-1], b = _BB_SKY_KF[i];
+    if (prog <= b.p) {
+      const t = (prog - a.p) / (b.p - a.p);
+      return { top:_bbLerpCol(a.top,b.top,t), mid:_bbLerpCol(a.mid,b.mid,t), hor:_bbLerpCol(a.hor,b.hor,t) };
+    }
+  }
+  const kf = _BB_SKY_KF[_BB_SKY_KF.length - 1];
+  return { top:kf.top, mid:kf.mid, hor:kf.hor };
+}
+
+// Deterministic star field via golden-ratio spread — same every session
+const _BB_STARS = Array.from({length: 22}, (_, i) => [
+  (i * 0.618034) % 1,
+  0.06 + ((i * 0.381966) % 1) * 0.78,
+]);
+
 // ── Canvas scene: sunset Beach Road ────────────────────────────────────────
 // Sky → sun → sea → beach (tented loungers left, neon palms) → boardwalk →
 // road, with the baht bus sliding in and out, dropped-off riders joining the
@@ -567,40 +618,93 @@ function _bbFrame(now) {
   // layout bands
   const seaY = H * 0.50, beachY = H * 0.64, walkY = H * 0.76, roadY = H * 0.84;
 
-  // sky
+  // sky shifts stop-by-stop from golden sunset → deep night
+  const prog = Math.min(_bbStop / _BB_STOPS, 1);
+  const sk = _bbSkyAt(prog);
   const sky = ctx.createLinearGradient(0, 0, 0, seaY);
-  sky.addColorStop(0, "#1a0b3d");
-  sky.addColorStop(0.55, "#7a2a58");
-  sky.addColorStop(1, "#ff9b5e");
+  sky.addColorStop(0, sk.top);
+  sky.addColorStop(0.55, sk.mid);
+  sky.addColorStop(1, sk.hor);
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, W, seaY);
 
-  // sun on the horizon
-  const sunX = W * 0.72;
-  ctx.save();
-  ctx.shadowColor = "#ffce7a"; ctx.shadowBlur = 26;
-  ctx.fillStyle = "#ffd98a";
-  ctx.beginPath(); ctx.arc(sunX, seaY - 12, 15, 0, Math.PI * 2); ctx.fill();
-  ctx.restore();
+  // stars — fade in from stop 5, fully bright by stop 9
+  const starAlpha = Math.max(0, (prog - 0.5) / 0.35);
+  if (starAlpha > 0) {
+    for (const [sx, sy] of _BB_STARS) {
+      const twinkle = 0.6 + 0.4 * Math.sin(now * 0.003 + sx * 19.7);
+      ctx.fillStyle = `rgba(255,255,255,${(starAlpha * twinkle * 0.85).toFixed(2)})`;
+      ctx.beginPath(); ctx.arc(sx * W, sy * seaY, 0.8, 0, Math.PI * 2); ctx.fill();
+    }
+  }
 
-  // sea, with a shimmering sun column and a foam line on the sand
+  // sun — starts high (stop 0), sinks to horizon (~stop 7), sets (~stop 8)
+  const sunX = W * 0.72;
+  const sunYOff = prog < 0.7
+    ? -60 + (prog / 0.7) * 54          // -60 → -6 as sun descends
+    : -6 + ((prog - 0.7) / 0.3) * 90;  // -6 → 84: sinking through the waterline
+  const sunY = seaY + sunYOff;
+  const sunR = Math.max(0, 15 - prog * 2);
+  if (sunY < seaY + sunR) { // still at least partly above the waterline
+    const sunCol = prog < 0.5 ? "#ffd98a"
+      : prog < 0.8 ? _bbLerpCol("#ffd98a", "#ff5020", (prog - 0.5) / 0.3)
+      : _bbLerpCol("#ff5020", "#cc1808", (prog - 0.8) / 0.2);
+    const glowCol = prog < 0.7 ? "#ffce7a" : _bbLerpCol("#ffce7a", "#ff3010", (prog - 0.7) / 0.3);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, 0, W, seaY); ctx.clip(); // clip to sky so sun sinks below horizon
+    ctx.shadowColor = glowCol; ctx.shadowBlur = 26;
+    ctx.fillStyle = sunCol;
+    ctx.beginPath(); ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  // moon — rises from the right horizon as the sun sets (~stop 6.5+)
+  const moonAlpha = Math.min(1, Math.max(0, (prog - 0.65) / 0.15));
+  const moonX = W * 0.22;
+  if (moonAlpha > 0) {
+    const moonY = seaY - 20 - moonAlpha * 75;
+    ctx.save();
+    ctx.globalAlpha = moonAlpha;
+    ctx.shadowColor = "#b0c8ff"; ctx.shadowBlur = 18;
+    ctx.fillStyle = "#eef0ff";
+    ctx.beginPath(); ctx.arc(moonX, moonY, 11, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  // sea — purple sunset → dark night-blue
+  const seaTop = _bbLerpCol("#4a2a6e", "#0a0520", prog);
+  const seaBot = _bbLerpCol("#221540", "#040210", prog);
   const sea = ctx.createLinearGradient(0, seaY, 0, beachY);
-  sea.addColorStop(0, "#4a2a6e"); sea.addColorStop(1, "#221540");
+  sea.addColorStop(0, seaTop); sea.addColorStop(1, seaBot);
   ctx.fillStyle = sea;
   ctx.fillRect(0, seaY, W, beachY - seaY);
-  ctx.fillStyle = "rgba(255,200,120,0.35)";
-  for (let i = 0; i < 5; i++) {
-    const y = seaY + 4 + i * ((beachY - seaY) / 5);
-    const w = 14 + 10 * Math.sin(now * 0.002 + i * 2.1);
-    ctx.fillRect(sunX - w / 2, y, w, 2);
+  // sun shimmer fades out as sun sets
+  if (prog < 0.85) {
+    const shim = ((0.85 - prog) / 0.85 * 0.35).toFixed(2);
+    ctx.fillStyle = `rgba(255,200,120,${shim})`;
+    for (let i = 0; i < 5; i++) {
+      const y = seaY + 4 + i * ((beachY - seaY) / 5);
+      const w = 14 + 10 * Math.sin(now * 0.002 + i * 2.1);
+      ctx.fillRect(sunX - w / 2, y, w, 2);
+    }
   }
+  // moon shimmer fades in
+  if (moonAlpha > 0.1) {
+    ctx.fillStyle = `rgba(180,200,255,${(moonAlpha * 0.22).toFixed(2)})`;
+    for (let i = 0; i < 4; i++) {
+      const y = seaY + 4 + i * ((beachY - seaY) / 5);
+      const w = 8 + 5 * Math.sin(now * 0.002 + i * 1.8 + 1);
+      ctx.fillRect(moonX - w / 2, y, w, 2);
+    }
+  }
+  // foam
   ctx.fillStyle = "rgba(230,220,255,0.30)";
   for (let x = 0; x < W; x += 26) {
     ctx.fillRect(x + 6 * Math.sin(now * 0.0012 + x), beachY - 2, 14, 2);
   }
 
-  // beach
-  ctx.fillStyle = "#7d5a60";
+  // beach — warm sand at sunset, cool-dark at night
+  ctx.fillStyle = _bbLerpCol("#7d5a60", "#2a1a2e", prog);
   ctx.fillRect(0, beachY, W, walkY - beachY);
 
   // tented lounger group on the left third, facing the sea; the canopy rises
@@ -625,10 +729,10 @@ function _bbFrame(now) {
     _bbSprite(ctx, _BB_PALM, _BB_PALM_COL, W * px, walkY - 58, 5, px > 0.6);
   }
 
-  // boardwalk: planks with seams
-  ctx.fillStyle = "#7a4a30";
+  // boardwalk: planks with seams — darkens toward night
+  ctx.fillStyle = _bbLerpCol("#7a4a30", "#22122a", prog);
   ctx.fillRect(0, walkY, W, roadY - walkY);
-  ctx.fillStyle = "#5f3d20";
+  ctx.fillStyle = _bbLerpCol("#5f3d20", "#16091a", prog);
   ctx.fillRect(0, walkY, W, 2);
   for (let x = 8; x < W; x += 16) ctx.fillRect(x, walkY + 2, 1, roadY - walkY - 2);
 
