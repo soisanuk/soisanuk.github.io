@@ -7,6 +7,18 @@
 let progress = loadProgress();
 let session = {};   // current mode state
 
+// One-time migration from old thaicab_progress key
+{
+  try {
+    const old = localStorage.getItem("thaicab_progress");
+    if (old && !localStorage.getItem("soisanuk_progress")) {
+      localStorage.setItem("soisanuk_progress", old);
+      localStorage.removeItem("thaicab_progress");
+      progress = loadProgress();
+    }
+  } catch (e) {}
+}
+
 // One-time cleanup: a former dueCards() bug persisted empty default records
 // for every key it merely looked at, inflating "seen" stats. Drop records
 // that were never actually reviewed.
@@ -194,7 +206,7 @@ function exportProgress() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "thaicab-progress.json";
+  a.download = "soisanuk-progress.json";
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -214,7 +226,7 @@ function importProgress(event) {
       updateMenuStats();
       alert("Progress imported successfully!");
     } catch {
-      alert("Could not read that file. Make sure it's a valid thaicab progress export.");
+      alert("Could not read that file. Make sure it's a valid Soi Sanuk progress export.");
     }
     event.target.value = ""; // reset so same file can be re-imported
   };

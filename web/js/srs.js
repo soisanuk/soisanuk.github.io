@@ -1,7 +1,7 @@
 // SM-2 spaced repetition — localStorage backend
-// Key: "thaicab_progress" → JSON object of card records
+// Key: "soisanuk_progress" → JSON object of card records
 
-const SRS_KEY = "thaicab_progress";
+const SRS_KEY = "soisanuk_progress";
 
 function loadProgress() {
   try {

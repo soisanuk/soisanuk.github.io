@@ -9,7 +9,7 @@
 const _audio = (() => {
   let _actx = null, _sfxBus = null, _musBus = null, _noiseBuf = null;
   let _muted = false;
-  try { _muted = localStorage.getItem("thaicab_muted") === "1"; } catch (e) {}
+  try { _muted = localStorage.getItem("soisanuk_muted") === "1"; } catch (e) {}
 
   const SFX_VOL = 0.5, MUS_VOL = 0.16;
 
@@ -164,7 +164,7 @@ const _audio = (() => {
     muted() { return _muted; },
     toggleMute() {
       _muted = !_muted;
-      try { localStorage.setItem("thaicab_muted", _muted ? "1" : "0"); } catch (e) {}
+      try { localStorage.setItem("soisanuk_muted", _muted ? "1" : "0"); } catch (e) {}
       _applyMute();
       return _muted;
     },
