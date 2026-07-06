@@ -128,20 +128,21 @@ const _MOTO_ROWS = [
   ".WW.....WW",
 ];
 const _MOTO_COL = { F: "#999999", B: "#888888", R: "#ff4400", W: "#111122" };
-// Grab driver variant — green jacket, green bike
-const _MOTO_GRAB_COL = { F: "#999999", B: "#1f8a45", R: "#00b14f", W: "#111122" };
+// Grab driver variant — green jacket/helmet on a red bike
+const _MOTO_GRAB_COL = { F: "#999999", B: "#aa2f2f", R: "#00b14f", W: "#111122" };
 
 // Baht bus / songthaew (14 × 6 sprite-pixels, drawn facing right, cab at right).
-// Pattaya's baht buses are blue.
+// Pattaya's baht buses are blue; the covered bed rises above the cab and has
+// silver rails along the open side (S row) and up the back (S column).
 const _BUS_ROWS = [
-  "..........CCCC",
-  "RRRRRRRRRRCCCC",
-  "RRRRRRRRRRCCCC",
-  "RRRRRRRRRRCCCC",
+  "SRRRRRRRRR....",
+  "SRRRRRRRRRCCCC",
+  "SSSSSSSSSSCCCC",
+  "SRRRRRRRRRCCCC",
   "..WW......WWWW",
   "..WW......WWWW",
 ];
-const _BUS_COL = { C: "#16307a", R: "#2255cc", W: "#111122" };
+const _BUS_COL = { C: "#16307a", R: "#2255cc", S: "#c0c8d4", W: "#111122" };
 
 // Draw a pixel-art sprite. flipX mirrors it horizontally.
 function _gDrawSprite(ctx, rows, colors, x, y, flipX) {
