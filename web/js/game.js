@@ -283,6 +283,7 @@ function _gTick(now) {
       if (b.y - b.r > _gCanvas.height) {
         _gResolve(b);
         _gLives--;
+        _audio.sfx("miss");
         _gHUD();
         _gMissParticles(b.x, _gCanvas.height - 15);
         dead.push(b);
@@ -310,6 +311,7 @@ function _gTick(now) {
         b.bounced = true;
         b.vx      = (Math.random() - 0.5) * 9;
         b.vy      = 2 + Math.random() * 3;
+        _audio.sfx("bounce");
         _gBounceParticles(b.x, b.y, b.color);
         // Knock the sprite off screen
         s.knocked = true;
@@ -341,6 +343,8 @@ function _gResolve(b) {
 function _gOver() {
   _gRunning = false;
   cancelAnimationFrame(_gAnimId);
+  _audio.stop();
+  _audio.sfx("gameover");
   document.getElementById("game-final-score").textContent = _gScore;
   document.getElementById("game-over-panel").style.display = "flex";
 }
@@ -576,8 +580,8 @@ function _gDrawBubble(ctx, b) {
       } else {
         ctx.fillStyle = c + "cc";
       }
-      ctx.font = "bold 11px 'Segoe UI', monospace, sans-serif";
-      ctx.fillText(b.letter.key, 0, 16);
+      ctx.font = "bold 17px 'Segoe UI', monospace, sans-serif";
+      ctx.fillText(b.letter.key, 0, 19);
     }
   }
 
@@ -745,6 +749,7 @@ function _gKey(key) {
     _gPopBubble(target);
   } else {
     // Valid key but no matching bubble — shake everything
+    _audio.sfx("wrong");
     for (const b of _gBubbles) { if (!b.popped) b.wrongFlash = 6; }
   }
   return true;
@@ -752,6 +757,7 @@ function _gKey(key) {
 
 function _gPopBubble(target) {
   _gResolve(target);
+  _audio.sfx("pop");
   _gPopParticles(target.x, target.y, target.color);
   target.popped = true;
   _gScore += 10 * _gLevel;
@@ -769,6 +775,7 @@ function _gPopBubble(target) {
   // Every 10 pops: level up — faster, and one new consonant joins the pool
   if (_gPopped % 10 === 0) {
     _gLevel++;
+    _audio.sfx("levelup");
     _gSpawnMs = Math.max(650, _gSpawnMs - 250);
     _gSpeed   = Math.min(3.2, _gSpeed + 0.22);
     if (_gPool < _GAME_ALL.length) {
@@ -833,6 +840,7 @@ function _gKeyIdx(idx) {
     _gPopBubble(target);
   } else {
     // Wrong key — shake the bubbles and flash the tapped key
+    _audio.sfx("wrong");
     for (const b of _gBubbles) { if (!b.popped) b.wrongFlash = 6; }
     const el = document.querySelector(`#game-kbd .tkey[data-key="${_GAME_ALL[idx].key}"]`);
     if (el) {

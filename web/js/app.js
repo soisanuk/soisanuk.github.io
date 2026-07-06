@@ -76,6 +76,7 @@ const TOP20_WORDS  = TOP100_WORDS.slice(0, 20);
 function showScreen(id, navKey) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
+  _audioScreen(id); // start/stop game background music
   // Highlight active sidebar item
   document.querySelectorAll(".sidebar-list li").forEach(li => li.classList.remove("active"));
   if (navKey) {

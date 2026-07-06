@@ -42,6 +42,8 @@ All 878 words in Thai alphabetical order with real-time search. Filter by catego
 SRS summary, 7-day review forecast chart, per-category mature/seen counts, and progress export/import.
 
 **Audio**
+The three games have synthesised chiptune sound effects and a background music loop each (Web Audio API — no audio files, works offline); the 🔊 button in each game's footer mutes both, and the setting persists.
+
 Individual letters are always spoken as sound + traditional name — e.g. ก is read "ก … กอไก่", า as "อา … สระอา" — consistently across the keyboard tutor, Walking Street, script flashcards, drills, and script SRS. The sound and the name are separate utterances with a real pause between them, so each keeps its natural pronunciation. All Thai text is speakable via the Web Speech API (requires a Thai TTS voice — available in Chrome/Edge on desktop and Android, and in iOS Safari). On iOS, speech is unlocked by the first touch, as required by the platform. If no Thai voice is found, the home screen shows a notice instead of failing silently. When packaged as a native app with Capacitor, speech routes through the native TTS plugin instead (Android's WebView has no Web Speech API).
 
 **PWA / offline**
@@ -94,6 +96,7 @@ web/
     thai-script.js    character classification and cluster decomposition
     app.js            app state, navigation, category picker, export/import
     tts.js            TTS: Capacitor plugin → Web Speech API; voice notice
+    audio.js          Web Audio chiptune SFX + background music for the games
     ui.js             vocab list, word modal, tooltips, examples, statistics
     sessions.js       flashcards, quiz, drills, SRS sessions, rating/undo
     tutor.js          Thai keyboard (Kedmanee) typing tutor

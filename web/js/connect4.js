@@ -385,6 +385,7 @@ function _c4Answer(i) {
   const correctIdx = q.choices.indexOf(q.answer);
   btns[correctIdx]?.classList.add("c4-ok");
   if (chosen === q.answer) {
+    _audio.sfx("good");
     _c4Phase = "drop";
     _c4Say(_c4Line("right") + "  — pick your column!");
     // Collapse the quiz to one line so the board is visible for the drop
@@ -392,6 +393,7 @@ function _c4Answer(i) {
       `<div class="c4-q-mini">✓ ${_c4Esc(vowelDisp(q.answer[0]))} — ${_c4Esc(q.answer[1])} (${_c4Esc(q.answer[2])})</div>`;
     _c4Render();
   } else {
+    _audio.sfx("bad");
     btns[i]?.classList.add("c4-bad");
     _c4Say(_c4Line("wrong"));
     _c4Phase = "ai"; // input locked while the bar drops for you
@@ -414,6 +416,7 @@ function _c4PlayerDrop(col) {
 function _c4Place(col, p, wasRandom) {
   const r = _c4DropRow(_c4Board, col);
   if (r < 0) return;
+  _audio.sfx("drop");
   _c4Board[r][col] = p;
   _c4LastDrop = { r, c: col }; // every downstream path re-renders
   document.getElementById("c4-quiz").innerHTML = "";
@@ -445,6 +448,7 @@ function _c4End(won) {
   if (!won) kind = "draw";
   else if (won.p === 1) { kind = "lose"; _c4Wins++; }   // her "lose" lines
   else { kind = "win"; _c4Losses++; _c4Tab += 150; }
+  if (won) _audio.sfx(won.p === 1 ? "win" : "lose");
   _c4HUD();
   _c4Render(won ? won.cells : []);
   _c4Say(_c4Line(kind));

@@ -1063,7 +1063,7 @@ kbd.tut-key {
   min-width: 2.5rem;
 }
 .game-ref-thai { font-family: 'Noto Sans Thai','Leelawadee UI',serif; font-size: 1.1rem; line-height: 1.5; }
-.game-ref-key  { font-size: 0.68rem; font-weight: bold; font-family: monospace; margin-top: 0.05rem; }
+.game-ref-key  { font-size: 1.02rem; font-weight: bold; font-family: monospace; margin-top: 0.05rem; }
 
 /* ── Thai Keyboard Tutor ─────────────────────────────────────────────────── */
 #tutor-screen { flex-direction:column; background:#0d0015; }
@@ -1737,7 +1737,7 @@ body.mobile #app-shell {
   <div id="game-ref"></div>
   <div id="game-kbd"></div>
   <div class="screen-footer" style="background:#05001a;border-color:#ff149340;color:#bf5fff">
-    <span class="kb-hint">Type the key shown on each sign · </span><span class="touch-hint">Tap the matching key below · </span><button class="btn" style="padding:0.15rem 0.6rem;font-size:0.8rem;border-color:#ff149360;color:#ff1493" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
+    <span class="kb-hint">Type the key shown on each sign · </span><span class="touch-hint">Tap the matching key below · </span><button class="btn audio-mute-btn" style="padding:0.15rem 0.5rem;font-size:0.8rem;border-color:#ff149360" onclick="this.textContent=_audio.toggleMute()?'🔇':'🔊'">🔊</button> <button class="btn" style="padding:0.15rem 0.6rem;font-size:0.8rem;border-color:#ff149360;color:#ff1493" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
   </div>
 </div>
 
@@ -1751,6 +1751,7 @@ body.mobile #app-shell {
   <div id="c4-body"></div>
   <div class="screen-footer" style="background:#0d0015;border-top:1px solid #ff006630;color:#bf5fff50;font-size:.78rem;text-align:center;padding:.5rem;">
     <span class="kb-hint">1–4 answer · 1–7 drop column &nbsp;·&nbsp;</span>
+    <button class="btn audio-mute-btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640" onclick="this.textContent=_audio.toggleMute()?'🔇':'🔊'">🔊</button>
     <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640;color:#ff149380" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
   </div>
 </div>
@@ -1764,6 +1765,7 @@ body.mobile #app-shell {
   <div id="soi-body"></div>
   <div class="screen-footer" style="background:#0d0015;border-top:1px solid #ff006630;color:#bf5fff50;font-size:.78rem;text-align:center;padding:.5rem;">
     <span class="kb-hint">1–4 select · Enter/Space advance &nbsp;·&nbsp;</span>
+    <button class="btn audio-mute-btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640" onclick="this.textContent=_audio.toggleMute()?'🔇':'🔊'">🔊</button>
     <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640;color:#ff149380" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
   </div>
 </div>
@@ -1852,6 +1854,7 @@ body.mobile #app-shell {
 <script src="js/thai-script.js"></script>
 <script src="js/app.js"></script>
 <script src="js/tts.js"></script>
+<script src="js/audio.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/sessions.js"></script>
 <script src="js/tutor.js"></script>

@@ -14,6 +14,7 @@ const PRECACHE = [
   "./js/thai-script.js",
   "./js/app.js",
   "./js/tts.js",
+  "./js/audio.js",
   "./js/ui.js",
   "./js/sessions.js",
   "./js/tutor.js",

@@ -125,6 +125,10 @@ document.addEventListener("keydown", e => {
 // ─── init ──────────────────────────────────────────────────────────────────
 updateMenuStats();
 maybeShowTutorial();
+// Reflect the persisted mute state on the games' 🔊/🔇 toggles
+document.querySelectorAll(".audio-mute-btn").forEach(b => {
+  b.textContent = _audio.muted() ? "🔇" : "🔊";
+});
 
 // Android hardware back button (Capacitor only): behave like Escape, and
 // exit the app only from the top-level menu. Registering a listener is what

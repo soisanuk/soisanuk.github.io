@@ -336,6 +336,7 @@ function _sbNextQ() {
 function _sbAnswer(btn, choice) {
   if (_sbAnswered) return;
   _sbAnswered = true;
+  _audio.sfx(choice.ok ? "good" : "bad");
   _tts.speak(choice.th);
 
   if (choice.ok) _sbScore++;
@@ -379,6 +380,7 @@ function _sbAnswer(btn, choice) {
 function _sbShowNightEnd() {
   const happy  = _sbScore >= Math.ceil(_sbQs.length * 0.6);
   _sbResults.push(happy);
+  _audio.sfx(happy ? "win" : "lose");
   const end    = _SB_ENDS[happy ? "happy" : "sad"][_sbNight - 1];
   const scene  = end.scene.replace(/\{n\}/g, _sbHost.name);
   const h      = _sbHost;
