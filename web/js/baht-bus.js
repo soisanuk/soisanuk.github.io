@@ -74,14 +74,14 @@ function _bbBreakdown(amount) {
 // Off-loop destinations only — anywhere on the Beach Road/Second Road loop
 // itself (Walking Street, Terminal 21…) is just the flat ฿15 fare.
 const _BB_DESTS = [
-  { en: "Soi Buakhao",         th: "ซอยบัวขาว",     fair: 40  },
-  { en: "Naklua market",       th: "ตลาดนาเกลือ",   fair: 60  },
-  { en: "Jomtien Beach",       th: "หาดจอมเทียน",    fair: 80  },
-  { en: "Big Buddha Hill",     th: "เขาพระใหญ่",     fair: 120 },
-  { en: "the floating market", th: "ตลาดน้ำ",       fair: 150 },
-  { en: "Sanctuary of Truth",  th: "ปราสาทสัจธรรม",  fair: 200 },
-  { en: "the Tiger Park",      th: "สวนเสือ",        fair: 250 },
-  { en: "Nong Nooch Garden",   th: "สวนนงนุช",      fair: 300 },
+  { en: "Soi Buakhao",         th: "ซอยบัวขาว",     fair: 50  },  // ~2 km
+  { en: "Naklua market",       th: "ตลาดนาเกลือ",   fair: 80  },  // ~5 km north
+  { en: "Jomtien Beach",       th: "หาดจอมเทียน",    fair: 120 },  // ~5 km south
+  { en: "Sanctuary of Truth",  th: "ปราสาทสัจธรรม",  fair: 180 },  // ~8 km north
+  { en: "Big Buddha Hill",     th: "เขาพระใหญ่",     fair: 250 },  // ~8 km, hilltop
+  { en: "the Tiger Park",      th: "สวนเสือ",        fair: 350 },  // ~15 km
+  { en: "the floating market", th: "ตลาดน้ำ",       fair: 450 },  // far
+  { en: "Nong Nooch Garden",   th: "สวนนงนุช",      fair: 500 },  // ~18 km south
 ];
 
 function _bbMakeCharter() {
@@ -92,7 +92,7 @@ function _bbMakeCharter() {
     .sort(() => Math.random() - 0.5)
     .slice(0, 3);
   const choices = [quote, ...deltas.map(d => quote + d)].sort(() => Math.random() - 0.5);
-  const bottom = quote - (quote >= 150 ? 50 : quote >= 80 ? 30 : 20);
+  const bottom = quote - (quote >= 350 ? 120 : quote >= 150 ? 60 : quote >= 80 ? 30 : 20);
   let counter = bottom + [-20, -10, 0, 10][Math.floor(Math.random() * 4)];
   counter = Math.max(10, Math.min(counter, quote - 10));
   return {
@@ -762,8 +762,9 @@ function _bbFrame(now) {
       L.shirt = _BB_LADY_SHIRTS[Math.floor(Math.random() * _BB_LADY_SHIRTS.length)];
     }
     if (L.heartUntil && now < L.heartUntil && !L.walking) {
-      ctx.font = "16px serif";
-      ctx.fillText("💕", W * L.px + 26, roadY - 38);
+      ctx.font = "bold 18px sans-serif";
+      ctx.fillStyle = "#ff3080";
+      ctx.fillText("♥", W * L.px + 26, roadY - 40);
     }
     if (!L.gone && !L.walking) {
       _bbSprite(ctx, _WALK_FRAMES[0], { ..._WALK_BASE, B: L.shirt },
@@ -820,8 +821,9 @@ function _bbFrame(now) {
         _bbSprite(ctx, _WALK_FRAMES[ambFrame], { ..._WALK_BASE, B: Lw.shirt },
           a.x + (a.vx < 0 ? 14 : -14), roadY - 26, 3, a.vx < 0);
         if (Lw.heartUntil && now < Lw.heartUntil) {
-          ctx.font = "16px serif";
-          ctx.fillText("💕", a.x + (a.vx < 0 ? 18 : -18), roadY - 38);
+          ctx.font = "bold 18px sans-serif";
+          ctx.fillStyle = "#ff3080";
+          ctx.fillText("♥", a.x + (a.vx < 0 ? 7 : -7), roadY - 44);
         }
       }
       if (paused) {
