@@ -761,9 +761,9 @@ function _bbFrame(now) {
       L.gone = false;
       L.shirt = _BB_LADY_SHIRTS[Math.floor(Math.random() * _BB_LADY_SHIRTS.length)];
     }
-    if (L.heartUntil && now < L.heartUntil) {
-      ctx.font = "13px sans-serif";
-      ctx.fillText("💕", W * L.px + 26, roadY - 36);
+    if (L.heartUntil && now < L.heartUntil && !L.walking) {
+      ctx.font = "16px serif";
+      ctx.fillText("💕", W * L.px + 26, roadY - 38);
     }
     if (!L.gone && !L.walking) {
       _bbSprite(ctx, _WALK_FRAMES[0], { ..._WALK_BASE, B: L.shirt },
@@ -795,7 +795,7 @@ function _bbFrame(now) {
         if (a.haggler) {
           for (let li = 0; li < _bbLadies.length; li++) {
             const L = _bbLadies[li];
-            if (L.gone) continue;
+            if (L.gone || L.walking) continue;
             if (Math.abs(a.x - (W * L.px + 30) + (a.vx < 0 ? 16 : -16)) < 4) {
               a.haggler = false;
               a.haggledLady = li;
@@ -819,6 +819,10 @@ function _bbFrame(now) {
         const Lw = _bbLadies[a.leavingWith];
         _bbSprite(ctx, _WALK_FRAMES[ambFrame], { ..._WALK_BASE, B: Lw.shirt },
           a.x + (a.vx < 0 ? 14 : -14), roadY - 26, 3, a.vx < 0);
+        if (Lw.heartUntil && now < Lw.heartUntil) {
+          ctx.font = "16px serif";
+          ctx.fillText("💕", a.x + (a.vx < 0 ? 18 : -18), roadY - 38);
+        }
       }
       if (paused) {
         ctx.font = "bold 9px monospace";
