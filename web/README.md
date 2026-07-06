@@ -1,6 +1,6 @@
 # Thai Trainer: Pattaya Edition — ภาษาไทย
 
-Thai vocabulary and script trainer with spaced repetition.
+Learn Thai vocabulary, script, and numbers — set in the neon streets of Pattaya.
 
 **Live:** https://soisanuk.github.io/
 
