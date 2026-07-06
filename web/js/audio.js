@@ -101,11 +101,17 @@ const _audio = (() => {
       bass: [33, 29, 31, 28],
       prog: [[69, 72, 76], [65, 69, 72], [67, 71, 74], [64, 67, 71]],
     },
-    // Soi Buakhao — laid-back lounge, major sevenths (Cmaj7 Am7 Fmaj7 G7)
+    // Soi Buakhao — Sabai Sabai (สบายสบาย), G major luk-thung, ~86 bpm
     soi: {
-      bpm: 88, lead: "triangle", leadVol: 0.16, hat: false, bassEvery: 2,
-      bass: [36, 33, 29, 31],
-      prog: [[72, 76, 79, 83], [69, 72, 76, 79], [65, 69, 72, 76], [67, 71, 74, 77]],
+      bpm: 86, lead: "triangle", leadVol: 0.17, hat: false, bassEvery: 2,
+      bass: [31, 36, 33, 38],
+      // D D E D B . A . | G . A B C . D . | E . D C B . A . | D C B . A G . .
+      melody: [
+        74,74,76,74, 71,null,69,null,
+        67,null,69,71, 72,null,74,null,
+        76,null,74,72, 71,null,69,null,
+        74,72,71,null, 69,67,null,null,
+      ],
     },
     // Soi 6 — slinky D-minor groove (Dm Bb Gm A7)
     soi6: {
@@ -113,11 +119,17 @@ const _audio = (() => {
       bass: [38, 34, 31, 33],
       prog: [[74, 77, 81], [70, 74, 77], [67, 70, 74], [69, 73, 76]],
     },
-    // Baht Bus — easy luk-thung roll for the sunset loop (C Am F G, pentatonic lean)
+    // Baht Bus — Pattaya Pattaya (พัทยา พัทยา), C major folk-rock, ~114 bpm
     bus: {
-      bpm: 112, lead: "triangle", leadVol: 0.15, hat: true, bassEvery: 2,
-      bass: [36, 33, 29, 31],
-      prog: [[72, 74, 76, 79], [69, 72, 74, 76], [65, 67, 69, 72], [67, 71, 74, 79]],
+      bpm: 114, lead: "square", leadVol: 0.14, hat: true, bassEvery: 2,
+      bass: [36, 29, 33, 31],
+      // G G A G E . D . | C . D E F . G . | A . G F E . D . | E D C . D E G .
+      melody: [
+        67,67,69,67, 64,null,62,null,
+        60,null,62,64, 65,null,67,null,
+        69,null,67,65, 64,null,62,null,
+        64,62,60,null, 62,64,67,null,
+      ],
     },
   };
 
@@ -132,8 +144,13 @@ const _audio = (() => {
       if (pos % t.bassEvery === 0) {
         _note(_f(pos % 4 === 2 ? root + 12 : root), _nextT, spb * 0.9, "triangle", 0.45, _musBus);
       }
-      const chord = t.prog[bar];
-      _note(_f(chord[_step % chord.length]), _nextT, spb * 0.8, t.lead, t.leadVol, _musBus);
+      if (t.melody) {
+        const mn = t.melody[_step % t.melody.length];
+        if (mn !== null) _note(_f(mn), _nextT, spb * 0.85, t.lead, t.leadVol, _musBus);
+      } else {
+        const chord = t.prog[bar];
+        _note(_f(chord[_step % chord.length]), _nextT, spb * 0.8, t.lead, t.leadVol, _musBus);
+      }
       if (t.hat && pos % 2 === 1) _noise(_nextT, 0.03, 0.10, _musBus, 7000);
       _step++;
       _nextT += spb;

@@ -573,6 +573,7 @@ function _bbSceneStart() {
     px,
     shirt: _BB_LADY_SHIRTS[Math.floor(Math.random() * _BB_LADY_SHIRTS.length)],
     gone: false, walking: false, returnAt: 0, heartUntil: 0,
+    entered: false, entryX: null, entryVx: 0,
   }));
   if (!_bbAnimId) _bbAnimId = requestAnimationFrame(_bbFrame);
 }
@@ -755,24 +756,43 @@ function _bbFrame(now) {
     _bbSpawnAmbient(W);
     _bbNextAmb = now + 1800 + Math.random() * 2800;
   }
+  const ambFrame = Math.floor(now / 360) % 2;
   // the ladies at their palms — may leave with a customer at night, then return
   for (const L of _bbLadies) {
     if (L.gone && now >= L.returnAt) {
       L.gone = false;
+      L.entered = false;
+      L.entryX = null;
       L.shirt = _BB_LADY_SHIRTS[Math.floor(Math.random() * _BB_LADY_SHIRTS.length)];
     }
-    if (L.heartUntil && now < L.heartUntil && !L.walking) {
-      ctx.font = "bold 18px sans-serif";
-      ctx.fillStyle = "#ff3080";
-      ctx.fillText("♥", W * L.px + 26, roadY - 40);
-    }
+    const targetX = W * L.px + 30;
     if (!L.gone && !L.walking) {
-      _bbSprite(ctx, _WALK_FRAMES[0], { ..._WALK_BASE, B: L.shirt },
-        W * L.px + 30, roadY - 26, 3, L.px > 0.6);
+      if (!L.entered) {
+        if (L.entryX === null) {
+          const fromRight = Math.random() < 0.5;
+          L.entryX = fromRight ? W + 20 : -20;
+          L.entryVx = fromRight ? -0.7 : 0.7;
+        }
+        const arrived = L.entryVx > 0 ? L.entryX >= targetX : L.entryX <= targetX;
+        if (arrived) {
+          L.entered = true;
+        } else {
+          L.entryX += L.entryVx;
+          _bbSprite(ctx, _WALK_FRAMES[ambFrame], { ..._WALK_BASE, B: L.shirt },
+            L.entryX, roadY - 26, 3, L.entryVx < 0);
+        }
+      }
+      if (L.entered) {
+        if (L.heartUntil && now < L.heartUntil) {
+          ctx.font = "bold 18px sans-serif";
+          ctx.fillStyle = "#ff3080";
+          ctx.fillText("♥", targetX - 4, roadY - 40);
+        }
+        _bbSprite(ctx, _WALK_FRAMES[0], { ..._WALK_BASE, B: L.shirt },
+          targetX, roadY - 26, 3, L.px > 0.6);
+      }
     }
   }
-
-  const ambFrame = Math.floor(now / 360) % 2;
   for (let i = _bbAmbient.length - 1; i >= 0; i--) {
     const a = _bbAmbient[i];
     if (a.kind === "ped") {
@@ -796,7 +816,7 @@ function _bbFrame(now) {
         if (a.haggler) {
           for (let li = 0; li < _bbLadies.length; li++) {
             const L = _bbLadies[li];
-            if (L.gone || L.walking) continue;
+            if (L.gone || L.walking || !L.entered) continue;
             if (Math.abs(a.x - (W * L.px + 30) + (a.vx < 0 ? 16 : -16)) < 4) {
               a.haggler = false;
               a.haggledLady = li;
