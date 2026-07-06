@@ -1,4 +1,4 @@
-# Thai Trainer — ภาษาไทย
+# Thai Trainer: Pattaya Edition — ภาษาไทย
 
 Thai vocabulary and script trainer with spaced repetition.
 

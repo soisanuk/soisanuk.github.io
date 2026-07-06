@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0d0015">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<title>ภาษาไทย Thai Trainer</title>
+<title>Thai Trainer — Pattaya Edition</title>
 <style>
 /* ── Neon Pattaya palette (shared with the games) ────────────────────────── */
 /* Variable names kept from the original gold theme; values remapped:
@@ -233,10 +233,17 @@ body {
 }
 #menu-screen .menu-subtitle {
   text-align: center;
-  color: var(--saffron);
   font-size: 1rem;
   padding-bottom: 0.6rem;
 }
+.edition-tag {
+  color: var(--saffron);
+  font-size: .78rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  text-shadow: 0 0 12px #ffe60080, 0 0 30px #ffe60030;
+}
+.edition-gem { color: var(--gold); text-shadow: 0 0 10px #ff149380; }
 .menu-stats {
   text-align: center;
   color: var(--dim);
@@ -1597,7 +1604,7 @@ body.mobile #app-shell {
 <!-- ═══ SIDEBAR (persistent on wide screens) ════════════════════════════════ -->
 <nav id="sidebar">
   <div id="sidebar-title">ภาษาไทย</div>
-  <div id="sidebar-subtitle">Thai Vocabulary &amp; Script Trainer</div>
+  <div id="sidebar-subtitle">Thai Trainer<br><span class="edition-tag">✦ Pattaya Edition ✦</span></div>
   <div id="sidebar-stats">loading…</div>
 
   <div class="sidebar-section">Vocabulary</div>
@@ -1653,8 +1660,11 @@ body.mobile #app-shell {
 <!-- ═══ MENU (shown on mobile, or as landing on desktop before first action) -->
 <div id="menu-screen" class="screen active">
   <div class="screen-header">❀ ยินดีต้อนรับ ❀</div>
-  <div class="menu-title">ภาษาไทย</div>
-  <div class="menu-subtitle">Thai Vocabulary &amp; Script Trainer</div>
+  <div class="menu-title">Thai Trainer</div>
+  <div class="menu-subtitle">
+    <div style="color:var(--dim);font-size:.85rem;margin-bottom:.3rem">ภาษาไทย — Learn Thai</div>
+    <span class="edition-gem">❖</span> <span class="edition-tag">Pattaya Edition</span> <span class="edition-gem">❖</span>
+  </div>
   <div class="menu-stats" id="menu-stats">loading…</div>
   <div id="voice-notice" style="display:none;text-align:center;color:var(--dim);font-size:0.8rem;padding:0.3rem 1.5rem;">
     🔇 No Thai voice found — audio features are disabled. Chrome or Edge (desktop/Android) include Thai text-to-speech.
@@ -2045,7 +2055,7 @@ body.mobile #app-shell {
 
     <div class="tutorial-slide">
       <div class="tut-icon">ก</div>
-      <h2>Welcome to Thai Trainer</h2>
+      <h2>Welcome to Thai Trainer: Pattaya Edition</h2>
       <p>Your personal Thai tutor: 878 vocabulary words, 60+ consonants &amp; vowels, and SM‑2 spaced repetition — all in one app.</p>
       <p>This quick tour highlights the key features. Find it again any time under <strong>Other → How to use</strong>.</p>
     </div>

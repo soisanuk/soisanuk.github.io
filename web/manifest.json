@@ -1,7 +1,7 @@
 {
-  "name": "Thai Trainer — ภาษาไทย",
+  "name": "Thai Trainer: Pattaya Edition",
   "short_name": "Thai Trainer",
-  "description": "Thai vocabulary and script trainer with SRS",
+  "description": "Learn Thai vocabulary, script, and numbers — Pattaya Edition",
   "start_url": "/thaicab/",
   "display": "standalone",
   "background_color": "#0d0015",
