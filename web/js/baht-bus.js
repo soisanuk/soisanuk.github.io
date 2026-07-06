@@ -511,6 +511,7 @@ const _BB_STARS = Array.from({length: 22}, (_, i) => [
 let _bbCanvas = null, _bbCtx = null, _bbAnimId = null;
 let _bbBusX = -1, _bbLeavers = [], _bbWaiter = false, _bbSpawnedLeavers = false;
 let _bbAmbient = [], _bbNextAmb = 0;
+let _bbLadies = []; // mutable per-shift lady state; built in _bbSceneStart
 
 // Tall palm, neon-green fronds over a warm trunk
 const _BB_PALM = [
@@ -537,11 +538,13 @@ const _BB_CHAIR = [
 ];
 const _BB_CHAIR_COL = { B: "#9c6b3d", b: "#5f3d20" };
 
-// Ladies working the boardwalk near two of the palms; strollers marked as
-// hagglers at spawn stop beside one for a moment of price discovery.
-const _BB_LADIES = [
-  { px: 0.55, shirt: "#ff2d95" },
-  { px: 0.75, shirt: "#ff5fa2" },
+// Ladies working the boardwalk near two of the palms. _bbLadies is the
+// mutable runtime array (reset each shift); hagglers stop beside one, and
+// at night a successful negotiation sends both off together.
+const _BB_LADY_POS = [0.55, 0.75]; // horizontal positions (fraction of W)
+const _BB_LADY_SHIRTS = [
+  "#ff2d95", "#ff5fa2", "#ff80c8", "#cc2288", "#ff6090",
+  "#dd44bb", "#ff4488", "#cc55ee", "#aa2299", "#ff9944",
 ];
 
 function _bbSprite(ctx, rows, colors, x, y, scale, flipX) {
@@ -566,6 +569,11 @@ function _bbSceneStart() {
   _bbAmbient = [];
   _bbNextAmb = 0;
   _bbWaiter = false;
+  _bbLadies = _BB_LADY_POS.map(px => ({
+    px,
+    shirt: _BB_LADY_SHIRTS[Math.floor(Math.random() * _BB_LADY_SHIRTS.length)],
+    gone: false, returnAt: 0, heartUntil: 0,
+  }));
   if (!_bbAnimId) _bbAnimId = requestAnimationFrame(_bbFrame);
 }
 
@@ -747,23 +755,52 @@ function _bbFrame(now) {
     _bbSpawnAmbient(W);
     _bbNextAmb = now + 1800 + Math.random() * 2800;
   }
-  // the ladies at their palms
-  for (const L of _BB_LADIES) {
-    _bbSprite(ctx, _WALK_FRAMES[0], { ..._WALK_BASE, B: L.shirt },
-      W * L.px + 30, roadY - 26, 3, L.px > 0.6);
+  // the ladies at their palms — may leave with a customer at night, then return
+  for (const L of _bbLadies) {
+    if (L.gone && now >= L.returnAt) {
+      L.gone = false;
+      L.shirt = _BB_LADY_SHIRTS[Math.floor(Math.random() * _BB_LADY_SHIRTS.length)];
+    }
+    if (L.heartUntil && now < L.heartUntil) {
+      ctx.font = "13px sans-serif";
+      ctx.fillText("💕", W * L.px + 26, roadY - 36);
+    }
+    if (!L.gone) {
+      _bbSprite(ctx, _WALK_FRAMES[0], { ..._WALK_BASE, B: L.shirt },
+        W * L.px + 30, roadY - 26, 3, L.px > 0.6);
+    }
   }
 
   const ambFrame = Math.floor(now / 360) % 2;
   for (let i = _bbAmbient.length - 1; i >= 0; i--) {
     const a = _bbAmbient[i];
     if (a.kind === "ped") {
+      const wasPaused = !!a.pauseUntil;
       const paused = a.pauseUntil && now < a.pauseUntil;
+      // pause just ended — resolve the haggle
+      if (wasPaused && !paused && a.haggledLady != null) {
+        const li = a.haggledLady;
+        a.haggledLady = null;
+        a.pauseUntil = 0;
+        const L = _bbLadies[li];
+        if (prog >= 0.6 && !L.gone && Math.random() < 0.35) {
+          // successful deal — both leave together
+          L.heartUntil = now + 1800;
+          L.gone = true;
+          L.returnAt = now + 9000 + Math.random() * 8000;
+          _bbAmbient.splice(i, 1);
+          continue;
+        }
+      }
       if (!paused) {
         a.x += a.vx;
         if (a.haggler) {
-          for (const L of _BB_LADIES) {
+          for (let li = 0; li < _bbLadies.length; li++) {
+            const L = _bbLadies[li];
+            if (L.gone) continue;
             if (Math.abs(a.x - (W * L.px + 30) + (a.vx < 0 ? 16 : -16)) < 4) {
               a.haggler = false;
+              a.haggledLady = li;
               a.pauseUntil = now + 2200 + Math.random() * 2600;
               break;
             }
@@ -773,7 +810,7 @@ function _bbFrame(now) {
       if (a.x < -100 || a.x > W + 100) { _bbAmbient.splice(i, 1); continue; }
       _bbSprite(ctx, _WALK_FRAMES[paused ? 0 : ambFrame], { ..._WALK_BASE, B: a.shirt },
         a.x, roadY - 26, 3, a.vx < 0);
-      if (paused) { // the moment of price discovery
+      if (paused) {
         ctx.font = "bold 9px monospace";
         ctx.fillStyle = "#ffe600";
         ctx.fillText("฿?", a.x + 3, roadY - 29);
