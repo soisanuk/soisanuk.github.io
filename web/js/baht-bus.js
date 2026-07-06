@@ -158,16 +158,19 @@ function _bbSpeakBaht(n, suffix) {
 // Lives outside #bb-body so phase changes never wipe it; tap a cell to hear it.
 function _bbBuildChart() {
   const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 100];
+  // 100 shows as the bare building block ร้อย (like สิบ), not หนึ่งร้อย —
+  // it's also the only label wide enough to wrap the mobile grid.
+  const label = n => (n === 100 ? "ร้อย" : _bbThaiNum(n));
   const el = document.getElementById("bb-chart");
   el.innerHTML = `<div class="bb-chart-title">เลขไทย — tap a number to hear it</div>
     <div class="bb-chart-grid">` + nums.map(n => `
       <button class="bb-chart-cell" data-n="${n}">
         <span class="bb-chart-num">${n}</span>
-        <span class="bb-chart-th">${_bbThaiNum(n)}</span>
+        <span class="bb-chart-th">${label(n)}</span>
       </button>`).join("") + `</div>`;
   el.querySelectorAll(".bb-chart-cell").forEach(b =>
     b.addEventListener("click", () => {
-      try { _tts.speak(_bbThaiNum(+b.dataset.n)); } catch (_) {}
+      try { _tts.speak(label(+b.dataset.n)); } catch (_) {}
     }));
 }
 
@@ -481,6 +484,13 @@ const _BB_CHAIR = [
 ];
 const _BB_CHAIR_COL = { B: "#9c6b3d", b: "#5f3d20" };
 
+// Ladies working the boardwalk near two of the palms; strollers marked as
+// hagglers at spawn stop beside one for a moment of price discovery.
+const _BB_LADIES = [
+  { px: 0.55, shirt: "#ff2d95" },
+  { px: 0.75, shirt: "#ff5fa2" },
+];
+
 function _bbSprite(ctx, rows, colors, x, y, scale, flipX) {
   ctx.save();
   if (flipX) { ctx.translate(Math.round(x) + rows[0].length * scale, Math.round(y)); ctx.scale(-1, 1); }
@@ -517,6 +527,7 @@ function _bbSpawnAmbient(W) {
       kind: "ped", x: dir === 1 ? -20 : W + 20,
       vx: dir * (0.3 + Math.random() * 0.25),
       shirt: _WALK_SHIRTS[Math.floor(Math.random() * _WALK_SHIRTS.length)],
+      haggler: Math.random() < 0.5, // will stop at a lady exactly once
     });
   } else if (r < 0.9) {
     _bbAmbient.push({
@@ -589,19 +600,22 @@ function _bbFrame(now) {
   ctx.fillStyle = "#7d5a60";
   ctx.fillRect(0, beachY, W, walkY - beachY);
 
-  // tented lounger group on the left third, facing the sea
-  const tentX0 = W * 0.03, tentX1 = W * 0.30;
+  // tented lounger group on the left third, facing the sea; the canopy rises
+  // above the horizon line so the tent reads tall, attendant off to the side
+  const tentX0 = W * 0.03, tentX1 = W * 0.30, tentY = beachY - 8;
   ctx.fillStyle = "#5f3d20";
-  ctx.fillRect(tentX0 + 2, beachY + 5, 2, walkY - beachY - 5);
-  ctx.fillRect(tentX1 - 4, beachY + 5, 2, walkY - beachY - 5);
+  ctx.fillRect(tentX0 + 2, tentY + 6, 2, walkY - tentY - 6);
+  ctx.fillRect(tentX1 - 4, tentY + 6, 2, walkY - tentY - 6);
   const nChairs = Math.max(2, Math.floor((tentX1 - tentX0 - 14) / 24));
   for (let i = 0; i < nChairs; i++) {
     _bbSprite(ctx, _BB_CHAIR, _BB_CHAIR_COL, tentX0 + 9 + i * 24, walkY - 11, 3, false);
   }
   ctx.fillStyle = "#d8c9a8";
-  ctx.fillRect(tentX0, beachY + 1, tentX1 - tentX0, 5);
+  ctx.fillRect(tentX0, tentY, tentX1 - tentX0, 6);
   ctx.fillStyle = "#b03a3a";
-  ctx.fillRect(tentX0, beachY + 1, tentX1 - tentX0, 2);
+  ctx.fillRect(tentX0, tentY, tentX1 - tentX0, 2);
+  _bbSprite(ctx, _WALK_FRAMES[0], { ..._WALK_BASE, B: "#e8e4d0" },
+    tentX1 + 8, walkY - 26, 3, true);
 
   // tall neon palms rooted at the boardwalk edge, crowns up in the sunset
   for (const px of [0.34, 0.55, 0.75, 0.94]) {
@@ -626,15 +640,42 @@ function _bbFrame(now) {
     _bbSpawnAmbient(W);
     _bbNextAmb = now + 1800 + Math.random() * 2800;
   }
+  // the ladies at their palms
+  for (const L of _BB_LADIES) {
+    _bbSprite(ctx, _WALK_FRAMES[0], { ..._WALK_BASE, B: L.shirt },
+      W * L.px + 30, roadY - 26, 3, L.px > 0.6);
+  }
+
   const ambFrame = Math.floor(now / 360) % 2;
   for (let i = _bbAmbient.length - 1; i >= 0; i--) {
     const a = _bbAmbient[i];
+    if (a.kind === "ped") {
+      const paused = a.pauseUntil && now < a.pauseUntil;
+      if (!paused) {
+        a.x += a.vx;
+        if (a.haggler) {
+          for (const L of _BB_LADIES) {
+            if (Math.abs(a.x - (W * L.px + 30) + (a.vx < 0 ? 16 : -16)) < 4) {
+              a.haggler = false;
+              a.pauseUntil = now + 2200 + Math.random() * 2600;
+              break;
+            }
+          }
+        }
+      }
+      if (a.x < -100 || a.x > W + 100) { _bbAmbient.splice(i, 1); continue; }
+      _bbSprite(ctx, _WALK_FRAMES[paused ? 0 : ambFrame], { ..._WALK_BASE, B: a.shirt },
+        a.x, roadY - 26, 3, a.vx < 0);
+      if (paused) { // the moment of price discovery
+        ctx.font = "bold 9px monospace";
+        ctx.fillStyle = "#ffe600";
+        ctx.fillText("฿?", a.x + 3, roadY - 29);
+      }
+      continue;
+    }
     a.x += a.vx;
     if (a.x < -100 || a.x > W + 100) { _bbAmbient.splice(i, 1); continue; }
-    if (a.kind === "ped") {
-      _bbSprite(ctx, _WALK_FRAMES[ambFrame], { ..._WALK_BASE, B: a.shirt },
-        a.x, roadY - 26, 3, a.vx < 0);
-    } else if (a.kind === "moto") {
+    if (a.kind === "moto") {
       _bbSprite(ctx, _MOTO_ROWS, a.colors, a.x, roadY - 6, 3, true);
     } else {
       _bbSprite(ctx, _BUS_ROWS, _BUS_COL, a.x, roadY - 18, 4, true);
