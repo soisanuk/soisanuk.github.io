@@ -21,6 +21,7 @@ const PRECACHE = [
   "./js/soi-buakhao.js",
   "./js/connect4.js",
   "./js/game.js",
+  "./js/baht-bus.js",
   "./js/main.js",
   "./manifest.json",
 ];

@@ -39,10 +39,16 @@ document.addEventListener("keydown", e => {
     else if (key === "k" || key === "K") startTutor();
     else if (key === "b" || key === "B") startSoiBuakhao();
     else if (key === "c" || key === "C") startConnect4();
+    else if (key === "r" || key === "R") startBahtBus();
     else if (key === "?") showTutorial();
   }
   if (active === "c4-screen") {
     if (_c4Key(key)) return;
+    if (key === "Escape") endSession();
+    return;
+  }
+  if (active === "bb-screen") {
+    if (_bbKey(key)) { e.preventDefault(); return; } // Backspace must not navigate
     if (key === "Escape") endSession();
     return;
   }

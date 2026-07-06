@@ -87,6 +87,8 @@ const _audio = (() => {
     drop:     t => { _note(700, t, 0.12, "triangle", 0.26, _sfxBus, 180); _noise(t + 0.10, 0.05, 0.28, _sfxBus, 500); },
     win:      t => [523, 659, 784, 1047, 784, 1047].forEach((f, i) => _note(f, t + i * 0.11, 0.15, "square", 0.18, _sfxBus)),
     lose:     t => [330, 311, 294, 262].forEach((f, i) => _note(f, t + i * 0.20, 0.26, "triangle", 0.24, _sfxBus)),
+    coin:     t => { _note(1568, t, 0.06, "square", 0.20, _sfxBus); _note(2093, t + 0.05, 0.09, "square", 0.18, _sfxBus); },
+    cash:     t => { _noise(t, 0.05, 0.22, _sfxBus, 3500); _note(988, t + 0.02, 0.08, "square", 0.20, _sfxBus); _note(1319, t + 0.10, 0.16, "square", 0.20, _sfxBus); },
   };
 
   // ── Background music ──────────────────────────────────────────────────────
@@ -110,6 +112,12 @@ const _audio = (() => {
       bpm: 104, lead: "square", leadVol: 0.12, hat: true, bassEvery: 2,
       bass: [38, 34, 31, 33],
       prog: [[74, 77, 81], [70, 74, 77], [67, 70, 74], [69, 73, 76]],
+    },
+    // Baht Bus — easy luk-thung roll for the sunset loop (C Am F G, pentatonic lean)
+    bus: {
+      bpm: 112, lead: "triangle", leadVol: 0.15, hat: true, bassEvery: 2,
+      bass: [36, 33, 29, 31],
+      prog: [[72, 74, 76, 79], [69, 72, 74, 76], [65, 67, 69, 72], [67, 71, 74, 79]],
     },
   };
 
@@ -166,7 +174,7 @@ const _audio = (() => {
 // Screen → music track. Called by showScreen, so entering a game starts its
 // loop and navigating anywhere else stops it.
 function _audioScreen(id) {
-  const track = { "game-screen": "street", "soi-screen": "soi", "c4-screen": "soi6" }[id];
+  const track = { "game-screen": "street", "soi-screen": "soi", "c4-screen": "soi6", "bb-screen": "bus" }[id];
   if (track) _audio.music(track);
   else _audio.stop();
 }

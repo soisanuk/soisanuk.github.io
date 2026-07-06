@@ -131,18 +131,29 @@ const _MOTO_COL = { F: "#999999", B: "#888888", R: "#ff4400", W: "#111122" };
 // Grab driver variant — green jacket/helmet on a red bike
 const _MOTO_GRAB_COL = { F: "#999999", B: "#aa2f2f", R: "#00b14f", W: "#111122" };
 
-// Baht bus / songthaew (14 × 6 sprite-pixels, drawn facing right, cab at right).
-// Pattaya's baht buses are blue; the covered bed rises above the cab and has
-// silver rails along the open side (S row) and up the back (S column).
+// Baht bus / songthaew (14 × 7 sprite-pixels, drawn facing right, cab at right).
+// Drawn from photos of the real Pattaya trucks: near-black navy Hilux cab with
+// an orange route board over the windscreen, white canopy roof rising above the
+// cab, pink ad banners under the roof, open sides, and chrome tube frame with
+// the rear step/grab rails (S column at the back).
 const _BUS_ROWS = [
-  "SRRRRRRRRR....",
-  "SRRRRRRRRRCCCC",
-  "SSSSSSSSSSCCCC",
-  "SRRRRRRRRRCCCC",
-  "..WW......WWWW",
-  "..WW......WWWW",
+  "WWWWWWWWWW....",
+  "SPPPPPPPPP....",
+  "S.........OOOO",
+  "SSSSSSSSSSCGGC",
+  "SCCCCCCCCCCCCC",
+  "..KK......KKKK",
+  "..KK......KKKK",
 ];
-const _BUS_COL = { C: "#16307a", R: "#2255cc", S: "#c0c8d4", W: "#111122" };
+const _BUS_COL = {
+  W: "#dde3ea", // canopy roof
+  P: "#ff5fa2", // ad banners
+  S: "#c0c8d4", // chrome frame, rails, rear step
+  C: "#2a447f", // navy cab + bed (photos are near-black, brightened for contrast)
+  O: "#e07820", // route board
+  G: "#111122", // glass
+  K: "#111122", // wheels
+};
 
 // Draw a pixel-art sprite. flipX mirrors it horizontally.
 function _gDrawSprite(ctx, rows, colors, x, y, flipX) {

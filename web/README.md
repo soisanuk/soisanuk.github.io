@@ -32,6 +32,9 @@ Dialogue-driven visual novel: a 3-night bar crawl where a hostess asks simple qu
 **Soi 6: Connect สี่** (`C`)
 Connect 4 against a bar hostess — three difficulty levels, three girls (sweet trainee Nong, sharp Pim, and the undefeated Mamasan, Madam Oy, who plays a real lookahead AI and takes the first move). Each turn is a listening quiz: the vowel is spoken (sound + name), and you pick the matching Thai script from four choices to aim your own drop — get it wrong and the bar drops your token in a random column. Replaying the audio twice reveals the romanisation as a hint; with no Thai TTS voice, the romanisation is shown instead of audio. Losses go on your lady-drink tab. In-game: `1–4` answer, `1–7` pick a column, 🔊 replay.
 
+**Baht Bus** (`R`)
+Drive the Beach Road baht bus through a 10-stop sunset shift and learn Thai numbers. Loop fares are ฿15 a head; the passenger's payment is only *spoken* (สี่สิบห้าบาท…), so giving the right change from your tray of real-coloured Thai coins and notes trains number listening — replaying the audio reveals the Thai text, then the romanisation. Every third stop is an off-loop charter negotiated like a taxi: pick your quote from four written-Thai amounts (number reading), then judge their spoken counter-offer against your bottom line. Quote too low and they snap it up; refuse a fair counter and they walk. In-game: `1–7` tap money, `Backspace` take back, `Enter` give change, `1–4` quote, `R` replay.
+
 **Thai Keyboard tutor** (`K`)
 Learn the Kedmanee typing layout. A Thai character is shown (and spoken); type it on your keyboard — or tap the on-screen key on touch devices. Consonants-only or all-keys mode, with streak and accuracy tracking.
 
@@ -42,7 +45,7 @@ All 878 words in Thai alphabetical order with real-time search. Filter by catego
 SRS summary, 7-day review forecast chart, per-category mature/seen counts, and progress export/import.
 
 **Audio**
-The three games have synthesised chiptune sound effects and a background music loop each (Web Audio API — no audio files, works offline); the 🔊 button in each game's footer mutes both, and the setting persists.
+The four games have synthesised chiptune sound effects and a background music loop each (Web Audio API — no audio files, works offline); the 🔊 button in each game's footer mutes both, and the setting persists.
 
 Individual letters are always spoken as sound + traditional name — e.g. ก is read "ก … กอไก่", า as "อา … สระอา" — consistently across the keyboard tutor, Walking Street, script flashcards, drills, and script SRS. The sound and the name are separate utterances with a real pause between them, so each keeps its natural pronunciation. All Thai text is speakable via the Web Speech API (requires a Thai TTS voice — available in Chrome/Edge on desktop and Android, and in iOS Safari). On iOS, speech is unlocked by the first touch, as required by the platform. If no Thai voice is found, the home screen shows a notice instead of failing silently. When packaged as a native app with Capacitor, speech routes through the native TTS plugin instead (Android's WebView has no Web Speech API).
 
@@ -72,6 +75,7 @@ All shortcuts are active on the home screen.
 | `G` | Walking Street game |
 | `B` | Soi Buakhao game |
 | `C` | Soi 6: Connect สี่ game |
+| `R` | Baht Bus game |
 | `K` | Thai Keyboard tutor |
 | `V` | Vocab List |
 | `0` | Statistics |
@@ -103,6 +107,7 @@ web/
     soi-buakhao.js    Soi Buakhao dialogue game — data + game flow
     connect4.js       Soi 6 Connect สี่ — vowel-quiz Connect 4 vs hostess AI
     game.js           Walking Street consonant-drop game (canvas)
+    baht-bus.js       Baht Bus — Thai numbers & money game (sunset canvas + DOM)
     main.js           keyboard shortcuts, Android back button, init (loaded last)
 ```
 
