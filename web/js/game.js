@@ -142,17 +142,17 @@ const _BUS_ROWS = [
   "S.........OOOO",
   "SSSSSSSSSSCGGC",
   "SCCCCCCCCCCCCC",
-  "..KK......KKKK",
-  "..KK......KKKK",
+  ".KKK......KKK.",
+  ".KSK......KSK.",
 ];
 const _BUS_COL = {
   W: "#dde3ea", // canopy roof
   P: "#ff5fa2", // ad banners
-  S: "#c0c8d4", // chrome frame, rails, rear step
+  S: "#c0c8d4", // chrome frame, rails, rear step, wheel hubs
   C: "#2a447f", // navy cab + bed (photos are near-black, brightened for contrast)
   O: "#e07820", // route board
   G: "#111122", // glass
-  K: "#111122", // wheels
+  K: "#454552", // tires
 };
 
 // Draw a pixel-art sprite. flipX mirrors it horizontally.
