@@ -1066,48 +1066,48 @@ kbd.tut-key {
 .game-ref-key  { font-size: 0.68rem; font-weight: bold; font-family: monospace; margin-top: 0.05rem; }
 
 /* ── Thai Keyboard Tutor ─────────────────────────────────────────────────── */
-#tutor-screen { flex-direction:column; background:#05001a; }
+#tutor-screen { flex-direction:column; background:#0d0015; }
 #tutor-body   { display:flex; flex-direction:column; align-items:center; gap:.6rem; padding:.6rem .5rem 0; overflow-y:auto; flex:1; }
 #tutor-modes  { display:flex; gap:.4rem; }
 .t-mbtn {
-  background:#08001a; border:1px solid #00e5ff30; color:#00e5ff60;
+  background:#12021f; border:1px solid #bf5fff35; color:#a487b8;
   border-radius:6px; padding:.25rem .75rem; font:.8rem sans-serif; cursor:pointer; transition:all .15s;
 }
-.t-mbtn:hover { border-color:#00e5ff60; color:#00e5ff; }
-.t-mbtn.active { border-color:#00e5ff; color:#00e5ff; background:#0a0025; box-shadow:0 0 8px #00e5ff30; }
+.t-mbtn:hover { border-color:#ff149370; color:#ff77ff; }
+.t-mbtn.active { border-color:#ff1493; color:#ff77ff; background:#1c0630; box-shadow:0 0 8px #ff149340; }
 #tutor-prompt { text-align:center; padding:.4rem 0 0; }
 #t-char {
   font: bold 76px 'Noto Sans Thai','Leelawadee UI',serif;
-  color:#00e5ff; text-shadow:0 0 22px #00e5ff, 0 0 44px #00e5ff40;
+  color:#ffe600; text-shadow:0 0 22px #ffe600, 0 0 44px #ffe60040;
   line-height:1.15; min-height:96px; display:flex; align-items:center; justify-content:center;
 }
-#t-name { color:#00e5ff45; font:.78rem sans-serif; margin-top:.1rem; letter-spacing:.04em; }
+#t-name { color:#a487b8; font:.78rem sans-serif; margin-top:.1rem; letter-spacing:.04em; }
 #t-kbd  { display:flex; flex-direction:column; gap:3px; width:100%; max-width:400px; }
 .t-row  { display:flex; justify-content:center; gap:3px; }
 .tkey   {
   flex:0 0 auto; width:36px; height:40px;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
-  background:#07001e; border:1px solid #00e5ff18; border-radius:5px;
+  background:#12021f; border:1px solid #bf5fff22; border-radius:5px;
   position:relative; transition:box-shadow .1s, border-color .1s, background .1s; overflow:hidden;
 }
-.tkey-lat { font:.48rem monospace; color:#00e5ff30; position:absolute; top:2px; left:3px; line-height:1; }
-.tkey-th  { font:.95rem 'Noto Sans Thai',sans-serif; color:#00e5ff55; line-height:1; }
+.tkey-lat { font:.48rem monospace; color:#bf5fff40; position:absolute; top:2px; left:3px; line-height:1; }
+.tkey-th  { font:.95rem 'Noto Sans Thai',sans-serif; color:#cf9fff; line-height:1; }
 .tkey.dim .tkey-th  { color:#ffffff12; }
 .tkey.dim .tkey-lat { color:#ffffff08; }
-.tkey.t-target { border-color:#00e5ff90; box-shadow:0 0 10px #00e5ff50; }
-.tkey.t-target .tkey-th { color:#00e5ff; text-shadow:0 0 8px #00e5ff; }
-.tkey.t-ok { border-color:#00ff7f; box-shadow:0 0 12px #00ff7f60; background:#00130a; }
+.tkey.t-target { border-color:#ff1493; box-shadow:0 0 10px #ff149360; }
+.tkey.t-target .tkey-th { color:#ff1493; text-shadow:0 0 8px #ff1493; }
+.tkey.t-ok { border-color:#00cc66; box-shadow:0 0 12px #00cc6660; background:#00130a; }
 .tkey.t-ok .tkey-th { color:#00ff7f; text-shadow:0 0 8px #00ff7f; }
-.tkey.t-wrong { border-color:#ff1493; box-shadow:0 0 12px #ff149350; background:#1a0010; }
-.tkey.t-wrong .tkey-th { color:#ff1493; }
+.tkey.t-wrong { border-color:#ff3355; box-shadow:0 0 12px #ff335550; background:#1a0008; }
+.tkey.t-wrong .tkey-th { color:#ff3355; }
 .tkey.t-hint { border-color:#ffe600; box-shadow:0 0 12px #ffe60050; }
 .tkey.t-hint .tkey-th { color:#ffe600; text-shadow:0 0 8px #ffe600; }
 #tutor-stats {
-  display:flex; gap:2rem; color:#00e5ff55; font:.82rem sans-serif;
-  padding:.3rem 0; border-top:1px solid #00e5ff12; width:100%; max-width:400px;
+  display:flex; gap:2rem; color:#a487b8; font:.82rem sans-serif;
+  padding:.3rem 0; border-top:1px solid #43155e; width:100%; max-width:400px;
   justify-content:center;
 }
-#tutor-stats strong { color:#00e5ff; }
+#tutor-stats strong { color:#ffe600; }
 
 /* ── Soi Buakhao Dialogue Game ───────────────────────────────────────────── */
 #soi-screen { flex-direction:column; background:#0d0015; }
@@ -1770,7 +1770,7 @@ body.mobile #app-shell {
 
 <!-- ═══ THAI KEYBOARD TUTOR ══════════════════════════════════════════════════ -->
 <div id="tutor-screen" class="screen">
-  <div class="screen-header" style="background:#05001a;color:#00e5ff;text-shadow:0 0 12px #00e5ff;border-bottom:1px solid #00e5ff28;">
+  <div class="screen-header" style="background:#0d0015;color:#ff1493;text-shadow:0 0 12px #ff1493;border-bottom:1px solid #ff149340;letter-spacing:0.08em">
     ⌨️ Thai Keyboard — คีย์บอร์ดไทย
   </div>
   <div id="tutor-body">
@@ -1788,9 +1788,9 @@ body.mobile #app-shell {
       <span>Accuracy <strong id="t-acc">—</strong></span>
     </div>
   </div>
-  <div class="screen-footer" style="background:#05001a;border-top:1px solid #00e5ff18;color:#00e5ff50;font-size:.78rem;text-align:center;padding:.5rem;">
+  <div class="screen-footer" style="background:#0d0015;border-top:1px solid #43155e;color:#a487b8;font-size:.78rem;text-align:center;padding:.5rem;">
     <span class="kb-hint">Type the key for each character &nbsp;·&nbsp;</span><span class="touch-hint">Tap the key for each character &nbsp;·&nbsp;</span>
-    <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#00e5ff40;color:#00e5ff80" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
+    <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
   </div>
 </div>
 

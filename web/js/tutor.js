@@ -126,7 +126,6 @@ function _tType(eKey) {
   if (!TUTOR_ALL.some(e => e.key === k)) return false;
 
   _tTotal++;
-  _tts.speak(letterSpeechParts(_tCurrent.thai));
   if (k === _tCurrent.key) {
     _tCorrect++;
     _tStreak++;
