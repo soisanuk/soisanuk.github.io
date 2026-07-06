@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Stamp service worker cache version
-        run: sed -i "s/thaicab-dev/thaicab-${GITHUB_SHA::7}/" web/sw.js
+        run: sed -i "s/soisanuk-dev/soisanuk-${GITHUB_SHA::7}/" web/sw.js
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:

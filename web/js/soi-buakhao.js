@@ -9,7 +9,7 @@ const _SB_BARS = [
   "Golden Dragon Bar", "Sunset Dreams Lounge", "Starlight Bar",
   "Rainbow Girls Bar", "Paradise Nights Club", "Gold Rush Lounge",
   "Silk Rose Bar", "Club Mirage", "Jasmine Garden Bar",
-  "Crystal Palace A-Go-Go", "Midnight Sun Bar",
+  "Crystal Palace A-Go-Go", "Midnight Sun Bar", "Cindy Bar",
 ];
 
 const _SB_HOSTESSES = [
@@ -20,7 +20,8 @@ const _SB_HOSTESSES = [
   { name:"Joy",  th:"จอย",   e:"💕", desc:"a bubbly girl who laughs at everything you say" },
   { name:"Fon",  th:"ฝน",    e:"🌺", desc:"a shy girl who warms up the moment you speak Thai" },
   { name:"Gift", th:"กิ๊ฟ",  e:"💎", desc:"a confident girl with perfect makeup and sharp wit" },
-  { name:"Kwan", th:"กวาง",  e:"🦋", desc:"a gentle girl with a soft voice and gentle eyes" },
+  { name:"Kwan",  th:"กวาง",   e:"🦋", desc:"a gentle girl with a soft voice and gentle eyes" },
+  { name:"Cindy", th:"ซินดี้", e:"🌹", desc:"the mamasan of Cindy Bar — sharp as a razor, warm as a Chang on a hot night, and on the soi longer than most expats have had passports" },
 ];
 
 // ── Dialogue pools ─────────────────────────────────────────────────────────

@@ -2,7 +2,7 @@ pages:
   stage: deploy
   script:
     - cp -r web public
-    - sed -i "s/thaicab-dev/thaicab-${CI_COMMIT_SHORT_SHA}/" public/sw.js
+    - sed -i "s/soisanuk-dev/soisanuk-${CI_COMMIT_SHORT_SHA}/" public/sw.js
   artifacts:
     paths:
       - public
