@@ -66,10 +66,6 @@ function assertSprite(name, rows, palette, extraChars = []) {
 }
 
 describe("street sprites", () => {
-  test("palm tree rows are uniform and fully coloured", () => {
-    assertSprite("palm", _PALM_ROWS, _PALM_COL);
-  });
-
   test("walk frames are uniform, fully coloured, and same-sized", () => {
     // "B" (shirt) is injected per-pedestrian at draw time, not in _WALK_BASE
     for (const frame of _WALK_FRAMES) {
@@ -82,6 +78,7 @@ describe("street sprites", () => {
 
   test("motorbike rows are uniform and fully coloured", () => {
     assertSprite("moto", _MOTO_ROWS, _MOTO_COL);
+    assertSprite("grab moto", _MOTO_ROWS, _MOTO_GRAB_COL);
   });
 
   test("baht bus rows are uniform and fully coloured", () => {

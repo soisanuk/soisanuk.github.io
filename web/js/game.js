@@ -38,88 +38,78 @@ const _NEON = [
 
 // ── ASCII background art ───────────────────────────────────────────────────
 
-// Pattaya hillside sign — rendered as canvas text in monospace
-const _PATTAYA_ART = [
-  "   *   *   *   *   *   *   *   *   *   *   *  ",
-  " *                                             *",
-  "   +===========================================+  ",
-  "   |   * *   P A T T A Y A   * *             |  ",
-  "   +===========================================+  ",
-  " *                                             *",
-  "   *   *   *   *   *   *   *   *   *   *   *  ",
-];
-
-// Three Walking Street go-go bars, each with a neon color and ASCII box art
+// Go-go / girly-bar box signs at street level (canvas monospace, centred).
+// Lines outside the +--+ box are marquee strips that blink on/off.
+// minW: skipped on canvases narrower than this so phones aren't wallpapered.
 const _GOGO_BARS = [
   {
-    cx: 0.13, color: "#ff1493",
-    art: [
-      "+---------------+",
-      "| * BUTTERFLY * |",
-      "|   GO-GO BAR   |",
-      "+---------------+",
-    ],
-  },
-  {
-    cx: 0.50, color: "#bf5fff",
+    cx: 0.13, color: "#ff69b4", minW: 0,
     art: [
       "+----------------+",
-      "| * SUGAR SUGAR *|",
-      "|   A-GO-GO BAR  |",
+      "| * PINK LOTUS * |",
+      "|     LOUNGE     |",
       "+----------------+",
     ],
   },
   {
-    cx: 0.84, color: "#00e5ff",
+    cx: 0.38, color: "#bf5fff", minW: 640,
     art: [
-      "+---------------+",
-      "| * EDEN CLUB * |",
-      "|   A-GO-GO BAR |",
-      "+---------------+",
+      "+------------------+",
+      "| * NEON PARADISE *|",
+      "|     A-GO-GO      |",
+      "+------------------+",
+      " GIRLS GIRLS GIRLS ",
+    ],
+  },
+  {
+    cx: 0.62, color: "#ffaa00", minW: 640,
+    art: [
+      "+-----------------+",
+      "| * LUCKY TIGER * |",
+      "|    BEER  BAR    |",
+      "+-----------------+",
+      "  * OPEN  LATE *  ",
+    ],
+  },
+  {
+    cx: 0.87, color: "#00e5ff", minW: 0,
+    art: [
+      "+------------------+",
+      "|* CRYSTAL PALACE *|",
+      "|     A-GO-GO      |",
+      "+------------------+",
     ],
   },
 ];
 
-// Static background lights (twinkling neon / distant signs)
-const _BG_LIGHTS = Array.from({ length: 55 }, () => ({
-  x:        Math.random(),
-  y:        Math.random() * 0.68,
-  r:        0.8 + Math.random() * 2,
-  phase:    Math.random() * Math.PI * 2,
-  colorIdx: Math.floor(Math.random() * _NEON.length),
+// Rooftop vertical neon signs — stacked letters, Walking Street style
+const _VSIGNS = [
+  { cx: 0.255, color: "#ff1493", minW: 0,   word: "GOGO"   },
+  { cx: 0.50,  color: "#ffe600", minW: 520, word: "GIRLS"  },
+  { cx: 0.745, color: "#00ff7f", minW: 0,   word: "MIRAGE" },
+];
+
+// Starfield (upper half of the sky, above the rooftops)
+const _STARS = Array.from({ length: 110 }, () => ({
+  x:     Math.random(),
+  y:     Math.random() * 0.5,
+  r:     0.5 + Math.random() * 1.3,
+  phase: Math.random() * Math.PI * 2,
 }));
 
-// Building silhouettes [normX, normWidth, normHeight]
+// Shophouse row [normX, normWidth, storeys] — one shared facade colour, 2–3
+// storeys tall, drawn edge to edge (widths sum to 1)
 const _BUILDINGS = [
-  [0.00, 0.08, 0.28], [0.07, 0.05, 0.18],
-  [0.13, 0.09, 0.35], [0.21, 0.06, 0.22],
-  [0.27, 0.05, 0.15], [0.32, 0.09, 0.30],
-  [0.40, 0.05, 0.20], [0.45, 0.08, 0.38],
-  [0.53, 0.06, 0.19], [0.59, 0.09, 0.27],
-  [0.68, 0.05, 0.23], [0.73, 0.08, 0.32],
-  [0.81, 0.04, 0.17], [0.85, 0.07, 0.25],
-  [0.92, 0.08, 0.20],
+  [0.00, 0.09, 2], [0.09, 0.07, 3], [0.16, 0.10, 2], [0.26, 0.08, 3],
+  [0.34, 0.09, 2], [0.43, 0.07, 3], [0.50, 0.10, 2], [0.60, 0.08, 3],
+  [0.68, 0.09, 2], [0.77, 0.07, 3], [0.84, 0.09, 2], [0.93, 0.07, 3],
 ];
+const _BLDG_FACADE = "#190a2b";
+const _BLDG_STOREY = 0.075; // storey height as a fraction of canvas height
 
 // ── 8-bit street sprites ──────────────────────────────────────────────────
 
 const _SPR = 3; // display pixels per sprite-pixel
-
-// Palm tree (7 × 11 sprite-pixels)
-const _PALM_ROWS = [
-  "..GGG..",
-  ".GGGGG.",
-  "GGGGGGG",
-  ".GGGGG.",
-  "..GGG..",
-  "...T...",
-  "...T...",
-  "...T...",
-  "...T...",
-  "..TTT..",
-  ".TTTTT.",
-];
-const _PALM_COL = { G: "#1e8c22", T: "#8b5010" };
 
 // Person (5 × 8 sprite-pixels, 2 walk frames, drawn facing right)
 const _WALK_FRAMES = [
@@ -138,8 +128,11 @@ const _MOTO_ROWS = [
   ".WW.....WW",
 ];
 const _MOTO_COL = { F: "#999999", B: "#888888", R: "#ff4400", W: "#111122" };
+// Grab driver variant — green jacket, green bike
+const _MOTO_GRAB_COL = { F: "#999999", B: "#1f8a45", R: "#00b14f", W: "#111122" };
 
-// Baht bus / songthaew (14 × 6 sprite-pixels, drawn facing right, cab at right)
+// Baht bus / songthaew (14 × 6 sprite-pixels, drawn facing right, cab at right).
+// Pattaya's baht buses are blue.
 const _BUS_ROWS = [
   "..........CCCC",
   "RRRRRRRRRRCCCC",
@@ -148,7 +141,7 @@ const _BUS_ROWS = [
   "..WW......WWWW",
   "..WW......WWWW",
 ];
-const _BUS_COL = { C: "#223366", R: "#cc2222", W: "#111122" };
+const _BUS_COL = { C: "#16307a", R: "#2255cc", W: "#111122" };
 
 // Draw a pixel-art sprite. flipX mirrors it horizontally.
 function _gDrawSprite(ctx, rows, colors, x, y, flipX) {
@@ -185,7 +178,7 @@ let _gScore     = 0, _gLives = 3, _gLevel = 1, _gPopped = 0;
 let _gAnimId    = null, _gLastSpawn = 0;
 let _gSpawnMs   = 2200, _gSpeed = 0.55;
 let _gTime      = 0;
-let _gStreetSprites = [], _gPalmTrees = [];
+let _gStreetSprites = [];
 let _gLastStreetSpawn = 0, _gNextStreetIn = 0;
 
 // ── Init ───────────────────────────────────────────────────────────────────
@@ -218,11 +211,13 @@ function _gReset() {
   _gPool = GAME_LETTERS.length;
   _gStreetSprites = [];
   _gLastStreetSpawn = 0;
-  _gNextStreetIn = 800 + Math.random() * 1200;
-  // Palm trees at fixed fractional x positions
-  _gPalmTrees = [0.05, 0.20, 0.47, 0.66, 0.86].map(fx => ({
-    x: Math.round(fx * Math.max(1, _gCanvas.width - _PALM_ROWS[0].length * _SPR)),
-  }));
+  _gNextStreetIn = 400 + Math.random() * 800;
+  // Start with a few pedestrians already strolling
+  for (let i = 0; i < 4; i++) {
+    const s = _gMakeStreetSprite(true);
+    s.x = Math.random() * Math.max(1, _gCanvas.width - 40);
+    _gStreetSprites.push(s);
+  }
   _gHUD();
 }
 
@@ -363,47 +358,39 @@ function _gDrawBg(ctx, W, H) {
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, W, H);
 
-  // Pratumnak hill silhouette behind the sign
-  ctx.fillStyle = "#060016";
-  ctx.beginPath();
-  ctx.moveTo(0, groundY);
-  ctx.bezierCurveTo(W * 0.18, groundY * 0.99, W * 0.38, H * 0.07, W * 0.50, H * 0.09);
-  ctx.bezierCurveTo(W * 0.62, H * 0.07, W * 0.82, groundY * 0.99, W, groundY);
-  ctx.closePath();
-  ctx.fill();
-
-  // Pattaya hilltop sign
-  _gDrawPattayaSign(ctx, W, H);
-
-  // Twinkling neon lights / distant signs
-  for (const l of _BG_LIGHTS) {
-    const flicker = 0.35 + 0.65 * Math.abs(Math.sin(_gTime * 0.0009 + l.phase));
-    ctx.globalAlpha = flicker * 0.55;
-    ctx.fillStyle = _NEON[l.colorIdx];
-    ctx.beginPath();
-    ctx.arc(l.x * W, l.y * H, l.r, 0, Math.PI * 2);
-    ctx.fill();
+  // Twinkling stars
+  ctx.fillStyle = "#ffffff";
+  for (const s of _STARS) {
+    ctx.globalAlpha = (0.3 + 0.7 * Math.abs(Math.sin(_gTime * 0.0006 + s.phase))) * 0.8;
+    ctx.fillRect(s.x * W, s.y * H, s.r, s.r);
   }
   ctx.globalAlpha = 1;
 
-  // Building silhouettes with lit windows
-  ctx.fillStyle = "#050010";
-  for (const [bx, bw, bh] of _BUILDINGS) {
-    const px = bx * W, pw = bw * W, ph = bh * H;
+  _gDrawMoon(ctx, W, H);
+
+  // Shophouse row — uniform facade, 2–3 storeys
+  const storeyH = H * _BLDG_STOREY;
+  for (const [bx, bw, storeys] of _BUILDINGS) {
+    const px = bx * W, pw = bw * W, ph = storeys * storeyH;
+    ctx.fillStyle = _BLDG_FACADE;
     ctx.fillRect(px, groundY - ph, pw, ph);
-    const cols = Math.max(1, Math.floor(pw / 11));
-    const rows = Math.max(1, Math.floor(ph / 15));
-    for (let r = 0; r < rows; r++) {
+    ctx.fillStyle = "#2a1244"; // roof lip
+    ctx.fillRect(px, groundY - ph, pw, 3);
+    ctx.fillStyle = "#0e0518"; // party-wall seam
+    ctx.fillRect(px + pw - 1, groundY - ph, 1, ph);
+    // Windows, one row per storey — a few lit with warm room light
+    const cols = Math.max(1, Math.floor(pw / 16));
+    for (let s = 0; s < storeys; s++) {
       for (let c = 0; c < cols; c++) {
-        if (Math.sin(bx * 91 + r * 7.3 + c * 11.7 + _gTime * 0.00015) <= 0.1) continue;
-        const wi = Math.floor((bx * 10 + r + c) % _NEON.length);
-        ctx.fillStyle = _NEON[wi] + "50";
-        ctx.fillRect(px + 3 + c * 11, groundY - ph + 4 + r * 15, 7, 9);
+        const lit = Math.sin(bx * 91 + s * 7.3 + c * 11.7) > 0.55;
+        ctx.fillStyle = lit ? "rgba(255,204,120,0.20)" : "#0d0420";
+        ctx.fillRect(px + 5 + c * 16, groundY - ph + 8 + s * storeyH, 8, storeyH * 0.45);
       }
     }
   }
 
-  // Go-go bar signs on the street
+  // Signage — the main attraction
+  _gDrawVSigns(ctx, W, H, groundY);
   _gDrawGoGoSigns(ctx, W, H, groundY);
 
   // Street surface
@@ -413,11 +400,12 @@ function _gDrawBg(ctx, W, H) {
   ctx.fillStyle = street;
   ctx.fillRect(0, groundY, W, H - groundY);
 
-  // Wet-street neon reflections
+  // Wet-street reflections under each neon sign
   ctx.globalAlpha = 0.1;
-  for (const l of _BG_LIGHTS.slice(0, 14)) {
-    ctx.fillStyle = _NEON[l.colorIdx];
-    ctx.fillRect(l.x * W - 1.5, groundY, 3, H - groundY);
+  for (const s of _GOGO_BARS.concat(_VSIGNS)) {
+    if (W < s.minW) continue;
+    ctx.fillStyle = s.color;
+    ctx.fillRect(s.cx * W - 2.5, groundY, 5, H - groundY);
   }
   ctx.globalAlpha = 1;
 
@@ -429,50 +417,67 @@ function _gDrawBg(ctx, W, H) {
   ctx.setLineDash([]);
 }
 
-function _gDrawPattayaSign(ctx, W, H) {
-  const cx      = W / 2;
-  const fontSize = Math.max(12, Math.round(W / 30));
-  const lineH   = Math.round(fontSize * 1.35);
-  const totalH  = _PATTAYA_ART.length * lineH;
-  const signTop = H * 0.06;
-  // Layered neon flicker: slow drift + fast buzz + occasional dropout
-  const drift   = Math.abs(Math.sin(_gTime * 0.0011));
-  const buzz    = 0.5 + 0.5 * Math.abs(Math.sin(_gTime * 0.031));
-  const dropout = Math.sin(_gTime * 0.0019) > 0.82 ? 0.15 : 1.0;
-  const flicker = (0.45 + 0.35 * drift + 0.20 * buzz) * dropout;
+function _gDrawMoon(ctx, W, H) {
+  const mx = W * 0.86, my = H * 0.12, mr = Math.max(13, Math.min(W, H) * 0.045);
+  ctx.save();
+  ctx.shadowColor = "rgba(255,246,214,0.9)";
+  ctx.shadowBlur  = mr * 1.5;
+  ctx.fillStyle   = "#f6eecb";
+  ctx.beginPath();
+  ctx.arc(mx, my, mr, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  // Maria (the dark patches)
+  ctx.fillStyle = "rgba(205,190,150,0.55)";
+  for (const [dx, dy, dr] of [[-0.30, -0.12, 0.20], [0.22, 0.28, 0.13], [0.05, -0.38, 0.10]]) {
+    ctx.beginPath();
+    ctx.arc(mx + dx * mr, my + dy * mr, dr * mr, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+// Vertical stacked-letter neon signs rising from the rooftops
+function _gDrawVSigns(ctx, W, H, groundY) {
+  const fontSize = Math.max(12, Math.round(W / 40));
+  const lineH    = Math.round(fontSize * 1.2);
 
   ctx.save();
   ctx.font         = `bold ${fontSize}px 'Courier New', Courier, monospace`;
   ctx.textAlign    = "center";
   ctx.textBaseline = "top";
 
-  for (let i = 0; i < _PATTAYA_ART.length; i++) {
-    const line     = _PATTAYA_ART[i];
-    const y        = signTop + i * lineH;
-    const isBorder = line.includes("+") || line.includes("=");
-    const isText   = line.includes("P A T T A Y A");
+  for (const sign of _VSIGNS) {
+    if (W < sign.minW) continue;
+    const chars = [...sign.word];
+    const boxW  = Math.round(fontSize * 1.9);
+    const boxH  = chars.length * lineH + Math.round(fontSize * 0.8);
+    const cx    = sign.cx * W;
+    const top   = groundY - 2 * H * _BLDG_STOREY - boxH; // bottom sits on a 2-storey roof
+    const drift   = Math.abs(Math.sin(_gTime * 0.0012 + sign.cx * 23));
+    const buzz    = 0.5 + 0.5 * Math.abs(Math.sin(_gTime * 0.026 + sign.cx * 11));
+    const dropout = Math.sin(_gTime * 0.0017 + sign.cx * 41) > 0.84 ? 0.15 : 1.0;
+    const flicker = (0.50 + 0.30 * drift + 0.20 * buzz) * dropout;
+    const a       = Math.round(flicker * 255).toString(16).padStart(2, "0");
 
-    if (isText) {
-      ctx.shadowColor = "rgba(255,245,150,0.9)";
-      ctx.shadowBlur  = 12;
-      ctx.fillStyle   = `rgba(255,250,200,${flicker})`;
-    } else if (isBorder) {
-      ctx.shadowColor = "rgba(180,160,255,0.7)";
-      ctx.shadowBlur  = 8;
-      ctx.fillStyle   = `rgba(210,190,255,${0.75 * flicker})`;
-    } else {
-      ctx.shadowColor = "rgba(150,170,255,0.4)";
-      ctx.shadowBlur  = 4;
-      ctx.fillStyle   = `rgba(180,200,255,${0.50 * flicker})`;
-    }
-    ctx.fillText(line, cx, y);
+    ctx.fillStyle = "rgba(10,0,24,0.85)"; // dark backing panel
+    ctx.fillRect(cx - boxW / 2, top, boxW, boxH);
+    ctx.shadowColor = sign.color;
+    ctx.shadowBlur  = 12;
+    ctx.strokeStyle = sign.color + a;
+    ctx.lineWidth   = 2;
+    ctx.strokeRect(cx - boxW / 2, top, boxW, boxH);
+    ctx.fillStyle = sign.color + a;
+    chars.forEach((ch, i) =>
+      ctx.fillText(ch, cx, top + Math.round(fontSize * 0.4) + i * lineH)
+    );
+    ctx.shadowBlur = 0;
   }
-  ctx.shadowBlur = 0;
   ctx.restore();
 }
 
 function _gDrawGoGoSigns(ctx, W, H, groundY) {
-  const fontSize = Math.max(11, Math.round(W / 36));
+  const fontSize = Math.max(10, Math.round(W / 52));
   const lineH   = Math.round(fontSize * 1.4);
 
   ctx.save();
@@ -481,6 +486,7 @@ function _gDrawGoGoSigns(ctx, W, H, groundY) {
   ctx.textBaseline = "top";
 
   for (const bar of _GOGO_BARS) {
+    if (W < bar.minW) continue;
     const cx      = bar.cx * W;
     // Place signs so their bottom aligns just above the street
     const baseY   = groundY - bar.art.length * lineH - 6;
@@ -493,10 +499,14 @@ function _gDrawGoGoSigns(ctx, W, H, groundY) {
     ctx.shadowBlur  = 14;
 
     for (let i = 0; i < bar.art.length; i++) {
-      const isBorder = bar.art[i].includes("+") || bar.art[i].includes("-");
-      const alpha    = isBorder ? 0.65 * flicker : 0.90 * flicker;
+      const line  = bar.art[i];
+      const boxed = line.startsWith("+") || line.startsWith("|");
+      // Marquee strips outside the box blink on/off instead of flickering
+      if (!boxed && Math.sin(_gTime * 0.005 + bar.cx * 37) < -0.25) continue;
+      const isBorder = line.startsWith("+");
+      const alpha    = (isBorder ? 0.65 : boxed ? 0.90 : 1.0) * flicker;
       ctx.fillStyle  = bar.color + Math.round(alpha * 255).toString(16).padStart(2, "0");
-      ctx.fillText(bar.art[i], cx, baseY + i * lineH);
+      ctx.fillText(line, cx, baseY + i * lineH);
     }
   }
   ctx.shadowBlur = 0;
@@ -626,57 +636,54 @@ function _gDraw() {
 
 // ── Street sprites ────────────────────────────────────────────────────────
 
-function _gSpawnStreetSprite(now) {
+function _gMakeStreetSprite(forcePerson) {
   const W       = _gCanvas.width;
   const goRight = Math.random() < 0.5;
-  const roll    = Math.random();
+  const roll    = forcePerson ? 0 : Math.random();
   let type, vx, rows, colors, shirtIdx;
 
-  if (roll < 0.50) {
-    // Person walking
+  if (roll < 0.72) {
+    // Person walking — pedestrians dominate the street
     type     = "person";
-    vx       = (0.8 + Math.random() * 0.7) * (goRight ? 1 : -1);
+    vx       = (0.5 + Math.random() * 0.4) * (goRight ? 1 : -1);
     rows     = null; // chosen at draw time from _WALK_FRAMES
     shirtIdx = Math.floor(Math.random() * _WALK_SHIRTS.length);
     colors   = Object.assign({ B: _WALK_SHIRTS[shirtIdx] }, _WALK_BASE);
-  } else if (roll < 0.85) {
-    // Motorbike
+  } else if (roll < 0.92) {
+    // Motorbike — sometimes a green Grab driver
     type   = "moto";
-    vx     = (2.5 + Math.random() * 2.0) * (goRight ? 1 : -1);
+    vx     = (1.5 + Math.random() * 1.2) * (goRight ? 1 : -1);
     rows   = _MOTO_ROWS;
-    colors = _MOTO_COL;
+    colors = Math.random() < 0.35 ? _MOTO_GRAB_COL : _MOTO_COL;
   } else {
     // Baht bus (songthaew) — rarer
     type   = "bus";
-    vx     = (1.2 + Math.random() * 1.0) * (goRight ? 1 : -1);
+    vx     = (0.7 + Math.random() * 0.6) * (goRight ? 1 : -1);
     rows   = _BUS_ROWS;
     colors = _BUS_COL;
   }
 
   const sprW = (rows || _WALK_FRAMES[0])[0].length * _SPR;
-  _gStreetSprites.push({
+  return {
     type, vx, rows, colors,
     x: goRight ? -sprW - 10 : W + 10,
     knocked: false, dy: 0, vy: 0, rot: 0, rotV: 0,
-  });
+  };
+}
 
+function _gSpawnStreetSprite(now) {
+  _gStreetSprites.push(_gMakeStreetSprite(false));
   _gLastStreetSpawn = now;
-  _gNextStreetIn    = 800 + Math.random() * 2200;
+  _gNextStreetIn    = 500 + Math.random() * 1500;
 }
 
 function _gDrawStreet(ctx, W, H) {
   const groundY = H * 0.82;
 
-  // Static palm trees
-  for (const palm of _gPalmTrees) {
-    const y = groundY - _PALM_ROWS.length * _SPR;
-    _gDrawSprite(ctx, _PALM_ROWS, _PALM_COL, palm.x, y, false);
-  }
-
   // Moving sprites — feet at groundY
   for (const s of _gStreetSprites) {
     const flipX = s.vx < 0;
-    const rows  = s.type === "person" ? _WALK_FRAMES[Math.floor(_gTime / 220) % 2] : s.rows;
+    const rows  = s.type === "person" ? _WALK_FRAMES[Math.floor(_gTime / 360) % 2] : s.rows;
     const sW    = rows[0].length * _SPR;
     const sH    = rows.length    * _SPR;
     const baseY = groundY - sH + s.dy;
