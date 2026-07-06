@@ -1,4 +1,4 @@
-// Number flashcards and reference charts (alphabet, tone marks, numbers).
+// Number flashcards and reference charts (alphabet, vowels, tone marks, numbers).
 
 // ─── Number card data ─────────────────────────────────────────────────────────
 // Thai numerals ๐-๙ (U+0E50–U+0E59) for display alongside the word.
@@ -52,10 +52,13 @@ function _nfShow() {
   setProgress("nf-prog", idx, deck.length);
   document.getElementById("nf-counter").textContent = `Numbers  ${idx + 1} / ${deck.length}`;
   document.getElementById("nf-num").textContent = card.n.toLocaleString();
-  const dig = card.n >= 0 && card.n <= 9 ? _THAI_DIGITS[card.n] : "";
   const digEl = document.getElementById("nf-thai-dig");
-  digEl.textContent = dig;
-  digEl.style.display = dig ? "" : "none";
+  if (card.n >= 0 && card.n <= 9) {
+    digEl.textContent = `${_THAI_DIGITS[card.n]} (${card.th})`;
+    digEl.style.display = "";
+  } else {
+    digEl.style.display = "none";
+  }
   document.getElementById("nf-thai").textContent = card.th;
   document.getElementById("nf-rom").textContent = card.rom;
   document.getElementById("nf-answer-area").style.display = "none";
@@ -95,6 +98,7 @@ function showChartTab(tab) {
 
 function _buildCharts() {
   _buildAlphabetChart();
+  _buildVowelChart();
   _buildToneChart();
   _buildNumChart();
   showChartTab("alphabet");
@@ -104,7 +108,11 @@ function _alphaCellSpeak(ch) {
   _tts.speak(letterSpeechParts(ch));
 }
 
-// ─── Alphabet chart ───────────────────────────────────────────────────────────
+function _vowelCellSpeak(idx) {
+  _tts.speak(letterSpeechParts(VOWELS[idx][0]));
+}
+
+// ─── Consonant chart ──────────────────────────────────────────────────────────
 function _buildAlphabetChart() {
   const el = document.getElementById("chart-alphabet");
   const byClass = { mid: [], high: [], low: [] };
@@ -128,32 +136,48 @@ function _buildAlphabetChart() {
   el.innerHTML = html;
 }
 
+// ─── Vowel chart ──────────────────────────────────────────────────────────────
+function _buildVowelChart() {
+  const el = document.getElementById("chart-vowels");
+  let html = `<div class="alpha-grid" style="grid-template-columns:repeat(auto-fill,minmax(80px,1fr))">`;
+  for (let i = 0; i < VOWELS.length; i++) {
+    const [sym, rom, desc] = VOWELS[i];
+    const disp = vowelDisp(sym);
+    html += `<button class="alpha-cell" onclick="_vowelCellSpeak(${i})" title="${desc}">` +
+      `<span class="alpha-char" style="color:var(--lotus);font-size:1.3rem">${disp}</span>` +
+      `<span class="alpha-rom">${rom}</span>` +
+      `<span class="alpha-name">${desc.split(" ")[0]}</span>` +
+      `</button>`;
+  }
+  html += `</div>`;
+  html += `<p style="color:var(--dim);font-size:.72rem;text-align:center;margin-top:.7rem;line-height:1.5">Vowels shown on a ก host. Tap to hear sound + name.</p>`;
+  el.innerHTML = html;
+}
+
 // ─── Tone marks chart ─────────────────────────────────────────────────────────
 function _buildToneChart() {
   const el = document.getElementById("chart-tones");
-  // TONES from data.js: [Thai name, type, description, example]
-  // Supplement with the actual mark character
   const marks = [
-    { mark: "—",  nameTh: "สามัญ", nameEn: "mid tone",     desc: "Default — no mark",          example: "กา · kaa · crow",          speak: "กา" },
-    { mark: "่",  nameTh: "เอก",   nameEn: "low tone",      desc: "Mai ek — low falling",        example: "ข่า · khàa · galangal",    speak: "ข่า" },
-    { mark: "้",  nameTh: "โท",    nameEn: "falling tone",  desc: "Mai tho — falling from high", example: "ข้า · khâa · servant",     speak: "ข้า" },
-    { mark: "๊",  nameTh: "ตรี",   nameEn: "high tone",     desc: "Mai tri — high rising (rare)",example: "ค๊าน — rare",             speak: "สาม" },
-    { mark: "๋",  nameTh: "จัตวา", nameEn: "rising tone",   desc: "Mai chattawa — rising (rare)",example: "ค๋าน — rare",             speak: "ห้า" },
+    { mark: "—",  nameTh: "สามัญ", nameEn: "mid tone",     desc: "Default — no mark",          example: "กา · kaa · crow",       speak: "กา" },
+    { mark: "่",  nameTh: "เอก",   nameEn: "low tone",      desc: "Mai ek — low falling",        example: "ข่า · khàa · galangal", speak: "ข่า" },
+    { mark: "้",  nameTh: "โท",    nameEn: "falling tone",  desc: "Mai tho — falling from high", example: "ข้า · khâa · servant",  speak: "ข้า" },
+    { mark: "๊",  nameTh: "ตรี",   nameEn: "high tone",     desc: "Mai tri — high (rare)",       example: "ค๊าน — rare",           speak: "สาม" },
+    { mark: "๋",  nameTh: "จัตวา", nameEn: "rising tone",   desc: "Mai chattawa — rising (rare)",example: "ค๋าน — rare",           speak: "ห้า" },
   ];
   let html = `<table class="tone-table">
     <tr><th>Mark</th><th>Name</th><th>Type</th><th>Example</th></tr>`;
   for (const t of marks) {
     const markDisplay = t.mark === "—" ? `<span style="color:var(--dim)">—</span>` :
-      `<span class="tone-mark" style="font-size:1.6rem">ก${t.mark}</span>`;
+      `<span class="tone-mark-cell" style="font-size:1.5rem">ก${t.mark}</span>`;
     html += `<tr onclick="_tts.speak('${t.speak}')" style="cursor:pointer">` +
       `<td style="text-align:center">${markDisplay}</td>` +
       `<td><div class="tone-name-th">${t.nameTh}</div><div class="tone-name-en">${t.nameEn}</div></td>` +
       `<td class="tone-desc">${t.desc}</td>` +
-      `<td class="tone-ex">${t.example}</td>` +
+      `<td class="tone-ex-cell">${t.example}</td>` +
       `</tr>`;
   }
   html += `</table>`;
-  html += `<p style="color:var(--dim);font-size:.75rem;text-align:center;margin-top:.9rem;line-height:1.6">Actual tone depends on consonant class (mid/high/low) + live/dead syllable.<br>Tap a row to hear an example.</p>`;
+  html += `<p style="color:var(--dim);font-size:.72rem;text-align:center;margin-top:.8rem;line-height:1.5">Actual tone depends on consonant class (mid/high/low) + syllable type.<br>Tap a row to hear an example.</p>`;
   el.innerHTML = html;
 }
 
@@ -161,52 +185,49 @@ function _buildToneChart() {
 function _buildNumChart() {
   const el = document.getElementById("chart-numbers");
 
-  function cell(card) {
-    const dig = card.n >= 0 && card.n <= 9 ? `<span class="num-chart-thai-dig">${_THAI_DIGITS[card.n]}</span>` : "";
+  function digitCell(card) {
+    // Digits 0-9: show Thai numeral glyph + spelling in parentheses
     return `<button class="num-chart-cell" onclick="_tts.speak('${card.th}')">` +
       `<span class="num-chart-arabic">${card.n}</span>` +
-      (dig ? dig : `<span class="num-chart-th">${card.th}</span>`) +
+      `<span class="num-chart-thai-dig">${_THAI_DIGITS[card.n]}</span>` +
+      `<span class="num-chart-th" style="font-size:.7rem">(${card.th})</span>` +
       `<span class="num-chart-rom">${card.rom}</span>` +
       `</button>`;
   }
 
-  const digits = NUM_CARDS.slice(0, 10);   // 0-9
-  const teens  = NUM_CARDS.slice(10, 15);  // 10-21 (10,11,12,20,21)
-  const tens   = NUM_CARDS.slice(15, 22);  // 30-90
-  const big    = NUM_CARDS.slice(22);      // 100, 1000, 9999
+  function wordCell(card, thStyle) {
+    return `<button class="num-chart-cell" onclick="_tts.speak('${card.th}')">` +
+      `<span class="num-chart-arabic">${card.n.toLocaleString()}</span>` +
+      `<span class="num-chart-th" ${thStyle || ""}>${card.th}</span>` +
+      `<span class="num-chart-rom">${card.rom}</span>` +
+      `</button>`;
+  }
+
+  const digits = NUM_CARDS.slice(0, 10);
+  const teens  = NUM_CARDS.slice(10, 15);
+  const tens   = NUM_CARDS.slice(15, 22);
+  const big    = NUM_CARDS.slice(22);
 
   let html = "";
 
-  html += `<div class="num-chart-section-label">Digits · เลขไทย</div>`;
+  html += `<div class="num-chart-label">Digits · เลขไทย</div>`;
   html += `<div class="num-chart-grid" style="grid-template-columns:repeat(5,1fr)">`;
-  for (const c of digits) html += cell(c);
+  for (const c of digits) html += digitCell(c);
   html += `</div>`;
 
-  html += `<div class="num-chart-section-label">Teens &amp; Twenties</div>`;
+  html += `<div class="num-chart-label">Teens &amp; Twenties</div>`;
   html += `<div class="num-chart-grid" style="grid-template-columns:repeat(5,1fr)">`;
-  for (const c of teens) html += cell(c);
+  for (const c of teens) html += wordCell(c);
   html += `</div>`;
 
-  html += `<div class="num-chart-section-label">Tens · สิบ</div>`;
+  html += `<div class="num-chart-label">Tens · สิบ</div>`;
   html += `<div class="num-chart-grid" style="grid-template-columns:repeat(4,1fr)">`;
-  for (const c of tens) {
-    html += `<button class="num-chart-cell" onclick="_tts.speak('${c.th}')">` +
-      `<span class="num-chart-arabic">${c.n}</span>` +
-      `<span class="num-chart-th">${c.th}</span>` +
-      `<span class="num-chart-rom">${c.rom}</span>` +
-      `</button>`;
-  }
+  for (const c of tens) html += wordCell(c);
   html += `</div>`;
 
-  html += `<div class="num-chart-section-label">Hundreds &amp; Thousands</div>`;
+  html += `<div class="num-chart-label">Hundreds &amp; Thousands</div>`;
   html += `<div class="num-chart-grid" style="grid-template-columns:repeat(3,1fr)">`;
-  for (const c of big) {
-    html += `<button class="num-chart-cell" onclick="_tts.speak('${c.th}')">` +
-      `<span class="num-chart-arabic">${c.n.toLocaleString()}</span>` +
-      `<span class="num-chart-th" style="font-size:.75rem">${c.th}</span>` +
-      `<span class="num-chart-rom" style="font-size:.58rem">${c.rom}</span>` +
-      `</button>`;
-  }
+  for (const c of big) html += wordCell(c, 'style="font-size:.72rem"');
   html += `</div>`;
 
   el.innerHTML = html;
