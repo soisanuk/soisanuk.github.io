@@ -22,6 +22,7 @@ const PRECACHE = [
   "./js/connect4.js",
   "./js/game.js",
   "./js/baht-bus.js",
+  "./js/numbers.js",
   "./js/main.js",
   "./manifest.json",
 ];
