@@ -1,0 +1,2137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d0015">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<title>Thai Trainer — Pattaya Edition</title>
+<style>
+/* ── Neon Pattaya palette (shared with the games) ────────────────────────── */
+/* Variable names kept from the original gold theme; values remapped:
+   gold→hot pink (primary accent), saffron→neon yellow (highlights),
+   deep-saffron→violet (labels/keys). */
+:root {
+  --gold:     #ff1493;
+  --saffron:  #ffe600;
+  --deep-saffron: #bf5fff;
+  --vermilion: #ff3355;
+  --thai-red: #ff0066;
+  --royal-blue: #4169e1;
+  --jade:     #00cc66;
+  --lotus:    #ff77ff;
+  --parchment:#e8c0d8;
+  --light-blue:#00e5ff;
+  --bg:       #0d0015;
+  --surface:  #16032b;
+  --border:   #43155e;
+  --text:     #f0e6f8;
+  --dim:      #a487b8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', 'Noto Sans Thai', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+/* ── Wide-screen shell ──────────────────────────────────────────────────── */
+#app-shell {
+  display: flex;
+  width: 100%;
+  max-width: 1200px;
+  min-height: 100vh;
+  border-left: 2px solid var(--gold);
+  border-right: 2px solid var(--gold);
+  box-shadow: 0 0 60px rgba(255,20,147,0.08), inset 0 0 60px rgba(0,0,0,0.2);
+}
+
+/* Persistent left sidebar — always visible on wide screens */
+#sidebar {
+  width: 260px;
+  min-width: 260px;
+  border-right: 2px solid var(--gold);
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #1c0630 0%, #0d0015 100%);
+}
+
+#sidebar-title {
+  padding: 1.2rem 1.2rem 0.3rem;
+  color: var(--gold);
+  font-size: 1.6rem;
+  font-weight: bold;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  text-shadow: 0 0 20px rgba(255,20,147,0.5);
+}
+#sidebar-subtitle {
+  text-align: center;
+  color: var(--saffron);
+  font-size: 0.82rem;
+  padding: 0.3rem 0.5rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+#sidebar-stats {
+  text-align: center;
+  color: var(--dim);
+  font-size: 0.78rem;
+  padding: 0.4rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+  line-height: 1.5;
+}
+
+.sidebar-section {
+  padding: 0.7rem 1.2rem 0.1rem;
+  font-size: 0.72rem;
+  color: var(--deep-saffron);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.sidebar-list {
+  list-style: none;
+  padding: 0.2rem 0;
+}
+.sidebar-list li {
+  padding: 0.5rem 1.2rem;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 0.88rem;
+  transition: background 0.12s, color 0.12s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.sidebar-list li:hover  { background: #2a0a3f; color: var(--saffron); }
+.sidebar-list li.active {
+  background: linear-gradient(90deg, #4a0d68 0%, #250438 100%);
+  color: var(--gold);
+  border-left: 3px solid var(--gold);
+  padding-left: calc(1.2rem - 3px);
+}
+.sidebar-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.3rem;
+  height: 1.3rem;
+  background: #08000f;
+  border: 1px solid var(--deep-saffron);
+  border-radius: 4px;
+  color: var(--saffron);
+  font-size: 0.75rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+#sidebar-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding: 0.6rem;
+  text-align: center;
+  color: var(--dim);
+  font-size: 0.85rem;
+}
+#sidebar-footer button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--dim);
+  padding: 0.3rem 0.8rem;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  transition: color 0.15s, border-color 0.15s;
+}
+#sidebar-footer button:hover { color: var(--saffron); border-color: var(--gold); }
+
+/* Main content area — takes remaining width */
+#content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ── Screens live inside #content-area ─────────────────────────────────── */
+.screen {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 0 2rem;
+}
+.screen.active { display: flex; }
+
+.screen-header {
+  border-bottom: 2px solid var(--gold);
+  padding: 0.65rem 1.5rem;
+  text-align: center;
+  color: var(--saffron);
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  background: linear-gradient(90deg, rgba(255,20,147,0.07) 0%, transparent 40%, transparent 60%, rgba(255,20,147,0.07) 100%);
+}
+
+.screen-title {
+  border-bottom: 2px solid var(--royal-blue);
+  padding: 0.7rem 1.5rem;
+  text-align: center;
+  color: var(--gold);
+  font-weight: bold;
+  font-size: 1.2rem;
+  background: linear-gradient(90deg, rgba(65,105,225,0.08) 0%, transparent 50%);
+}
+
+.screen-footer {
+  border-top: 2px solid var(--gold);
+  padding: 0.5rem 1.5rem;
+  text-align: center;
+  color: var(--dim);
+  font-size: 0.8rem;
+  margin-top: auto;
+  background: linear-gradient(90deg, rgba(255,20,147,0.04) 0%, transparent 40%);
+}
+
+/* ── Thai big character display ─────────────────────────────────────────── */
+.thai-big {
+  font-size: 10rem;
+  line-height: 1.1;
+  text-align: center;
+  color: var(--saffron);
+  padding: 1.5rem 1rem 0.8rem;
+  font-family: 'Noto Sans Thai', 'Leelawadee UI', serif;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  min-height: 12rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1rem 1.5rem 0.5rem;
+  background: linear-gradient(180deg, #1c0630 0%, #10021f 100%);
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,20,147,0.12);
+}
+
+.rtgs {
+  text-align: center;
+  color: var(--dim);
+  font-size: 1.1rem;
+  margin-bottom: 0.4rem;
+}
+
+/* ── Menu screen (mobile fallback / narrow) ──────────────────────────────── */
+#menu-screen .menu-title {
+  text-align: center;
+  padding: 1.5rem 1rem 0.3rem;
+  font-size: 1.8rem;
+  color: var(--gold);
+  font-weight: bold;
+}
+#menu-screen .menu-subtitle {
+  text-align: center;
+  font-size: 1rem;
+  padding-bottom: 0.6rem;
+}
+.edition-tag {
+  color: var(--saffron);
+  font-size: .78rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  text-shadow: 0 0 12px #ffe60080, 0 0 30px #ffe60030;
+}
+.edition-gem { color: var(--gold); text-shadow: 0 0 10px #ff149380; }
+.menu-stats {
+  text-align: center;
+  color: var(--dim);
+  font-size: 0.85rem;
+  padding: 0.4rem 0 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.menu-list {
+  list-style: none;
+  padding: 0.5rem 2rem;
+}
+.menu-list li {
+  padding: 0.5rem 0;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 1rem;
+  transition: color 0.15s;
+}
+.menu-list li:hover { color: var(--saffron); }
+.menu-list .menu-key {
+  display: inline-block;
+  width: 1.6rem;
+  color: var(--deep-saffron);
+  font-weight: bold;
+}
+.menu-section {
+  padding: 0.7rem 2rem 0.15rem;
+  font-size: 0.78rem;
+  color: var(--deep-saffron);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── Narrow/mobile: hide sidebar ────────────────────────────────────────── */
+/* NOTE: no `#menu-screen { display:flex }` here — the ID selector would beat
+   `.screen { display:none }` and keep the menu permanently rendered under
+   every other screen (content pushed below the fold / invisible screens).
+   The menu starts as `.screen.active` and showMenu() handles the rest. */
+@media (max-width: 700px) {
+  #sidebar { display: none; }
+  .screen { padding: 0 0 2rem; }
+  .thai-big { font-size: 7.5rem; min-height: 10rem; margin: 0.75rem 0.75rem 0.5rem; }
+}
+
+/* ── Category picker ─────────────────────────────────────────────────────── */
+.cat-list {
+  list-style: none;
+  padding: 0 0.5rem;
+  overflow-y: auto;
+  max-height: 70vh;
+}
+.cat-list li {
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-radius: 5px;
+  color: var(--text);
+  transition: background 0.1s, color 0.1s;
+  display: flex;
+  justify-content: space-between;
+}
+.cat-list li.selectable:hover, .cat-list li.selected {
+  background: linear-gradient(90deg, #4a0d68 0%, #250438 100%);
+  color: var(--saffron);
+  border-color: var(--gold);
+}
+.cat-list li.separator {
+  color: var(--border);
+  font-size: 0.78rem;
+  letter-spacing: 0.07em;
+  cursor: default;
+  padding-top: 0.7rem;
+}
+.cat-count { color: var(--gold); font-size: 0.8rem; }
+
+/* ── Flash card ──────────────────────────────────────────────────────────── */
+.card-body {
+  padding: 0 1.5rem;
+  flex: 1;
+}
+.card-prompt {
+  text-align: center;
+  color: var(--dim);
+  font-size: 0.9rem;
+  padding: 0.5rem 0;
+}
+.card-answer {
+  text-align: center;
+  color: var(--text);
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--border);
+  margin-top: 0.3rem;
+}
+.divider-accent {
+  border: none;
+  border-top: 1px solid var(--royal-blue);
+  margin: 0.4rem 0;
+}
+
+.rating-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem 0;
+  flex-wrap: wrap;
+}
+.rating-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+.rating-btn:hover { background: #2a0a3f; border-color: var(--gold); }
+.rating-btn.good { border-color: var(--jade); color: var(--jade); }
+.rating-btn.good:hover { background: rgba(46,139,87,0.18); }
+.rating-btn.bad  { border-color: var(--thai-red); color: var(--thai-red); }
+.rating-btn.bad:hover  { background: rgba(165,0,33,0.18); }
+
+/* ── Quiz ─────────────────────────────────────────────────────────────────── */
+.quiz-choices {
+  list-style: none;
+  padding: 0.5rem 1.5rem;
+}
+.quiz-choices li {
+  padding: 0.55rem 1rem;
+  margin: 0.3rem 0;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.15s, border-color 0.15s;
+  display: flex;
+  gap: 0.7rem;
+}
+.quiz-choices li:hover { background: #2a0a3f; border-color: var(--gold); }
+.quiz-choices li.correct { border-color: var(--jade); background: #0e2a1a; color: var(--jade); }
+.quiz-choices li.wrong   { border-color: var(--thai-red); background: #26030f; color: var(--thai-red); }
+.quiz-num { color: var(--deep-saffron); font-weight: bold; min-width: 1.2rem; }
+
+/* ── Drill / script ──────────────────────────────────────────────────────── */
+.drill-info {
+  padding: 0 1.5rem 0.5rem;
+}
+.drill-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--surface);
+}
+.drill-label { color: var(--dim); }
+.drill-value { color: var(--text); font-weight: bold; }
+.freq-common { color: var(--jade); }
+.freq-mid    { color: var(--deep-saffron); }
+.freq-rare   { color: var(--dim); }
+.rare-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  background: #1a0a00;
+  border: 1px solid var(--border);
+  color: var(--dim);
+  padding: 0.1rem 0.5rem;
+  border-radius: 3px;
+  margin-left: 0.4rem;
+}
+.cls-mid  { color: var(--saffron); }
+.cls-high { color: var(--lotus); }
+.cls-low  { color: var(--jade); }
+
+/* ── Stats ────────────────────────────────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.8rem;
+  padding: 1rem 1.5rem;
+}
+.stat-box {
+  background: linear-gradient(180deg, rgba(255,20,147,0.07) 0%, var(--surface) 100%);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--gold);
+  border-radius: 8px;
+  padding: 0.8rem;
+  text-align: center;
+}
+.stat-num { font-size: 1.8rem; font-weight: bold; color: var(--gold); }
+.stat-lbl { font-size: 0.75rem; color: var(--dim); margin-top: 0.2rem; }
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.5rem 1.2rem;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn:hover { background: #2a0a3f; border-color: var(--gold); }
+.btn-primary {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(255,20,147,0.12);
+}
+.btn-primary:hover { background: rgba(255,20,147,0.25); }
+.btn-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+  padding: 0.8rem 0;
+  flex-wrap: wrap;
+}
+
+/* ── Result / feedback ───────────────────────────────────────────────────── */
+.result-correct {
+  text-align: center;
+  color: var(--jade);
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 0.5rem;
+}
+.result-wrong {
+  text-align: center;
+  color: var(--thai-red);
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 0.5rem;
+}
+.session-end {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+.session-end .big-msg {
+  font-size: 1.4rem;
+  color: var(--jade);
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+.session-end .sub-msg { color: var(--dim); font-size: 0.9rem; }
+
+/* ── Progress bar ────────────────────────────────────────────────────────── */
+.progress-bar-wrap {
+  height: 4px;
+  background: var(--surface);
+  margin: 0 1.5rem 0.3rem;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--deep-saffron));
+  transition: width 0.3s;
+  border-radius: 2px;
+}
+
+/* ── English front card ──────────────────────────────────────────────────── */
+.english-big {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  padding: 2rem 1rem 0.5rem;
+  color: var(--text);
+}
+
+/* ── SRS interval badge ──────────────────────────────────────────────────── */
+.srs-meta {
+  text-align: center;
+  color: var(--royal-blue);
+  font-size: 0.8rem;
+  padding: 0.2rem 0;
+}
+
+/* ── Example sentence block ──────────────────────────────────────────────── */
+.example-block {
+  background: linear-gradient(90deg, rgba(244,196,48,0.06) 0%, #1e1208 30%);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--saffron);
+  border-radius: 6px;
+  padding: 0.7rem 1rem;
+  margin: 0.5rem 0 0.3rem;
+}
+.example-thai {
+  font-family: 'Noto Sans Thai', 'Leelawadee UI', serif;
+  font-size: 1.45rem;
+  line-height: 1.9;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+.example-thai .highlight {
+  color: var(--gold);
+  font-weight: bold;
+  text-decoration: underline;
+  text-decoration-color: var(--deep-saffron);
+  text-underline-offset: 3px;
+}
+.example-rtgs {
+  font-size: 0.82rem;
+  color: var(--dim);
+  margin-bottom: 0.2rem;
+  font-style: italic;
+}
+.example-rtgs .highlight { color: var(--saffron); font-style: normal; }
+.example-en {
+  font-size: 0.85rem;
+  color: var(--parchment);
+}
+.example-speak {
+  float: right;
+  margin: -0.1rem -0.3rem 0 0.5rem;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--dim);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.18rem 0.4rem;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+}
+.example-speak:hover { color: var(--gold); border-color: var(--gold); }
+.example-speak.speaking { color: var(--saffron); border-color: var(--saffron); }
+
+/* ── Word hover tokens ───────────────────────────────────────────────────── */
+.w-token {
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.1s, color 0.1s;
+  padding: 0 1px;
+}
+.w-token:hover {
+  background: rgba(212, 175, 54, 0.18);
+  color: var(--saffron);
+}
+
+/* ── Vocab list screen ───────────────────────────────────────────────────── */
+#vocab-list-search {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 0.95rem;
+  padding: 0.5rem 0.8rem;
+  margin-bottom: 0.8rem;
+  outline: none;
+}
+#vocab-list-search:focus { border-color: var(--gold); }
+#vocab-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.5rem;
+  overflow-y: auto;
+  flex: 1;
+  padding-bottom: 1rem;
+}
+.vocab-list-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 0.5rem 0.6rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.vocab-list-item:hover {
+  border-color: var(--gold);
+  background: linear-gradient(135deg, #2a0a3f 0%, #1a0428 100%);
+}
+.vocab-list-item .vli-thai {
+  font-family: 'Noto Sans Thai', serif;
+  font-size: 1.45rem;
+  color: var(--text);
+  line-height: 1.6;
+}
+.vocab-list-item .vli-en {
+  font-size: 0.72rem;
+  color: var(--saffron);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#vocab-list-count {
+  font-size: 0.78rem;
+  color: var(--dim);
+  margin-bottom: 0.5rem;
+}
+
+/* ── Word detail modal ───────────────────────────────────────────────────── */
+/* ── Word card stack ─────────────────────────────────────────────────────── */
+#wc-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+}
+#wc-overlay.open { display: flex; }
+/* Each stacked card sits in its own full-screen layer */
+.wc-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.72);
+}
+.wc-layer:not(:last-child) { pointer-events: none; }
+.wc-card {
+  background: var(--surface);
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+  padding: 1.8rem 2rem 1.4rem;
+  max-width: 480px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  pointer-events: all;
+}
+.wc-close {
+  position: absolute;
+  top: 0.6rem; right: 0.8rem;
+  background: none; border: none;
+  color: var(--dim); font-size: 1.3rem;
+  cursor: pointer; line-height: 1;
+}
+.wc-close:hover { color: var(--text); }
+.wc-back {
+  background: none; border: none;
+  color: var(--saffron); font-size: 0.88rem;
+  cursor: pointer; padding: 0;
+  margin-bottom: 0.8rem;
+  display: none;
+}
+.wc-back:hover { color: var(--gold); }
+.wc-thai {
+  font-family: 'Noto Sans Thai', serif;
+  font-size: 5rem;
+  color: var(--gold);
+  line-height: 1.3;
+  vertical-align: middle;
+}
+.wc-rtgs {
+  text-align: center;
+  color: var(--dim);
+  font-style: italic;
+  font-size: 1rem;
+  margin-bottom: 0.15rem;
+}
+.wc-en {
+  text-align: center;
+  font-size: 1.05rem;
+  color: var(--parchment);
+  margin-bottom: 0.6rem;
+}
+.wc-example { margin-top: 0.4rem; }
+
+/* ── Word decomposition ──────────────────────────────────────────────────── */
+.wc-decomp {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 0.6rem 0 0.2rem;
+  padding: 0.5rem 0.4rem;
+  background: rgba(0,0,0,0.25);
+  border-radius: 6px;
+}
+.decomp-cluster {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+.decomp-char {
+  font-family: 'Noto Sans Thai', serif;
+  font-size: 1.8rem;
+  line-height: 1;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.25rem 0.4rem;
+  cursor: default;
+  transition: border-color 0.1s, color 0.1s;
+  min-width: 2.4rem;
+  text-align: center;
+  pointer-events: all;
+}
+.decomp-char.is-cons  { border-color: var(--jade); }
+.decomp-char.is-vowel { border-color: var(--royal-blue); }
+.decomp-char.is-tone  { border-color: var(--saffron); }
+.decomp-char.is-other { border-color: var(--border); color: var(--dim); }
+.decomp-char:hover    { border-color: var(--gold) !important; color: var(--gold); }
+.decomp-label {
+  font-size: 0.62rem;
+  color: var(--dim);
+  text-align: center;
+  max-width: 3.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Script tooltip (richer than word tooltip) ───────────────────────────── */
+#script-tooltip {
+  position: fixed;
+  z-index: 20000;
+  pointer-events: none;
+  background: #2a1c08;
+  border: 1px solid var(--saffron);
+  border-radius: 6px;
+  padding: 0.5rem 0.8rem;
+  max-width: 240px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.7);
+  display: none;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+#script-tooltip .st-char {
+  font-family: 'Noto Sans Thai', serif;
+  font-size: 2rem;
+  color: var(--saffron);
+  font-weight: bold;
+  display: block;
+  text-align: center;
+  line-height: 1.2;
+}
+#script-tooltip .st-row { color: var(--parchment); }
+#script-tooltip .st-row span { color: var(--dim); font-style: italic; }
+
+/* ── Tooltip ─────────────────────────────────────────────────────────────── */
+#word-tooltip {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  background: #2a1c08;
+  border: 1px solid var(--gold);
+  border-radius: 5px;
+  padding: 0.4rem 0.7rem;
+  max-width: 220px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+  display: none;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+#word-tooltip .tt-thai {
+  font-family: 'Noto Sans Thai', 'Leelawadee UI', serif;
+  font-size: 1.3rem;
+  color: var(--saffron);
+  font-weight: bold;
+}
+#word-tooltip .tt-rtgs { color: var(--dim); font-style: italic; }
+#word-tooltip .tt-en   { color: var(--parchment); }
+
+/* ── Tone Drill ──────────────────────────────────────────────────────────── */
+#tone-drill-screen .tone-word-big {
+  font-family: 'Noto Sans Thai', 'Leelawadee UI', serif;
+  font-size: 3.5rem;
+  color: var(--saffron);
+  text-align: center;
+  margin: 1rem 0 0.5rem;
+  min-height: 4rem;
+}
+#tone-drill-screen .tone-word-big.hidden-word {
+  color: transparent;
+  background: var(--border);
+  border-radius: 8px;
+  display: inline-block;
+  padding: 0 1rem;
+}
+.tone-choices {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  padding: 0.8rem 1.2rem;
+  max-width: 440px;
+  margin: 0 auto;
+}
+.tone-choices li {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.12s, background 0.12s;
+}
+.tone-choices li:hover { border-color: var(--saffron); background: #250438; }
+.tone-choices li .tc-thai { font-size: 1.75rem; color: var(--saffron); display: block; }
+.tone-choices li .tc-en   { font-size: 0.8rem; color: var(--dim); }
+.tone-choices li.correct  { border-color: var(--jade); background: #0a2a14; }
+.tone-choices li.wrong    { border-color: var(--vermilion); background: #26030f; }
+.tone-feedback {
+  text-align: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  min-height: 2rem;
+}
+#tone-play-btn {
+  display: block;
+  margin: 0.5rem auto 0.8rem;
+  background: var(--surface);
+  border: 1.5px solid var(--saffron);
+  color: var(--saffron);
+  border-radius: 24px;
+  padding: 0.4rem 1.4rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+#tone-play-btn:hover { background: #250438; }
+
+/* ── Category progress rings ─────────────────────────────────────────────── */
+.vocab-list-cats {
+  padding: 0.6rem 1.2rem 0.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.cat-progress-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 0.2rem 0.6rem 0.2rem 0.3rem;
+  font-size: 0.78rem;
+  color: var(--dim);
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+.cat-progress-chip:hover { border-color: var(--saffron); color: var(--text); }
+.cat-progress-chip.active { border-color: var(--saffron); color: var(--text); }
+.cat-ring {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+/* ── Sentence SRS ────────────────────────────────────────────────────────── */
+#sent-srs-screen .sent-sentence {
+  font-family: 'Noto Sans Thai', 'Leelawadee UI', serif;
+  font-size: 2.1rem;
+  color: var(--text);
+  text-align: center;
+  padding: 0.8rem 1.2rem 0.4rem;
+  line-height: 2;
+}
+#sent-srs-screen .sent-blank {
+  display: inline-block;
+  min-width: 3.5rem;
+  border-bottom: 2.5px solid var(--saffron);
+  color: transparent;
+  background: #2a0a3f;
+  border-radius: 4px;
+  vertical-align: baseline;
+}
+#sent-srs-screen .sent-rtgs {
+  text-align: center;
+  color: var(--dim);
+  font-style: italic;
+  font-size: 0.9rem;
+  padding-bottom: 0.2rem;
+}
+#sent-srs-screen .sent-en {
+  text-align: center;
+  color: var(--parchment);
+  font-size: 0.9rem;
+  padding: 0.2rem 1rem 0.6rem;
+}
+#sent-srs-screen .sent-answer {
+  text-align: center;
+  font-family: 'Noto Sans Thai', serif;
+  font-size: 1.4rem;
+  color: var(--saffron);
+  padding: 0.4rem 0 0.2rem;
+}
+
+/* ── Export/Import ───────────────────────────────────────────────────────── */
+.export-import-row {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 0;
+}
+
+/* ── Tutorial ────────────────────────────────────────────────────────────── */
+#tutorial-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.85);
+}
+#tutorial-overlay.open { display: flex; }
+#tutorial-card {
+  background: var(--surface);
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  padding: 1.8rem 2rem 1.4rem;
+  max-width: 460px;
+  width: 92%;
+  position: relative;
+}
+#tutorial-close-btn {
+  position: absolute;
+  top: 0.7rem; right: 0.9rem;
+  background: none; border: none;
+  color: var(--dim); font-size: 1.1rem; cursor: pointer;
+}
+.tutorial-slide { display: none; }
+.tutorial-slide.active { display: block; min-height: 200px; }
+.tutorial-slide h2 { color: var(--saffron); font-size: 1.15rem; margin-bottom: 0.7rem; }
+.tutorial-slide p { font-size: 0.9rem; line-height: 1.6; margin-bottom: 0.5rem; }
+.tut-icon { font-family:'Noto Sans Thai',serif; font-size:3rem; color:var(--saffron); text-align:center; margin-bottom:0.4rem; }
+kbd.tut-key {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 3px; padding: 0.05rem 0.3rem;
+  font-size: 0.82rem; font-family: monospace; color: var(--saffron);
+}
+.tut-decomp-demo {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.6rem 0.8rem; margin-top: 0.7rem;
+  text-align: center;
+}
+.tut-cluster {
+  display: inline-block;
+  font-family: 'Noto Sans Thai', serif;
+  font-size: 1.7rem; color: var(--saffron);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.05rem 0.4rem; margin: 0 0.15rem;
+}
+.tutorial-dots {
+  display: flex; justify-content: center; gap: 0.5rem; margin: 1.2rem 0 0.9rem;
+}
+.tutorial-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--border); cursor: pointer;
+}
+.tutorial-dot.active { background: var(--saffron); }
+#tutorial-nav { display: flex; justify-content: space-between; }
+#tutorial-nav button {
+  background: none; border: 1px solid var(--border);
+  color: var(--text); border-radius: 5px;
+  padding: 0.4rem 1.1rem; cursor: pointer; font-size: 0.9rem;
+}
+#tutorial-nav button:hover { border-color: var(--gold); color: var(--saffron); }
+#tutorial-prev { visibility: hidden; }
+
+/* ── Walking Street game ─────────────────────────────────────────────────── */
+#game-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #ff1493;
+  background: #05001a;
+  border-bottom: 1px solid #ff149344;
+  text-shadow: 0 0 8px #ff1493;
+}
+#game-hud strong { color: #ffe600; text-shadow: 0 0 8px #ffe600; }
+#game-lives { font-size: 1.05rem; letter-spacing: 0.2em; text-shadow: none; }
+#game-canvas-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+#game-canvas { display: block; width: 100%; height: 100%; }
+#game-over-panel {
+  position: absolute;
+  inset: 0;
+  background: rgba(5,0,26,0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.game-over-box {
+  background: #08001a;
+  border: 2px solid #ff1493;
+  border-radius: 14px;
+  padding: 2rem 2.5rem;
+  text-align: center;
+  box-shadow: 0 0 50px #ff149350, inset 0 0 40px rgba(255,20,147,0.04);
+}
+.game-over-title {
+  font-size: 2rem;
+  color: #ff1493;
+  font-weight: bold;
+  text-shadow: 0 0 20px #ff1493;
+  margin-bottom: 0.3rem;
+}
+.game-over-sub { color: #bf5fff; font-size: 0.95rem; margin-bottom: 0.5rem; text-shadow: 0 0 8px #bf5fff; }
+.game-over-score { font-size: 1.5rem; color: #ffe600; font-weight: bold; text-shadow: 0 0 12px #ffe600; margin-bottom: 1.5rem; }
+#game-ref {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.45rem 0.8rem;
+  background: #05001a;
+  border-top: 1px solid #ff149330;
+}
+.game-ref-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #0a001a;
+  border: 1px solid;
+  border-radius: 6px;
+  padding: 0.25rem 0.55rem;
+  min-width: 2.5rem;
+}
+.game-ref-thai { font-family: 'Noto Sans Thai','Leelawadee UI',serif; font-size: 1.1rem; line-height: 1.5; }
+.game-ref-key  { font-size: 1.02rem; font-weight: bold; font-family: monospace; margin-top: 0.05rem; }
+
+/* ── Thai Keyboard Tutor ─────────────────────────────────────────────────── */
+#tutor-screen { flex-direction:column; background:#0d0015; }
+#tutor-body   { display:flex; flex-direction:column; align-items:center; gap:.6rem; padding:.6rem .5rem 0; overflow-y:auto; flex:1; }
+#tutor-modes  { display:flex; gap:.4rem; }
+.t-mbtn {
+  background:#12021f; border:1px solid #bf5fff35; color:#a487b8;
+  border-radius:6px; padding:.25rem .75rem; font:.8rem sans-serif; cursor:pointer; transition:all .15s;
+}
+.t-mbtn:hover { border-color:#ff149370; color:#ff77ff; }
+.t-mbtn.active { border-color:#ff1493; color:#ff77ff; background:#1c0630; box-shadow:0 0 8px #ff149340; }
+#tutor-prompt { text-align:center; padding:.4rem 0 0; }
+#t-char {
+  font: bold 76px 'Noto Sans Thai','Leelawadee UI',serif;
+  color:#ffe600; text-shadow:0 0 22px #ffe600, 0 0 44px #ffe60040;
+  line-height:1.15; min-height:96px; display:flex; align-items:center; justify-content:center;
+}
+#t-name { color:#a487b8; font:.78rem sans-serif; margin-top:.1rem; letter-spacing:.04em; }
+#t-kbd  { display:flex; flex-direction:column; gap:3px; width:100%; max-width:400px; }
+.t-row  { display:flex; justify-content:center; gap:3px; }
+.tkey   {
+  flex:0 0 auto; width:36px; height:40px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:#12021f; border:1px solid #bf5fff22; border-radius:5px;
+  position:relative; transition:box-shadow .1s, border-color .1s, background .1s; overflow:hidden;
+}
+.tkey-lat { font:.48rem monospace; color:#bf5fff40; position:absolute; top:2px; left:3px; line-height:1; }
+.tkey-th  { font:.95rem 'Noto Sans Thai',sans-serif; color:#cf9fff; line-height:1; }
+.tkey.dim .tkey-th  { color:#ffffff12; }
+.tkey.dim .tkey-lat { color:#ffffff08; }
+.tkey.t-target { border-color:#ff1493; box-shadow:0 0 10px #ff149360; }
+.tkey.t-target .tkey-th { color:#ff1493; text-shadow:0 0 8px #ff1493; }
+.tkey.t-ok { border-color:#00cc66; box-shadow:0 0 12px #00cc6660; background:#00130a; }
+.tkey.t-ok .tkey-th { color:#00ff7f; text-shadow:0 0 8px #00ff7f; }
+.tkey.t-wrong { border-color:#ff3355; box-shadow:0 0 12px #ff335550; background:#1a0008; }
+.tkey.t-wrong .tkey-th { color:#ff3355; }
+.tkey.t-hint { border-color:#ffe600; box-shadow:0 0 12px #ffe60050; }
+.tkey.t-hint .tkey-th { color:#ffe600; text-shadow:0 0 8px #ffe600; }
+#tutor-stats {
+  display:flex; gap:2rem; color:#a487b8; font:.82rem sans-serif;
+  padding:.3rem 0; border-top:1px solid #43155e; width:100%; max-width:400px;
+  justify-content:center;
+}
+#tutor-stats strong { color:#ffe600; }
+
+/* ── Soi Buakhao Dialogue Game ───────────────────────────────────────────── */
+#soi-screen { flex-direction:column; background:#0d0015; }
+#soi-header {
+  background:#0d0015; border-bottom:1px solid #ff006640;
+  padding:.55rem 1rem; display:flex; flex-direction:column; gap:.1rem;
+}
+#soi-night-label {
+  color:#ff1493; font-size:1rem; font-weight:700; letter-spacing:.06em;
+  text-shadow:0 0 12px #ff1493;
+}
+#soi-sub-label { color:#bf5fff; font-size:.78rem; min-height:.9rem; }
+#soi-body {
+  flex:1; overflow-y:auto; padding:1rem;
+  display:flex; flex-direction:column; align-items:center; gap:1rem;
+}
+.sb-bar-sign {
+  font-size:1.3rem; font-weight:800; color:#ffe600; letter-spacing:.1em;
+  text-shadow:0 0 18px #ffe600, 0 0 36px #ff660080; text-align:center;
+  border:2px solid #ffe60030; border-radius:8px; padding:.5rem 1.5rem;
+  background:#1a1200; width:100%; max-width:520px;
+}
+.sb-host-intro {
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  text-align:center;
+}
+.sb-host-emoji { font-size:3rem; line-height:1; }
+.sb-host-name  { font-size:1.2rem; font-weight:700; color:#ff80c8; }
+.sb-host-th    { color:#bf5fff; font-size:1rem; }
+.sb-host-desc  { color:#c090b0; font-size:.88rem; font-style:italic; max-width:340px; }
+.sb-scene-text {
+  color:#c0a0c0; font-size:.88rem; line-height:1.65; text-align:center;
+  max-width:420px; border-left:2px solid #ff006630; padding:.5rem .8rem;
+  background:#18001a; border-radius:0 8px 8px 0;
+}
+.sb-btn {
+  background: linear-gradient(135deg,#4a0060,#7a0040);
+  border:1px solid #ff006680; color:#ffb0e0; font-size:.9rem; font-weight:700;
+  padding:.55rem 1.4rem; border-radius:24px; cursor:pointer; letter-spacing:.04em;
+  transition:all .15s; text-shadow:0 0 8px #ff006640;
+}
+.sb-btn:hover { border-color:#ff1493; color:#fff; box-shadow:0 0 16px #ff006650; }
+.sb-btn-ghost {
+  background:transparent; border-color:#ff006630; color:#bf5fff80; font-size:.8rem;
+}
+.sb-btn-ghost:hover { border-color:#ff006660; color:#bf5fff; }
+.sb-btn-nxt { margin-top:.3rem; }
+/* Bubble / question layout */
+.sb-bubble-wrap { display:flex; gap:.7rem; align-items:flex-start; width:100%; max-width:520px; }
+.sb-avatar { font-size:2rem; flex-shrink:0; }
+.sb-bubble {
+  background:#1a0028; border:1px solid #ff006640; border-radius:0 14px 14px 14px;
+  padding:.7rem .9rem; flex:1;
+}
+.sb-bname  { color:#ff80c8; font-size:.78rem; font-weight:700; margin-bottom:.3rem; }
+.sb-q-thai {
+  font-size:1.45rem; color:#ffcce8; line-height:1.5;
+  font-family:'Noto Sans Thai','Leelawadee UI',sans-serif;
+}
+.sb-q-thai .sb-w { cursor:pointer; border-bottom:1px dotted #ff006660; }
+.sb-q-thai .sb-w:hover { color:#fff; border-bottom-color:#ff1493; }
+.sb-rom  { color:#bf5fff80; font-size:.75rem; margin-top:.3rem; font-style:italic; }
+.sb-en   { color:#c090b080; font-size:.78rem; margin-top:.2rem; }
+/* Choices */
+.sb-choices { display:flex; flex-direction:column; gap:.5rem; width:100%; max-width:520px; }
+.sb-choice {
+  display:flex; align-items:flex-start; gap:.6rem; text-align:left;
+  background:#12001e; border:1px solid #ff006628; border-radius:10px;
+  padding:.6rem .8rem; cursor:pointer; transition:all .12s; width:100%;
+}
+.sb-choice:hover:not([disabled]) { border-color:#ff006680; background:#1e0030; }
+.sb-cletter {
+  font-size:.75rem; font-weight:700; color:#bf5fff; background:#2a0040;
+  border-radius:4px; padding:.1rem .35rem; flex-shrink:0; margin-top:.1rem;
+}
+.sb-cbody { display:flex; flex-direction:column; gap:.1rem; }
+.sb-cth  { font-size:1.2rem; color:#e8c0d8; font-family:'Noto Sans Thai','Leelawadee UI',sans-serif; }
+.sb-crom { font-size:.7rem; color:#bf5fff60; font-style:italic; }
+.sb-cen  { font-size:.72rem; color:#a080a060; }
+.sb-choice.sb-ok    { border-color:#00cc66; background:#001a0a; }
+.sb-choice.sb-ok .sb-cth { color:#00ff88; }
+.sb-choice.sb-wrong { border-color:#ff3355; background:#1a0008; }
+.sb-choice.sb-wrong .sb-cth { color:#ff6680; }
+/* Hostess reaction */
+.sb-react {
+  font-size:.9rem; width:100%; max-width:520px; padding:.55rem .9rem;
+  border-radius:8px; border-left:3px solid;
+}
+.sb-react-ok  { background:#002010; border-color:#00cc66; color:#88ffbb; }
+.sb-react-bad { background:#1a0008; border-color:#ff3355; color:#ff99aa; }
+/* Progress bar */
+.sb-prog-wrap { width:100%; max-width:520px; height:3px; background:#ffffff12; border-radius:2px; }
+.sb-prog-bar  { height:100%; background:linear-gradient(90deg,#bf5fff,#ff1493); border-radius:2px; transition:width .3s; }
+/* Night end */
+.sb-night-end {
+  display:flex; flex-direction:column; align-items:center; gap:.8rem; text-align:center;
+  padding:1.5rem 1rem; border:1px solid; border-radius:16px; width:100%; max-width:480px;
+}
+.sb-he { background:#001812; border-color:#00cc6640; }
+.sb-se { background:#180010; border-color:#ff006640; }
+.sb-end-avatar { font-size:3rem; }
+.sb-end-title  { font-size:1.2rem; font-weight:700; color:#ffcce8; }
+.sb-end-score  { color:#bf5fff; font-size:.85rem; }
+.sb-end-scene  { color:#c0a0c0; font-size:.85rem; line-height:1.7; max-width:360px; }
+/* Finale */
+.sb-finale {
+  display:flex; flex-direction:column; align-items:center; gap:.9rem; text-align:center;
+  padding:1.5rem 1rem; width:100%; max-width:480px;
+}
+.sb-finale-emoji  { font-size:2.5rem; letter-spacing:.2em; }
+.sb-finale-title  { font-size:1.1rem; font-weight:700; color:#ffe600;
+                    text-shadow:0 0 14px #ffe60080; }
+.sb-finale-nights { display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; }
+.sb-nb     { font-size:.8rem; padding:.2rem .55rem; border-radius:20px; border:1px solid; }
+.sb-nb-ok  { border-color:#00cc6640; color:#00ff88; background:#001a0a; }
+.sb-nb-bad { border-color:#ff006640; color:#ff6680; background:#1a0008; }
+.sb-finale-text { color:#c0a0c0; font-size:.88rem; line-height:1.7; max-width:380px; }
+
+/* ── Baht Bus (Thai numbers & money) ─────────────────────────────────────── */
+#bb-screen { flex-direction:column; background:#160822; }
+#bb-hud {
+  display:flex; justify-content:center; gap:1.8rem; padding:.4rem .8rem;
+  background:#1d0c30; border-bottom:1px solid #ff8c4230;
+  color:#ffb37a; font-size:.85rem;
+}
+#bb-hud strong { color:#ffe600; }
+#bb-canvas { display:block; width:100%; height:190px; background:#1a0b3d; flex:0 0 auto; }
+body.mobile #bb-canvas { height:150px; }
+/* Number chart: collapsed on mobile by default; tap the title row to expand */
+body.mobile #bb-chart .bb-chart-grid { display: none; }
+body.mobile #bb-chart.bb-chart-open .bb-chart-grid { display: grid; }
+body.mobile .bb-chart-title { cursor: pointer; user-select: none; -webkit-user-select: none; }
+/* Tighter body padding on mobile so tray fits without scrolling */
+body.mobile #bb-body { padding: .4rem .5rem .5rem; gap: .4rem; }
+#bb-body {
+  flex:1; overflow-y:auto; padding:.8rem .9rem 1.1rem; width:100%; max-width:560px;
+  margin:0 auto; box-sizing:border-box; display:flex; flex-direction:column;
+  gap:.7rem; align-items:center;
+}
+.bb-caption { color:#ffd9c0; font-size:.92rem; text-align:center; line-height:1.6; }
+.bb-dim { color:#b08a9a; font-size:.86em; font-style:italic; }
+.bb-thai { color:#ffe600; font-size:1.3em; }
+.bb-pax { color:#ffd9c0; font-size:.95rem; text-align:center; line-height:1.7; }
+.bb-hint { color:#ffe600; font-size:1.1rem; font-style:italic; margin-left:.4rem; }
+.bb-speak {
+  background:#12001e; border:1px solid #00e5ff40; color:#00e5ff;
+  border-radius:50%; width:2.2rem; height:2.2rem;
+  cursor:pointer; font-size:1rem; vertical-align:middle; transition:all .15s;
+}
+.bb-speak:hover { border-color:#00e5ff; box-shadow:0 0 10px #00e5ff50; }
+.bb-money { display:flex; flex-wrap:wrap; gap:.55rem; justify-content:center; }
+.bb-coin, .bb-note {
+  border:2px solid rgba(255,255,255,.35); font-weight:800; font-family:inherit;
+  cursor:pointer; font-size:.85rem; position:relative;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,.5); transition:transform .08s;
+}
+.bb-coin:active, .bb-note:active { transform:scale(.9); }
+.bb-coin { width:48px; height:48px; border-radius:50%; color:#160822; }
+.bb-note { width:70px; height:44px; border-radius:5px; color:#fff; }
+.bb-key { position:absolute; top:1px; left:5px; font-size:.6rem; opacity:.6; }
+.bb-given-row { display:flex; align-items:center; gap:.7rem; flex-wrap:wrap; justify-content:center; min-height:2.6rem; }
+.bb-given { display:flex; align-items:center; gap:.35rem; flex-wrap:wrap; justify-content:center; }
+.bb-chip {
+  border:1px solid rgba(255,255,255,.4); border-radius:20px; padding:.25rem .6rem;
+  color:#fff; font-weight:700; font-size:.8rem; cursor:pointer; font-family:inherit;
+}
+.bb-sum { color:#ffe600; font-weight:700; margin-left:.3rem; }
+.bb-confirm { font-size:1rem; padding:.45rem 1.3rem; }
+.bb-clear { font-size:1rem; padding:.45rem .8rem; color:#ff6680; border-color:#ff006640; }
+.bb-clear:hover { border-color:#ff3355; color:#ff3355; }
+.bb-choices { display:flex; flex-direction:column; gap:.45rem; width:100%; max-width:420px; }
+.bb-choice {
+  background:#12001e; border:1px solid #ff8c4230; border-radius:9px; color:#ffd9c0;
+  padding:.55rem .85rem; cursor:pointer; text-align:left; font-size:.95rem;
+  transition:all .12s; font-family:inherit; display:flex; align-items:center; gap:.55rem;
+}
+.bb-choice:hover:not(:disabled) { border-color:#ff8c42; box-shadow:0 0 10px #ff8c4240; }
+.bb-choice:disabled { cursor:default; opacity:.9; }
+.bb-choice.bb-ok  { border-color:#00cc6640; color:#00ff88; background:#001a0a; }
+.bb-choice.bb-bad { border-color:#ff006640; color:#ff6680; background:#1a0008; }
+.bb-cletter { color:#ff8c42; font-size:.75rem; font-weight:700; }
+.bb-choice .bb-thai { font-size:1.4rem; }
+#bb-chart {
+  flex:0 0 auto; border-top:1px solid #ff8c4230; background:#12061f;
+  padding:.45rem .7rem .6rem;
+}
+.bb-chart-title {
+  text-align:center; color:#b08a9a; font-size:.7rem; letter-spacing:.06em;
+  margin-bottom:.35rem;
+}
+.bb-chart-grid {
+  display:grid; grid-template-columns:repeat(6,1fr); gap:.35rem;
+  max-width:560px; margin:0 auto;
+}
+.bb-chart-cell {
+  background:#1c0b2e; border:1px solid #ff8c4225; border-radius:8px;
+  padding:.28rem .15rem; cursor:pointer; display:flex; flex-direction:column;
+  align-items:center; gap:.08rem; font-family:inherit; transition:all .12s;
+}
+.bb-chart-cell:hover { border-color:#ff8c42; box-shadow:0 0 8px #ff8c4230; }
+.bb-chart-num { color:#ffe600; font-weight:700; font-size:.92rem; }
+.bb-chart-th { color:#ffd9c0; font-size:1rem; }
+.bb-end { text-align:center; display:flex; flex-direction:column; gap:.6rem; align-items:center; padding-top:.5rem; }
+.bb-end-title { font-size:1.3rem; color:#ff8c42; text-shadow:0 0 12px #ff8c4280; }
+.bb-end-earn { font-size:2rem; color:#ffe600; font-weight:800; text-shadow:0 0 14px #ffe60060; }
+
+/* ── Number flashcard screen ──────────────────────────────────────────────── */
+#num-flash-screen { flex-direction:column; }
+.nf-num-display {
+  text-align:center; font-size:5rem; font-weight:900; color:var(--saffron);
+  text-shadow:0 0 30px #ffe60060; padding:1.2rem 0 .3rem; letter-spacing:.03em;
+}
+.nf-thai-dig {
+  text-align:center; font-size:2rem; color:var(--deep-saffron);
+  padding:.1rem 0 .5rem; letter-spacing:.1em;
+}
+
+/* ── Reference charts screen ─────────────────────────────────────────────── */
+#charts-screen { flex-direction:column; }
+.charts-tabs {
+  display:flex; gap:.4rem; justify-content:center; padding:.5rem .8rem;
+  border-bottom:1px solid var(--border); flex-wrap:wrap; flex:0 0 auto;
+}
+.chart-tab {
+  background:var(--surface); border:1px solid var(--border); color:var(--dim);
+  border-radius:20px; padding:.3rem .9rem; cursor:pointer; font-family:inherit;
+  font-size:.85rem; transition:all .15s;
+}
+.chart-tab.active { border-color:var(--gold); color:var(--gold); background:#1e0030; }
+.chart-tab:hover  { border-color:var(--gold); color:var(--gold); }
+.chart-section    { flex:1; overflow-y:auto; padding:.7rem .9rem 1.1rem; }
+/* alphabet */
+.alpha-class-label {
+  color:var(--deep-saffron); font-size:.72rem; font-weight:700; letter-spacing:.08em;
+  text-transform:uppercase; margin:.7rem 0 .3rem; text-align:center;
+}
+.alpha-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(60px, 1fr));
+  gap:.35rem; max-width:560px; margin:0 auto;
+}
+.alpha-cell {
+  background:var(--surface); border:1px solid var(--border); border-radius:8px;
+  padding:.32rem .15rem; cursor:pointer; display:flex; flex-direction:column;
+  align-items:center; gap:.05rem; transition:all .12s; text-align:center; font-family:inherit;
+}
+.alpha-cell:hover { border-color:var(--gold); box-shadow:0 0 8px #ff149330; }
+.alpha-char { font-size:1.4rem; }
+.alpha-rom  { font-size:.62rem; color:var(--dim); }
+.alpha-name { font-size:.52rem; color:#6a5077; }
+.alpha-mid  .alpha-char { color:#00e5ff; }
+.alpha-high .alpha-char { color:#ff8c42; }
+.alpha-low  .alpha-char { color:var(--saffron); }
+/* tone marks */
+.tone-table { width:100%; max-width:520px; margin:0 auto; border-collapse:collapse; font-size:.85rem; }
+.tone-table th { color:var(--deep-saffron); font-size:.72rem; letter-spacing:.05em; padding:.4rem .5rem; border-bottom:1px solid var(--border); text-align:left; }
+.tone-table td { padding:.45rem .5rem; border-bottom:1px solid #ffffff0c; vertical-align:middle; }
+.tone-table tr:hover td { background:#ffffff07; }
+.tone-mark-cell { text-align:center; font-size:1.5rem; color:var(--gold); }
+.tone-name-th { color:var(--saffron); font-size:.9rem; }
+.tone-name-en { color:var(--dim); font-size:.7rem; }
+.tone-ex-cell { color:var(--parchment); font-style:italic; font-size:.78rem; }
+/* numbers chart */
+.num-chart-label {
+  color:var(--deep-saffron); font-size:.72rem; font-weight:700; letter-spacing:.08em;
+  text-transform:uppercase; margin:.7rem 0 .25rem; text-align:center;
+}
+.num-chart-grid { display:grid; gap:.32rem; max-width:560px; margin:0 auto; }
+.num-chart-cell {
+  background:var(--surface); border:1px solid var(--border); border-radius:8px;
+  padding:.28rem .1rem; cursor:pointer; display:flex; flex-direction:column;
+  align-items:center; gap:.05rem; transition:all .12s; font-family:inherit;
+}
+.num-chart-cell:hover { border-color:var(--saffron); box-shadow:0 0 8px #ffe60030; }
+.num-chart-arabic   { color:var(--dim); font-size:.65rem; }
+.num-chart-thai-dig { color:var(--saffron); font-size:1.3rem; font-weight:700; }
+.num-chart-th       { color:var(--gold); font-size:.8rem; }
+.num-chart-rom      { color:var(--dim); font-size:.58rem; font-style:italic; }
+
+/* ── Soi 6 Connect สี่ (vowel Connect 4) ─────────────────────────────────── */
+#c4-screen { flex-direction:column; background:#0d0015; }
+#c4-hud {
+  display:flex; justify-content:center; gap:1.8rem; padding:.4rem .8rem;
+  background:#0d0015; border-bottom:1px solid #ff006630;
+  color:#bf5fff; font-size:.85rem;
+}
+#c4-hud strong { color:#ffe600; }
+#c4-status {
+  min-height:2.3rem; display:flex; align-items:center; justify-content:center;
+  gap:.4rem; text-align:center; padding:.35rem .9rem;
+  color:#ffcce8; font-size:.9rem; border-bottom:1px solid #ff006618;
+}
+.c4-face { font-size:1.2rem; }
+#c4-body {
+  flex:1; overflow-y:auto; padding:.7rem .6rem 1rem;
+  display:flex; flex-direction:column; align-items:center; gap:.7rem;
+}
+/* hostess pick */
+.c4-pick { display:flex; flex-direction:column; gap:.7rem; width:100%; max-width:440px; }
+.c4-girl {
+  display:flex; flex-direction:column; gap:.15rem; text-align:left;
+  background:#12001e; border:1px solid #ff006635; border-radius:12px;
+  padding:.7rem .9rem; cursor:pointer; transition:all .15s; color:inherit;
+  font-family:inherit;
+}
+.c4-girl:hover { border-color:#ff1493; background:#1e0030; box-shadow:0 0 14px #ff149340; }
+.c4-girl-e    { font-size:1.7rem; }
+.c4-girl-name { color:#ff80c8; font-weight:700; font-size:1.05rem; }
+.c4-girl-th   { color:#bf5fff; font-weight:400; font-size:.9rem; }
+.c4-girl-lv   { color:#ffe600; font-size:.75rem; letter-spacing:.05em; text-transform:uppercase; }
+.c4-girl-blurb{ color:#c090b0; font-size:.8rem; font-style:italic; }
+.c4-stakes {
+  color:#bf5fff90; font-size:.8rem; text-align:center; max-width:400px; line-height:1.6;
+  border-top:1px solid #ff006620; padding-top:.7rem;
+}
+/* quiz */
+#c4-quiz { width:100%; max-width:440px; display:flex; flex-direction:column; gap:.5rem; align-items:center; }
+.c4-q-prompt { color:#ffcce8; font-size:.92rem; text-align:center; }
+.c4-q-hint {
+  min-height:1.15rem; color:#ffe600; font-size:.85rem; font-style:italic;
+  text-shadow:0 0 8px #ffe60050;
+}
+.c4-speak {
+  background:#12001e; border:1px solid #00e5ff40; color:#00e5ff;
+  border-radius:50%; width:2.2rem; height:2.2rem; flex:0 0 auto;
+  cursor:pointer; font-size:1rem; vertical-align:middle;
+  transition:all .15s;
+}
+.c4-speak:hover { border-color:#00e5ff; box-shadow:0 0 10px #00e5ff50; }
+.c4-choices { display:flex; flex-direction:column; gap:.4rem; width:100%; }
+.c4-choices-sym { flex-direction:row; flex-wrap:wrap; justify-content:center; }
+.c4-choice {
+  background:#12001e; border:1px solid #ff006628; border-radius:9px; color:#e8c0d8;
+  padding:.5rem .8rem; cursor:pointer; text-align:left; font-size:.88rem; transition:all .12s;
+  font-family:inherit;
+}
+.c4-choice:hover:not([disabled]) { border-color:#ff006680; background:#1e0030; }
+.c4-choice-sym { text-align:center; flex:0 0 auto; }
+.c4-sym { font:700 1.6rem 'Noto Sans Thai','Leelawadee UI',sans-serif; }
+.c4-cletter {
+  font-size:.72rem; font-weight:700; color:#bf5fff; background:#2a0040;
+  border-radius:4px; padding:.05rem .3rem; margin-right:.3rem;
+}
+.c4-choice.c4-ok  { border-color:#00cc66; background:#001a0a; color:#00ff88; }
+.c4-q-mini {
+  color:#00ff88; font-size:.9rem; padding:.25rem .8rem;
+  border:1px solid #00cc6640; border-radius:20px; background:#001a0a;
+  font-family:'Noto Sans Thai','Leelawadee UI',sans-serif;
+}
+.c4-choice.c4-bad { border-color:#ff3355; background:#1a0008; color:#ff6680; }
+/* board — classic Connect 4: neon-blue frame, black holes */
+#c4-board {
+  display:flex; gap:4px; padding:7px;
+  background:linear-gradient(180deg, #1b2fb0 0%, #14219a 55%, #0e1878 100%);
+  border:2px solid #4169e1; border-radius:12px;
+  box-shadow:0 0 26px #4169e160, inset 0 0 20px #000a4a90;
+  overflow:hidden; /* clips tokens dropping in from above */
+}
+.c4-col { display:flex; flex-direction:column; gap:4px; border-radius:6px; padding:2px; }
+.c4-col.c4-live { cursor:pointer; }
+.c4-col.c4-live:hover { background:#00e5ff26; }
+.c4-cell {
+  width:min(46px, calc((100vw - 78px) / 7));
+  aspect-ratio:1; border-radius:50%;
+  background:#03010c; border:1px solid #00000080;
+  box-shadow:inset 0 2px 5px #000000c0;
+}
+.c4-cell.p1 {
+  background:radial-gradient(circle at 35% 30%, #fff9c0, #ffe600 55%, #a88f00);
+  border-color:#ffe600; box-shadow:0 0 9px #ffe60080;
+}
+.c4-cell.p2 {
+  background:radial-gradient(circle at 35% 30%, #ffb0dd, #ff1493 55%, #99004f);
+  border-color:#ff1493; box-shadow:0 0 9px #ff149370;
+}
+/* token drop: falls in from above the board (JS sets --fall per row) */
+.c4-cell.c4-drop { animation:c4fall .45s cubic-bezier(.25, .9, .35, 1.18); }
+@keyframes c4fall {
+  from { transform:translateY(var(--fall, -300px)); }
+  to   { transform:translateY(0); }
+}
+/* winning four pulse white so it reads on both yellow and pink tokens */
+.c4-cell.c4-wincell { animation:c4pulse .7s ease-in-out infinite alternate; }
+@keyframes c4pulse {
+  from { box-shadow:0 0 8px #ffffff80; }
+  to   { box-shadow:0 0 24px #ffffff; border-color:#ffffff; }
+}
+/* end panel */
+.c4-end { display:flex; flex-direction:column; align-items:center; gap:.5rem; padding:.3rem 0; }
+.c4-end-title { color:#ffe600; font-size:1.15rem; font-weight:700; text-shadow:0 0 12px #ffe60080; }
+.c4-end-tab   { color:#ff80c8; font-size:.85rem; }
+.c4-end-btns  { display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; }
+
+/* ── Mobile (touch) adjustments — body.mobile is set by js/mobile.js ─────── */
+.touch-hint { display: none; }
+body.mobile .kb-hint      { display: none; }
+body.mobile .touch-hint   { display: inline; }
+body.mobile .menu-key     { display: none; }
+
+body.mobile {
+  touch-action: manipulation;              /* no 300ms delay / double-tap zoom */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;          /* stop Safari inflating text */
+}
+
+/* position: fixed gives the shell an unambiguous height from its positioning
+   geometry (top/bottom), bypassing the unreliable flex-height chain on mobile
+   Chrome. The flex-height approaches (height:100dvh, height:100%) failed because
+   Chrome doesn't resolve percentage heights reliably inside flex containers when
+   the parent height comes from align-items:stretch rather than an explicit rule. */
+body.mobile #app-shell {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  min-height: unset;
+  max-width: none;
+  border-left: none;
+  border-right: none;
+  overflow: hidden;
+}
+
+body.mobile #content-area {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Each active screen fills the content-area and scrolls its own content. */
+body.mobile .screen.active {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.mobile #game-canvas { touch-action: none; } /* don't scroll while playing */
+
+/* Walking Street on mobile: the tutor's Kedmanee keyboard replaces the
+   reference strip — tap the key of a falling consonant to pop it. */
+#game-kbd { display: none; }
+body.mobile #game-ref { display: none; }
+body.mobile #game-kbd {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 0.45rem 0.4rem;
+  background: #05001a;
+  border-top: 1px solid #ff149330;
+}
+/* Locked/unused keys: still legible, in a subdued violet that fits the
+   neon-Pattaya palette (the tutor's near-invisible .dim is too faint here) */
+#game-kbd .tkey.dim           { border-color: #bf5fff28; }
+#game-kbd .tkey.dim .tkey-th  { color: #bf5fff58; }
+#game-kbd .tkey.dim .tkey-lat { color: #bf5fff2a; }
+
+/* Finger-sized targets */
+body.mobile .menu-list li  { padding: 0.7rem 0; }
+body.mobile .cat-list li   { padding: 0.65rem 1rem; }
+body.mobile .btn           { min-height: 44px; }
+body.mobile .rating-btn    { min-height: 46px; padding: 0.4rem 0.7rem; }
+body.mobile .quiz-choices li { padding: 0.75rem 1rem; }
+body.mobile .sb-choice     { padding: 0.75rem 0.8rem; }
+
+/* Keyboard tutor: fill the phone width with finger-sized tappable keys */
+body.mobile .tkey    { width: calc((100vw - 44px) / 10); max-width: 40px; height: 48px; }
+body.mobile .tkey-th { font-size: 1.1rem; }
+body.mobile #t-char  { font-size: 60px; min-height: 76px; }
+
+/* Font adjustments for small screens */
+body.mobile .sb-bar-sign { font-size: 1.05rem; padding: 0.5rem 0.8rem; }
+body.mobile .sb-q-thai   { font-size: 1.55rem; }
+body.mobile .sb-cth      { font-size: 1.3rem; }
+
+/* Notched phones: use safe-area insets as the fixed positioning offset so the
+   shell hugs the safe area without padding (which would shrink the content). */
+body.mobile #app-shell {
+  top:    env(safe-area-inset-top,    0px);
+  left:   env(safe-area-inset-left,   0px);
+  right:  env(safe-area-inset-right,  0px);
+  bottom: env(safe-area-inset-bottom, 0px);
+}
+</style>
+</head>
+<body>
+<div id="app-shell">
+
+<!-- ═══ SIDEBAR (persistent on wide screens) ════════════════════════════════ -->
+<nav id="sidebar">
+  <div id="sidebar-title">ภาษาไทย</div>
+  <div id="sidebar-subtitle">Thai Trainer<br><span class="edition-tag">✦ Pattaya Edition ✦</span></div>
+  <div id="sidebar-stats">loading…</div>
+
+  <div class="sidebar-section">Vocabulary</div>
+  <ul class="sidebar-list">
+    <li id="nav-1" onclick="startVocab('th2en')">  Flashcards Thai→EN</li>
+    <li id="nav-2" onclick="startVocab('en2th')">  Flashcards EN→Thai</li>
+    <li id="nav-3" onclick="startQuiz()">           Quiz</li>
+    <li id="nav-4" onclick="startVocabSRS()">       SRS Review</li>
+    <li id="nav-S" onclick="startSentSRS()">        Sentence SRS</li>
+  </ul>
+
+  <div class="sidebar-section">Script</div>
+  <ul class="sidebar-list">
+    <li id="nav-5" onclick="startConsonantFlash()"> Consonant Cards</li>
+    <li id="nav-6" onclick="startVowelFlash()">     Vowel Cards</li>
+    <li id="nav-7" onclick="startConsonantDrill()"> Consonant Drill</li>
+    <li id="nav-8" onclick="startVowelDrill()">     Vowels &amp; Tones</li>
+    <li id="nav-9" onclick="startScriptSRS()">      Script SRS</li>
+    <li id="nav-T" onclick="startToneDrill()">      Tone Drill</li>
+    <li id="nav-K" onclick="startTutor()">         ⌨️ Thai Keyboard</li>
+  </ul>
+
+  <div class="sidebar-section">Games</div>
+  <ul class="sidebar-list">
+    <li id="nav-G" onclick="startGame()">          🌙 Walking Street</li>
+    <li id="nav-B" onclick="startSoiBuakhao()">   🌺 Soi Buakhao</li>
+    <li id="nav-C" onclick="startConnect4()">     🍹 Soi 6: Connect สี่</li>
+    <li id="nav-R" onclick="startBahtBus()">      🚌 Baht Bus</li>
+  </ul>
+
+  <div class="sidebar-section">Numbers</div>
+  <ul class="sidebar-list">
+    <li id="nav-N" onclick="startNumFlash()">  Number Flashcards</li>
+  </ul>
+
+  <div class="sidebar-section">More</div>
+  <ul class="sidebar-list">
+    <li id="nav-A" onclick="showCharts()">     Reference Charts</li>
+    <li id="nav-V" onclick="showVocabList()">       Vocab List</li>
+    <li id="nav-0" onclick="showStats()">           Statistics</li>
+    <li onclick="showTutorial()">                   How to use</li>
+  </ul>
+
+  <div id="sidebar-footer">
+    <div style="color:var(--lotus); font-size:0.9rem; margin-bottom:0.4rem;">❀ สวัสดี ❀</div>
+    <button onclick="showMenu()">Home</button>
+  </div>
+</nav>
+
+<!-- ═══ CONTENT AREA ════════════════════════════════════════════════════════ -->
+<div id="content-area">
+
+<!-- ═══ MENU (shown on mobile, or as landing on desktop before first action) -->
+<div id="menu-screen" class="screen active">
+  <div class="screen-header">❀ ยินดีต้อนรับ ❀</div>
+  <div class="menu-title">Thai Trainer</div>
+  <div class="menu-subtitle">
+    <div style="color:var(--dim);font-size:.85rem;margin-bottom:.3rem">ภาษาไทย — Learn Thai</div>
+    <span class="edition-gem">❖</span> <span class="edition-tag">Pattaya Edition</span> <span class="edition-gem">❖</span>
+  </div>
+  <div class="menu-stats" id="menu-stats">loading…</div>
+  <div id="voice-notice" style="display:none;text-align:center;color:var(--dim);font-size:0.8rem;padding:0.3rem 1.5rem;">
+    🔇 No Thai voice found — audio features are disabled. Chrome or Edge (desktop/Android) include Thai text-to-speech.
+  </div>
+  <div class="menu-section">Vocabulary</div>
+  <ul class="menu-list">
+    <li onclick="startVocab('th2en')"><span class="menu-key">1</span> Flashcards — Thai → English</li>
+    <li onclick="startVocab('en2th')"><span class="menu-key">2</span> Flashcards — English → Thai</li>
+    <li onclick="startQuiz()">        <span class="menu-key">3</span> Quiz (multiple choice)</li>
+    <li onclick="startVocabSRS()">    <span class="menu-key">4</span> SRS Review</li>
+    <li onclick="startSentSRS()">     <span class="menu-key">S</span> Sentence SRS</li>
+  </ul>
+  <div class="menu-section">Script</div>
+  <ul class="menu-list">
+    <li onclick="startConsonantFlash()"><span class="menu-key">5</span> Flashcards — Consonants</li>
+    <li onclick="startVowelFlash()">    <span class="menu-key">6</span> Flashcards — Vowels</li>
+    <li onclick="startConsonantDrill()"><span class="menu-key">7</span> Drill — Consonants</li>
+    <li onclick="startVowelDrill()">    <span class="menu-key">8</span> Drill — Vowels &amp; Tones</li>
+    <li onclick="startScriptSRS()">     <span class="menu-key">9</span> Script SRS Review</li>
+    <li onclick="startToneDrill()">     <span class="menu-key">T</span> Tone Listening Drill</li>
+    <li onclick="startTutor()">         <span class="menu-key">K</span> ⌨️ Thai Keyboard</li>
+  </ul>
+  <div class="menu-section">Games</div>
+  <ul class="menu-list">
+    <li onclick="startGame()">        <span class="menu-key">G</span> 🌙 Walking Street</li>
+    <li onclick="startSoiBuakhao()">  <span class="menu-key">B</span> 🌺 Soi Buakhao</li>
+    <li onclick="startConnect4()">    <span class="menu-key">C</span> 🍹 Soi 6: Connect สี่</li>
+    <li onclick="startBahtBus()">     <span class="menu-key">R</span> 🚌 Baht Bus</li>
+  </ul>
+  <div class="menu-section">Numbers</div>
+  <ul class="menu-list">
+    <li onclick="startNumFlash()"><span class="menu-key">N</span> Number Flashcards</li>
+  </ul>
+  <div class="menu-section">More</div>
+  <ul class="menu-list">
+    <li onclick="showCharts()">   <span class="menu-key">A</span> Reference Charts</li>
+    <li onclick="showVocabList()"> <span class="menu-key">V</span> Vocab List</li>
+    <li onclick="showStats()">     <span class="menu-key">0</span> Statistics</li>
+    <li onclick="showTutorial()">  <span class="menu-key">?</span> How to use this app</li>
+  </ul>
+  <div class="screen-footer">❀ สวัสดี ❀</div>
+</div>
+
+<!-- ═══ CATEGORY PICKER ══════════════════════════════════════════════════════ -->
+<div id="cat-screen" class="screen">
+  <div class="screen-header" id="cat-header">Choose a category</div>
+  <ul class="cat-list" id="cat-list"></ul>
+  <div class="screen-footer">
+    <button class="btn" onclick="showMenu()">← Back</button>
+  </div>
+</div>
+
+<!-- ═══ FLASHCARD (Thai→English and English→Thai) ════════════════════════════ -->
+<div id="flash-screen" class="screen">
+  <div class="screen-header" id="flash-header">Flashcard</div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="flash-prog"></div></div>
+  <div class="screen-title" id="flash-counter"></div>
+  <div class="thai-big" id="flash-thai"></div>
+  <div style="text-align:center;margin-top:-0.5rem;margin-bottom:0.4rem">
+    <button class="example-speak" id="flash-speak-btn" style="display:none" title="Listen" aria-label="Speak word">🔊</button>
+  </div>
+  <div class="rtgs" id="flash-rtgs"></div>
+  <div class="card-body">
+    <div class="card-prompt" id="flash-prompt"></div>
+    <div id="flash-answer-area" style="display:none">
+      <hr class="divider-accent">
+      <div class="card-answer" id="flash-answer"></div>
+      <div class="srs-meta" id="flash-srs-meta"></div>
+      <div id="flash-example" class="example-block" style="display:none"></div>
+      <div class="rating-row" id="flash-rating-row"></div>
+    </div>
+    <div id="flash-reveal-area">
+      <div class="btn-row">
+        <button class="btn btn-primary" id="flash-reveal-btn" onclick="flashReveal()">Reveal ▶</button>
+      </div>
+    </div>
+  </div>
+  <div class="screen-footer">
+    <button class="btn" id="flash-undo-btn" style="display:none" onclick="undoLastRating()" title="Undo last rating (U)">↩ Undo</button>
+    <button class="btn" onclick="endSession()">← Menu</button>
+  </div>
+</div>
+
+<!-- ═══ QUIZ ══════════════════════════════════════════════════════════════════ -->
+<div id="quiz-screen" class="screen">
+  <div class="screen-header">Quiz</div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="quiz-prog"></div></div>
+  <div class="screen-title" id="quiz-counter"></div>
+  <div class="thai-big" id="quiz-thai"></div>
+  <div class="rtgs" id="quiz-rtgs"></div>
+  <div class="card-body">
+    <div class="card-prompt">What is the meaning of this word?</div>
+    <ul class="quiz-choices" id="quiz-choices"></ul>
+    <div id="quiz-feedback" style="display:none; padding:0.3rem 0 0.5rem;"></div>
+    <div class="btn-row" id="quiz-next-row" style="display:none">
+      <button class="btn btn-primary" onclick="quizNext()">Next →</button>
+    </div>
+  </div>
+  <div class="screen-footer">
+    <button class="btn" onclick="endSession()">← Menu</button>
+  </div>
+</div>
+
+<!-- ═══ SCRIPT DRILL (consonant / vowel / tone) ══════════════════════════════ -->
+<div id="drill-screen" class="screen">
+  <div class="screen-header" id="drill-section-label"></div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="drill-prog"></div></div>
+  <div class="screen-title" id="drill-counter"></div>
+  <div class="thai-big" id="drill-thai"></div>
+  <div class="rtgs" id="drill-rtgs"></div>
+  <div class="drill-info" id="drill-info"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="drillNext()">Next →</button>
+    <button class="btn" onclick="endSession()">← Menu</button>
+  </div>
+</div>
+
+<!-- ═══ SRS REVIEW ════════════════════════════════════════════════════════════ -->
+<div id="srs-screen" class="screen">
+  <div class="screen-header" id="srs-header">SRS Review</div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="srs-prog"></div></div>
+  <div class="screen-title" id="srs-counter"></div>
+  <div class="thai-big" id="srs-thai"></div>
+  <div class="rtgs" id="srs-rtgs"></div>
+  <div class="card-body">
+    <div class="card-prompt" id="srs-prompt"></div>
+    <div class="srs-meta" id="srs-meta"></div>
+    <div id="srs-answer-area" style="display:none">
+      <hr class="divider-accent">
+      <div class="card-answer" id="srs-answer"></div>
+      <div style="text-align:center; color:var(--deep-saffron); padding:0.3rem 0; font-size:0.9rem;">Rate your recall:</div>
+      <div class="rating-row" id="srs-rating-row"></div>
+    </div>
+    <div id="srs-reveal-area">
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="srsReveal()">Reveal ▶</button>
+      </div>
+    </div>
+  </div>
+  <div class="screen-footer">
+    <button class="btn" id="srs-undo-btn" style="display:none" onclick="undoLastRating()" title="Undo last rating (U)">↩ Undo</button>
+    <button class="btn" onclick="endSession()">← Menu</button>
+  </div>
+</div>
+
+<!-- ═══ TONE LISTENING DRILL ══════════════════════════════════════════════════ -->
+<div id="tone-drill-screen" class="screen">
+  <div class="screen-header">Tone Listening Drill</div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="tone-prog"></div></div>
+  <div class="screen-title" id="tone-counter"></div>
+  <div style="text-align:center">
+    <button id="tone-play-btn" onclick="toneDrillPlay()">🔊 Play word</button>
+  </div>
+  <div class="tone-word-big" id="tone-word-display"></div>
+  <ul class="tone-choices" id="tone-choices"></ul>
+  <div class="tone-feedback" id="tone-feedback"></div>
+  <div class="btn-row" id="tone-next-row" style="display:none">
+    <button class="btn btn-primary" onclick="toneDrillNext()">Next →</button>
+  </div>
+  <div class="screen-footer">
+    <button class="btn" onclick="endSession()">← Menu</button>
+  </div>
+</div>
+
+<!-- ═══ SENTENCE SRS ══════════════════════════════════════════════════════════ -->
+<div id="sent-srs-screen" class="screen">
+  <div class="screen-header">Sentence SRS</div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="sent-prog"></div></div>
+  <div class="screen-title" id="sent-counter"></div>
+  <div class="card-body">
+    <div class="sent-sentence" id="sent-sentence"></div>
+    <div class="sent-rtgs" id="sent-rtgs"></div>
+    <div class="sent-en" id="sent-en"></div>
+    <div class="srs-meta" id="sent-meta"></div>
+    <div id="sent-answer-area" style="display:none">
+      <hr class="divider-accent">
+      <div class="sent-answer" id="sent-answer"></div>
+      <div style="text-align:center; color:var(--deep-saffron); padding:0.3rem 0 0.5rem; font-size:0.9rem;">Did you know the word?</div>
+      <div class="rating-row" id="sent-rating-row"></div>
+    </div>
+    <div id="sent-reveal-area">
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="sentSrsReveal()">Reveal ▶</button>
+      </div>
+    </div>
+  </div>
+  <div class="screen-footer">
+    <button class="btn" id="sent-undo-btn" style="display:none" onclick="undoLastRating()" title="Undo last rating (U)">↩ Undo</button>
+    <button class="btn" onclick="endSession()">← Menu</button>
+  </div>
+</div>
+
+<!-- ═══ VOCAB LIST ══════════════════════════════════════════════════════════════ -->
+<div id="vocab-list-screen" class="screen">
+  <div class="screen-header">Vocab List</div>
+  <div id="vocab-list-cats" class="vocab-list-cats"></div>
+  <div style="padding:0 1.2rem 0; display:flex; flex-direction:column; flex:1; overflow:hidden;">
+    <input id="vocab-list-search" type="search" placeholder="Search Thai, romanisation or English…" oninput="filterVocabList(this.value)">
+    <div id="vocab-list-count"></div>
+    <div id="vocab-list-grid"></div>
+  </div>
+  <div class="screen-footer">
+    <button class="btn" onclick="showMenu()">← Back</button>
+  </div>
+</div>
+
+<!-- ═══ STATS ══════════════════════════════════════════════════════════════════ -->
+<div id="stats-screen" class="screen">
+  <div class="screen-header">Statistics</div>
+  <div class="screen-title">Your Progress</div>
+  <div class="stats-grid" id="stats-grid"></div>
+  <div id="stats-body" style="padding:0 1.5rem;"></div>
+  <div class="screen-footer">
+    <button class="btn" onclick="showMenu()">← Back</button>
+  </div>
+</div>
+
+<!-- hidden import file input -->
+<input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importProgress(event)">
+
+<!-- ═══ SESSION END ════════════════════════════════════════════════════════════ -->
+<div id="end-screen" class="screen">
+  <div class="screen-header">Session Complete</div>
+  <div class="session-end" id="end-body"></div>
+  <div class="screen-footer">
+    <button class="btn btn-primary" onclick="showMenu()">← Back to Menu</button>
+  </div>
+</div>
+
+<!-- ═══ WALKING STREET GAME ═══════════════════════════════════════════════════ -->
+<div id="game-screen" class="screen">
+  <div class="screen-header" style="background:#05001a;color:#ff1493;border-color:#ff1493;text-shadow:0 0 10px #ff1493;letter-spacing:0.08em">
+    🌙 Walking Street — พัทยา
+  </div>
+  <div id="game-hud">
+    <span>฿ <strong id="game-score">0</strong></span>
+    <span id="game-lives">🍺🍺🍺</span>
+    <span id="game-level-label">Night <strong id="game-level">1</strong></span>
+  </div>
+  <div id="game-canvas-wrap">
+    <canvas id="game-canvas"></canvas>
+    <div id="game-over-panel" style="display:none">
+      <div class="game-over-box">
+        <div class="game-over-title">เมาแล้ว! 🍺</div>
+        <div class="game-over-sub">Time to go home, ฝรั่ง</div>
+        <div class="game-over-score">฿ <span id="game-final-score">0</span></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="startGame()">อีกครั้ง</button>
+          <button class="btn" onclick="endSession()">กลับบ้าน</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="game-ref"></div>
+  <div id="game-kbd"></div>
+  <div class="screen-footer" style="background:#05001a;border-color:#ff149340;color:#bf5fff">
+    <span class="kb-hint">Type the key shown on each sign · </span><span class="touch-hint">Tap the matching key below · </span><button class="btn audio-mute-btn" style="padding:0.15rem 0.5rem;font-size:0.8rem;border-color:#ff149360" onclick="this.textContent=_audio.toggleMute()?'🔇':'🔊'">🔊</button> <button class="btn" style="padding:0.15rem 0.6rem;font-size:0.8rem;border-color:#ff149360;color:#ff1493" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
+  </div>
+</div>
+
+<!-- ═══ BAHT BUS (NUMBERS & MONEY) ════════════════════════════════════════════ -->
+<div id="bb-screen" class="screen">
+  <div class="screen-header" style="background:#160822;color:#ff8c42;border-color:#ff8c42;text-shadow:0 0 10px #ff8c42;letter-spacing:0.08em">
+    🚌 Baht Bus — รถสองแถว
+  </div>
+  <div id="bb-hud"></div>
+  <canvas id="bb-canvas"></canvas>
+  <div id="bb-body"></div>
+  <div id="bb-chart"></div>
+  <div class="screen-footer" style="background:#160822;border-top:1px solid #ff8c4230;color:#ffb37a80;font-size:.78rem;text-align:center;padding:.5rem;">
+    <span class="kb-hint">1–7 money · Enter give · 1–4 quote · R replay &nbsp;·&nbsp;</span>
+    <button class="btn audio-mute-btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff8c4240" onclick="this.textContent=_audio.toggleMute()?'🔇':'🔊'">🔊</button>
+    <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff8c4240;color:#ff8c42" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
+  </div>
+</div>
+
+<!-- ═══ SOI 6 CONNECT สี่ (VOWEL CONNECT 4) ══════════════════════════════════ -->
+<div id="c4-screen" class="screen">
+  <div class="screen-header" style="background:#0d0015;color:#ff1493;border-color:#ff1493;text-shadow:0 0 10px #ff1493;letter-spacing:0.08em">
+    🍹 Soi 6 — Connect สี่
+  </div>
+  <div id="c4-hud"></div>
+  <div id="c4-status"></div>
+  <div id="c4-body"></div>
+  <div class="screen-footer" style="background:#0d0015;border-top:1px solid #ff006630;color:#bf5fff50;font-size:.78rem;text-align:center;padding:.5rem;">
+    <span class="kb-hint">1–4 answer · 1–7 drop column &nbsp;·&nbsp;</span>
+    <button class="btn audio-mute-btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640" onclick="this.textContent=_audio.toggleMute()?'🔇':'🔊'">🔊</button>
+    <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640;color:#ff149380" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
+  </div>
+</div>
+
+<!-- ═══ SOI BUAKHAO DIALOGUE GAME ════════════════════════════════════════════ -->
+<div id="soi-screen" class="screen">
+  <div id="soi-header">
+    <div id="soi-night-label">🌙 Soi Buakhao</div>
+    <div id="soi-sub-label"></div>
+  </div>
+  <div id="soi-body"></div>
+  <div class="screen-footer" style="background:#0d0015;border-top:1px solid #ff006630;color:#bf5fff50;font-size:.78rem;text-align:center;padding:.5rem;">
+    <span class="kb-hint">1–4 select · Enter/Space advance &nbsp;·&nbsp;</span>
+    <button class="btn audio-mute-btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640" onclick="this.textContent=_audio.toggleMute()?'🔇':'🔊'">🔊</button>
+    <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640;color:#ff149380" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
+  </div>
+</div>
+
+<!-- ═══ THAI KEYBOARD TUTOR ══════════════════════════════════════════════════ -->
+<div id="tutor-screen" class="screen">
+  <div class="screen-header" style="background:#0d0015;color:#ff1493;text-shadow:0 0 12px #ff1493;border-bottom:1px solid #ff149340;letter-spacing:0.08em">
+    ⌨️ Thai Keyboard — คีย์บอร์ดไทย
+  </div>
+  <div id="tutor-body">
+    <div id="tutor-modes">
+      <button class="t-mbtn active" id="t-mbtn-con" onclick="_tSetMode('consonants')">Consonants</button>
+      <button class="t-mbtn" id="t-mbtn-all" onclick="_tSetMode('all')">All Keys</button>
+    </div>
+    <div id="tutor-prompt">
+      <div id="t-char"></div>
+      <div id="t-name"></div>
+    </div>
+    <div id="t-kbd"></div>
+    <div id="tutor-stats">
+      <span>🔥 <strong id="t-streak">0</strong></span>
+      <span>Accuracy <strong id="t-acc">—</strong></span>
+    </div>
+  </div>
+  <div class="screen-footer" style="background:#0d0015;border-top:1px solid #43155e;color:#a487b8;font-size:.78rem;text-align:center;padding:.5rem;">
+    <span class="kb-hint">Type the key for each character &nbsp;·&nbsp;</span><span class="touch-hint">Tap the key for each character &nbsp;·&nbsp;</span>
+    <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
+  </div>
+</div>
+
+<!-- ═══ NUMBER FLASHCARDS ════════════════════════════════════════════════════ -->
+<div id="num-flash-screen" class="screen">
+  <div class="screen-header">เลขไทย — Thai Numbers</div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="nf-prog"></div></div>
+  <div class="screen-title" id="nf-counter"></div>
+  <div class="nf-num-display" id="nf-num"></div>
+  <div class="nf-thai-dig" id="nf-thai-dig"></div>
+  <div class="card-body">
+    <div id="nf-reveal-area">
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="nfReveal()">Reveal ▶</button>
+      </div>
+    </div>
+    <div id="nf-answer-area" style="display:none">
+      <hr class="divider-accent">
+      <div class="thai-big" id="nf-thai" style="text-align:center"></div>
+      <div class="rtgs" id="nf-rom"></div>
+      <div style="text-align:center;margin:.3rem 0">
+        <button class="example-speak" id="nf-speak-btn" title="Listen" onclick="nfSpeak()">🔊</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="nfNext()">Next →</button>
+      </div>
+    </div>
+  </div>
+  <div class="screen-footer">
+    <span class="kb-hint">Space/Enter reveal · N next</span>
+    <button class="btn" onclick="endSession()">← Menu</button>
+  </div>
+</div>
+
+<!-- ═══ REFERENCE CHARTS ══════════════════════════════════════════════════════ -->
+<div id="charts-screen" class="screen">
+  <div class="screen-header">Reference Charts</div>
+  <div class="charts-tabs">
+    <button class="chart-tab active" data-tab="alphabet" onclick="showChartTab('alphabet')">Consonants</button>
+    <button class="chart-tab" data-tab="vowels"   onclick="showChartTab('vowels')">Vowels</button>
+    <button class="chart-tab" data-tab="tones"    onclick="showChartTab('tones')">Tones</button>
+    <button class="chart-tab" data-tab="numbers"  onclick="showChartTab('numbers')">Numbers</button>
+  </div>
+  <div id="chart-alphabet" class="chart-section" data-tab="alphabet"></div>
+  <div id="chart-vowels"   class="chart-section" data-tab="vowels"  style="display:none"></div>
+  <div id="chart-tones"    class="chart-section" data-tab="tones"   style="display:none"></div>
+  <div id="chart-numbers"  class="chart-section" data-tab="numbers" style="display:none"></div>
+  <div class="screen-footer">
+    <button class="btn" onclick="showMenu()">← Menu</button>
+  </div>
+</div>
+
+</div><!-- #content-area -->
+</div><!-- #app-shell -->
+
+<!-- ═══ TUTORIAL ══════════════════════════════════════════════════════════════ -->
+<div id="tutorial-overlay">
+  <div id="tutorial-card">
+    <button id="tutorial-close-btn" onclick="closeTutorial()" title="Skip">✕</button>
+
+    <div class="tutorial-slide">
+      <div class="tut-icon">ก</div>
+      <h2>Welcome to Thai Trainer: Pattaya Edition</h2>
+      <p>Your personal Thai tutor: 878 vocabulary words, 60+ consonants &amp; vowels, and SM‑2 spaced repetition — all in one app.</p>
+      <p>This quick tour highlights the key features. Find it again any time under <strong>Other → How to use</strong>.</p>
+    </div>
+
+    <div class="tutorial-slide">
+      <h2>📚 Flashcards &amp; SRS Review</h2>
+      <p>Start with <strong>Flashcards Thai→English</strong><span class="kb-hint"> (key <kbd class="tut-key">1</kbd>)</span>. Reveal the answer, then rate yourself 1–5.</p>
+      <p>The SM‑2 algorithm schedules each card's next review so you see it right before you'd forget it. <strong>SRS Review</strong><span class="kb-hint"> (key <kbd class="tut-key">4</kbd>)</span> shows only what's due today.</p>
+    </div>
+
+    <div class="tutorial-slide">
+      <h2>✨ Tap Thai text to explore</h2>
+      <p>In any flashcard or vocab list, <strong style="color:var(--saffron)">tap the Thai word</strong> to open its detail card — romanisation, audio, and an example sentence in context.</p>
+      <p>Then <strong style="color:var(--saffron)">tap the Thai word inside the card</strong> to decompose it into syllable clusters. Every character is labelled and hoverable.</p>
+      <div class="tut-decomp-demo">
+        <span class="tut-cluster">ส</span><span class="tut-cluster">วั</span><span class="tut-cluster">ส</span><span class="tut-cluster">ดี</span>
+        <div style="font-size:0.75rem;color:var(--dim);margin-top:0.5rem">สวัสดี — "hello" · tap to decompose each cluster</div>
+      </div>
+    </div>
+
+    <div class="tutorial-slide">
+      <h2>📖 Vocab List &amp; Script</h2>
+      <p><strong>Vocab List</strong><span class="kb-hint"> (key <kbd class="tut-key">V</kbd>)</span> shows all 878 words — search, filter by category, tap any word for the detail card with decomposition.</p>
+      <p><strong>Script cards</strong><span class="kb-hint"> (keys <kbd class="tut-key">5</kbd>–<kbd class="tut-key">9</kbd>)</span> teach consonants and vowels with SRS. <strong>Tone Drill</strong><span class="kb-hint"> (<kbd class="tut-key">T</kbd>)</span> plays audio and asks you to identify the tone class.</p>
+    </div>
+
+    <div class="tutorial-dots">
+      <div class="tutorial-dot" onclick="_tutGoTo(0)"></div>
+      <div class="tutorial-dot" onclick="_tutGoTo(1)"></div>
+      <div class="tutorial-dot" onclick="_tutGoTo(2)"></div>
+      <div class="tutorial-dot" onclick="_tutGoTo(3)"></div>
+    </div>
+    <div id="tutorial-nav">
+      <button id="tutorial-prev" onclick="_tutPrev()">← Back</button>
+      <button id="tutorial-next" onclick="_tutNext()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/mobile.js"></script>
+<script src="js/data.js"></script>
+<script src="js/srs.js"></script>
+<script src="js/examples.js"></script>
+<script src="js/tokeniser.js"></script>
+<script src="js/thai-script.js"></script>
+<script src="js/app.js"></script>
+<script src="js/tts.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/sessions.js"></script>
+<script src="js/tutor.js"></script>
+<script src="js/soi-buakhao.js"></script>
+<script src="js/connect4.js"></script>
+<script src="js/game.js"></script>
+<script src="js/baht-bus.js"></script>
+<script src="js/numbers.js"></script>
+<script src="js/main.js"></script>
+<!-- ═══ WORD DETAIL MODAL ════════════════════════════════════════════════════ -->
+<div id="wc-overlay"></div>
+
+<div id="script-tooltip"></div>
+
+<div id="word-tooltip">
+  <div class="tt-thai" id="tt-thai"></div>
+  <div class="tt-rtgs" id="tt-rtgs"></div>
+  <div class="tt-en"   id="tt-en"></div>
+</div>
+
+<script>
+// Under Capacitor the assets are bundled with the app, so the offline
+// cache is pointless — skip registration there.
+if ("serviceWorker" in navigator && !window.Capacitor) {
+  window.addEventListener("load", () =>
+    navigator.serviceWorker.register("./sw.js").catch(() => {})
+  );
+}
+</script>
+</body>
+</html>
