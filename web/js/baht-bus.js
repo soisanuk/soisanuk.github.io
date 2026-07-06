@@ -321,7 +321,7 @@ function _bbCharterUI() {
     <div class="bb-pax">${_bbPax.e} <strong>${_bbEsc(_bbPax.name)}</strong> flags you down:
       <span class="bb-thai">“ไป${_bbEsc(c.dest.th)} เท่าไหร่?”</span></div>
     <div class="bb-caption">To <strong>${_bbEsc(c.dest.en)}</strong> — fair price
-      <strong>฿${c.quote}</strong>. Hold up the right sign:</div>
+      <strong>฿${c.quote}</strong>. What is your response?</div>
     <div class="bb-choices">` + c.choices.map((v, i) => `
       <button class="bb-choice" data-i="${i}">
         <span class="bb-cletter kb-hint">${i + 1}</span>
