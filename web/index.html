@@ -308,6 +308,7 @@ body {
     align-items: center;
     gap: 0.8rem;
   }
+  .menu-welcome-word:hover { text-shadow: 0 0 60px rgba(255,20,147,0.7), 0 0 20px rgba(255,230,0,0.5); }
 }
 
 /* ── Category picker ─────────────────────────────────────────────────────── */
@@ -1688,7 +1689,7 @@ body.mobile #app-shell {
   </div>
   <div class="menu-stats" id="menu-stats">loading…</div>
   <div id="menu-welcome">
-    <div style="font-size:4.5rem;line-height:1;color:var(--gold);text-shadow:0 0 40px rgba(255,20,147,0.35)">ภาษาไทย</div>
+    <div onclick="openWordModal(WORD_MAP['ภาษาไทย'])" title="Tap to hear &amp; decompose" style="font-size:4.5rem;line-height:1;color:var(--gold);text-shadow:0 0 40px rgba(255,20,147,0.35);cursor:pointer" class="menu-welcome-word">ภาษาไทย</div>
     <div style="color:var(--dim);font-size:.88rem;letter-spacing:.05em">← select a mode from the sidebar</div>
   </div>
   <div id="voice-notice" style="display:none;text-align:center;color:var(--dim);font-size:0.8rem;padding:0.3rem 1.5rem;">
