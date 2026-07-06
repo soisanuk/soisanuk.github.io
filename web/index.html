@@ -1631,11 +1631,11 @@ body.mobile #app-shell {
   <div class="sidebar-section">Numbers</div>
   <ul class="sidebar-list">
     <li id="nav-N" onclick="startNumFlash()">  Number Flashcards</li>
-    <li id="nav-A" onclick="showCharts()">     Reference Charts</li>
   </ul>
 
   <div class="sidebar-section">More</div>
   <ul class="sidebar-list">
+    <li id="nav-A" onclick="showCharts()">     Reference Charts</li>
     <li id="nav-V" onclick="showVocabList()">       Vocab List</li>
     <li id="nav-0" onclick="showStats()">           Statistics</li>
     <li onclick="showTutorial()">                   How to use</li>
@@ -1687,10 +1687,10 @@ body.mobile #app-shell {
   <div class="menu-section">Numbers</div>
   <ul class="menu-list">
     <li onclick="startNumFlash()"><span class="menu-key">N</span> Number Flashcards</li>
-    <li onclick="showCharts()">   <span class="menu-key">A</span> Reference Charts</li>
   </ul>
   <div class="menu-section">More</div>
   <ul class="menu-list">
+    <li onclick="showCharts()">   <span class="menu-key">A</span> Reference Charts</li>
     <li onclick="showVocabList()"> <span class="menu-key">V</span> Vocab List</li>
     <li onclick="showStats()">     <span class="menu-key">0</span> Statistics</li>
     <li onclick="showTutorial()">  <span class="menu-key">?</span> How to use this app</li>
@@ -2021,12 +2021,14 @@ body.mobile #app-shell {
 <div id="charts-screen" class="screen">
   <div class="screen-header">Reference Charts</div>
   <div class="charts-tabs">
-    <button class="chart-tab active" data-tab="alphabet" onclick="showChartTab('alphabet')">Alphabet</button>
-    <button class="chart-tab" data-tab="tones" onclick="showChartTab('tones')">Tones</button>
-    <button class="chart-tab" data-tab="numbers" onclick="showChartTab('numbers')">Numbers</button>
+    <button class="chart-tab active" data-tab="alphabet" onclick="showChartTab('alphabet')">Consonants</button>
+    <button class="chart-tab" data-tab="vowels"   onclick="showChartTab('vowels')">Vowels</button>
+    <button class="chart-tab" data-tab="tones"    onclick="showChartTab('tones')">Tones</button>
+    <button class="chart-tab" data-tab="numbers"  onclick="showChartTab('numbers')">Numbers</button>
   </div>
   <div id="chart-alphabet" class="chart-section" data-tab="alphabet"></div>
-  <div id="chart-tones"    class="chart-section" data-tab="tones" style="display:none"></div>
+  <div id="chart-vowels"   class="chart-section" data-tab="vowels"  style="display:none"></div>
+  <div id="chart-tones"    class="chart-section" data-tab="tones"   style="display:none"></div>
   <div id="chart-numbers"  class="chart-section" data-tab="numbers" style="display:none"></div>
   <div class="screen-footer">
     <button class="btn" onclick="showMenu()">← Menu</button>
