@@ -71,15 +71,17 @@ function _bbBreakdown(amount) {
 
 // ── Charters ───────────────────────────────────────────────────────────────
 
+// Off-loop destinations only — anywhere on the Beach Road/Second Road loop
+// itself (Walking Street, Terminal 21…) is just the flat ฿15 fare.
 const _BB_DESTS = [
-  { en: "Walking Street",     th: "วอล์คกิ้งสตรีท", fair: 60  },
-  { en: "Soi Buakhao",        th: "ซอยบัวขาว",     fair: 40  },
-  { en: "Terminal 21",        th: "เทอร์มินอล 21",  fair: 100 },
-  { en: "Jomtien Beach",      th: "หาดจอมเทียน",    fair: 80  },
-  { en: "Big Buddha Hill",    th: "เขาพระใหญ่",     fair: 120 },
+  { en: "Soi Buakhao",         th: "ซอยบัวขาว",     fair: 40  },
+  { en: "Naklua market",       th: "ตลาดนาเกลือ",   fair: 60  },
+  { en: "Jomtien Beach",       th: "หาดจอมเทียน",    fair: 80  },
+  { en: "Big Buddha Hill",     th: "เขาพระใหญ่",     fair: 120 },
   { en: "the floating market", th: "ตลาดน้ำ",       fair: 150 },
-  { en: "Sanctuary of Truth", th: "ปราสาทสัจธรรม",  fair: 200 },
-  { en: "the Tiger Park",     th: "สวนเสือ",        fair: 250 },
+  { en: "Sanctuary of Truth",  th: "ปราสาทสัจธรรม",  fair: 200 },
+  { en: "the Tiger Park",      th: "สวนเสือ",        fair: 250 },
+  { en: "Nong Nooch Garden",   th: "สวนนงนุช",      fair: 300 },
 ];
 
 function _bbMakeCharter() {
@@ -508,7 +510,7 @@ function _bbSprite(ctx, rows, colors, x, y, scale, flipX) {
 function _bbSceneStart() {
   _bbCanvas = document.getElementById("bb-canvas");
   _bbCtx = _bbCanvas.getContext("2d");
-  _bbBusX = -0.3;
+  _bbBusX = 1.3;
   _bbLeavers = [];
   _bbAmbient = [];
   _bbNextAmb = 0;
@@ -517,8 +519,9 @@ function _bbSceneStart() {
 }
 
 // Ambient street life: strollers on the boardwalk (both ways), motorbikes
-// and the odd rival songthaew in the far lane (always heading left, so they
-// pass behind the parked player bus instead of rear-ending it).
+// and the odd rival songthaew in the far lane. Thailand drives on the left:
+// the near lane (player bus) heads left, the far lane heads right — far-lane
+// traffic passes behind the parked bus instead of rear-ending it.
 function _bbSpawnAmbient(W) {
   const r = Math.random();
   if (r < 0.6) {
@@ -531,16 +534,16 @@ function _bbSpawnAmbient(W) {
     });
   } else if (r < 0.9) {
     _bbAmbient.push({
-      kind: "moto", x: W + 40, vx: -(1.0 + Math.random() * 0.8),
+      kind: "moto", x: -40, vx: 1.0 + Math.random() * 0.8,
       colors: Math.random() < 0.3 ? _MOTO_GRAB_COL : _MOTO_COL,
     });
   } else {
-    _bbAmbient.push({ kind: "bus", x: W + 80, vx: -(0.6 + Math.random() * 0.4) });
+    _bbAmbient.push({ kind: "bus", x: -80, vx: 0.6 + Math.random() * 0.4 });
   }
 }
 
 function _bbSceneArrive() {
-  _bbBusX = -0.3;
+  _bbBusX = 1.3;
   _bbLeavers = [];
   _bbSpawnedLeavers = false;
   _bbWaiter = _bbCur.type === "charter";
@@ -676,23 +679,23 @@ function _bbFrame(now) {
     a.x += a.vx;
     if (a.x < -100 || a.x > W + 100) { _bbAmbient.splice(i, 1); continue; }
     if (a.kind === "moto") {
-      _bbSprite(ctx, _MOTO_ROWS, a.colors, a.x, roadY - 6, 3, true);
+      _bbSprite(ctx, _MOTO_ROWS, a.colors, a.x, roadY - 6, 3, false);
     } else {
-      _bbSprite(ctx, _BUS_ROWS, _BUS_COL, a.x, roadY - 18, 4, true);
+      _bbSprite(ctx, _BUS_ROWS, _BUS_COL, a.x, roadY - 18, 4, false);
     }
   }
 
-  // bus movement per phase
+  // bus movement per phase — near lane heads left (left-hand traffic)
   const target = 0.42;
   if (_bbPhase === "arrive") {
     _bbBusX += (target - _bbBusX) * 0.045;
-    if (target - _bbBusX < 0.004) {
+    if (Math.abs(target - _bbBusX) < 0.004) {
       _bbBusX = target;
       if (_bbCur && _bbCur.type === "fare" && !_bbSpawnedLeavers) {
         _bbSpawnedLeavers = true;
         for (let i = 0; i < _bbCur.riders; i++)
           _bbLeavers.push({
-            x: _bbBusX * W - 6 - i * 14,
+            x: _bbBusX * W + 62 + i * 14, // off the back step, rear is right
             vx: -(0.35 + Math.random() * 0.25),
             shirt: _WALK_SHIRTS[Math.floor(Math.random() * _WALK_SHIRTS.length)],
           });
@@ -702,8 +705,8 @@ function _bbFrame(now) {
   } else if (_bbPhase === "depart") {
     const dt = now - _bbPhaseDepartT;
     if (dt > 1800) {
-      _bbBusX += 0.004 + (dt - 1800) * 0.000012;
-      if (_bbBusX * W > W + 80) _bbNextStop();
+      _bbBusX -= 0.004 + (dt - 1800) * 0.000012;
+      if (_bbBusX * W < -90) _bbNextStop();
     }
   }
 
@@ -716,14 +719,14 @@ function _bbFrame(now) {
       p.x, roadY - 26, 3, true);
   }
 
-  // charter passenger waiting on the boardwalk ahead of the bus
+  // charter passenger waiting on the boardwalk ahead of the bus (its left)
   if (_bbWaiter) {
     _bbSprite(ctx, _WALK_FRAMES[0], { ..._WALK_BASE, B: "#cc2288" },
-      W * target + 14 * 5 + 26, roadY - 26, 3, true);
+      W * target - 40, roadY - 26, 3, false);
   }
 
-  // the player's bus, near lane (gentle idle bob while parked at a stop)
+  // the player's bus, near lane facing left (idle bob while parked at a stop)
   const parked = _bbPhase === "fare" || _bbPhase === "charter" || _bbPhase === "counter";
   const bob = parked ? Math.round(Math.sin(now * 0.004)) : 0;
-  _bbSprite(ctx, _BUS_ROWS, _BUS_COL, _bbBusX * W, H - 38 + bob, 5, false);
+  _bbSprite(ctx, _BUS_ROWS, _BUS_COL, _bbBusX * W, H - 38 + bob, 5, true);
 }

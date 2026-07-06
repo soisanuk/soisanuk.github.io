@@ -114,8 +114,14 @@ describe("charters", () => {
 
   test("destination fair prices are round Thai-friendly amounts", () => {
     for (const d of _BB_DESTS) {
-      assert.ok(d.fair % 10 === 0 && d.fair >= 40 && d.fair <= 250, d.en);
+      assert.ok(d.fair % 10 === 0 && d.fair >= 40 && d.fair <= 300, d.en);
       assert.ok(d.th.length > 0 && d.en.length > 0);
+    }
+  });
+
+  test("no charter destination is on the ฿15 loop", () => {
+    for (const d of _BB_DESTS) {
+      assert.ok(!/walking street|terminal 21|beach road|second road/i.test(d.en), d.en);
     }
   });
 });
