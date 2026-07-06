@@ -38,6 +38,12 @@ Drive the Beach Road baht bus through a 10-stop sunset shift and learn Thai numb
 **Thai Keyboard tutor** (`K`)
 Learn the Kedmanee typing layout. A Thai character is shown (and spoken); type it on your keyboard — or tap the on-screen key on touch devices. Consonants-only or all-keys mode, with streak and accuracy tracking.
 
+**Number Flashcards** (`N`)
+25-card drill covering 0–9, teens (10–12, 20–21), tens (30–90), 100, 1000, and 9,999. Arabic numeral on the front — single digits also show the Thai numeral glyph and spelling (e.g. ๕ (ห้า)) as a simultaneous เลขไทย reference. Reveal shows Thai word + romanisation + audio. Cards shuffle on each pass.
+
+**Reference Charts** (`A`)
+Tap-to-speak reference panels in four tabs: **Consonants** (all 41, grouped by class — mid/high/low, each spoken with sound + traditional name), **Vowels** (all 19 shown on a ก host, each spoken), **Tones** (the five tone marks with name, type, description, and example), **Numbers** (digits with Thai numeral glyphs, teens, tens, and 100/1000/9,999).
+
 **Vocab list** (`V`)
 All 878 words in Thai alphabetical order with real-time search. Filter by category with progress rings showing % mature cards. Click any word for a detail card with audio, romanisation, example sentence, and character decomposition. Clicking the Thai text on a flashcard opens the same detail view.
 
@@ -77,6 +83,8 @@ All shortcuts are active on the home screen.
 | `C` | Soi 6: Connect สี่ game |
 | `R` | Baht Bus game |
 | `K` | Thai Keyboard tutor |
+| `N` | Number Flashcards |
+| `A` | Reference Charts |
 | `V` | Vocab List |
 | `0` | Statistics |
 | `?` | Tutorial |
@@ -108,6 +116,7 @@ web/
     connect4.js       Soi 6 Connect สี่ — vowel-quiz Connect 4 vs hostess AI
     game.js           Walking Street consonant-drop game (canvas)
     baht-bus.js       Baht Bus — Thai numbers & money game (sunset canvas + DOM)
+    numbers.js        number flashcards + reference charts (consonants, vowels, tones, numbers)
     main.js           keyboard shortcuts, Android back button, init (loaded last)
 ```
 
