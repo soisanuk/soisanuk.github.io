@@ -127,9 +127,9 @@ const _MOTO_ROWS = [
   ".WBB....WW",
   ".WW.....WW",
 ];
-const _MOTO_COL = { F: "#999999", B: "#888888", R: "#ff4400", W: "#111122" };
+const _MOTO_COL = { F: "#999999", B: "#888888", R: "#ff4400", W: "#454552" };
 // Grab driver variant — green jacket/helmet on a red bike
-const _MOTO_GRAB_COL = { F: "#999999", B: "#aa2f2f", R: "#00b14f", W: "#111122" };
+const _MOTO_GRAB_COL = { F: "#999999", B: "#aa2f2f", R: "#00b14f", W: "#454552" };
 
 // Baht bus / songthaew (14 × 7 sprite-pixels, drawn facing right, cab at right).
 // Drawn from photos of the real Pattaya trucks: near-black navy Hilux cab with
