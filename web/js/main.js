@@ -40,6 +40,8 @@ document.addEventListener("keydown", e => {
     else if (key === "b" || key === "B") startSoiBuakhao();
     else if (key === "c" || key === "C") startConnect4();
     else if (key === "r" || key === "R") startBahtBus();
+    else if (key === "n" || key === "N") startNumFlash();
+    else if (key === "a" || key === "A") showCharts();
     else if (key === "?") showTutorial();
   }
   if (active === "c4-screen") {
@@ -122,6 +124,16 @@ document.addEventListener("keydown", e => {
       if (btns.length && document.getElementById("sent-answer-area").style.display !== "none")
         btns[parseInt(key) - 1]?.click();
     }
+  }
+  if (active === "num-flash-screen") {
+    if (key === " " || key === "Enter") {
+      if (document.getElementById("nf-reveal-area").style.display !== "none") nfReveal();
+      else nfNext();
+    }
+    if (key === "Escape") endSession();
+  }
+  if (active === "charts-screen") {
+    if (key === "Escape") showMenu();
   }
   if (["cat-screen","stats-screen","end-screen"].includes(active)) {
     if (key === "Escape") showMenu();

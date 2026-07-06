@@ -1315,6 +1315,78 @@ body.mobile #bb-body { padding: .4rem .5rem .5rem; gap: .4rem; }
 .bb-end-title { font-size:1.3rem; color:#ff8c42; text-shadow:0 0 12px #ff8c4280; }
 .bb-end-earn { font-size:2rem; color:#ffe600; font-weight:800; text-shadow:0 0 14px #ffe60060; }
 
+/* ── Number flashcard screen ──────────────────────────────────────────────── */
+#num-flash-screen { flex-direction:column; }
+.nf-num-display {
+  text-align:center; font-size:5rem; font-weight:900; color:var(--saffron);
+  text-shadow:0 0 30px #ffe60060; padding:1.2rem 0 .3rem; letter-spacing:.03em;
+}
+.nf-thai-dig {
+  text-align:center; font-size:2rem; color:var(--deep-saffron);
+  padding:.1rem 0 .5rem; letter-spacing:.1em;
+}
+
+/* ── Reference charts screen ─────────────────────────────────────────────── */
+#charts-screen { flex-direction:column; }
+.charts-tabs {
+  display:flex; gap:.4rem; justify-content:center; padding:.5rem .8rem;
+  border-bottom:1px solid var(--border); flex-wrap:wrap; flex:0 0 auto;
+}
+.chart-tab {
+  background:var(--surface); border:1px solid var(--border); color:var(--dim);
+  border-radius:20px; padding:.3rem .9rem; cursor:pointer; font-family:inherit;
+  font-size:.85rem; transition:all .15s;
+}
+.chart-tab.active { border-color:var(--gold); color:var(--gold); background:#1e0030; }
+.chart-tab:hover  { border-color:var(--gold); color:var(--gold); }
+.chart-section    { flex:1; overflow-y:auto; padding:.7rem .9rem 1.1rem; }
+/* alphabet */
+.alpha-class-label {
+  color:var(--deep-saffron); font-size:.72rem; font-weight:700; letter-spacing:.08em;
+  text-transform:uppercase; margin:.7rem 0 .3rem; text-align:center;
+}
+.alpha-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(60px, 1fr));
+  gap:.35rem; max-width:560px; margin:0 auto;
+}
+.alpha-cell {
+  background:var(--surface); border:1px solid var(--border); border-radius:8px;
+  padding:.32rem .15rem; cursor:pointer; display:flex; flex-direction:column;
+  align-items:center; gap:.05rem; transition:all .12s; text-align:center; font-family:inherit;
+}
+.alpha-cell:hover { border-color:var(--gold); box-shadow:0 0 8px #ff149330; }
+.alpha-char { font-size:1.4rem; }
+.alpha-rom  { font-size:.62rem; color:var(--dim); }
+.alpha-name { font-size:.52rem; color:#6a5077; }
+.alpha-mid  .alpha-char { color:#00e5ff; }
+.alpha-high .alpha-char { color:#ff8c42; }
+.alpha-low  .alpha-char { color:var(--saffron); }
+/* tone marks */
+.tone-table { width:100%; max-width:520px; margin:0 auto; border-collapse:collapse; font-size:.85rem; }
+.tone-table th { color:var(--deep-saffron); font-size:.72rem; letter-spacing:.05em; padding:.4rem .5rem; border-bottom:1px solid var(--border); text-align:left; }
+.tone-table td { padding:.45rem .5rem; border-bottom:1px solid #ffffff0c; vertical-align:middle; }
+.tone-table tr:hover td { background:#ffffff07; }
+.tone-mark-cell { text-align:center; font-size:1.5rem; color:var(--gold); }
+.tone-name-th { color:var(--saffron); font-size:.9rem; }
+.tone-name-en { color:var(--dim); font-size:.7rem; }
+.tone-ex-cell { color:var(--parchment); font-style:italic; font-size:.78rem; }
+/* numbers chart */
+.num-chart-label {
+  color:var(--deep-saffron); font-size:.72rem; font-weight:700; letter-spacing:.08em;
+  text-transform:uppercase; margin:.7rem 0 .25rem; text-align:center;
+}
+.num-chart-grid { display:grid; gap:.32rem; max-width:560px; margin:0 auto; }
+.num-chart-cell {
+  background:var(--surface); border:1px solid var(--border); border-radius:8px;
+  padding:.28rem .1rem; cursor:pointer; display:flex; flex-direction:column;
+  align-items:center; gap:.05rem; transition:all .12s; font-family:inherit;
+}
+.num-chart-cell:hover { border-color:var(--saffron); box-shadow:0 0 8px #ffe60030; }
+.num-chart-arabic   { color:var(--dim); font-size:.65rem; }
+.num-chart-thai-dig { color:var(--saffron); font-size:1.3rem; font-weight:700; }
+.num-chart-th       { color:var(--gold); font-size:.8rem; }
+.num-chart-rom      { color:var(--dim); font-size:.58rem; font-style:italic; }
+
 /* ── Soi 6 Connect สี่ (vowel Connect 4) ─────────────────────────────────── */
 #c4-screen { flex-direction:column; background:#0d0015; }
 #c4-hud {
@@ -1556,6 +1628,12 @@ body.mobile #app-shell {
     <li id="nav-R" onclick="startBahtBus()">      🚌 Baht Bus</li>
   </ul>
 
+  <div class="sidebar-section">Numbers</div>
+  <ul class="sidebar-list">
+    <li id="nav-N" onclick="startNumFlash()">  Number Flashcards</li>
+    <li id="nav-A" onclick="showCharts()">     Reference Charts</li>
+  </ul>
+
   <div class="sidebar-section">More</div>
   <ul class="sidebar-list">
     <li id="nav-V" onclick="showVocabList()">       Vocab List</li>
@@ -1605,6 +1683,11 @@ body.mobile #app-shell {
     <li onclick="startSoiBuakhao()">  <span class="menu-key">B</span> 🌺 Soi Buakhao</li>
     <li onclick="startConnect4()">    <span class="menu-key">C</span> 🍹 Soi 6: Connect สี่</li>
     <li onclick="startBahtBus()">     <span class="menu-key">R</span> 🚌 Baht Bus</li>
+  </ul>
+  <div class="menu-section">Numbers</div>
+  <ul class="menu-list">
+    <li onclick="startNumFlash()"><span class="menu-key">N</span> Number Flashcards</li>
+    <li onclick="showCharts()">   <span class="menu-key">A</span> Reference Charts</li>
   </ul>
   <div class="menu-section">More</div>
   <ul class="menu-list">
@@ -1903,6 +1986,53 @@ body.mobile #app-shell {
   </div>
 </div>
 
+<!-- ═══ NUMBER FLASHCARDS ════════════════════════════════════════════════════ -->
+<div id="num-flash-screen" class="screen">
+  <div class="screen-header">เลขไทย — Thai Numbers</div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="nf-prog"></div></div>
+  <div class="screen-title" id="nf-counter"></div>
+  <div class="nf-num-display" id="nf-num"></div>
+  <div class="nf-thai-dig" id="nf-thai-dig"></div>
+  <div class="card-body">
+    <div id="nf-reveal-area">
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="nfReveal()">Reveal ▶</button>
+      </div>
+    </div>
+    <div id="nf-answer-area" style="display:none">
+      <hr class="divider-accent">
+      <div class="thai-big" id="nf-thai" style="text-align:center"></div>
+      <div class="rtgs" id="nf-rom"></div>
+      <div style="text-align:center;margin:.3rem 0">
+        <button class="example-speak" id="nf-speak-btn" title="Listen" onclick="nfSpeak()">🔊</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="nfNext()">Next →</button>
+      </div>
+    </div>
+  </div>
+  <div class="screen-footer">
+    <span class="kb-hint">Space/Enter reveal · N next</span>
+    <button class="btn" onclick="endSession()">← Menu</button>
+  </div>
+</div>
+
+<!-- ═══ REFERENCE CHARTS ══════════════════════════════════════════════════════ -->
+<div id="charts-screen" class="screen">
+  <div class="screen-header">Reference Charts</div>
+  <div class="charts-tabs">
+    <button class="chart-tab active" data-tab="alphabet" onclick="showChartTab('alphabet')">Alphabet</button>
+    <button class="chart-tab" data-tab="tones" onclick="showChartTab('tones')">Tones</button>
+    <button class="chart-tab" data-tab="numbers" onclick="showChartTab('numbers')">Numbers</button>
+  </div>
+  <div id="chart-alphabet" class="chart-section" data-tab="alphabet"></div>
+  <div id="chart-tones"    class="chart-section" data-tab="tones" style="display:none"></div>
+  <div id="chart-numbers"  class="chart-section" data-tab="numbers" style="display:none"></div>
+  <div class="screen-footer">
+    <button class="btn" onclick="showMenu()">← Menu</button>
+  </div>
+</div>
+
 </div><!-- #content-area -->
 </div><!-- #app-shell -->
 
@@ -1969,6 +2099,7 @@ body.mobile #app-shell {
 <script src="js/connect4.js"></script>
 <script src="js/game.js"></script>
 <script src="js/baht-bus.js"></script>
+<script src="js/numbers.js"></script>
 <script src="js/main.js"></script>
 <!-- ═══ WORD DETAIL MODAL ════════════════════════════════════════════════════ -->
 <div id="wc-overlay"></div>
