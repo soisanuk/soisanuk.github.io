@@ -101,16 +101,20 @@ const _audio = (() => {
       bass: [33, 29, 31, 28],
       prog: [[69, 72, 76], [65, 69, 72], [67, 71, 74], [64, 67, 71]],
     },
-    // Soi Buakhao — Sabai Sabai (สบายสบาย), G major luk-thung, ~86 bpm
+    // Soi Buakhao — Sabai Sabai (สบายสบาย, Bird Thongchai), verse transcribed
+    // from MIDI: D major, 125 bpm, 8 bars over D D D Bm Bm G A G
     soi: {
-      bpm: 86, lead: "triangle", leadVol: 0.17, hat: false, bassEvery: 2,
-      bass: [31, 36, 33, 38],
-      // D D E D B . A . | G . A B C . D . | E . D C B . A . | D C B . A G . .
+      bpm: 125, lead: "triangle", leadVol: 0.17, hat: false, bassEvery: 2,
+      bass: [38, 38, 38, 35, 35, 31, 33, 31],
       melody: [
-        74,74,76,74, 71,null,69,null,
-        67,null,69,71, 72,null,74,null,
-        76,null,74,72, 71,null,69,null,
-        74,72,71,null, 69,67,null,null,
+        null,null,null,66, 69,null,66,69,
+        null,null,null,null, null,null,null,null,
+        null,null,null,null, 66,69,null,69,
+        71,null,66,66, null,null,null,null,
+        null,null,null,null, null,null,null,69,
+        69,null,67,null, 67,null,69,null,
+        66,64,null,64, null,null,null,69,
+        67,null,69,null, 67,null,66,64,
       ],
     },
     // Soi 6 — slinky D-minor groove (Dm Bb Gm A7)
