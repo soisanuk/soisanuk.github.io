@@ -33,10 +33,17 @@ function makeTokeniser(wordMap) {
   };
 }
 
-// App-wide tokeniser over WORD_MAP, built lazily on first use so load
-// order doesn't matter.
+// App-wide tokeniser, built lazily on first use so load order doesn't
+// matter. Uses the host app's WORD_MAP when it built one (the trainer
+// does); otherwise derives a map from WORDS (The Last Baht Bus vendors
+// this file without app.js).
 let _appTokenise = null;
 function _tokenise(sentence) {
-  if (!_appTokenise) _appTokenise = makeTokeniser(WORD_MAP);
+  if (!_appTokenise) {
+    const map = typeof WORD_MAP !== "undefined"
+      ? WORD_MAP
+      : Object.fromEntries(WORDS.map(w => [w[0], w]));
+    _appTokenise = makeTokeniser(map);
+  }
   return _appTokenise(sentence);
 }
