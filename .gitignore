@@ -1,3 +1,4 @@
+.DS_Store
 node_modules/
 
 # Capacitor build outputs (platform source is committed, build artefacts are not)
