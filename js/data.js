@@ -997,6 +997,7 @@ const WORDS = [
   ["เอ็ด", "èt", "one (in 11, 21, 31…)", "number", "numbers"],
   ["ยี่", "yîi", "two (in 20s: ยี่สิบ)", "number", "numbers"],
   ["แบต", "bàet", "battery (colloquial)", "noun", "tech"],
+  ["หมด", "mòt", "all gone, used up, finished", "verb", "general"],
   ["รปภ", "ror-bpor-phor", "security guard (abbreviation)", "noun", "work"],
   ["สมชาย", "sǒm-chaai", "Somchai — common Thai male name", "name", "general"],
   ["ปาล์ม", "paam", "palm (loanword)", "noun", "nature"],
