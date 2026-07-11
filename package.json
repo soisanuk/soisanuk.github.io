@@ -1,5 +1,10 @@
 {
   "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "sync": "node scripts/sync-vendored.mjs",
+    "sync:check": "node scripts/sync-vendored.mjs --check"
+  },
   "dependencies": {
     "@capacitor/android": "^7.0.0",
     "@capacitor/app": "^7.0.0",
