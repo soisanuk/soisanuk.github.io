@@ -213,3 +213,12 @@ test("placement: 80% per batch sets the cut, prefix units complete, levels name 
   for (let b = 0; b < LETTER_BATCHES.length; b++) q.push(...courseNewWords(b).slice(0, 2));
   assert.ok(q.length >= 14);
 });
+
+test("records: max streak survives resets, best day sticks", () => {
+  let st = _streakBump({}, "2026-07-17", "2026-07-16");
+  st = _streakBump(st, "2026-07-18", "2026-07-17");
+  assert.equal(st.maxDays, 2);
+  st = _streakBump(st, "2026-07-25", "2026-07-24");
+  assert.equal(st.days, 1, "streak reset");
+  assert.equal(st.maxDays, 2, "record kept");
+});

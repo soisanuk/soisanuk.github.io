@@ -1727,6 +1727,7 @@ body.mobile #app-shell {
 
   <div class="sidebar-section">More</div>
   <ul class="sidebar-list">
+    <li id="nav-Y" onclick="showRecords()">🏆 Records</li>
     <li id="nav-X" onclick="showScreen('backup-screen','X')">💾 Backup &amp; Restore</li>
   </ul>
   <ul class="sidebar-list">
@@ -1841,6 +1842,12 @@ body.mobile #app-shell {
 </div>
 
 <!-- ═══ QUIZ ══════════════════════════════════════════════════════════════════ -->
+<div id="records-screen" class="screen">
+  <div class="screen-header">🏆 Records</div>
+  <div class="card-body" id="records-body" style="max-width:560px;margin:0 auto"></div>
+  <div class="screen-footer"><button class="btn" onclick="endSession()">← Menu</button></div>
+</div>
+
 <div id="backup-screen" class="screen">
   <div class="screen-header">💾 Backup &amp; Restore</div>
   <div class="card-body" style="max-width:560px;margin:0 auto">
