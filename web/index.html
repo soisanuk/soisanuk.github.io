@@ -122,6 +122,9 @@ body {
 .learn-decode-chip { display:inline-block; padding:0.25em 0.5em; font-size:1.8em; border:1px solid #552277; border-radius:8px; cursor:pointer; }
 .learn-decode-chip:active { background:#2a0040; }
 .learn-decode-plus { opacity:0.5; font-size:1.2em; }
+.lesson-nav { display:flex; align-items:center; justify-content:space-between; gap:0.5rem; max-width:560px; margin:0.2rem auto; padding:0 0.5rem; }
+.lesson-nav .screen-title { margin:0; flex:1; text-align:center; }
+.lesson-nav .btn-small { min-width:88px; min-height:40px; }
 .learn-ex-block { max-width:520px; margin:0.7rem auto 0; padding:0.5rem 0.9rem; border-left:3px solid var(--accent,#ff1493); text-align:left; }
 .learn-ex-block .example-thai { font-size:1.4em; }
 .learn-ex-block .w-token.highlight { background:rgba(255,212,71,0.22); border-radius:5px; padding:0 2px; }
@@ -1906,7 +1909,11 @@ body.mobile #app-shell {
 <div id="lesson-screen" class="screen">
   <div class="screen-header">🎓 Lesson</div>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="lesson-prog"></div></div>
-  <div class="screen-title" id="lesson-counter"></div>
+  <div class="lesson-nav">
+    <button class="btn btn-small" id="lesson-back" onclick="_learnBack()" style="visibility:hidden">‹ Back</button>
+    <span class="screen-title" id="lesson-counter"></span>
+    <button class="btn btn-small" id="lesson-fwd" onclick="_learnFwd()" style="visibility:hidden">Next ›</button>
+  </div>
   <div class="card-body" id="lesson-body"></div>
   <div class="screen-footer">
     <button class="btn" onclick="startLearn()">← Path</button>
