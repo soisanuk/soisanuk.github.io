@@ -162,3 +162,6 @@ if (_capApp?.addListener) {
     else document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
   });
 }
+
+// ask the browser to keep our storage through eviction sweeps (see backup.js)
+if (typeof backupPersist === "function") backupPersist();

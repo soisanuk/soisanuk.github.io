@@ -7,7 +7,7 @@ import vm from "node:vm";
 import { fileURLToPath } from "node:url";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-for (const f of ["data.js", "examples.js", "thai-script.js", "srs.js", "curriculum.js", "learn.js"]) {
+for (const f of ["data.js", "examples.js", "thai-script.js", "srs.js", "curriculum.js", "learn.js", "backup.js"]) {
   vm.runInThisContext(fs.readFileSync(path.join(root, "web", "js", f), "utf8"), { filename: f });
 }
 
@@ -136,4 +136,20 @@ test("units carry the corpus cloze, the 5-pair match, and both listen modes", ()
   const listens = q.filter(i => i.kind === "listen");
   assert.ok(listens.some(l => l.mode === "en") && listens.some(l => l.mode === "th"),
     "listening answers alternate script and meaning");
+});
+
+test("backup merge: more-reviewed cards win, done units stay done", () => {
+  const mine = { progress: { "มา": { totalReviews: 5, due: 1 } },
+    path: { units: { L0: { done: true, acc: 0.8, msAvg: 3000 } } } };
+  const theirs = { app: "soisanuk", progress: { "มา": { totalReviews: 9, due: 2 }, "ดี": { totalReviews: 1 } },
+    path: { units: { L0: { done: false, acc: 0.9, msAvg: 2500 }, g1: { done: true, acc: 1 } } } };
+  const m = backupMerge(mine, theirs);
+  assert.equal(m.progress["มา"].totalReviews, 9, "their better-reviewed card wins");
+  assert.ok(m.progress["ดี"], "new cards arrive");
+  assert.ok(m.path.units.L0.done, "done survives their not-done");
+  assert.equal(m.path.units.L0.acc, 0.9, "best accuracy kept");
+  assert.equal(m.path.units.L0.msAvg, 2500, "fastest read kept");
+  assert.ok(m.path.units.g1.done, "their finished unit lands");
+  assert.ok(backupValid({ app: "soisanuk", progress: {} }));
+  assert.ok(!backupValid({ progress: {} }), "foreign JSON refused");
 });

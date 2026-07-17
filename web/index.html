@@ -1714,6 +1714,9 @@ body.mobile #app-shell {
 
   <div class="sidebar-section">More</div>
   <ul class="sidebar-list">
+    <li id="nav-B" onclick="showScreen('backup-screen','B')">💾 Backup &amp; Restore</li>
+  </ul>
+  <ul class="sidebar-list">
     <li id="nav-A" onclick="showCharts()">     Reference Charts</li>
     <li id="nav-V" onclick="showVocabList()">       Vocab List</li>
     <li id="nav-0" onclick="showStats()">           Statistics</li>
@@ -1825,6 +1828,26 @@ body.mobile #app-shell {
 </div>
 
 <!-- ═══ QUIZ ══════════════════════════════════════════════════════════════════ -->
+<div id="backup-screen" class="screen">
+  <div class="screen-header">💾 Backup &amp; Restore</div>
+  <div class="card-body" style="max-width:560px;margin:0 auto">
+    <div class="card-prompt">Your progress lives in this browser only. Back it up —
+      on a phone the share sheet can AirDrop it or save to Files; restoring MERGES
+      (more-reviewed cards win, finished units stay finished).</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="backupExport()">Export backup</button>
+      <button class="btn" onclick="backupCopy()">Copy to clipboard</button>
+    </div>
+    <div class="btn-row">
+      <label class="btn">Import file<input type="file" accept=".json,application/json"
+        style="display:none" onchange="backupImportFile(this)"></label>
+    </div>
+    <textarea id="backup-paste" rows="3" style="width:100%;background:rgba(255,255,255,0.06);color:inherit;border:1px solid #552277;border-radius:8px;padding:0.5rem" placeholder="…or paste a backup here"></textarea>
+    <div class="btn-row"><button class="btn" onclick="backupImportPaste()">Import pasted</button></div>
+  </div>
+  <div class="screen-footer"><button class="btn" onclick="endSession()">← Menu</button></div>
+</div>
+
 <div id="learn-screen" class="screen">
   <div class="screen-header">🎓 Guided Course</div>
   <div class="card-prompt" id="learn-intro" style="text-align:center; padding:0.4rem 1rem;"></div>
@@ -2205,6 +2228,7 @@ body.mobile #app-shell {
 <script src="js/sessions.js"></script>
 <script src="js/curriculum.js"></script>
 <script src="js/learn.js"></script>
+<script src="js/backup.js"></script>
 <script src="js/tutor.js"></script>
 <script src="js/soi-buakhao.js"></script>
 <script src="js/connect4.js"></script>
