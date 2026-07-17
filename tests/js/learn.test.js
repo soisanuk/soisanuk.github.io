@@ -79,3 +79,46 @@ test("the path gates on the previous unit, first unit always open", () => {
   const ids = COURSE.map(_unitId);
   assert.equal(new Set(ids).size, ids.length);
 });
+
+test("MC distractors prefer the same part of speech", () => {
+  const verb = WORDS.find(w => w[3] === "verb");
+  for (let i = 0; i < 5; i++) {
+    const opts = _mcOptions(verb, 2);
+    assert.equal(opts.length, 4);
+    assert.ok(opts.includes(verb[2]), "answer present");
+    assert.equal(new Set(opts).size, 4, "no duplicate options");
+    const wrong = opts.filter(o => o !== verb[2]);
+    for (const o of wrong) {
+      const w = WORDS.find(x => x[2] === o);
+      assert.ok(w, "distractor is a real word");
+      assert.equal(w[3], "verb", "distractor shares the category (verbs are plentiful)");
+    }
+  }
+});
+
+test("typed-English matching is lenient the right amount", () => {
+  assert.ok(_enMatch("have", "to have/there is"));
+  assert.ok(_enMatch("there is", "to have/there is"));
+  assert.ok(_enMatch("To Have ", "to have/there is"));
+  assert.ok(_enMatch("green", "green (short form)"));
+  assert.ok(!_enMatch("hav", "to have/there is"), "no typo credit — retry instead");
+  assert.ok(!_enMatch("", "to have/there is"));
+});
+
+test("letter units mix both directions and both typing modes", () => {
+  const kinds = q => q.map(i => i.kind);
+  const u0 = kinds(_unitQueue(COURSE[0], []));
+  assert.ok(u0.includes("mc") && u0.includes("mcth"), "both MC directions from unit 1");
+  assert.ok(u0.includes("typeen"), "typed English from unit 1");
+  assert.ok(!u0.includes("typeth"), "Kedmanee typing waits for batch 2");
+  const u1 = kinds(_unitQueue(COURSE[1], []));
+  assert.ok(u1.includes("typeth"), "typed Thai from batch 2 on");
+  // typeth targets are fully decodable — never a key you haven't been taught
+  for (const it of _unitQueue(COURSE[1], []).filter(i => i.kind === "typeth")) {
+    const taught = taughtGlyphs(1);
+    for (const ch of it.word[0]) assert.ok(taught.has(ch), it.word[0] + " needs untaught " + ch);
+  }
+  // due-review words lead the queue
+  const w = WORDS[0];
+  assert.deepEqual(_unitQueue(COURSE[0], [w])[0], { kind: "mc", word: w, tag: "review" });
+});
