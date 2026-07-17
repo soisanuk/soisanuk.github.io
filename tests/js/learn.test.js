@@ -231,3 +231,11 @@ test("words from the bus: lbb_save.thaiSeen maps onto WORDS, deduped", () => {
   assert.equal(deck.filter(w => w[0] === "มา").length, 1, "deduped");
   assert.deepEqual(busWords(null), [], "no save, empty deck");
 });
+
+test("no inline onclick embeds raw JSON quotes (the dead-glyph-tap bug)", () => {
+  const src = fs.readFileSync(path.join(root, "web", "js", "learn.js"), "utf8");
+  for (const m of src.matchAll(/onclick="[^`]*?\$\{JSON\.stringify\([^)]*\)([^}]*)\}/g)) {
+    assert.ok(m[1].includes("&quot;"),
+      "JSON.stringify inside a double-quoted onclick must escape quotes: " + m[0].slice(0, 60));
+  }
+});
