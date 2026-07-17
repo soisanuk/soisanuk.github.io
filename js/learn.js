@@ -200,7 +200,10 @@ function _mcOptions(word, field, pool) {
   return _shuffle([word[field], ...wrong]);
 }
 function _speakBtn(text) {
-  return `<button class="btn btn-small" onclick="_tts.speak(${JSON.stringify(text).replace(/"/g, "&quot;")})">🔊</button>`;
+  const t = JSON.stringify(text).replace(/"/g, "&quot;");
+  // 🔊 learner pace · 🚀 street speed — comprehension of FAST Thai is the wall
+  return `<button class="btn btn-small" onclick="_tts.speak(${t})">🔊</button>` +
+    `<button class="btn btn-small" onclick="_tts.speak(${t}, null, 1.25)">🚀</button>`;
 }
 
 // a letter/vowel/tone-mark introduction card — tap to hear, then on
@@ -469,7 +472,7 @@ function _wChunk(item, body) {
   body.innerHTML = `<div class="thai-big${signCls}" onclick="_tts.speak(${JSON.stringify(th).replace(/"/g, "&quot;")})">${th}</div>
     <div class="rtgs">${rtgs}</div>
     <div class="card-prompt">${en}</div>
-    <div class="card-prompt">Tap it. Hear it. Say it out loud — chunks stick by mouth, not by eye.</div>
+    <div class="card-prompt">Tap it. Hear it. Say it out loud — chunks stick by mouth, not by eye. ${_speakBtn(th)}</div>
     <div class="btn-row">${_wordCardBtn([th, rtgs, en])}<button class="btn btn-primary" onclick="_learnNext()">Next →</button></div>`;
   _tts.speak(th);
 }
