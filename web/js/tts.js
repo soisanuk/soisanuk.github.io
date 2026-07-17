@@ -64,7 +64,7 @@ const _tts = (() => {
     // separate utterances with a real pause between them — a comma inside
     // one utterance is read straight through by Thai voices, flattening
     // "ก, กอไก่" into even syllables.
-    speak(text, btn) {
+    speak(text, btn, rate) {
       const parts = (Array.isArray(text) ? text : [text]).filter(Boolean);
       if (!parts.length) return;
       const gen = ++_gen;
@@ -77,7 +77,7 @@ const _tts = (() => {
             if (gen !== _gen) return;
             if (i) await new Promise(r => setTimeout(r, _GAP));
             if (gen !== _gen) return;
-            await cap.speak({ text: parts[i], lang: "th-TH", rate: 0.85 });
+            await cap.speak({ text: parts[i], lang: "th-TH", rate: rate || 0.85 });
           }
         })()
           .catch(() => {})
@@ -98,7 +98,7 @@ const _tts = (() => {
         const u = new SpeechSynthesisUtterance(p);
         u.voice = voice;
         u.lang  = "th-TH";
-        u.rate  = 0.85;
+        u.rate  = rate || 0.85;
         return u;
       });
       const last = utts[utts.length - 1];
