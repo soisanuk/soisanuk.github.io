@@ -117,22 +117,37 @@ function _unitStart(idx) {
   _learnStep();
 }
 
+// cards you can revisit render read-only; teaching cards teach the same either way
+const _TEACH_KINDS = new Set(["glyph", "wordintro", "chunkIntro", "chunk"]);
+
 function _learnStep() {
   if (!_lu || _lu.at >= _lu.queue.length) { _unitFinish(); return; }
   const item = _lu.queue[_lu.at];
+  // frontier: the furthest card reached. Anything behind it is completed and
+  // shown read-only (no re-grading) so you can back up to review and move on.
+  const review = _lu.at < (_lu.max || 0);
+  _lu.max = Math.max(_lu.max || 0, _lu.at);
+  _lu.review = review;
   const body = document.getElementById("lesson-body");
   const prog = document.getElementById("lesson-prog");
   prog.style.width = Math.round((_lu.at / _lu.queue.length) * 100) + "%";
   document.getElementById("lesson-counter").textContent =
-    `${_lu.at + 1} / ${_lu.queue.length}` + (item.tag === "review" ? " · review" : "");
+    `${_lu.at + 1}/${_lu.queue.length}` +
+    (review ? " ↩" : item.tag === "review" ? " · warm-up" : "");
+  const back = document.getElementById("lesson-back");
+  const fwd = document.getElementById("lesson-fwd");
+  if (back) back.style.visibility = _lu.at > 0 ? "visible" : "hidden";
+  if (fwd) fwd.style.visibility = _lu.at < _lu.max ? "visible" : "hidden";
   body.innerHTML = "";
   showScreen("lesson-screen", "G");
+  if (review && !_TEACH_KINDS.has(item.kind)) { _wReviewCard(item, body); return; }
   ({ glyph: _wGlyph, wordintro: _wWordIntro, mc: _wMC, mc2: _wMC2, speed: _wMC, listen: _wListen,
      mcth: _wMCTH, typeen: _wTypeEN, typeth: _wTypeTH, clozex: _wClozeX,
      cloze: _wCloze, match: _wMatch, chunkIntro: _wChunkIntro, chunk: _wChunk }[item.kind])(item, body);
 }
 
 function _learnRecord(key, quality, ms) {
+  if (_lu && _lu.review) return; // revisiting a completed card never re-grades
   if (key) {
     const prog = loadProgress();
     reviewCard(getCard(prog, key), quality);
@@ -143,6 +158,29 @@ function _learnRecord(key, quality, ms) {
 }
 
 function _learnNext() { _lu.at++; _learnStep(); }
+function _learnBack() { if (_lu && _lu.at > 0) { _lu.at--; _learnStep(); } }
+function _learnFwd() { if (_lu && _lu.at < _lu.max) { _lu.at++; _learnStep(); } }
+
+// read-only recap of an already-completed card: the prompt and its answer,
+// nothing to grade — just reinforcement while you page back and forth
+function _wReviewCard(item, body) {
+  const esc = t => JSON.stringify(t).replace(/"/g, "&quot;");
+  const fwdBtn = `<div class="btn-row"><button class="btn btn-primary" onclick="_learnFwd()">Next →</button></div>`;
+  if (item.pairs) {
+    body.innerHTML = `<div class="learn-teach-tag">REVIEW</div>` +
+      item.pairs.map(p => `<div class="learn-ex-block" onclick="_tts.speak(${esc(p[0])})">` +
+        `<span style="font-size:1.4em">${p[0]}</span> — ${(p[2] || "").split(" — ")[0]}</div>`).join("") +
+      fwdBtn;
+    return;
+  }
+  let th, rtgs, mean, speak;
+  if (item.word) { [th, rtgs, mean] = item.word; speak = th; }
+  else { const p = item.item; th = p.th; rtgs = ""; mean = p.answer; speak = p.th; }
+  body.innerHTML = `<div class="learn-teach-tag">REVIEW</div>
+    <div class="thai-big learn-glyph" onclick="_tts.speak(${esc(speak)})">${th}</div>
+    <div class="rtgs">${rtgs} ${_speakBtn(speak)}</div>
+    <div class="learn-mean">${mean}</div>${fwdBtn}`;
+}
 
 // personal-best read times per word (ms) — the speedometer's data
 function _bestUpdate(path, results) {
