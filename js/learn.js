@@ -491,8 +491,9 @@ function _streakLoad() {
 // pure day-roll: same day = no-op, consecutive day = +1, a gap resets to 1
 function _streakBump(st, today, yesterday) {
   if (st.last === today) return st;
-  return { last: today, days: st.last === yesterday ? (st.days || 0) + 1 : 1,
-    today: { cards: 0, msSum: 0, msN: 0 } };
+  const days = st.last === yesterday ? (st.days || 0) + 1 : 1;
+  return { last: today, days, maxDays: Math.max(st.maxDays || 0, days),
+    bestDay: st.bestDay || null, today: { cards: 0, msSum: 0, msN: 0 } };
 }
 function _streakRecord(ms) {
   const d = new Date(), y = new Date(Date.now() - 864e5);
@@ -501,6 +502,8 @@ function _streakRecord(ms) {
   st.today = st.today || { cards: 0, msSum: 0, msN: 0 };
   st.today.cards++;
   if (ms > 0) { st.today.msSum += ms; st.today.msN++; }
+  if (!st.bestDay || st.today.cards > st.bestDay.cards) st.bestDay = { date: st.last, cards: st.today.cards };
+  st.maxDays = Math.max(st.maxDays || 0, st.days || 0);
   localStorage.setItem(STREAK_KEY, JSON.stringify(st));
   _streakRender();
 }
@@ -591,4 +594,19 @@ function _placementFinish() {
       "Placed past " + (cut + 1) + " reading unit" + (cut ? "s" : "") + "."}</div>
     <div class="btn-row"><button class="btn btn-primary" onclick="startLearn()">To the path</button></div>`;
   _lu = null;
+}
+
+// ── 🏆 Records (engagement 6/7) — the local best-night board ────────────────
+function showRecords() {
+  const st = _streakLoad(), path = _pathLoad();
+  const bests = Object.entries(path.best || {}).sort((a, b) => a[1] - b[1]).slice(0, 8);
+  const done = COURSE.filter(u => _unitDone(path, u)).length;
+  document.getElementById("records-body").innerHTML =
+    `<div class="learn-summary">Level: <b>${_levelName(done)}</b> · ${done}/${COURSE.length} units</div>
+     <div class="learn-summary">🔥 Streak: <b>${st.days || 0}</b> now · best <b>${st.maxDays || 0}</b> days</div>
+     <div class="learn-summary">📅 Biggest day: <b>${st.bestDay ? st.bestDay.cards + " cards (" + st.bestDay.date + ")" : "—"}</b></div>
+     <div class="sidebar-section" style="text-align:center">🏁 Fastest reads</div>
+     <div style="text-align:center">${bests.length ? bests.map(([th, ms]) =>
+       `<span class="learn-best">${th} <b>${(ms / 1000).toFixed(1)}s</b></span>`).join(" ") : "run some speed reads"}</div>`;
+  showScreen("records-screen", "Y");
 }
