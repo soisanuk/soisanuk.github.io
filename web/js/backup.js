@@ -105,3 +105,41 @@ async function ankiExport() {
   a.download = name;
   a.click();
 }
+
+// ── More export formats: CSV, Quizlet, printable list ──
+function csvExportText(words) {
+  const esc = t => '"' + String(t || "").replace(/"/g, '""') + '"';
+  const rows = [["thai", "roman", "english", "pos", "group"].join(",")];
+  for (const w of (words || WORDS)) rows.push([esc(w[0]), esc(w[1]), esc(w[2]), esc(w[3]), esc(w[4])].join(","));
+  return rows.join("\n");
+}
+function quizletText(words) {
+  // Quizlet import: term TAB definition, newline between cards — no headers
+  const esc = t => String(t || "").replace(/\t/g, " ").replace(/\n/g, " ");
+  return (words || WORDS).map(w => esc(w[0]) + "\t" + esc(w[1]) + " — " + esc(w[2])).join("\n");
+}
+async function _shareOrDownload(text, name, type) {
+  const file = new File([text], name, { type });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: name }); return; } catch {}
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type }));
+  a.download = name;
+  a.click();
+}
+function csvExport() { _shareOrDownload(csvExportText(), "soisanuk-words.csv", "text/csv"); }
+function quizletExport() { _shareOrDownload(quizletText(), "soisanuk-quizlet.txt", "text/plain"); }
+function printList() {
+  // print-styled window: Thai / roman / meaning; the browser's Print → PDF does the rest
+  const w = window.open("", "_blank");
+  w.document.write("<html><head><title>Soi Sanuk — Thai word list</title><style>" +
+    "body{font-family:system-ui;margin:2rem}h1{font-size:1.2rem}table{border-collapse:collapse;width:100%}" +
+    "td,th{border-bottom:1px solid #ccc;padding:4px 8px;text-align:left}td.th{font-size:1.3em}" +
+    "@media print{h1{margin:0 0 8px}}</style></head><body><h1>Soi Sanuk — " + WORDS.length +
+    " Thai words</h1><table><tr><th>Thai</th><th>Roman</th><th>Meaning</th></tr>" +
+    WORDS.map(x => "<tr><td class=th>" + x[0] + "</td><td>" + x[1] + "</td><td>" + x[2] + "</td></tr>").join("") +
+    "</table></body></html>");
+  w.document.close();
+  w.print();
+}
