@@ -508,11 +508,15 @@ function _streakRecord(ms) {
   _streakRender();
 }
 function _streakRender() {
-  const el = document.getElementById("nav-cont-stats");
-  if (!el) return;
   const st = _streakLoad();
   const t = st.today || {};
-  el.textContent = !st.days ? "start today" :
+  for (const id of ["nav-cont-stats", "nav-cont-stats2"]) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = _streakText(st, t);
+  }
+}
+function _streakText(st, t) {
+  return !st.days ? "start today" :
     `🔥 ${st.days} day${st.days > 1 ? "s" : ""}` +
     (t.cards ? ` · today ${t.cards} cards` : "") +
     (t.msN ? ` · ${(t.msSum / t.msN / 1000).toFixed(1)}s/word` : "");

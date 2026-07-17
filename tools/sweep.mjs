@@ -15,6 +15,19 @@ for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 
   await page.goto("file:///Users/mario/thaicab/web/index.html");
   await page.waitForTimeout(500);
   await page.evaluate(() => { const o = document.getElementById("tutorial-overlay"); if (o) o.classList.remove("open"); localStorage.clear(); });
+  const menuCount = await page.evaluate(() => document.querySelectorAll(".menu-list li").length);
+  for (let mi = 0; mi < menuCount; mi++) {
+    errs.length = 0;
+    await page.evaluate(i => document.querySelectorAll(".menu-list li")[i].click(), mi).catch(e => errs.push("CLICK " + e.message.slice(0, 50)));
+    await page.waitForTimeout(250);
+    const scr = await page.evaluate(() => {
+      const a = [...document.querySelectorAll(".screen")].find(x => x.classList.contains("active"));
+      return a ? a.id : "NONE";
+    });
+    if (errs.length || scr === "NONE") report.push(`${label} menu-item#${mi} [${scr}]: ${errs.join(";") || "no screen"}`);
+    await page.evaluate(() => { if (typeof endSession === "function") endSession(); }).catch(() => {});
+    await page.waitForTimeout(120);
+  }
   const navs = await page.evaluate(() =>
     [...document.querySelectorAll(".sidebar-list li")].map(li => ({ id: li.id, txt: li.textContent.trim().slice(0, 24) })));
   for (const nav of navs) {
