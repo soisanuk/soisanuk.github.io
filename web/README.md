@@ -162,3 +162,16 @@ card.
 - **Deck exports**: Anki (auto-mapping TSV), CSV (spreadsheets), Quizlet
   (term⇥definition), and a print-styled word list (Print → PDF). Scheduling
   history only travels via the JSON backup until a backend enables .apkg.
+
+### Engagement layer
+
+▶ **Continue** (menu top) picks your next five minutes automatically — due
+reviews, else the next course unit, else a speed round — and feeds the 🔥
+streak shown on the button. 🏁 personal-best read times appear as chips on the
+path; 🏆 **Records** (under More) keeps level, best streak, biggest day, and
+fastest reads. 📍 a **placement test** (fresh paths only) auto-completes the
+ladder prefix you already read; the path header shows your level (Fresh off
+the plane → … → เจ้าของบาร์). Listening cards pair 🔊 learner pace with 🚀
+street speed (1.25×). And 🚌 **Words from the bus** turns the Thai you met in
+The Last Baht Bus (same origin, read from its save) into tonight's practice
+deck, graded into the same SRS.
