@@ -362,6 +362,30 @@ body {
 /* ── Wide/desktop: sidebar is the nav — hide duplicate menu-screen nav ───── */
 #menu-welcome { display: none; }
 @media (min-width: 701px) {
+  /* Fixed app-shell: the page never scrolls. The sidebar scrolls its own
+     overflow; the active screen scrolls its body while header + footer stay
+     pinned — so Path/Menu are always in view, no matter how tall the lesson. */
+  html, body { height: 100%; overflow: hidden; }
+  #app-shell { height: 100vh; max-height: 100vh; overflow: hidden; }
+  #sidebar { overflow-y: auto; overflow-x: hidden; }
+  #content-area { min-height: 0; overflow: hidden; }
+  .screen.active { overflow-y: auto; overflow-x: hidden; min-height: 0; }
+  /* header pinned at top, footer pinned at bottom, body scrolls between —
+     background-color (not the `background` shorthand) keeps their gradients */
+  .screen-header, .screen-title {
+    position: sticky; top: 0; z-index: 3; flex-shrink: 0; background-color: var(--bg);
+  }
+  .screen-footer {
+    position: sticky; bottom: 0; z-index: 3; flex-shrink: 0; background-color: var(--bg);
+  }
+
+  /* compact sidebar so the whole nav fits a laptop without feeling cramped */
+  #sidebar-title { padding-top: 0.8rem; font-size: 1.4rem; }
+  #sidebar-subtitle { padding: 0.2rem 0.5rem 0.35rem; }
+  #sidebar-stats { padding: 0.3rem 0.8rem; }
+  .sidebar-section { padding: 0.5rem 1rem 0.15rem; }
+  .sidebar-list li { padding: 0.28rem 1rem; }
+
   #menu-screen .menu-title,
   #menu-screen .menu-subtitle,
   #menu-screen .screen-header,
