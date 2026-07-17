@@ -45,6 +45,15 @@ function startLearn() {
       "A guided road from zero: learn to READ Thai fast, pick up the street's " +
       "phrases, and let the app quiz you — you never grade yourself here." :
       `${stats.dueNow} reviews due · ${stats.totalSeen} cards known · ${stats.mature} mature`;
+  // 🏁 the speedometer: your fastest reads, best-first
+  const bests = Object.entries(path.best || {}).sort((a, b) => a[1] - b[1]);
+  const sp = document.getElementById("learn-speed");
+  if (sp) {
+    sp.innerHTML = !bests.length ? "" :
+      `<div class="sidebar-section" style="text-align:center">🏁 Fastest reads</div>` +
+      bests.slice(0, 5).map(([th, ms]) =>
+        `<span class="learn-best">${th} <b>${(ms / 1000).toFixed(1)}s</b></span>`).join(" ");
+  }
   showScreen("learn-screen", "G");
 }
 
@@ -124,6 +133,17 @@ function _learnRecord(key, quality, ms) {
 
 function _learnNext() { _lu.at++; _learnStep(); }
 
+// personal-best read times per word (ms) — the speedometer's data
+function _bestUpdate(path, results) {
+  path.best = path.best || {};
+  for (const r of results) {
+    if (r.key && r.ms > 0 && r.q >= 4 && (!path.best[r.key] || r.ms < path.best[r.key])) {
+      path.best[r.key] = r.ms;
+    }
+  }
+  return path;
+}
+
 function _unitFinish() {
   if (!_lu) return;
   const scored = _lu.results.filter(r => r.q > 0);
@@ -132,7 +152,7 @@ function _unitFinish() {
   const speedMs = _lu.results.filter(r => r.ms > 0).map(r => r.ms);
   const msAvg = speedMs.length ? Math.round(speedMs.reduce((a, b) => a + b, 0) / speedMs.length) : null;
   const passed = acc >= COURSE_PASS;
-  const path = _pathLoad();
+  const path = _bestUpdate(_pathLoad(), _lu.results);
   const id = _unitId(_lu.unit);
   path.units = path.units || {};
   const prev = path.units[id] || {};

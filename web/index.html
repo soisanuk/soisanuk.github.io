@@ -130,6 +130,7 @@ body {
 #learn-kbd { max-width: 560px; margin: 0.5rem auto; }
 .learn-buf-wrong { animation: learnshake 0.25s; color: #e34a4a !important; }
 @keyframes learnshake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+.learn-best { display:inline-block; margin:2px 4px; padding:3px 10px; border:1px solid #552277; border-radius:12px; font-size:0.95em; }
 .learn-intro-text { max-width: 560px; margin: 0.6rem auto; text-align: left; line-height: 1.5; }
 .learn-summary { text-align: center; padding: 0.5rem; opacity: 0.85; }
 .quiz-choices li.correct { border-color: #2fbf71; background: rgba(47,191,113,0.15); }
@@ -1857,6 +1858,7 @@ body.mobile #app-shell {
 <div id="learn-screen" class="screen">
   <div class="screen-header">🎓 Guided Course</div>
   <div class="card-prompt" id="learn-intro" style="text-align:center; padding:0.4rem 1rem;"></div>
+  <div id="learn-speed" style="text-align:center;padding:0 1rem"></div>
   <ul id="learn-units"></ul>
   <div class="screen-footer">
     <button class="btn" onclick="endSession()">← Menu</button>
