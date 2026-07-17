@@ -39,6 +39,11 @@ function startLearn() {
     if (open) li.onclick = () => _unitStart(idx);
     list.appendChild(li);
   });
+  const done = COURSE.filter(u => _unitDone(path, u)).length;
+  document.querySelector("#learn-screen .screen-header").textContent =
+    "🎓 " + _levelName(done) + (done ? " · " + done + "/" + COURSE.length : "");
+  const pl = document.getElementById("learn-placement");
+  if (pl) pl.style.display = done === 0 ? "" : "none";
   const stats = srsStats(loadProgress());
   document.getElementById("learn-intro").textContent =
     stats.totalSeen === 0 ?
@@ -155,6 +160,7 @@ function _unitFinish() {
   const msAvg = speedMs.length ? Math.round(speedMs.reduce((a, b) => a + b, 0) / speedMs.length) : null;
   const passed = acc >= COURSE_PASS;
   const path = _bestUpdate(_pathLoad(), _lu.results);
+  if (_lu.idx === -2) { _placementFinish(); return; }
   if (_lu.idx < 0) { // Continue sessions: record bests, no unit bookkeeping
     _pathSave(path);
     const body = document.getElementById("lesson-body");
@@ -528,3 +534,61 @@ function startContinue() {
   _learnStep();
 }
 if (typeof document !== "undefined") setTimeout(_streakRender, 0);
+
+// ── Placement test + levels (engagement 5/7) ────────────────────────────────
+const LEVELS = [[0, "Fresh off the plane"], [3, "Soi tourist"], [7, "Soi regular"],
+  [11, "Old hand"], [14, "เจ้าของบาร์"]];
+function _levelName(done) {
+  let name = LEVELS[0][1];
+  for (const [n, l] of LEVELS) if (done >= n) name = l;
+  return name;
+}
+// per-batch accuracy → the highest ladder prefix passed (80%), -1 = none
+function _placementCut(byBatch) {
+  let cut = -1;
+  for (let b = 0; b < LETTER_BATCHES.length; b++) {
+    const r = byBatch[b];
+    if (!r || !r.n || r.ok / r.n < 0.8) break;
+    cut = b;
+  }
+  return cut;
+}
+// mark every COURSE unit up to (and incl.) the cut batch's unit as done
+function _placementApply(path, cut) {
+  if (cut < 0) return path;
+  path.units = path.units || {};
+  const last = COURSE.findIndex(u => u.kind === "letters" && u.batch === cut);
+  for (let i = 0; i <= last; i++) {
+    const id = _unitId(COURSE[i]);
+    path.units[id] = { ...(path.units[id] || {}), done: true, placed: true };
+  }
+  return path;
+}
+function startPlacement() {
+  const queue = [];
+  for (let b = 0; b < LETTER_BATCHES.length; b++) {
+    for (const w of _shuffle(courseNewWords(b).slice()).slice(0, 2)) {
+      queue.push({ kind: "mc", word: w, batch: b });
+    }
+  }
+  _lu = { idx: -2, unit: { kind: "review", label: "Placement" }, queue, at: 0, results: [] };
+  _learnStep();
+}
+function _placementFinish() {
+  const byBatch = {};
+  _lu.queue.forEach((it, i) => {
+    const r = _lu.results[i];
+    if (!r) return;
+    const b = (byBatch[it.batch] = byBatch[it.batch] || { ok: 0, n: 0 });
+    b.n++;
+    if (r.q >= 4) b.ok++;
+  });
+  const cut = _placementCut(byBatch);
+  _pathSave(_placementApply(_bestUpdate(_pathLoad(), _lu.results), cut));
+  const body = document.getElementById("lesson-body");
+  body.innerHTML = `<div class="thai-big">📍</div>
+    <div class="card-prompt">${cut < 0 ? "Starting from the very first letters — the right place to start." :
+      "Placed past " + (cut + 1) + " reading unit" + (cut ? "s" : "") + "."}</div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="startLearn()">To the path</button></div>`;
+  _lu = null;
+}

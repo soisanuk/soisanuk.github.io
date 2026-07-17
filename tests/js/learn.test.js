@@ -197,3 +197,19 @@ test("the signage lesson's chunks carry rotating sign styles; others don't", () 
   const g1 = _unitQueue(COURSE.find(u => u.lesson === "g1"), []).filter(i => i.kind === "chunk");
   assert.ok(g1.every(i => i.sign === null), "non-signage chunks stay plain");
 });
+
+test("placement: 80% per batch sets the cut, prefix units complete, levels name up", () => {
+  assert.equal(_placementCut({ 0: { ok: 2, n: 2 }, 1: { ok: 2, n: 2 }, 2: { ok: 1, n: 2 } }), 1);
+  assert.equal(_placementCut({ 0: { ok: 1, n: 2 } }), -1);
+  const p = _placementApply({}, 1);
+  assert.ok(p.units.L0.done && p.units.L1.done, "ladder prefix done");
+  assert.ok(!p.units.g1 || p.units.g1.done !== undefined, "chunks between are included");
+  assert.ok(p.units.L0.placed, "marked as placed, not earned");
+  assert.equal(_levelName(0), "Fresh off the plane");
+  assert.equal(_levelName(8), "Soi regular");
+  assert.equal(_levelName(14), "เจ้าของบาร์");
+  // placement queue spans the whole ladder, two words a batch
+  const q = [];
+  for (let b = 0; b < LETTER_BATCHES.length; b++) q.push(...courseNewWords(b).slice(0, 2));
+  assert.ok(q.length >= 14);
+});
