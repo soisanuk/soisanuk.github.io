@@ -73,6 +73,10 @@ function _unitQueue(unit, dueWords) {
     for (const g of batch.glyphs) queue.push({ kind: "glyph", glyph: g });
     const fresh = courseNewWords(unit.batch).slice(0, 8);
     const pool = courseDecodable(unit.batch);
+    // TEACH before testing: meet each new word — decode it, hear it, learn what
+    // it MEANS — before any card asks you to recall it. (This was the hole:
+    // words went straight to "what does it mean?" never having been presented.)
+    for (const w of fresh) queue.push({ kind: "wordintro", word: w });
     // recall runs BOTH directions: read the Thai, then find the Thai
     fresh.forEach((w, i) => queue.push({ kind: i % 2 ? "mcth" : "mc", word: w, tag: "new", pool }));
     // produce, don't just pick: type the English…
@@ -123,7 +127,7 @@ function _learnStep() {
     `${_lu.at + 1} / ${_lu.queue.length}` + (item.tag === "review" ? " · review" : "");
   body.innerHTML = "";
   showScreen("lesson-screen", "G");
-  ({ glyph: _wGlyph, mc: _wMC, mc2: _wMC2, speed: _wMC, listen: _wListen,
+  ({ glyph: _wGlyph, wordintro: _wWordIntro, mc: _wMC, mc2: _wMC2, speed: _wMC, listen: _wListen,
      mcth: _wMCTH, typeen: _wTypeEN, typeth: _wTypeTH, clozex: _wClozeX,
      cloze: _wCloze, match: _wMatch, chunkIntro: _wChunkIntro, chunk: _wChunk }[item.kind])(item, body);
 }
@@ -223,6 +227,33 @@ function _wGlyph(item, body) {
     <div class="card-prompt">${isMark ? "A mark, not a letter — it rides above and bends the tone. Learn each word's tone with the word." : "Tap the glyph to hear it. Say it back. Twice."}</div>
     <div class="btn-row"><button class="btn btn-primary" onclick="_learnNext()">Got it →</button></div>`;
   if (typeof letterSpeechParts === "function") _tts.speak(letterSpeechParts(g));
+}
+
+// TEACH a new word before any card tests it: hear it, see it broken into its
+// readable syllables (reinforcing the letters just learned), and — the piece
+// that was missing — learn what it MEANS. Not scored; this is the lesson.
+function _wWordIntro(item, body) {
+  const w = item.word;
+  // syllable clusters render as whole units (no lone-combining-vowel tofu);
+  // each chip speaks its letters so the decode connects to the glyph cards
+  const clusters = typeof _buildDecomposition === "function" ? _buildDecomposition(w[0]) : [[...w[0]].join("")];
+  const chips = clusters.map(c => {
+    const txt = Array.isArray(c) ? c.join("") : c;
+    const parts = JSON.stringify(Array.isArray(c) ? c.flatMap(ch =>
+      typeof letterSpeechParts === "function" ? letterSpeechParts(ch) : [ch]) : [txt]).replace(/"/g, "&quot;");
+    return `<span class="learn-decode-chip" onclick="_tts.speak(${parts})">${txt}</span>`;
+  }).join('<span class="learn-decode-plus">+</span>');
+  const ex = (typeof EXAMPLES === "object" && EXAMPLES[w[0]]) ? EXAMPLES[w[0]] : null;
+  const wt = JSON.stringify(w[0]).replace(/"/g, "&quot;");
+  body.innerHTML = `<div class="learn-teach-tag">NEW WORD</div>
+    <div class="thai-big learn-glyph" onclick="_tts.speak(${wt})">${w[0]}</div>
+    <div class="rtgs">${w[1]} ${_speakBtn(w[0])}</div>
+    <div class="learn-mean">${w[2]}</div>
+    ${clusters.length > 1 ? `<div class="learn-decode">${chips}</div>
+      <div class="card-prompt" style="font-size:0.9em;opacity:0.8">Tap each piece to hear the letters build the word.</div>` : ""}
+    ${ex ? `<div class="learn-ex" onclick="_tts.speak(${JSON.stringify(ex[0]).replace(/"/g, "&quot;")})">${ex[0]}<div class="rtgs">${ex[2]}</div></div>` : ""}
+    <div class="btn-row"><button class="btn btn-primary" onclick="_learnNext()">Got it →</button></div>`;
+  _tts.speak(w[0]);
 }
 
 // multiple-choice recall: Thai on top, tap the meaning. speed items get a timer.
