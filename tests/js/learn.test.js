@@ -7,7 +7,7 @@ import vm from "node:vm";
 import { fileURLToPath } from "node:url";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-for (const f of ["data.js", "thai-script.js", "srs.js", "curriculum.js", "learn.js"]) {
+for (const f of ["data.js", "examples.js", "thai-script.js", "srs.js", "curriculum.js", "learn.js"]) {
   vm.runInThisContext(fs.readFileSync(path.join(root, "web", "js", f), "utf8"), { filename: f });
 }
 
@@ -121,4 +121,19 @@ test("letter units mix both directions and both typing modes", () => {
   // due-review words lead the queue
   const w = WORDS[0];
   assert.deepEqual(_unitQueue(COURSE[0], [w])[0], { kind: "mc", word: w, tag: "review" });
+});
+
+test("units carry the corpus cloze, the 5-pair match, and both listen modes", () => {
+  const q = _unitQueue(COURSE[3], []); // batch 3: plenty of examples decodable
+  const kinds = q.map(i => i.kind);
+  assert.ok(kinds.includes("clozex"), "example-sentence cloze present");
+  for (const it of q.filter(i => i.kind === "clozex")) {
+    assert.ok(EXAMPLES[it.word[0]], "cloze word has a real example");
+    assert.ok(EXAMPLES[it.word[0]][0].includes(it.word[0]), "the sentence contains the word to blank");
+  }
+  const match = q.find(i => i.kind === "match");
+  assert.ok(match && match.pairs.length === 5, "five-pair vocab match round");
+  const listens = q.filter(i => i.kind === "listen");
+  assert.ok(listens.some(l => l.mode === "en") && listens.some(l => l.mode === "th"),
+    "listening answers alternate script and meaning");
 });
