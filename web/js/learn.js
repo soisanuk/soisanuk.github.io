@@ -91,7 +91,8 @@ function _unitQueue(unit, dueWords) {
   } else {
     const lesson = GRAMMAR_LESSONS.find(g => g.id === unit.lesson);
     queue.push({ kind: "chunkIntro", lesson });
-    for (const p of lesson.pattern) queue.push({ kind: "chunk", line: p });
+    lesson.pattern.forEach((p, i) =>
+      queue.push({ kind: "chunk", line: p, sign: lesson.id === "g5" ? i % 3 : null }));
     for (const pr of lesson.practice) queue.push({ kind: pr.kind === "cloze" ? "cloze" : "mc2", item: pr });
     if (lesson.pattern.length >= 4) queue.push({ kind: "match", pairs: lesson.pattern.slice(0, 4) });
   }
@@ -462,7 +463,10 @@ function _wChunkIntro(item, body) {
 }
 function _wChunk(item, body) {
   const [th, rtgs, en] = item.line;
-  body.innerHTML = `<div class="thai-big" onclick="_tts.speak(${JSON.stringify(th).replace(/"/g, "&quot;")})">${th}</div>
+  // the signage lesson renders as street furniture: font-shock is the training
+  const signCls = item.sign === null || item.sign === undefined ? "" :
+    " learn-sign learn-sign-" + item.sign;
+  body.innerHTML = `<div class="thai-big${signCls}" onclick="_tts.speak(${JSON.stringify(th).replace(/"/g, "&quot;")})">${th}</div>
     <div class="rtgs">${rtgs}</div>
     <div class="card-prompt">${en}</div>
     <div class="card-prompt">Tap it. Hear it. Say it out loud — chunks stick by mouth, not by eye.</div>

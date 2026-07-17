@@ -189,3 +189,11 @@ test("streak day-roll: same day holds, consecutive grows, a gap resets", () => {
   assert.equal(_streakBump(st, "2026-07-18", "2026-07-17").days, 2, "consecutive");
   assert.equal(_streakBump(st, "2026-07-25", "2026-07-24").days, 1, "gap resets");
 });
+
+test("the signage lesson's chunks carry rotating sign styles; others don't", () => {
+  const g5 = _unitQueue(COURSE.find(u => u.lesson === "g5"), []).filter(i => i.kind === "chunk");
+  assert.ok(g5.length >= 3);
+  assert.deepEqual(g5.slice(0, 3).map(i => i.sign), [0, 1, 2], "street/shop/board rotation");
+  const g1 = _unitQueue(COURSE.find(u => u.lesson === "g1"), []).filter(i => i.kind === "chunk");
+  assert.ok(g1.every(i => i.sign === null), "non-signage chunks stay plain");
+});
