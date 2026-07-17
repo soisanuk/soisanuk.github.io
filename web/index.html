@@ -121,6 +121,13 @@ body {
 .learn-chip.picked { outline: 2px solid var(--accent, #ff1493); }
 .learn-chip.matched { opacity: 0.28; pointer-events: none; }
 .learn-chip.wrong { outline: 2px solid #e34a4a; }
+.learn-type-row { display: flex; gap: 0.5rem; justify-content: center; padding: 0.4rem 1rem; }
+.learn-type-in { flex: 1; max-width: 300px; padding: 0.6rem 0.8rem; font-size: 1.05em;
+  background: rgba(255,255,255,0.06); color: inherit;
+  border: 1px solid var(--border, #552277); border-radius: 8px; }
+#learn-kbd { max-width: 560px; margin: 0.5rem auto; }
+.learn-buf-wrong { animation: learnshake 0.25s; color: #e34a4a !important; }
+@keyframes learnshake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 .learn-intro-text { max-width: 560px; margin: 0.6rem auto; text-align: left; line-height: 1.5; }
 .learn-summary { text-align: center; padding: 0.5rem; opacity: 0.85; }
 .quiz-choices li.correct { border-color: #2fbf71; background: rgba(47,191,113,0.15); }
