@@ -80,3 +80,28 @@ function backupPersist() {
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
   } catch {}
 }
+
+// Anki export — the standard TSV Anki's importer eats: front(Thai),
+// back(roman + meaning + example), tags(pos/group). Whole deck, 900+ notes.
+function ankiTSV(words, examples) {
+  const esc = t => String(t || "").replace(/\t/g, " ").replace(/\n/g, " ");
+  const lines = ["#separator:tab", "#html:true", "#tags column:3"];
+  for (const w of (words || WORDS)) {
+    const ex = (examples || EXAMPLES)[w[0]];
+    const back = esc(w[1]) + "<br>" + esc(w[2]) +
+      (ex ? "<br><i>" + esc(ex[0]) + " — " + esc(ex[2]) + "</i>" : "");
+    lines.push(esc(w[0]) + "\t" + back + "\t" + esc(w[3]) + " " + esc(w[4]));
+  }
+  return lines.join("\n");
+}
+async function ankiExport() {
+  const name = "soisanuk-anki.txt";
+  const file = new File([ankiTSV()], name, { type: "text/plain" });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: name }); return; } catch {}
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([ankiTSV()], { type: "text/plain" }));
+  a.download = name;
+  a.click();
+}
