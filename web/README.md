@@ -137,3 +137,28 @@ SRS progress is stored in `localStorage` under key `soisanuk_progress`. It persi
 ## Deployment
 
 Pushes to `main` deploy automatically to GitHub Pages via `.github/workflows/pages.yml`. The workflow rewrites the service-worker cache name (`soisanuk-dev` → `soisanuk-<commit sha>`) so every deploy invalidates the previous offline cache — no manual version bump needed.
+
+## Guided Course (🎓)
+
+A read-first guided path built on acquisition principles — retrieval practice
+(you produce answers; the app grades you into the shared SM-2 store),
+interleaving (due reviews open every unit), mastery gates (80% first-try to
+unlock the next unit), and chunk-first grammar. The letter ladder teaches
+glyphs in frequency batches and immediately drills REAL words decodable with
+only what's been taught (8 words after six glyphs; 745/916 by the end). Units
+mix: glyph intros → MC both directions → typed English → Kedmanee typed Thai
+(every key spoken) → example-sentence cloze → timed speed reads → a 5-pair
+match round → listening (pick the script / pick the meaning). Six scenario
+lessons cover how-Thai-works, politeness, ordering food, haggling, signage,
+and this/that. Progress: `soisanuk_path`; missed answers pause with the word
+card.
+
+## Backup, Restore & Exports (💾 under More)
+
+- **Backup** exports both stores as JSON via the mobile share sheet
+  (AirDrop/Files) or download; **import merges** — more-reviewed cards win,
+  finished units stay finished. `navigator.storage.persist()` is requested at
+  boot against storage eviction.
+- **Deck exports**: Anki (auto-mapping TSV), CSV (spreadsheets), Quizlet
+  (term⇥definition), and a print-styled word list (Print → PDF). Scheduling
+  history only travels via the JSON backup until a backend enables .apkg.
