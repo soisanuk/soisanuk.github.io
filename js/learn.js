@@ -218,7 +218,7 @@ function _wGlyph(item, body) {
   const isMark = ["่", "้", "๊", "๋", "็", "ๆ", "ำ"].includes(g);
   const disp = typeof vowelDisp === "function" ? vowelDisp(g) : g;
   const name = typeof letterSpeech === "function" && !isMark ? letterSpeech(g) : "";
-  body.innerHTML = `<div class="thai-big learn-glyph" onclick="_tts.speak(letterSpeechParts(${JSON.stringify(g)}))">${disp}</div>
+  body.innerHTML = `<div class="thai-big learn-glyph" onclick="_tts.speak(letterSpeechParts(${JSON.stringify(g).replace(/"/g, "&quot;")}))">${disp}</div>
     <div class="rtgs">${name}</div>
     <div class="card-prompt">${isMark ? "A mark, not a letter — it rides above and bends the tone. Learn each word's tone with the word." : "Tap the glyph to hear it. Say it back. Twice."}</div>
     <div class="btn-row"><button class="btn btn-primary" onclick="_learnNext()">Got it →</button></div>`;
