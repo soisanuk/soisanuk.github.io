@@ -173,3 +173,11 @@ test("CSV and Quizlet exports are well-formed", () => {
   for (const l of qz) assert.equal(l.split("\t").length, 2, "term TAB definition");
   assert.ok(qz[0].includes(WORDS[0][1] + " — " + WORDS[0][2]));
 });
+
+test("speedometer: personal bests only improve, only on clean fast reads", () => {
+  const p = _bestUpdate({}, [{ key: "มา", q: 5, ms: 1400 }, { key: "ดี", q: 2, ms: 900 },
+    { key: "มา", q: 4, ms: 2000 }, { key: null, q: 5, ms: 100 }]);
+  assert.equal(p.best["มา"], 1400, "keeps the faster clean read");
+  assert.ok(!p.best["ดี"], "a missed answer never sets a best");
+  assert.equal(_bestUpdate(p, [{ key: "มา", q: 5, ms: 1100 }]).best["มา"], 1100);
+});
