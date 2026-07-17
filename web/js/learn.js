@@ -15,7 +15,7 @@ function _pathLoad() {
   catch { return {}; }
 }
 function _pathSave(p) { localStorage.setItem(LEARN_KEY, JSON.stringify(p)); }
-function _unitId(u) { return u.kind === "letters" ? "L" + u.batch : u.lesson; }
+function _unitId(u) { return u.kind === "letters" ? "L" + u.batch : (u.lesson || "review"); }
 function _unitDone(path, u) { return !!(path.units && path.units[_unitId(u)] && path.units[_unitId(u)].done); }
 function _unitUnlocked(path, idx) {
   if (idx === 0) return true;
@@ -129,6 +129,7 @@ function _learnRecord(key, quality, ms) {
     saveProgress(prog);
   }
   _lu.results.push({ key, q: quality, ms: ms || 0 });
+  if (typeof _streakRecord === "function") _streakRecord(ms || 0);
 }
 
 function _learnNext() { _lu.at++; _learnStep(); }
@@ -153,6 +154,15 @@ function _unitFinish() {
   const msAvg = speedMs.length ? Math.round(speedMs.reduce((a, b) => a + b, 0) / speedMs.length) : null;
   const passed = acc >= COURSE_PASS;
   const path = _bestUpdate(_pathLoad(), _lu.results);
+  if (_lu.idx < 0) { // Continue sessions: record bests, no unit bookkeeping
+    _pathSave(path);
+    const body = document.getElementById("lesson-body");
+    body.innerHTML = `<div class="thai-big">🔥</div><div class="card-prompt">Session done — streak fed.</div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="startLearn()">The path</button>
+      <button class="btn" onclick="endSession()">Menu</button></div>`;
+    _lu = null;
+    return;
+  }
   const id = _unitId(_lu.unit);
   path.units = path.units || {};
   const prev = path.units[id] || {};
@@ -459,3 +469,55 @@ function _wChunk(item, body) {
     <div class="btn-row">${_wordCardBtn([th, rtgs, en])}<button class="btn btn-primary" onclick="_learnNext()">Next →</button></div>`;
   _tts.speak(th);
 }
+
+// ── Continue + streak (engagement 2/7) ──────────────────────────────────────
+const STREAK_KEY = "soisanuk_streak";
+function _streakLoad() {
+  try { return JSON.parse(localStorage.getItem(STREAK_KEY) || "{}"); } catch { return {}; }
+}
+// pure day-roll: same day = no-op, consecutive day = +1, a gap resets to 1
+function _streakBump(st, today, yesterday) {
+  if (st.last === today) return st;
+  return { last: today, days: st.last === yesterday ? (st.days || 0) + 1 : 1,
+    today: { cards: 0, msSum: 0, msN: 0 } };
+}
+function _streakRecord(ms) {
+  const d = new Date(), y = new Date(Date.now() - 864e5);
+  const iso = x => x.toISOString().slice(0, 10);
+  let st = _streakBump(_streakLoad(), iso(d), iso(y));
+  st.today = st.today || { cards: 0, msSum: 0, msN: 0 };
+  st.today.cards++;
+  if (ms > 0) { st.today.msSum += ms; st.today.msN++; }
+  localStorage.setItem(STREAK_KEY, JSON.stringify(st));
+  _streakRender();
+}
+function _streakRender() {
+  const el = document.getElementById("nav-cont-stats");
+  if (!el) return;
+  const st = _streakLoad();
+  const t = st.today || {};
+  el.textContent = !st.days ? "start today" :
+    `🔥 ${st.days} day${st.days > 1 ? "s" : ""}` +
+    (t.cards ? ` · today ${t.cards} cards` : "") +
+    (t.msN ? ` · ${(t.msSum / t.msN / 1000).toFixed(1)}s/word` : "");
+}
+// ▶ Continue: due reviews first, else the next open unit, else a speed round
+function startContinue() {
+  const prog = loadProgress();
+  const due = dueCards(prog, WORDS.map(w => w[0])).slice(0, 10)
+    .map(th => WORDS.find(x => x[0] === th)).filter(Boolean);
+  if (due.length >= 3) {
+    _lu = { idx: -1, unit: { kind: "review", label: "Review" },
+      queue: due.map(w => ({ kind: "mc", word: w, tag: "review" })), at: 0, results: [] };
+    _learnStep();
+    return;
+  }
+  const path = _pathLoad();
+  const next = COURSE.findIndex((u, i) => _unitUnlocked(path, i) && !_unitDone(path, u));
+  if (next >= 0) { _unitStart(next); return; }
+  const pool = _shuffle(courseDecodable(LETTER_BATCHES.length - 1)).slice(0, 10);
+  _lu = { idx: -1, unit: { kind: "review", label: "Speed round" },
+    queue: pool.map(w => ({ kind: "speed", word: w })), at: 0, results: [] };
+  _learnStep();
+}
+setTimeout(_streakRender, 0);

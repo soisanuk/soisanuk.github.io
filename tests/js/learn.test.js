@@ -181,3 +181,11 @@ test("speedometer: personal bests only improve, only on clean fast reads", () =>
   assert.ok(!p.best["ดี"], "a missed answer never sets a best");
   assert.equal(_bestUpdate(p, [{ key: "มา", q: 5, ms: 1100 }]).best["มา"], 1100);
 });
+
+test("streak day-roll: same day holds, consecutive grows, a gap resets", () => {
+  let st = _streakBump({}, "2026-07-17", "2026-07-16");
+  assert.equal(st.days, 1);
+  assert.equal(_streakBump(st, "2026-07-17", "2026-07-16").days, 1, "same day no-op");
+  assert.equal(_streakBump(st, "2026-07-18", "2026-07-17").days, 2, "consecutive");
+  assert.equal(_streakBump(st, "2026-07-25", "2026-07-24").days, 1, "gap resets");
+});
