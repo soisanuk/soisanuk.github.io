@@ -162,3 +162,14 @@ test("Anki export is importable TSV: headers, one note per word, tags", () => {
   for (const l of lines.slice(3)) assert.equal(l.split("\t").length, 3, "front/back/tags");
   assert.ok(tsv.includes(WORDS[0][0]) && tsv.includes(WORDS[0][2]));
 });
+
+test("CSV and Quizlet exports are well-formed", () => {
+  const csv = csvExportText(WORDS.slice(0, 3)).split("\n");
+  assert.equal(csv.length, 4);
+  assert.equal(csv[0], "thai,roman,english,pos,group");
+  assert.ok(csv[1].startsWith('"' + WORDS[0][0] + '"'));
+  const qz = quizletText(WORDS.slice(0, 3)).split("\n");
+  assert.equal(qz.length, 3);
+  for (const l of qz) assert.equal(l.split("\t").length, 2, "term TAB definition");
+  assert.ok(qz[0].includes(WORDS[0][1] + " — " + WORDS[0][2]));
+});
