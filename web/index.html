@@ -2337,6 +2337,14 @@ body.mobile #app-shell {
 // Under Capacitor the assets are bundled with the app, so the offline
 // cache is pointless — skip registration there.
 if ("serviceWorker" in navigator && !window.Capacitor) {
+  // Auto-reload once when a new deploy's service worker takes over, so fresh
+  // HTML/JS apply without a manual hard-refresh (the PWA-cache staleness trap:
+  // new index.html but stale app.js). Only when a controller already existed —
+  // never on the first-ever visit, so there's no reload loop.
+  var _swHadController = !!navigator.serviceWorker.controller, _swReloading = false;
+  navigator.serviceWorker.addEventListener("controllerchange", function () {
+    if (_swHadController && !_swReloading) { _swReloading = true; location.reload(); }
+  });
   window.addEventListener("load", () =>
     navigator.serviceWorker.register("./sw.js").catch(() => {})
   );
