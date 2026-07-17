@@ -69,10 +69,16 @@ function _unitQueue(unit, dueWords) {
       const short = _shuffle(pool.filter(w => [...w[0]].length <= 4)).slice(0, 2);
       for (const w of short) queue.push({ kind: "typeth", word: w });
     }
+    // cloze from the real corpus: the word's own example sentence, blanked
+    const withEx = fresh.filter(w => typeof EXAMPLES === "object" && EXAMPLES[w[0]]);
+    for (const w of _shuffle(withEx.slice()).slice(0, 2)) queue.push({ kind: "clozex", word: w, pool });
     const speed = _shuffle(pool.slice()).slice(0, Math.min(8, pool.length));
     for (const w of speed) queue.push({ kind: "speed", word: w });
+    // a match round as the mid-unit breather: five Thai ↔ five meanings
+    if (pool.length >= 5) queue.push({ kind: "match", pairs: _shuffle(pool.slice()).slice(0, 5) });
+    // listening: hear it — pick the script, or (every other card) the meaning
     const listen = _shuffle(pool.slice()).slice(0, Math.min(5, pool.length));
-    for (const w of listen) queue.push({ kind: "listen", word: w, pool });
+    listen.forEach((w, i) => queue.push({ kind: "listen", word: w, pool, mode: i % 2 ? "en" : "th" }));
   } else {
     const lesson = GRAMMAR_LESSONS.find(g => g.id === unit.lesson);
     queue.push({ kind: "chunkIntro", lesson });
@@ -103,7 +109,7 @@ function _learnStep() {
   body.innerHTML = "";
   showScreen("lesson-screen", "G");
   ({ glyph: _wGlyph, mc: _wMC, mc2: _wMC2, speed: _wMC, listen: _wListen,
-     mcth: _wMCTH, typeen: _wTypeEN, typeth: _wTypeTH,
+     mcth: _wMCTH, typeen: _wTypeEN, typeth: _wTypeTH, clozex: _wClozeX,
      cloze: _wCloze, match: _wMatch, chunkIntro: _wChunkIntro, chunk: _wChunk }[item.kind])(item, body);
 }
 
@@ -188,7 +194,7 @@ function _wMC(item, body) {
     ${timed ? '<div class="learn-timer"><div class="learn-timer-fill" id="learn-timer"></div></div>' : ""}
     <div class="card-prompt">${timed ? "Fast — what does it mean?" : "What does it mean?"}</div>
     <ul class="quiz-choices" id="learn-choices"></ul>`;
-  _mcWire(opts, w[2], w[0], timed ? 2500 : 0, () => _tts.speak(w[0]));
+  _mcWire(opts, w[2], w[0], timed ? 2500 : 0, () => _tts.speak(w[0]), w);
 }
 // grammar-practice MC (item carries its own options)
 function _wMC2(item, body) {
@@ -207,7 +213,7 @@ function _wMCTH(item, body) {
   body.innerHTML = `<div class="screen-title" style="padding:1rem 0">${w[2]}</div>
     <div class="card-prompt">Which one says it?</div>
     <ul class="quiz-choices learn-thai-choices" id="learn-choices"></ul>`;
-  _mcWire(opts, w[0], w[0], 0, () => _tts.speak(w[0]));
+  _mcWire(opts, w[0], w[0], 0, () => _tts.speak(w[0]), w);
 }
 
 // lenient English answer matching: "to have/there is" accepts "have",
@@ -305,12 +311,26 @@ function _wTypeTH(item, body) {
 // hear it first, pick the SCRIPT you heard — listening that trains reading
 function _wListen(item, body) {
   const w = item.word;
-  const opts = _shuffle([w[0], ..._shuffle(item.pool.filter(x => x[0] !== w[0])).slice(0, 3).map(x => x[0])]);
+  const enMode = item.mode === "en"; // answer with the MEANING, script never shown
+  const opts = enMode ? _mcOptions(w, 2, item.pool)
+    : _shuffle([w[0], ..._shuffle(item.pool.filter(x => x[0] !== w[0])).slice(0, 3).map(x => x[0])]);
   body.innerHTML = `<div class="thai-big">👂</div>
-    <div class="card-prompt">Which word did you hear? ${_speakBtn(w[0])}</div>
-    <ul class="quiz-choices learn-thai-choices" id="learn-choices"></ul>`;
-  _mcWire(opts, w[0], w[0], 0, () => {});
+    <div class="card-prompt">${enMode ? "What does the word you hear MEAN?" : "Which word did you hear?"} ${_speakBtn(w[0])}</div>
+    <ul class="quiz-choices${enMode ? "" : " learn-thai-choices"}" id="learn-choices"></ul>`;
+  _mcWire(opts, enMode ? w[2] : w[0], w[0], 0, () => {}, w);
   _tts.speak(w[0]);
+}
+
+// the corpus cloze: her own example sentence with the word missing
+function _wClozeX(item, body) {
+  const w = item.word;
+  const ex = EXAMPLES[w[0]];
+  const blanked = ex[0].split(w[0]).join("＿＿");
+  const opts = _mcOptions(w, 0, item.pool);
+  body.innerHTML = `<div class="thai-big" style="font-size:1.6em">${blanked}</div>
+    <div class="card-prompt">${ex[2]}</div>
+    <ul class="quiz-choices learn-thai-choices" id="learn-choices"></ul>`;
+  _mcWire(opts, w[0], w[0], 0, () => _tts.speak(ex[0]), w);
 }
 
 // cloze: the chunk with a hole in it
@@ -323,7 +343,11 @@ function _wCloze(item, body) {
     () => _tts.speak(p.th.replace("___", p.answer)));
 }
 
-function _mcWire(options, answer, key, fastMs, onRight) {
+function _wordCardBtn(w) {
+  if (!w || typeof openWordModal !== "function") return "";
+  return `<button class="btn btn-small" onclick='openWordModal(${JSON.stringify([w[0], w[1], w[2]]).replace(/'/g, "&#39;")})'>🔍 word card</button>`;
+}
+function _mcWire(options, answer, key, fastMs, onRight, word) {
   const ul = document.getElementById("learn-choices");
   const t0 = Date.now();
   let missed = false;
@@ -345,7 +369,15 @@ function _mcWire(options, answer, key, fastMs, onRight) {
         li.classList.add("correct");
         onRight();
         _learnRecord(key, courseGrade(true, !missed, fastMs, ms), fastMs ? ms : 0);
-        setTimeout(_learnNext, missed ? 900 : 550);
+        if (missed && word) {
+          // a miss earns a pause: study the word before moving on
+          const row = document.createElement("div");
+          row.className = "btn-row";
+          row.innerHTML = `${_wordCardBtn(word)} <button class="btn btn-primary" onclick="_learnNext()">Next →</button>`;
+          ul.parentElement.appendChild(row);
+        } else {
+          setTimeout(_learnNext, missed ? 900 : 550);
+        }
       } else {
         missed = true;
         li.classList.add("wrong");
@@ -363,7 +395,7 @@ function _wMatch(item, body) {
     <div class="learn-match" id="learn-match"></div>`;
   const box = document.getElementById("learn-match");
   const chips = [];
-  pairs.forEach((p, i) => { chips.push({ side: "th", i, text: p[0] }, { side: "en", i, text: p[2].split(" — ")[0] }); });
+  pairs.forEach((p, i) => { chips.push({ side: "th", i, text: p[0] }, { side: "en", i, text: p[2].split(" — ")[0].split("/")[0] }); });
   let sel = null, wrongs = 0, left = pairs.length;
   for (const c of _shuffle(chips)) {
     const b = document.createElement("button");
@@ -404,6 +436,6 @@ function _wChunk(item, body) {
     <div class="rtgs">${rtgs}</div>
     <div class="card-prompt">${en}</div>
     <div class="card-prompt">Tap it. Hear it. Say it out loud — chunks stick by mouth, not by eye.</div>
-    <div class="btn-row"><button class="btn btn-primary" onclick="_learnNext()">Next →</button></div>`;
+    <div class="btn-row">${_wordCardBtn([th, rtgs, en])}<button class="btn btn-primary" onclick="_learnNext()">Next →</button></div>`;
   _tts.speak(th);
 }
