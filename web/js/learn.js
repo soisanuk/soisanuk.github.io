@@ -520,4 +520,4 @@ function startContinue() {
     queue: pool.map(w => ({ kind: "speed", word: w })), at: 0, results: [] };
   _learnStep();
 }
-setTimeout(_streakRender, 0);
+if (typeof document !== "undefined") setTimeout(_streakRender, 0);
