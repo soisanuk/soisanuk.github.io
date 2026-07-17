@@ -45,6 +45,39 @@ function updateMenuStats() {
     `<span style="color:var(--jade)">${s.mature}</span> mature`;
 }
 
+// ─── collapsible sidebar sections (desktop nav) ────────────────────────────
+// Each section header toggles the list(s) beneath it; open/closed state
+// persists. Secondary sections start collapsed so the whole nav fits a laptop.
+const NAV_KEY = "soisanuk_nav";
+const NAV_DEFAULT_COLLAPSED = ["Games", "Numbers", "More"];
+function _navCollapseInit() {
+  const sb = document.getElementById("sidebar");
+  if (!sb) return;
+  let state = {};
+  try { state = JSON.parse(localStorage.getItem(NAV_KEY) || "{}"); } catch (e) {}
+  for (const sec of sb.querySelectorAll(".sidebar-section")) {
+    const name = sec.textContent.trim();
+    const lists = [];
+    for (let el = sec.nextElementSibling;
+         el && !el.classList.contains("sidebar-section") && el.id !== "sidebar-footer";
+         el = el.nextElementSibling) {
+      if (el.classList.contains("sidebar-list")) lists.push(el);
+    }
+    const apply = c => {
+      sec.classList.toggle("collapsed", c);
+      lists.forEach(l => l.classList.toggle("nav-hidden", c));
+    };
+    apply(name in state ? state[name] : NAV_DEFAULT_COLLAPSED.includes(name));
+    sec.setAttribute("role", "button");
+    sec.addEventListener("click", () => {
+      const c = !sec.classList.contains("collapsed");
+      apply(c);
+      state[name] = c;
+      try { localStorage.setItem(NAV_KEY, JSON.stringify(state)); } catch (e) {}
+    });
+  }
+}
+
 // ─── character frequency (built once from WORDS) ───────────────────────────
 const CHAR_FREQ = (() => {
   const freq = {};

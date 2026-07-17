@@ -142,6 +142,7 @@ document.addEventListener("keydown", e => {
 
 // ─── init ──────────────────────────────────────────────────────────────────
 updateMenuStats();
+_navCollapseInit();
 maybeShowTutorial();
 // Reflect the persisted mute state on the games' 🔊/🔇 toggles
 document.querySelectorAll(".audio-mute-btn").forEach(b => {

@@ -163,7 +163,16 @@ body {
   color: var(--deep-saffron);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
+.sidebar-section:hover { color: var(--saffron); }
+.sidebar-section::after { content: "▾"; opacity: 0.45; font-size: 0.8em; }
+.sidebar-section.collapsed::after { content: "▸"; }
+.sidebar-list.nav-hidden { display: none; }
 .sidebar-list {
   list-style: none;
   padding: 0.2rem 0;
