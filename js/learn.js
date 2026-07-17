@@ -51,26 +51,26 @@ function startLearn() {
 // ── The unit runner ─────────────────────────────────────────────────────────
 let _lu = null; // { idx, unit, queue:[items], at, results:[{key,q,first,ms}], t0 }
 
-function _unitStart(idx) {
-  const unit = COURSE[idx];
+function _unitQueue(unit, dueWords) {
   const queue = [];
-  // warm-up: up to 4 due reviews from anything the course has touched
-  const prog = loadProgress();
-  const due = dueCards(prog, WORDS.map(w => w[0])).slice(0, 4);
-  for (const th of due) {
-    const w = WORDS.find(x => x[0] === th);
-    if (w) queue.push({ kind: "mc", word: w, tag: "review" });
-  }
+  for (const w of dueWords || []) queue.push({ kind: "mc", word: w, tag: "review" });
   if (unit.kind === "letters") {
     const batch = LETTER_BATCHES[unit.batch];
     for (const g of batch.glyphs) queue.push({ kind: "glyph", glyph: g });
     const fresh = courseNewWords(unit.batch).slice(0, 8);
     const pool = courseDecodable(unit.batch);
-    for (const w of fresh) queue.push({ kind: "mc", word: w, tag: "new" });
-    // timed speed reads over everything decodable so far (repeats fine)
+    // recall runs BOTH directions: read the Thai, then find the Thai
+    fresh.forEach((w, i) => queue.push({ kind: i % 2 ? "mcth" : "mc", word: w, tag: "new", pool }));
+    // produce, don't just pick: type the English…
+    for (const w of _shuffle(fresh.slice()).slice(0, 2)) queue.push({ kind: "typeen", word: w });
+    // …and from batch 2 on, TYPE THE THAI on the Kedmanee keyboard —
+    // decodable words only need taught letters, so review teaches typing
+    if (unit.batch >= 1) {
+      const short = _shuffle(pool.filter(w => [...w[0]].length <= 4)).slice(0, 2);
+      for (const w of short) queue.push({ kind: "typeth", word: w });
+    }
     const speed = _shuffle(pool.slice()).slice(0, Math.min(8, pool.length));
     for (const w of speed) queue.push({ kind: "speed", word: w });
-    // listening: hear it, pick the SCRIPT — reading through the ears
     const listen = _shuffle(pool.slice()).slice(0, Math.min(5, pool.length));
     for (const w of listen) queue.push({ kind: "listen", word: w, pool });
   } else {
@@ -78,10 +78,17 @@ function _unitStart(idx) {
     queue.push({ kind: "chunkIntro", lesson });
     for (const p of lesson.pattern) queue.push({ kind: "chunk", line: p });
     for (const pr of lesson.practice) queue.push({ kind: pr.kind === "cloze" ? "cloze" : "mc2", item: pr });
-    // a quick match round over the lesson's chunks
     if (lesson.pattern.length >= 4) queue.push({ kind: "match", pairs: lesson.pattern.slice(0, 4) });
   }
-  _lu = { idx, unit, queue, at: 0, results: [] };
+  return queue;
+}
+
+function _unitStart(idx) {
+  const unit = COURSE[idx];
+  const prog = loadProgress();
+  const due = dueCards(prog, WORDS.map(w => w[0])).slice(0, 4)
+    .map(th => WORDS.find(x => x[0] === th)).filter(Boolean);
+  _lu = { idx, unit, queue: _unitQueue(unit, due), at: 0, results: [] };
   _learnStep();
 }
 
@@ -96,6 +103,7 @@ function _learnStep() {
   body.innerHTML = "";
   showScreen("lesson-screen", "G");
   ({ glyph: _wGlyph, mc: _wMC, mc2: _wMC2, speed: _wMC, listen: _wListen,
+     mcth: _wMCTH, typeen: _wTypeEN, typeth: _wTypeTH,
      cloze: _wCloze, match: _wMatch, chunkIntro: _wChunkIntro, chunk: _wChunk }[item.kind])(item, body);
 }
 
@@ -146,8 +154,12 @@ function _shuffle(a) {
   return a;
 }
 function _mcOptions(word, field, pool) {
-  const wrong = _shuffle((pool || WORDS).filter(w => w[0] !== word[0] && w[field]))
-    .slice(0, 3).map(w => w[field]);
+  // distractors from the same part of speech first (a verb hides among verbs),
+  // topped up from the wider pool when the category runs thin
+  const src = (pool || WORDS).filter(w => w[0] !== word[0] && w[field] && w[field] !== word[field]);
+  const same = _shuffle(src.filter(w => w[3] === word[3]));
+  const rest = _shuffle(src.filter(w => w[3] !== word[3]));
+  const wrong = [...same, ...rest].slice(0, 3).map(w => w[field]);
   return _shuffle([word[field], ...wrong]);
 }
 function _speakBtn(text) {
@@ -187,6 +199,108 @@ function _wMC2(item, body) {
   _mcWire(_shuffle(p.options.slice()), p.answer, _wordKey(p.th), 0, () => _tts.speak(p.th));
 }
 function _wordKey(th) { return WORDS.some(w => w[0] === th) ? th : null; }
+
+// EN→Thai: read the meaning, find the Thai — the other direction of recall
+function _wMCTH(item, body) {
+  const w = item.word;
+  const opts = _mcOptions(w, 0, item.pool);
+  body.innerHTML = `<div class="screen-title" style="padding:1rem 0">${w[2]}</div>
+    <div class="card-prompt">Which one says it?</div>
+    <ul class="quiz-choices learn-thai-choices" id="learn-choices"></ul>`;
+  _mcWire(opts, w[0], w[0], 0, () => _tts.speak(w[0]));
+}
+
+// lenient English answer matching: "to have/there is" accepts "have",
+// "there is", "to have" — parentheticals dropped, variants split on / and ,
+function _enVariants(gloss) {
+  const base = gloss.toLowerCase().replace(/\([^)]*\)/g, " ");
+  const parts = base.split(/[\/,;]/).map(p => p.trim()).filter(Boolean);
+  const out = new Set();
+  for (const p of parts) {
+    out.add(p);
+    if (p.startsWith("to ")) out.add(p.slice(3));
+    if (p.startsWith("a ")) out.add(p.slice(2));
+    if (p.startsWith("the ")) out.add(p.slice(4));
+  }
+  return [...out];
+}
+function _enMatch(typed, gloss) {
+  const t = typed.toLowerCase().trim().replace(/\s+/g, " ");
+  return t.length > 0 && _enVariants(gloss).includes(t);
+}
+
+// type the English for the Thai — production, not recognition
+function _wTypeEN(item, body) {
+  const w = item.word;
+  body.innerHTML = `<div class="thai-big">${w[0]}</div><div class="rtgs">${w[1]}</div>
+    <div class="card-prompt">Type the meaning in English</div>
+    <div class="learn-type-row">
+      <input id="learn-type-in" class="learn-type-in" type="text" autocomplete="off"
+        autocapitalize="off" autocorrect="off" spellcheck="false">
+      <button class="btn btn-primary" id="learn-type-go">Check</button>
+    </div>
+    <div class="card-prompt" id="learn-type-fb"></div>`;
+  const input = document.getElementById("learn-type-in");
+  const fb = document.getElementById("learn-type-fb");
+  let missed = false;
+  const check = () => {
+    if (_enMatch(input.value, w[2])) {
+      fb.textContent = "✓ " + w[2];
+      _tts.speak(w[0]);
+      _learnRecord(w[0], courseGrade(true, !missed, 0, 0), 0);
+      setTimeout(_learnNext, 700);
+    } else if (!missed) {
+      missed = true;
+      fb.textContent = "Not quite — once more.";
+      input.select();
+    } else {
+      fb.textContent = "It means: " + w[2];
+      _learnRecord(w[0], 1, 0);
+      setTimeout(_learnNext, 1400);
+    }
+  };
+  document.getElementById("learn-type-go").onclick = check;
+  input.onkeydown = e => { if (e.key === "Enter") check(); };
+  input.focus();
+}
+
+// TYPE THE THAI on the Kedmanee keyboard (tutor.js builds it) — vocabulary
+// review that secretly teaches typing. Every keystroke is spoken, wrong keys
+// bounce off, and a decodable word never needs a letter you haven't met.
+function _wTypeTH(item, body) {
+  const w = item.word;
+  const target = [...w[0]];
+  body.innerHTML = `<div class="screen-title" style="padding:0.5rem 0">${w[2]}</div>
+    <div class="rtgs">${w[1]}</div>
+    <div class="thai-big" id="learn-th-buf" style="min-height:1.4em">&nbsp;</div>
+    <div class="card-prompt" id="learn-th-fb">Type it in Thai — every key speaks</div>
+    <div id="learn-kbd" class="t-kbd"></div>`;
+  const byKey = Object.fromEntries(TUTOR_ALL.map(k => [k.key, k]));
+  let buf = [], misses = 0;
+  const bufEl = document.getElementById("learn-th-buf");
+  const fb = document.getElementById("learn-th-fb");
+  _tBuildKbdInto(document.getElementById("learn-kbd"), latin => {
+    const entry = byKey[latin];
+    if (!entry) return;
+    const ch = entry.thai;
+    _tts.speak(letterSpeechParts(ch));
+    if (ch === target[buf.length]) {
+      buf.push(ch);
+      bufEl.textContent = buf.join("");
+      if (buf.length === target.length) {
+        fb.textContent = "✓ " + w[0] + " — " + w[2];
+        _tts.speak(w[0]);
+        _learnRecord(w[0], misses === 0 ? 5 : misses === 1 ? 4 : 2, 0);
+        setTimeout(_learnNext, 900);
+      }
+    } else {
+      misses++;
+      bufEl.classList.add("learn-buf-wrong");
+      setTimeout(() => bufEl.classList.remove("learn-buf-wrong"), 250);
+      if (misses === 2) fb.innerHTML = "It looks like: <b>" + w[0] + "</b>";
+    }
+  });
+}
 
 // hear it first, pick the SCRIPT you heard — listening that trains reading
 function _wListen(item, body) {
