@@ -239,3 +239,22 @@ test("no inline onclick embeds raw JSON quotes (the dead-glyph-tap bug)", () => 
       "JSON.stringify inside a double-quoted onclick must escape quotes: " + m[0].slice(0, 60));
   }
 });
+
+test("no word is quizzed before it is taught (the teach-first invariant)", () => {
+  for (let i = 0; i < COURSE.length; i++) {
+    if (COURSE[i].kind !== "letters") continue;
+    const q = _unitQueue(COURSE[i], []);
+    const taught = new Set();
+    q.forEach((item, at) => {
+      if (item.kind === "wordintro") { taught.add(item.word[0]); return; }
+      // any card that tests a specific fresh/new word must follow its intro
+      if (item.tag === "new" && item.word) {
+        assert.ok(taught.has(item.word[0]),
+          `batch ${COURSE[i].batch}: "${item.word[0]}" quizzed at ${at} before its intro`);
+      }
+    });
+    // and every fresh word actually got an intro
+    const fresh = courseNewWords(COURSE[i].batch).slice(0, 8);
+    for (const w of fresh) assert.ok(taught.has(w[0]), `${w[0]} never introduced`);
+  }
+});
