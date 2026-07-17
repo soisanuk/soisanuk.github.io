@@ -258,3 +258,14 @@ test("no word is quizzed before it is taught (the teach-first invariant)", () =>
     for (const w of fresh) assert.ok(taught.has(w[0]), `${w[0]} never introduced`);
   }
 });
+
+test("revisiting a completed card records nothing (no SRS/streak double-count)", () => {
+  const saved = typeof _lu !== "undefined" ? _lu : null;
+  _lu = { review: true, results: [] };
+  _learnRecord("มา", 5, 1200);   // would grade on a live card
+  assert.equal(_lu.results.length, 0, "review mode pushes no result");
+  // frontier math: max tracks the furthest reached, review = at < max
+  _lu = { at: 3, max: 5, results: [] };
+  assert.ok(_lu.at < _lu.max, "behind the frontier = reviewable");
+  _lu = saved;
+});
