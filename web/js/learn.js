@@ -610,3 +610,33 @@ function showRecords() {
        `<span class="learn-best">${th} <b>${(ms / 1000).toFixed(1)}s</b></span>`).join(" ") : "run some speed reads"}</div>`;
   showScreen("records-screen", "Y");
 }
+
+// ── 🚌 Words from the bus (engagement 7/7) ──────────────────────────────────
+// The Last Baht Bus (same origin) journals every Thai run its transcript
+// shows into lbb_save.thaiSeen; here that becomes tonight's practice deck.
+function busWords(save, words) {
+  const seen = (save && Array.isArray(save.thaiSeen)) ? save.thaiSeen : [];
+  const out = [];
+  for (const run of seen) {
+    for (const w of (words || WORDS)) {
+      if (run === w[0] || (run.includes(w[0]) && [...w[0]].length >= 2)) {
+        if (!out.some(x => x[0] === w[0])) out.push(w);
+      }
+    }
+  }
+  return out;
+}
+function _lbbSave() {
+  try { return JSON.parse(localStorage.getItem("lbb_save") || "null"); } catch { return null; }
+}
+function startBusWords() {
+  const deck = _shuffle(busWords(_lbbSave())).slice(0, 12);
+  if (deck.length < 3) { alert("Ride the baht bus first — play The Last Baht Bus and the words you meet land here."); return; }
+  _lu = { idx: -1, unit: { kind: "review", label: "Words from the bus" },
+    queue: deck.map((w, i) => ({ kind: i % 2 ? "listen" : "mc", word: w, pool: deck.length >= 4 ? deck : WORDS })), at: 0, results: [] };
+  _learnStep();
+}
+if (typeof document !== "undefined") setTimeout(() => {
+  const li = document.getElementById("nav-U");
+  if (li && busWords(_lbbSave()).length < 3) li.style.opacity = 0.5;
+}, 0);

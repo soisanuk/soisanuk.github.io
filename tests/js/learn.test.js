@@ -222,3 +222,12 @@ test("records: max streak survives resets, best day sticks", () => {
   assert.equal(st.days, 1, "streak reset");
   assert.equal(st.maxDays, 2, "record kept");
 });
+
+test("words from the bus: lbb_save.thaiSeen maps onto WORDS, deduped", () => {
+  const save = { thaiSeen: ["สวัสดีค่ะที่รัก", "มา", "มา", "ๆๆๆ"] };
+  const deck = busWords(save, WORDS);
+  assert.ok(deck.some(w => w[0] === "มา"), "exact match lands");
+  assert.ok(deck.some(w => "สวัสดีค่ะที่รัก".includes(w[0])), "phrases yield their words");
+  assert.equal(deck.filter(w => w[0] === "มา").length, 1, "deduped");
+  assert.deepEqual(busWords(null), [], "no save, empty deck");
+});
