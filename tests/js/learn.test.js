@@ -153,3 +153,12 @@ test("backup merge: more-reviewed cards win, done units stay done", () => {
   assert.ok(backupValid({ app: "soisanuk", progress: {} }));
   assert.ok(!backupValid({ progress: {} }), "foreign JSON refused");
 });
+
+test("Anki export is importable TSV: headers, one note per word, tags", () => {
+  const tsv = ankiTSV(WORDS.slice(0, 5), EXAMPLES);
+  const lines = tsv.split("\n");
+  assert.equal(lines[0], "#separator:tab");
+  assert.equal(lines.length, 3 + 5);
+  for (const l of lines.slice(3)) assert.equal(l.split("\t").length, 3, "front/back/tags");
+  assert.ok(tsv.includes(WORDS[0][0]) && tsv.includes(WORDS[0][2]));
+});
