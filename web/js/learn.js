@@ -243,7 +243,6 @@ function _wWordIntro(item, body) {
       typeof letterSpeechParts === "function" ? letterSpeechParts(ch) : [ch]) : [txt]).replace(/"/g, "&quot;");
     return `<span class="learn-decode-chip" onclick="_tts.speak(${parts})">${txt}</span>`;
   }).join('<span class="learn-decode-plus">+</span>');
-  const ex = (typeof EXAMPLES === "object" && EXAMPLES[w[0]]) ? EXAMPLES[w[0]] : null;
   const wt = JSON.stringify(w[0]).replace(/"/g, "&quot;");
   body.innerHTML = `<div class="learn-teach-tag">NEW WORD</div>
     <div class="thai-big learn-glyph" onclick="_tts.speak(${wt})">${w[0]}</div>
@@ -251,9 +250,19 @@ function _wWordIntro(item, body) {
     <div class="learn-mean">${w[2]}</div>
     ${clusters.length > 1 ? `<div class="learn-decode">${chips}</div>
       <div class="card-prompt" style="font-size:0.9em;opacity:0.8">Tap each piece to hear the letters build the word.</div>` : ""}
-    ${ex ? `<div class="learn-ex" onclick="_tts.speak(${JSON.stringify(ex[0]).replace(/"/g, "&quot;")})">${ex[0]}<div class="rtgs">${ex[2]}</div></div>` : ""}
+    <div id="learn-ex" class="learn-ex-block"></div>
+    <div class="card-prompt learn-ex-hint" id="learn-ex-hint" style="font-size:0.85em;opacity:0.75"></div>
     <div class="btn-row"><button class="btn btn-primary" onclick="_learnNext()">Got it →</button></div>`;
   _tts.speak(w[0]);
+  // the example sentence, fully decomposable (tap any word) with THIS word
+  // highlighted — the same interactive renderer the flashcard modes use
+  if (typeof showExample === "function") {
+    showExample("learn-ex", w[0]);
+    const shown = document.getElementById("learn-ex");
+    const hint = document.getElementById("learn-ex-hint");
+    if (hint) hint.textContent = shown && shown.style.display !== "none"
+      ? "Tap any word in the sentence to break it down." : "";
+  }
 }
 
 // multiple-choice recall: Thai on top, tap the meaning. speed items get a timer.
