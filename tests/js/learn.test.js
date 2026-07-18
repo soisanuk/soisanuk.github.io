@@ -198,6 +198,17 @@ test("the signage lesson's chunks carry rotating sign styles; others don't", () 
   assert.ok(g1.every(i => i.sign === null), "non-signage chunks stay plain");
 });
 
+test("the getting-around scenario (g7) is in the course and teaches directions", () => {
+  const unit = COURSE.find(u => u.kind === "chunks" && u.lesson === "g7");
+  assert.ok(unit, "g7 is on the course spine");
+  const g7 = GRAMMAR_LESSONS.find(l => l.id === "g7");
+  assert.ok(g7 && /เลี้ยว|จอด|ตรงไป/.test(g7.pattern.map(p => p[0]).join("")),
+    "g7 teaches turn/stop/straight chunks");
+  const chunks = _unitQueue(unit, []).filter(i => i.kind === "chunk");
+  assert.ok(chunks.length >= 3 && chunks.every(i => i.sign === null),
+    "renders as plain chunk cards");
+});
+
 test("placement: 80% per batch sets the cut, prefix units complete, levels name up", () => {
   assert.equal(_placementCut({ 0: { ok: 2, n: 2 }, 1: { ok: 2, n: 2 }, 2: { ok: 1, n: 2 } }), 1);
   assert.equal(_placementCut({ 0: { ok: 1, n: 2 } }), -1);
