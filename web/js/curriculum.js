@@ -159,6 +159,25 @@ const GRAMMAR_LESSONS = [
       { kind: "cloze", th: "อันนี้อร่อย___", answer: "ไหม", options: ["ไหม", "ครับ", "ไม่", "ไป"], en: "is this tasty? (question!)" },
     ],
   },
+  {
+    id: "g7", title: "Getting around", scenario: "the baht bus",
+    intro: "You flag a สองแถว (sǎawng-thǎaew — 'two rows', the red baht bus). " +
+      "Hop in the back; when you want out, press the buzzer or call จอด (jàawt, " +
+      "stop). ตรงไป is straight, เลี้ยว is turn. Ten baht down Beach Road — no " +
+      "haggling, just name where you're going and add your particle.",
+    pattern: [
+      ["ไปจอมเทียนครับ", "bpai jom-tian khráp", "to Jomtien — just name the place"],
+      ["ตรงไป", "dtrong bpai", "straight ahead"],
+      ["เลี้ยวซ้าย", "líao sáai", "turn left"],
+      ["เลี้ยวขวา", "líao khwǎa", "turn right"],
+      ["จอดตรงนี้", "jàawt dtrong níi", "stop right here — call it or hit the buzzer"],
+    ],
+    practice: [
+      { kind: "cloze", th: "เลี้ยว___", answer: "ซ้าย", options: ["ซ้าย", "ขวา", "ตรง", "ไป"], en: "turn LEFT" },
+      { kind: "cloze", th: "จอด___นี้", answer: "ตรง", options: ["ตรง", "ที่", "ไป", "เลี้ยว"], en: "stop right HERE" },
+      { kind: "mc", th: "ตรงไป", answer: "straight ahead", options: ["straight ahead", "turn left", "stop here", "how much"] },
+    ],
+  },
 ];
 
 // ── The course spine ─────────────────────────────────────────────────────────
@@ -180,6 +199,7 @@ const COURSE = [
   { kind: "letters", batch: 6, label: "Read: the spice rack" },
   { kind: "chunks", lesson: "g6", label: "Speak: this one, that one" },
   { kind: "letters", batch: 7, label: "Read: the long tail" },
+  { kind: "chunks", lesson: "g7", label: "Speak: getting around" },
 ];
 
 // mastery gate: a unit passes at 80% first-try accuracy
