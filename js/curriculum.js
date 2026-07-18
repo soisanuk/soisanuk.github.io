@@ -159,6 +159,45 @@ const GRAMMAR_LESSONS = [
       { kind: "cloze", th: "อันนี้อร่อย___", answer: "ไหม", options: ["ไหม", "ครับ", "ไม่", "ไป"], en: "is this tasty? (question!)" },
     ],
   },
+  {
+    id: "g7", title: "Getting around", scenario: "the baht bus",
+    intro: "You flag a สองแถว (sǎawng-thǎaew — 'two rows', the red baht bus). " +
+      "Hop in the back; when you want out, press the buzzer or call จอด (jàawt, " +
+      "stop). ตรงไป is straight, เลี้ยว is turn. Ten baht down Beach Road — no " +
+      "haggling, just name where you're going and add your particle.",
+    pattern: [
+      ["ไปจอมเทียนครับ", "bpai jom-tian khráp", "to Jomtien — just name the place"],
+      ["ตรงไป", "dtrong bpai", "straight ahead"],
+      ["เลี้ยวซ้าย", "líao sáai", "turn left"],
+      ["เลี้ยวขวา", "líao khwǎa", "turn right"],
+      ["จอดตรงนี้", "jàawt dtrong níi", "stop right here — call it or hit the buzzer"],
+    ],
+    practice: [
+      { kind: "cloze", th: "เลี้ยว___", answer: "ซ้าย", options: ["ซ้าย", "ขวา", "ตรง", "ไป"], en: "turn LEFT" },
+      { kind: "cloze", th: "จอด___นี้", answer: "ตรง", options: ["ตรง", "ที่", "ไป", "เลี้ยว"], en: "stop right HERE" },
+      { kind: "mc", th: "ตรงไป", answer: "straight ahead", options: ["straight ahead", "turn left", "stop here", "how much"] },
+    ],
+  },
+  {
+    id: "g8", title: "Prices and counting", scenario: "the bar tab",
+    intro: "Prices run on ...ละ (lá, 'per'): ขวดละร้อย = a hundred a bottle, " +
+      "คนละ = per person. Count things with number + classifier — ขวด for " +
+      "bottles, อัน for anything else. เท่าไหร่ asks the price; คิดเงิน " +
+      "(khít ngoen, 'count the money') calls for the tab. Digits themselves " +
+      "are drilled in Baht Bus — here it's the shape of a price.",
+    pattern: [
+      ["เบียร์ขวดละเท่าไหร่", "bia khùuat lá thâo-rài", "how much per bottle of beer?"],
+      ["ขวดละแปดสิบ", "khùuat lá bpàaet sìp", "eighty a bottle"],
+      ["เอาสองขวด", "ao sǎawng khùuat", "I'll take two bottles — number + classifier"],
+      ["คนละร้อย", "khon lá ráawy", "a hundred each (per person)"],
+      ["คิดเงินด้วยครับ", "khít ngoen dûai khráp", "the bill, please"],
+    ],
+    practice: [
+      { kind: "cloze", th: "เบียร์ขวด___เท่าไหร่", answer: "ละ", options: ["ละ", "ไม่", "มา", "ดี"], en: "how much PER bottle?" },
+      { kind: "cloze", th: "เอาสอง___", answer: "ขวด", options: ["ขวด", "บาท", "คน", "อัน"], en: "I'll take two BOTTLES" },
+      { kind: "mc", th: "คิดเงินด้วยครับ", answer: "the bill, please", options: ["the bill, please", "two more beers", "how much is this", "not spicy"] },
+    ],
+  },
 ];
 
 // ── The course spine ─────────────────────────────────────────────────────────
@@ -180,6 +219,8 @@ const COURSE = [
   { kind: "letters", batch: 6, label: "Read: the spice rack" },
   { kind: "chunks", lesson: "g6", label: "Speak: this one, that one" },
   { kind: "letters", batch: 7, label: "Read: the long tail" },
+  { kind: "chunks", lesson: "g7", label: "Speak: getting around" },
+  { kind: "chunks", lesson: "g8", label: "Speak: prices and counting" },
 ];
 
 // mastery gate: a unit passes at 80% first-try accuracy
