@@ -209,6 +209,14 @@ test("the getting-around scenario (g7) is in the course and teaches directions",
     "renders as plain chunk cards");
 });
 
+test("the prices scenario (g8) is in the course and teaches the ...ละ price shape", () => {
+  const unit = COURSE.find(u => u.kind === "chunks" && u.lesson === "g8");
+  assert.ok(unit, "g8 is on the course spine");
+  const g8 = GRAMMAR_LESSONS.find(l => l.id === "g8");
+  assert.ok(g8 && g8.pattern.some(p => /ละ/.test(p[0])), "g8 teaches the ...ละ 'per' pattern");
+  assert.ok(g8.practice.some(p => p.answer === "ละ"), "a cloze targets ละ");
+});
+
 test("placement: 80% per batch sets the cut, prefix units complete, levels name up", () => {
   assert.equal(_placementCut({ 0: { ok: 2, n: 2 }, 1: { ok: 2, n: 2 }, 2: { ok: 1, n: 2 } }), 1);
   assert.equal(_placementCut({ 0: { ok: 1, n: 2 } }), -1);

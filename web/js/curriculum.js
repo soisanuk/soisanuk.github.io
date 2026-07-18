@@ -178,6 +178,26 @@ const GRAMMAR_LESSONS = [
       { kind: "mc", th: "ตรงไป", answer: "straight ahead", options: ["straight ahead", "turn left", "stop here", "how much"] },
     ],
   },
+  {
+    id: "g8", title: "Prices and counting", scenario: "the bar tab",
+    intro: "Prices run on ...ละ (lá, 'per'): ขวดละร้อย = a hundred a bottle, " +
+      "คนละ = per person. Count things with number + classifier — ขวด for " +
+      "bottles, อัน for anything else. เท่าไหร่ asks the price; คิดเงิน " +
+      "(khít ngoen, 'count the money') calls for the tab. Digits themselves " +
+      "are drilled in Baht Bus — here it's the shape of a price.",
+    pattern: [
+      ["เบียร์ขวดละเท่าไหร่", "bia khùuat lá thâo-rài", "how much per bottle of beer?"],
+      ["ขวดละแปดสิบ", "khùuat lá bpàaet sìp", "eighty a bottle"],
+      ["เอาสองขวด", "ao sǎawng khùuat", "I'll take two bottles — number + classifier"],
+      ["คนละร้อย", "khon lá ráawy", "a hundred each (per person)"],
+      ["คิดเงินด้วยครับ", "khít ngoen dûai khráp", "the bill, please"],
+    ],
+    practice: [
+      { kind: "cloze", th: "เบียร์ขวด___เท่าไหร่", answer: "ละ", options: ["ละ", "ไม่", "มา", "ดี"], en: "how much PER bottle?" },
+      { kind: "cloze", th: "เอาสอง___", answer: "ขวด", options: ["ขวด", "บาท", "คน", "อัน"], en: "I'll take two BOTTLES" },
+      { kind: "mc", th: "คิดเงินด้วยครับ", answer: "the bill, please", options: ["the bill, please", "two more beers", "how much is this", "not spicy"] },
+    ],
+  },
 ];
 
 // ── The course spine ─────────────────────────────────────────────────────────
@@ -200,6 +220,7 @@ const COURSE = [
   { kind: "chunks", lesson: "g6", label: "Speak: this one, that one" },
   { kind: "letters", batch: 7, label: "Read: the long tail" },
   { kind: "chunks", lesson: "g7", label: "Speak: getting around" },
+  { kind: "chunks", lesson: "g8", label: "Speak: prices and counting" },
 ];
 
 // mastery gate: a unit passes at 80% first-try accuracy
