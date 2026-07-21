@@ -1721,6 +1721,20 @@ body.mobile #app-shell {
   right:  env(safe-area-inset-right,  0px);
   bottom: env(safe-area-inset-bottom, 0px);
 }
+/* ── Pattaya Idioms section ── */
+.idioms-intro { padding: 0 1.2rem; margin: 0 0 .5rem; color: var(--dim); font-size: .9rem; line-height: 1.45; }
+.idioms-body { flex: 1; overflow-y: auto; padding: 0 1.2rem 1rem; }
+.idiom-group-label { font-weight: 700; margin: 1rem 0 .55rem; font-size: 1.02rem; color: var(--gold); border-bottom: 1px solid var(--border); padding-bottom: .3rem; }
+.idiom-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(235px, 1fr)); gap: .7rem; }
+.idiom-card { border: 1px solid var(--border); border-radius: 10px; padding: .7rem .8rem; background: rgba(127,127,127,.06); }
+.idiom-head { display: flex; align-items: center; gap: .5rem; }
+.idiom-thai { flex: 1; text-align: left; font-size: 1.55rem; line-height: 1.2; background: none; border: none; color: var(--text); cursor: pointer; padding: 0; font-family: inherit; }
+.idiom-thai:hover { color: var(--jade); }
+.idiom-spk { background: none; border: none; cursor: pointer; font-size: 1.1rem; opacity: .65; padding: .1rem; }
+.idiom-spk:hover { opacity: 1; }
+.idiom-rom { color: var(--jade); font-size: .9rem; margin-top: .2rem; }
+.idiom-en { font-size: .95rem; margin-top: .1rem; }
+.idiom-note { color: var(--dim); font-size: .82rem; line-height: 1.4; margin-top: .45rem; border-top: 1px dashed var(--border); padding-top: .38rem; }
 </style>
 </head>
 <body>
@@ -1779,6 +1793,7 @@ body.mobile #app-shell {
   <ul class="sidebar-list">
     <li id="nav-A" onclick="showCharts()">     Reference Charts</li>
     <li id="nav-V" onclick="showVocabList()">       Vocab List</li>
+    <li id="nav-I" onclick="showIdioms()">          🎭 Pattaya Idioms</li>
     <li id="nav-0" onclick="showStats()">           Statistics</li>
     <li onclick="showTutorial()">                   How to use</li>
   </ul>
@@ -1849,6 +1864,7 @@ body.mobile #app-shell {
     <li onclick="showScreen('backup-screen','X')"><span class="menu-key">💾</span> Backup &amp; Restore &amp; Export</li>
     <li onclick="showCharts()">   <span class="menu-key">A</span> Reference Charts</li>
     <li onclick="showVocabList()"> <span class="menu-key">V</span> Vocab List</li>
+    <li onclick="showIdioms()">    <span class="menu-key">🎭</span> Pattaya Idioms</li>
     <li onclick="showStats()">     <span class="menu-key">0</span> Statistics</li>
     <li onclick="showTutorial()">  <span class="menu-key">?</span> How to use this app</li>
   </ul>
@@ -2071,6 +2087,16 @@ body.mobile #app-shell {
     <div id="vocab-list-count"></div>
     <div id="vocab-list-grid"></div>
   </div>
+  <div class="screen-footer">
+    <button class="btn" onclick="showMenu()">← Back</button>
+  </div>
+</div>
+
+<!-- ═══ PATTAYA IDIOMS ═════════════════════════════════════════════════════════ -->
+<div id="idioms-screen" class="screen">
+  <div class="screen-header">🎭 Pattaya Idioms</div>
+  <p class="idioms-intro">The words that actually run the town — the debts, the wives, the price of everything. Tap a phrase for its breakdown, 🔊 to hear it.</p>
+  <div id="idioms-body" class="idioms-body"></div>
   <div class="screen-footer">
     <button class="btn" onclick="showMenu()">← Back</button>
   </div>
@@ -2321,6 +2347,7 @@ body.mobile #app-shell {
 <script src="js/game.js"></script>
 <script src="js/baht-bus.js"></script>
 <script src="js/numbers.js"></script>
+<script src="js/idioms.js"></script>
 <script src="js/main.js"></script>
 <!-- ═══ WORD DETAIL MODAL ════════════════════════════════════════════════════ -->
 <div id="wc-overlay"></div>
