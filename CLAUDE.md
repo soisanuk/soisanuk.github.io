@@ -55,14 +55,16 @@ The Last Baht Bus (`/Users/mario/last-baht-bus`) reuses the shared Thai stack �
 
 Gotcha: top-level `const`/`let` from vm-loaded scripts land in the global *lexical* scope, not on the `globalThis` object — reference them as bare identifiers in tests; destructuring `globalThis` only works for `function` declarations.
 
-## Capacitor packaging
+<!-- Capacitor packaging (native Android/iOS build & `npx cap sync`): docs/capacitor.md -->
 
-Capacitor is scaffolded: `capacitor.config.ts` (`webDir: "web"`, no build step) plus committed `android/` and `ios/` platform dirs. **After any change to `web/` that should reach the native apps, run `npx cap sync`** — it copies the web assets into both platforms and re-registers plugins.
+## Post-Compaction Recovery
 
-- The app accesses plugins via `window.Capacitor.Plugins.{App,TextToSpeech}` **without JS imports** (classic scripts can't import); natively installed plugins auto-register on the bridge. If TTS is silent in a packaged build, a missing `npx cap sync` is the first thing to check. Native TTS is **required for Android audio** — the Android System WebView has no `speechSynthesis`.
-- `main.js` handles the Android hardware back button via `window.Capacitor.Plugins.App` (`backButton` → synthetic Escape keydown; `exitApp()` only from the menu screen).
-- `index.html` skips service-worker registration under Capacitor and applies all four safe-area insets; the viewport meta has `viewport-fit=cover`.
-- All hooks are no-ops in a plain browser (they key off `window.Capacitor`). Nothing in `web/` needs editing for packaging, and the web deploy pipelines publish `web/` only and must keep working unchanged — don't move or rename anything inside `web/`.
-- **Do not add a build step or convert anything to ES modules** for packaging reasons; the directory is used as-is.
+This project uses ContextR for context persistence. After a context reset or compaction:
 
-`web/README.md` is the detailed reference (features, keyboard shortcuts, file structure).
+1. Read `.contextr/state/checkpoint-latest.md` for the last-saved objective, in-flight work, and key files.
+2. Read `.contextr/state/sticky.md` for persistent context that survives sessions.
+3. Session-scoped items live in `.contextr/state/session.md` (git-ignored, may be absent).
+
+## External Mutations Policy
+
+Before any state-changing external call (API `PUT`/`POST`/`DELETE` to sensitive endpoints, config/settings/webhook changes), log the change to `.contextr/state/side-effects.md` with **what / why / how-to-reverse**, get explicit user confirmation, then update the log with the result. Never write raw credentials into tracked files — use `$ENV_VAR` or `$(op read …)` references.
