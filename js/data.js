@@ -370,6 +370,7 @@ const WORDS = [
   ["แมว", "maeo", "cat", "noun", "general"],
   ["นก", "nók", "bird", "noun", "general"],
   ["ช้าง", "cháang", "elephant", "noun", "general"],
+  ["ควาย", "khwaai", "buffalo", "noun", "general"],
   ["รถ", "rót", "car/vehicle", "noun", "general"],
   ["รถยนต์", "rót-yon", "car (formal)", "noun", "general"],
   ["รถจักรยานยนต์", "rót-jàk-krá-yaan-yon", "motorcycle", "noun", "general"],
