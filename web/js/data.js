@@ -710,6 +710,7 @@ const WORDS = [
   ["คือ", "khuue", "is/namely/that is", "verb", "verbs_core"],
   ["ทาง", "thaang", "way/path/direction/via", "noun", "general"],
   ["แก้ว", "kâeo", "glass (drinking)/cup", "noun", "general"],
+  ["ขวด", "khùat", "bottle", "noun", "general"],
   ["ต่อ", "tòo", "per/per unit/next/to connect", "adverb", "adverbs"],
   ["บาท", "bàat", "baht (Thai currency)", "noun", "general"],
   ["อากาศ", "aa-kàat", "weather/air/climate", "noun", "general"],

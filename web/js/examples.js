@@ -277,6 +277,7 @@ const EXAMPLES = {
   "ชา": ["ชาร้อนๆ ดื่มตอนเช้าสบายใจ", "chaa rón-rón dùuem toon cháo sà-baai-jai", "Drinking hot tea in the morning is comforting."],
   "กาแฟ": ["กาแฟร้อนหอมกรุ่นมากเลย", "kaa-fae rón hǒom-krùn mâak looei", "Hot coffee smells really wonderful."],
   "เบียร์": ["เขาดื่มเบียร์เย็นหลังเลิกงาน", "khǎo dùuem bia yen lǎng lôoek-ngaan", "He drinks cold beer after finishing work."],
+  "ขวด": ["ขอเบียร์สองขวดครับ", "khǒo bia sǒong khùat khráp", "Give me two bottles of beer, please."],
   "เหล้า": ["ห้ามดื่มเหล้าแล้วขับรถนะ", "hâam dùuem lâo láeo khàp rót ná", "Do not drink alcohol and then drive."],
   "ขนมปัง": ["ขนมปังปิ้งกับเนยอร่อยมาก", "khà-nǒm-pang pîng kàp noei à-rôi mâak", "Toasted bread with butter is very delicious."],
   "เค้ก": ["เธอซื้อเค้กวันเกิดให้เพื่อน", "thoe súue khéek wan-kòoet hâi phûuean", "She bought a birthday cake for her friend."],
