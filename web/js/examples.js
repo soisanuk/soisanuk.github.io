@@ -380,6 +380,7 @@ const EXAMPLES = {
   "แมว": ["แมวนอนหลับอยู่บนโซฟา", "maeo noon làp yùu bon soo-faa", "The cat is sleeping on the sofa"],
   "นก": ["นกร้องเพลงในตอนเช้า", "nók róong phleeng nai toon cháao", "The bird sings in the morning"],
   "ช้าง": ["ช้างเป็นสัตว์ประจำชาติไทย", "cháang pen sàt prà-jam châat thai", "The elephant is Thailand's national animal"],
+  "ควาย": ["ควายตัวใหญ่กินหญ้า", "khwaai tua yài kin yâa", "The big buffalo eats grass"],
   "รถยนต์": ["รถยนต์คันนี้ราคาแพงมาก", "rót-yon khan níi raa-khaa phaeng mâak", "This car is very expensive"],
   "รถจักรยานยนต์": ["เขาขี่รถจักรยานยนต์ไปทำงานทุกวัน", "khǎo khìi rót-jàk-krá-yaan-yon pai tham-ngaan thúk wan", "He rides a motorcycle to work every day"],
   "รถไฟ": ["รถไฟออกจากสถานีตอนเจ็ดโมงเช้า", "rót-fai òok jàak sà-thǎa-nii toon jèt moong cháao", "The train leaves the station at seven in the morning"],
