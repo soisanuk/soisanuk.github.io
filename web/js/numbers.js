@@ -113,25 +113,54 @@ function _vowelCellSpeak(idx) {
 }
 
 // ─── Consonant chart ──────────────────────────────────────────────────────────
+// Two orderings: alphabetical (Thai dictionary order) is the default; "by class"
+// keeps the mid/high/low grouping. The choice persists. Both share the same cell
+// styling/behaviour; alphabetical stays colour-coded by class (+ a legend) so the
+// class is never lost. The grid itself is auto-fill and widens in landscape (CSS),
+// so content reflows into more columns when the device rotates.
+let _alphaOrder = (typeof localStorage !== "undefined" && localStorage.getItem("soisanuk_chartorder")) || "alpha";
+
+function _setAlphaOrder(order) {
+  _alphaOrder = order;
+  try { localStorage.setItem("soisanuk_chartorder", order); } catch (e) { /* private mode */ }
+  _buildAlphabetChart();
+}
+
+function _alphaCell({ ch, rom, cls, name }) {
+  return `<button class="alpha-cell alpha-${cls}" onclick="_alphaCellSpeak('${ch}')" title="${ch}อ${name}">` +
+    `<span class="alpha-char">${ch}</span>` +
+    `<span class="alpha-rom">${rom}</span>` +
+    `<span class="alpha-name">${name}</span>` +
+    `</button>`;
+}
+
 function _buildAlphabetChart() {
   const el = document.getElementById("chart-alphabet");
-  const byClass = { mid: [], high: [], low: [] };
-  for (const c of CONSONANTS) {
-    const [ch, rom, cls, name] = c;
-    (byClass[cls] || byClass.low).push({ ch, rom, name });
-  }
+  const rows = CONSONANTS.map(([ch, rom, cls, name]) => ({ ch, rom, cls, name }));
   const classLabels = { mid: "Mid class · กลาง", high: "High class · สูง", low: "Low class · ต่ำ" };
-  let html = "";
-  for (const cls of ["mid", "high", "low"]) {
-    html += `<div class="alpha-class-label">${classLabels[cls]}</div><div class="alpha-grid">`;
-    for (const { ch, rom, name } of byClass[cls]) {
-      html += `<button class="alpha-cell alpha-${cls}" onclick="_alphaCellSpeak('${ch}')" title="${ch}อ${name}">` +
-        `<span class="alpha-char">${ch}</span>` +
-        `<span class="alpha-rom">${rom}</span>` +
-        `<span class="alpha-name">${name}</span>` +
-        `</button>`;
+
+  let html = `<div class="alpha-order-toggle" role="tablist">` +
+    ["alpha", "class"].map(o =>
+      `<button class="alpha-order-btn${_alphaOrder === o ? " active" : ""}" onclick="_setAlphaOrder('${o}')">` +
+      `${o === "alpha" ? "Alphabetical" : "By class"}</button>`).join("") +
+    `</div>`;
+
+  if (_alphaOrder === "class") {
+    const byClass = { mid: [], high: [], low: [] };
+    for (const r of rows) (byClass[r.cls] || byClass.low).push(r);
+    for (const cls of ["mid", "high", "low"]) {
+      html += `<div class="alpha-class-label">${classLabels[cls]}</div><div class="alpha-grid">`;
+      html += byClass[cls].map(_alphaCell).join("");
+      html += `</div>`;
     }
-    html += `</div>`;
+  } else {
+    // Thai code-point order is dictionary order; a legend keeps the class colours legible
+    const sorted = rows.slice().sort((a, b) => a.ch.codePointAt(0) - b.ch.codePointAt(0));
+    html += `<div class="alpha-legend">` +
+      [["mid", "ก", "Mid · กลาง"], ["high", "ข", "High · สูง"], ["low", "ค", "Low · ต่ำ"]].map(([cls, ch, lbl]) =>
+        `<span class="alpha-legend-item alpha-${cls}"><span class="alpha-char">${ch}</span>${lbl}</span>`).join("") +
+      `</div>`;
+    html += `<div class="alpha-grid">${sorted.map(_alphaCell).join("")}</div>`;
   }
   el.innerHTML = html;
 }
