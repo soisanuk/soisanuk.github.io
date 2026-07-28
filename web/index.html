@@ -1473,6 +1473,20 @@ body.mobile #bb-body { padding: .4rem .5rem .5rem; gap: .4rem; }
 .chart-tab:hover  { border-color:var(--gold); color:var(--gold); }
 .chart-section    { flex:1; overflow-y:auto; padding:.7rem .9rem 1.1rem; }
 /* alphabet */
+.alpha-order-toggle { display:flex; gap:.4rem; justify-content:center; margin:.1rem 0 .7rem; }
+.alpha-order-btn {
+  background:var(--surface); border:1px solid var(--border); color:var(--dim);
+  border-radius:20px; padding:.3rem .95rem; cursor:pointer; font-family:inherit;
+  font-size:.8rem; min-height:40px; transition:all .15s;
+}
+.alpha-order-btn.active { border-color:var(--gold); color:var(--gold); background:#1e0030; }
+.alpha-order-btn:hover  { border-color:var(--gold); color:var(--gold); }
+.alpha-legend {
+  display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;
+  margin:0 0 .7rem; font-size:.62rem; color:var(--dim);
+}
+.alpha-legend-item { display:inline-flex; align-items:center; gap:.3rem; }
+.alpha-legend-item .alpha-char { font-size:1.1rem; }
 .alpha-class-label {
   color:var(--deep-saffron); font-size:.72rem; font-weight:700; letter-spacing:.08em;
   text-transform:uppercase; margin:.7rem 0 .3rem; text-align:center;
@@ -1480,6 +1494,11 @@ body.mobile #bb-body { padding: .4rem .5rem .5rem; gap: .4rem; }
 .alpha-grid {
   display:grid; grid-template-columns:repeat(auto-fill, minmax(60px, 1fr));
   gap:.35rem; max-width:560px; margin:0 auto;
+}
+/* landscape: lift the portrait width cap so the grid reflows into more columns,
+   using the wider viewport instead of leaving it empty */
+@media (orientation: landscape) {
+  .alpha-grid { max-width:min(96vw, 1000px); }
 }
 .alpha-cell {
   background:var(--surface); border:1px solid var(--border); border-radius:8px;
