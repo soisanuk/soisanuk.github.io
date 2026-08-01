@@ -468,6 +468,8 @@ const WORDS = [
   ["สุขภาพ", "sùk-khà-phâap", "health", "noun", "health"],
   ["โรค", "rôok", "disease/illness", "noun", "health"],
   ["ยา", "yaa", "medicine/drug", "noun", "health"],
+  ["ยาดม", "yaa-dom", "menthol inhaler", "noun", "health"],
+  ["ดม", "dom", "to sniff/smell", "verb", "health"],
   ["พยาบาล", "phá-yaa-baan", "nurse", "noun", "health"],
   ["อาการ", "aa-kaan", "symptom/condition", "noun", "health"],
   ["ไข้", "khâi", "fever", "noun", "health"],
