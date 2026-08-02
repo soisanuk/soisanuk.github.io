@@ -10,7 +10,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-for (const f of ["data.js", "srs.js", "sessions.js"]) {
+// thai-script.js + curriculum.js provide the tone engine (toneOfWord) that the
+// drill's answer key now uses; data.js provides TONES it indexes into.
+for (const f of ["data.js", "thai-script.js", "curriculum.js", "srs.js", "sessions.js"]) {
   vm.runInThisContext(
     readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"),
     { filename: f }
@@ -18,24 +20,25 @@ for (const f of ["data.js", "srs.js", "sessions.js"]) {
 }
 
 // ── _detectWordTone: the tone-drill answer key ──────────────────────────────
-// Returns 0 (no mark / natural) through 4, one per Thai tone mark.
+// Returns the word's ACTUAL tone as an index into TONES (0 สามัญ/mid …
+// 4 จัตวา/rising) via the tone engine — not the tone MARK, which an unmarked
+// non-mid word (หมา, สิบ) doesn't have.
 
-test("_detectWordTone maps each tone mark to its index", () => {
-  assert.equal(_detectWordTone("นก"), 0, "no mark → natural");
-  assert.equal(_detectWordTone("ไก่"), 1, "ไม้เอก ่");
-  assert.equal(_detectWordTone("น้ำ"), 2, "ไม้โท ้");
-  assert.equal(_detectWordTone("โต๊ะ"), 3, "ไม้ตรี ๊");
-  assert.equal(_detectWordTone("จ๋า"), 4, "ไม้จัตวา ๋");
+test("_detectWordTone returns the realised tone, not the mark", () => {
+  assert.equal(_detectWordTone("มา"), 0, "low class, live, no mark → mid");
+  assert.equal(_detectWordTone("ข่า"), 1, "high + mai ek → low");
+  assert.equal(_detectWordTone("ม้า"), 3, "low + mai tho → high (NOT falling)");
+  assert.equal(_detectWordTone("จ๋า"), 4, "mid + mai jattawa → rising");
 });
 
-test("_detectWordTone returns the first tone mark in the word", () => {
-  // ่ appears before ้ here — the earlier mark wins the scan
-  assert.equal(_detectWordTone("ก่ข้"), 1);
-  assert.equal(_detectWordTone("ก้ข่"), 2);
+test("_detectWordTone fixes the unmarked non-mid words the old scan missed", () => {
+  assert.equal(_detectWordTone("หมา"), 4, "ห-leader → high class, live → rising");
+  assert.equal(_detectWordTone("สิบ"), 1, "high class, dead → low");
+  assert.equal(_detectWordTone("นก"), 3, "low class, dead short → high");
 });
 
-test("_detectWordTone ignores non-tone Thai and Latin alike", () => {
-  assert.equal(_detectWordTone("สวัสดี"), 0);
+test("_detectWordTone falls back to 0 for words it can't grade", () => {
+  assert.equal(_detectWordTone("สวัสดี"), 0, "multi-syllable → ungradable");
   assert.equal(_detectWordTone("hello"), 0);
   assert.equal(_detectWordTone(""), 0);
 });
@@ -44,11 +47,14 @@ test("_detectWordTone ignores non-tone Thai and Latin alike", () => {
 // Skips words longer than 5 UTF-16 units and caps the session at 100. shuffle
 // lives in the DOM-heavy app.js, so stub it deterministically.
 
-test("_toneDrillPool caps at 100 and drops long words", () => {
+test("_toneDrillPool caps at 100, drops long words, keeps only gradable ones", () => {
   globalThis.shuffle = arr => arr; // identity: deterministic, order-independent asserts
   const pool = _toneDrillPool();
   assert.ok(pool.length <= 100, "capped at 100");
+  assert.ok(pool.length > 0, "the corpus yields a real pool");
   assert.ok(pool.every(w => w[0].length <= 5), "no word over 5 chars");
   const wordSet = new Set(WORDS);
   assert.ok(pool.every(w => wordSet.has(w)), "every entry comes straight from WORDS");
+  // every pooled word has a gradable answer key (single readable syllable)
+  assert.ok(pool.every(w => toneOfWord(w[0])), "only gradable words are pooled");
 });
