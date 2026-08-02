@@ -22,7 +22,7 @@ const args = process.argv.slice(2);
 const check = args.includes("--check");
 const destArg = args.indexOf("--dest");
 const DEST_ROOT = destArg >= 0 ? args[destArg + 1]
-  : process.env.LBB_DIR || "/Users/mario/last-baht-bus";
+  : process.env.LBB_DIR || "/Users/mario/projects/last-baht-bus";
 
 // Path is relative to both repo roots; each copy is banner + source, verbatim.
 const FILES = [

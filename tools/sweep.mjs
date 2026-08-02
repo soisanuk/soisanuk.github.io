@@ -2,7 +2,7 @@
 // overflow, empty screens, clipped text, and <40px tap targets.
 // Usage: node tools/sweep.mjs   (borrows Playwright from last-baht-bus).
 import { createRequire } from "node:module";
-const require = createRequire("/Users/mario/last-baht-bus/package.json");
+const require = createRequire("/Users/mario/projects/last-baht-bus/package.json");
 const { chromium, devices } = require("@playwright/test");
 const browser = await chromium.launch();
 const report = [];
