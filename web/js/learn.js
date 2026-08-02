@@ -15,7 +15,7 @@ function _pathLoad() {
   catch { return {}; }
 }
 function _pathSave(p) { localStorage.setItem(LEARN_KEY, JSON.stringify(p)); }
-function _unitId(u) { return u.kind === "letters" ? "L" + u.batch : (u.lesson || "review"); }
+function _unitId(u) { return u.id || (u.kind === "letters" ? "L" + u.batch : (u.lesson || "review")); }
 function _unitDone(path, u) { return !!(path.units && path.units[_unitId(u)] && path.units[_unitId(u)].done); }
 function _unitUnlocked(path, idx) {
   if (idx === 0) return true;
@@ -97,6 +97,22 @@ function _unitQueue(unit, dueWords) {
     // listening: hear it — pick the script, or (every other card) the meaning
     const listen = _shuffle(pool.slice()).slice(0, Math.min(5, pool.length));
     listen.forEach((w, i) => queue.push({ kind: "listen", word: w, pool, mode: i % 2 ? "en" : "th" }));
+  } else if (unit.kind === "tone") {
+    // the tone unit: teach the rule (intro + interactive calculator), then
+    // drill it — hear a tone and pick the script (ear), read a real word and
+    // name its tone (feeds that word's SRS). Ear hosts must be MID class: only
+    // mid + the four marks spans all five tones cleanly.
+    queue.push({ kind: "toneIntro" });
+    queue.push({ kind: "tonecalc" });
+    const taught = typeof taughtGlyphs === "function" ? taughtGlyphs(3) : new Set(["ก", "ด"]);
+    const hosts = ["ก", "ด", "ต", "บ", "ป"].filter(c =>
+      typeof _consClass === "function" && _consClass(c) === "mid" && taught.has(c));
+    for (let i = 0; i < 4; i++) queue.push({ kind: "toneear", cons: hosts[i % hosts.length] || "ก", vowel: "า" });
+    const readWords = _shuffle((typeof TONE_READ_WORDS !== "undefined" ? TONE_READ_WORDS : []).slice())
+      .map(th => WORDS.find(w => w[0] === th)).filter(Boolean)
+      .filter(w => typeof syllableTone === "function" && syllableTone(w[0]))
+      .slice(0, 4);
+    for (const w of readWords) queue.push({ kind: "toneread", word: w });
   } else {
     const lesson = GRAMMAR_LESSONS.find(g => g.id === unit.lesson);
     queue.push({ kind: "chunkIntro", lesson });
@@ -117,8 +133,11 @@ function _unitStart(idx) {
   _learnStep();
 }
 
-// cards you can revisit render read-only; teaching cards teach the same either way
-const _TEACH_KINDS = new Set(["glyph", "wordintro", "chunkIntro", "chunk"]);
+// cards you can revisit render read-only; teaching cards teach the same either
+// way. Tone cards re-run live on revisit (harmless — _learnRecord no-ops when
+// reviewing) rather than route through _wReviewCard, which expects a word/pair.
+const _TEACH_KINDS = new Set(["glyph", "wordintro", "chunkIntro", "chunk",
+  "toneIntro", "tonecalc", "toneear", "toneread"]);
 
 function _learnStep() {
   if (!_lu || _lu.at >= _lu.queue.length) { _unitFinish(); return; }
@@ -143,7 +162,8 @@ function _learnStep() {
   if (review && !_TEACH_KINDS.has(item.kind)) { _wReviewCard(item, body); return; }
   ({ glyph: _wGlyph, wordintro: _wWordIntro, mc: _wMC, mc2: _wMC2, speed: _wMC, listen: _wListen,
      mcth: _wMCTH, typeen: _wTypeEN, typeth: _wTypeTH, clozex: _wClozeX,
-     cloze: _wCloze, match: _wMatch, chunkIntro: _wChunkIntro, chunk: _wChunk }[item.kind])(item, body);
+     cloze: _wCloze, match: _wMatch, chunkIntro: _wChunkIntro, chunk: _wChunk,
+     toneIntro: _wToneIntro, tonecalc: _wToneCalc, toneear: _wToneEar, toneread: _wToneRead }[item.kind])(item, body);
 }
 
 function _learnRecord(key, quality, ms) {
@@ -559,6 +579,90 @@ function _wChunk(item, body) {
     <div class="card-prompt">Tap it. Hear it. Say it out loud — chunks stick by mouth, not by eye. ${_speakBtn(th)}</div>
     <div class="btn-row">${_wordCardBtn([th, rtgs, en])}<button class="btn btn-primary" onclick="_learnNext()">Next →</button></div>`;
   _tts.speak(th);
+}
+
+// ── Tone unit widgets ────────────────────────────────────────────────────────
+function _toneSpeak(t) { return JSON.stringify(t).replace(/"/g, "&quot;"); }
+
+// the rule, then one mid-class syllable shown under all five tones (tap each)
+function _wToneIntro(item, body) {
+  const set = typeof toneMinimalSet === "function" ? toneMinimalSet("ก", "า") : [];
+  const chips = set.map(s =>
+    `<span class="tone-chip" style="border-color:${TONE_COLORS[s.tone]};color:${TONE_COLORS[s.tone]}" ` +
+    `onclick="_tts.speak(${_toneSpeak(s.thai)})">${s.thai}<small>${TONE_LABELS[s.tone].toLowerCase()}</small></span>`).join("");
+  body.innerHTML = `<div class="learn-teach-tag">READING THE TONES</div>
+    <div class="card-prompt learn-intro-text">Same letters, one small mark, a different word. Three things fix a syllable's tone: the initial consonant's <b>class</b> (mid / high / low), whether the syllable is <b>live</b> (long vowel, or ends in m·n·ng·y·w) or <b>dead</b> (short vowel, or ends in a p·t·k stop), and any <b>tone mark</b>. Here is one mid-class syllable under all five — tap each and hear the pitch move:</div>
+    <div class="tone-row">${chips}</div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="_learnNext()">The calculator →</button></div>`;
+}
+
+// interactive: pick class + vowel length + mark, watch the tone resolve
+function _wToneCalc(item, body) {
+  const state = { cls: "mid", vlong: true, mark: "none" };
+  const EG = { mid: "ก", high: "ส", low: "ม" };
+  body.innerHTML = `<div class="learn-teach-tag">TONE CALCULATOR</div>
+    <div class="card-prompt" style="opacity:0.8">Change any dial — the tone follows the rule.</div>
+    <div class="tone-calc" id="tone-calc"></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="_learnNext()">Got it →</button></div>`;
+  const box = document.getElementById("tone-calc");
+  const group = (label, opts, cur, set) => {
+    const row = document.createElement("div");
+    row.className = "tone-calc-row";
+    row.innerHTML = `<span class="tone-calc-label">${label}</span>`;
+    const btns = document.createElement("div");
+    btns.className = "tone-calc-btns";
+    opts.forEach(([val, txt]) => {
+      const b = document.createElement("button");
+      b.className = "btn btn-small tone-opt" + (val === cur() ? " sel" : "");
+      b.textContent = txt;
+      b.onclick = () => { set(val); render(); };
+      btns.appendChild(b);
+    });
+    row.appendChild(btns);
+    return row;
+  };
+  function render() {
+    box.innerHTML = "";
+    box.appendChild(group("Class", [["mid", "Mid"], ["high", "High"], ["low", "Low"]],
+      () => state.cls, v => state.cls = v));
+    box.appendChild(group("Vowel", [["long", "Long · live"], ["short", "Short · dead"]],
+      () => state.vlong ? "long" : "short", v => state.vlong = v === "long"));
+    box.appendChild(group("Mark", [["none", "–"], ["ek", "่"], ["tho", "้"], ["tri", "๊"], ["chattawa", "๋"]],
+      () => state.mark, v => state.mark = v));
+    const tone = toneFromParts(state.cls, { mark: state.mark, live: state.vlong, shortVowel: !state.vlong });
+    const syl = EG[state.cls] + _TONE_MARK_BY_KEY[state.mark] + (state.vlong ? "า" : "ะ");
+    const out = document.createElement("div");
+    out.className = "tone-calc-out";
+    out.innerHTML = `<span class="tone-eg" onclick="_tts.speak(${_toneSpeak(syl)})">${syl}</span>` +
+      `<span class="tone-arrow">→</span>` +
+      `<b class="tone-name" style="color:${TONE_COLORS[tone]}">${TONE_LABELS[tone]} tone</b>`;
+    box.appendChild(out);
+  }
+  render();
+}
+
+// hear a tone, pick the written syllable — the five differ only by their mark
+function _wToneEar(item, body) {
+  const set = toneMinimalSet(item.cons, item.vowel);
+  const target = set[Math.floor(Math.random() * set.length)];
+  body.innerHTML = `<div class="thai-big">👂</div>
+    <div class="card-prompt">Which one did you hear? ${_speakBtn(target.thai)}</div>
+    <ul class="quiz-choices learn-thai-choices" id="learn-choices"></ul>`;
+  _mcWire(_shuffle(set.map(s => s.thai)), target.thai, null, 0, () => _tts.speak(target.thai));
+  _tts.speak(target.thai);
+}
+
+// read a real word, name its tone — no romanisation shown (that would give it
+// away); a correct answer feeds the word's own SRS card
+function _wToneRead(item, body) {
+  const w = item.word;
+  const tone = syllableTone(w[0]);
+  body.innerHTML = `<div class="thai-big learn-glyph" onclick="_tts.speak(${_toneSpeak(w[0])})">${w[0]}</div>
+    <div class="learn-mean">${w[2]}</div>
+    <div class="card-prompt">What tone is it? (tap the word to hear it)</div>
+    <ul class="quiz-choices" id="learn-choices"></ul>`;
+  const labels = ["mid", "low", "falling", "high", "rising"].map(k => TONE_LABELS[k]);
+  _mcWire(labels, TONE_LABELS[tone], _wordKey(w[0]), 0, () => _tts.speak(w[0]), w);
 }
 
 // ── Continue + streak (engagement 2/7) ──────────────────────────────────────

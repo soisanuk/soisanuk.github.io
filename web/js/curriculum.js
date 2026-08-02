@@ -200,6 +200,68 @@ const GRAMMAR_LESSONS = [
   },
 ];
 
+// ── Tones (the tone-engine course unit) ──────────────────────────────────────
+// The reading wall isn't the letters — it's getting the TONE off the page.
+// Pure data + the minimal-set generator live here; the interactive calculator
+// and the ear drills are in learn.js. The actual computation is
+// toneFromParts/syllableTone in thai-script.js (tests/js/tone.test.js).
+const TONE_LABELS = { mid: "Mid", low: "Low", falling: "Falling", high: "High", rising: "Rising" };
+const TONE_COLORS = { mid: "#b0b6bd", low: "#4aa3ff", falling: "#ff6b6b", high: "#2fbf71", rising: "#f7b32b" };
+const _TONE_MARK_BY_KEY = { none: "", ek: "่", tho: "้", tri: "๊", chattawa: "๋" };
+
+// The canonical minimal set: one mid-class consonant + a long vowel, once per
+// tone mark, spans all five tones (mid · low · falling · high · rising) — the
+// clearest possible demonstration that the mark alone flips the word. The mark
+// rides on the consonant, so it sits between consonant and vowel.
+function toneMinimalSet(cons, vowel) {
+  const cls = typeof _consClass === "function" ? _consClass(cons) : "mid";
+  return ["none", "ek", "tho", "tri", "chattawa"].map(mk => ({
+    thai: cons + _TONE_MARK_BY_KEY[mk] + vowel,
+    mark: mk,
+    tone: toneFromParts(cls, { mark: mk, live: true, shortVowel: false }),
+  }));
+}
+
+// Real single-syllable words for "what tone is this?" — each is in WORDS (a
+// correct read also feeds that word's SRS card) and reads cleanly via
+// syllableTone. The runner filters to the ones actually present and readable.
+const TONE_READ_WORDS = ["ห้า", "สาม", "สี่", "สอง", "หก", "ไม่", "มา", "คุณ", "ผม", "น้ำ", "ดี", "นี้"];
+
+function _tcEsc(s) {
+  return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+// The tone of a Thai WORD, but only when it's safe to colour it one colour:
+// syllableTone reads a single syllable, so a multi-syllable word (its RTGS has
+// a hyphen/space, e.g. "à-ròi") returns null rather than a wrong single tone.
+// Unknown long tokens are skipped too; short unknown tokens fall through to the
+// parser. This is the guard both the reader and toneColorHtml share.
+function _wordRtgs(text) {
+  // prefer the app's WORD_MAP (what the tokeniser matches against, so every
+  // reader token is covered), then the WORDS array
+  if (typeof WORD_MAP !== "undefined" && WORD_MAP[text]) return WORD_MAP[text][1];
+  if (typeof WORDS !== "undefined") { const w = WORDS.find(x => x[0] === text); if (w) return w[1]; }
+  return null;
+}
+function toneOfWord(text) {
+  if (typeof syllableTone !== "function") return null;
+  const rtgs = _wordRtgs(text);
+  if (rtgs && /[-\s]/.test(rtgs.trim())) return null;   // multi-syllable romanisation
+  if (!rtgs && [...String(text)].length > 3) return null; // unknown longish token: don't guess a tone
+  return syllableTone(text);
+}
+// Colour each token of a Thai string by its tone (multi-syllable / unreadable
+// tokens stay plain — a colour is never wrong). Uses the app tokeniser for
+// sentences when present, else treats the whole input as one word.
+function toneColorHtml(thai) {
+  const toks = (typeof _tokenise === "function")
+    ? _tokenise(thai).map(t => t.text)
+    : [String(thai)];
+  return toks.map(t => {
+    const tone = toneOfWord(t);
+    return tone ? `<span style="color:${TONE_COLORS[tone]}">${_tcEsc(t)}</span>` : _tcEsc(t);
+  }).join("");
+}
+
 // ── The course spine ─────────────────────────────────────────────────────────
 // Reading units and scenario lessons interleaved: letters → decode → speed →
 // listen, with a chunk lesson after every couple of ladder rungs. `letters`
@@ -211,6 +273,7 @@ const COURSE = [
   { kind: "letters", batch: 2, label: "Read: enough to say ไม่" },
   { kind: "chunks", lesson: "g2", label: "Speak: polite armour" },
   { kind: "letters", batch: 3, label: "Read: rising and falling" },
+  { kind: "tone", id: "tone1", label: "Tones: read the marks" },
   { kind: "chunks", lesson: "g3", label: "Speak: ordering food" },
   { kind: "letters", batch: 4, label: "Read: shops and streets" },
   { kind: "chunks", lesson: "g4", label: "Speak: haggling" },
