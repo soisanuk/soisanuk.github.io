@@ -171,7 +171,11 @@ function _buildVowelChart() {
   let html = `<div class="alpha-grid" style="grid-template-columns:repeat(auto-fill,minmax(80px,1fr))">`;
   for (let i = 0; i < VOWELS.length; i++) {
     const [sym, rom, desc] = VOWELS[i];
-    const disp = vowelDisp(sym);
+    // The vowel reference sits on an อ ("zero consonant") host, not the app-wide
+    // ก: อ carries the vowel with no consonant sound of its own, so อา reads as
+    // the pure vowel "aa" (the dictionary convention, and it matches this
+    // chart's own audio — letterSpeech says "อา, สระอา").
+    const disp = sym.replace(/◌/g, "อ");
     html += `<button class="alpha-cell" onclick="_vowelCellSpeak(${i})" title="${desc}">` +
       `<span class="alpha-char" style="color:var(--lotus);font-size:1.3rem">${disp}</span>` +
       `<span class="alpha-rom">${rom}</span>` +
@@ -179,7 +183,7 @@ function _buildVowelChart() {
       `</button>`;
   }
   html += `</div>`;
-  html += `<p style="color:var(--dim);font-size:.72rem;text-align:center;margin-top:.7rem;line-height:1.5">Vowels shown on a ก host. Tap to hear sound + name.</p>`;
+  html += `<p style="color:var(--dim);font-size:.72rem;text-align:center;margin-top:.7rem;line-height:1.5">Vowels shown on an อ host. Tap to hear sound + name.</p>`;
   el.innerHTML = html;
 }
 
