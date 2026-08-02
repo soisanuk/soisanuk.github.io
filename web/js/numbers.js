@@ -109,7 +109,8 @@ function _alphaCellSpeak(ch) {
 }
 
 function _vowelCellSpeak(idx) {
-  _tts.speak(letterSpeechParts(VOWELS[idx][0]));
+  // slower than the 0.85 default: the compound vowel names (สระเอือ, …) rush by
+  _tts.speak(letterSpeechParts(VOWELS[idx][0]), null, 0.7);
 }
 
 // ─── Consonant chart ──────────────────────────────────────────────────────────
