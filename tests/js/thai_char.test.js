@@ -202,4 +202,11 @@ describe("vowelDisp", () => {
     assert.equal(vowelDisp("สวัสดี"), "สวัสดี");
     assert.equal(vowelDisp("เอก"), "เอก"); // tone drill names untouched
   });
+
+  test("an explicit host replaces ก (อ for the pure-vowel reading)", () => {
+    assert.equal(vowelDisp("◌า", "อ"), "อา");
+    assert.equal(vowelDisp("เ◌าะ", "อ"), "เอาะ");
+    assert.equal(vowelDisp("◌ุ", "อ"), "อุ");
+    assert.equal(vowelDisp("ก", "อ"), "ก"); // still identity without ◌
+  });
 });
