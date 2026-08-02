@@ -467,6 +467,9 @@ function _toneDrillPool() {
     const thai = w[0];
     // Skip multi-syllable words that are too complex for a listening drill
     if (thai.length > 5) continue;
+    // Only words the tone engine can actually grade (single, readable
+    // syllables) — so the answer key is always right, never a guess.
+    if (typeof toneOfWord === "function" && !toneOfWord(thai)) continue;
     pool.push(w);
   }
   return shuffle(pool).slice(0, 100); // cap at 100 for a session
@@ -483,18 +486,16 @@ function startToneDrill() {
   showScreen("tone-drill-screen", "T");
 }
 
-// Derive the tone of a Thai word (first syllable, simplified rule-based)
+// The word's actual tone as an index into TONES, via the tone engine
+// (toneOfWord, curriculum.js). TONES[i][1] holds the realised tone name
+// ("mid" … "rising"), the same vocabulary toneOfWord returns, so the two line
+// up directly. This replaces an older marks-only guess that got every unmarked
+// non-mid word wrong (หมา read as mid, not rising; สิบ as mid, not low). Pool
+// words are pre-filtered to ones the engine can grade, so 0 is a safe fallback.
 function _detectWordTone(thai) {
-  const chars = [...thai];
-  // Look for explicit tone marks first
-  for (const ch of chars) {
-    const cp = ch.codePointAt(0);
-    if (cp === 0x0E48) return 1; // ่ mai ek
-    if (cp === 0x0E49) return 2; // ้ mai tho
-    if (cp === 0x0E4A) return 3; // ๊ mai tri
-    if (cp === 0x0E4B) return 4; // ๋ mai jattawa
-  }
-  return 0; // no explicit mark → mid/natural tone
+  const tone = (typeof toneOfWord === "function") ? toneOfWord(thai) : null;
+  const i = tone ? TONES.findIndex(t => t[1] === tone) : -1;
+  return i >= 0 ? i : 0;
 }
 
 function toneDrillShow() {
