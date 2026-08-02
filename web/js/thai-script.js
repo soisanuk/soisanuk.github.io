@@ -122,3 +122,153 @@ function letterSpeech(ch) {
 function letterSpeechParts(ch) {
   return letterSpeech(ch).split(", ");
 }
+
+// ── Tone computation ──────────────────────────────────────────────────────
+// Standard Thai tone rules: the initial consonant's CLASS (mid/high/low),
+// whether the syllable is LIVE (long vowel or sonorant final) or DEAD (short
+// vowel with no final / stop final), and any tone MARK together fix the tone.
+//
+// Two layers, on purpose:
+//   • toneFromParts()  — the pure rule table. No parsing at all, so it can
+//     never be wrong about a shape it wasn't given; it powers the interactive
+//     tone calculator and the minimal-pair drills, which build their inputs
+//     from known pieces.
+//   • syllableTone()   — a best-effort parser over ONE written syllable that
+//     feeds toneFromParts. It returns null whenever it can't confidently read
+//     the shape (consonant clusters, silent letters, odd vowels), so a caller
+//     that colours or labels text never shows a wrong tone — it shows none.
+// Tones are named with the same vocabulary as TONES in data.js:
+// "mid" · "low" · "falling" · "high" · "rising".
+
+const _TONE_MARKS = { "่": "ek", "้": "tho", "๊": "tri", "๋": "chattawa" };
+
+// initial-consonant class from the data (mid/high/low), or null if unknown
+function _consClass(ch) {
+  if (typeof CONSONANTS !== "undefined") {
+    const row = CONSONANTS.find(r => r[0] === ch);
+    if (row) return row[2];
+  }
+  if (typeof TONE_CLASSES !== "undefined") {
+    for (const cls in TONE_CLASSES) if (TONE_CLASSES[cls].includes(ch)) return cls;
+  }
+  return null;
+}
+
+// A final consonant makes the syllable LIVE (sonorant: ง น ม ย ว) or DEAD
+// (stop: ก ด บ …). null = this letter never closes a syllable this way.
+const _LIVE_FINALS = new Set(["ng", "n", "m", "y", "w"]);
+const _DEAD_FINALS = new Set(["k", "p", "t"]);
+function _finalKind(ch) {
+  if (typeof CONSONANTS === "undefined") return null;
+  const row = CONSONANTS.find(r => r[0] === ch);
+  if (!row) return null;
+  if (_LIVE_FINALS.has(row[5])) return "live";
+  if (_DEAD_FINALS.has(row[5])) return "dead";
+  return null;
+}
+
+function _isCons(ch) { const c = ch.codePointAt(0); return c >= 0x0E01 && c <= 0x0E2E; }
+function _isLeadVowel(ch) { const c = ch.codePointAt(0); return c >= 0x0E40 && c <= 0x0E44; }
+
+// The rule table. cls ∈ {mid,high,low}; opts.mark ∈
+// {none,ek,tho,tri,chattawa}; opts.live = live syllable?; opts.shortVowel only
+// matters for a low-class dead syllable (short → high, long → falling).
+function toneFromParts(cls, opts) {
+  const { mark = "none", live = true, shortVowel = false } = opts || {};
+  if (mark === "ek") return cls === "low" ? "falling" : "low";
+  if (mark === "tho") return cls === "low" ? "high" : "falling";
+  if (mark === "tri") return "high";
+  if (mark === "chattawa") return "rising";
+  if (live) return cls === "high" ? "rising" : "mid";      // mid/low live → mid
+  if (cls === "high" || cls === "mid") return "low";       // dead, high/mid → low
+  return shortVowel ? "high" : "falling";                  // dead, low class
+}
+
+// length/liveness of an OPEN syllable's vowel, or null if unrecognised.
+// { long } drives the low-class dead split; { live } flags vowels that end in
+// a glide/nasal of their own (ำ ไ ใ เ◌า) so they stay live with no written final.
+function _vowelLength(leading, trailing, taikhu) {
+  if (taikhu) return { long: false };                        // ็ mai taikhu shortens
+  if (trailing.indexOf("ะ") >= 0 || trailing.indexOf("ั") >= 0) return { long: false };
+  if (trailing === "ิ" || trailing === "ึ" || trailing === "ุ") return { long: false };
+  if (trailing === "ำ") return { long: false, live: true };
+  if (trailing === "า") return leading === "เ" ? { long: true, live: true } : { long: true }; // เ◌า = ao
+  if (trailing === "ี" || trailing === "ื" || trailing === "ู") return { long: true };
+  if (trailing === "") {
+    if (leading === "เ" || leading === "แ" || leading === "โ") return { long: true };
+    if (leading === "ไ" || leading === "ใ") return { long: true, live: true };
+    if (leading === "") return { long: false };              // inherent vowel (คน, ผม)
+  }
+  return null;
+}
+
+// Parse one syllable into the parts toneFromParts needs, or null if unsure.
+function _analyseSyllable(input) {
+  const raw = [...String(input)];
+  if (!raw.length) return null;
+  if (raw.some(ch => ch.codePointAt(0) === 0x0E4C)) return null; // ์ การันต์: silent letters, out of scope
+
+  let i = 0, leading = "";
+  while (i < raw.length && _isLeadVowel(raw[i])) { leading += raw[i]; i++; }
+  if (i >= raw.length || !_isCons(raw[i])) return null;
+  let cls = _consClass(raw[i]);
+  i++;
+  // ห / อ leader: silent, promotes a following low-class consonant to its class
+  if ((raw[i - 1] === "ห" || raw[i - 1] === "อ") && i < raw.length &&
+      _isCons(raw[i]) && _consClass(raw[i]) === "low") {
+    cls = raw[i - 1] === "ห" ? "high" : "mid";
+    i++;
+  }
+  if (!cls) return null;
+
+  let mark = "none", taikhu = false, trailing = "", tail = [];
+  for (; i < raw.length; i++) {
+    const ch = raw[i], c = ch.codePointAt(0);
+    if (_TONE_MARKS[ch]) mark = _TONE_MARKS[ch];
+    else if (c === 0x0E47) taikhu = true;                    // ็
+    else if (c === 0x0E33) trailing += ch;                   // ำ
+    else if (c >= 0x0E30 && c <= 0x0E39) trailing += ch;     // above/below vowels incl ั ะ
+    else if (_isCons(ch)) tail.push(ch);
+    else return null;
+  }
+
+  // Compound vowels whose last piece is written with a consonant letter
+  // (◌อ / เ◌อ, เ◌ือ, ◌ัว, เ◌ีย): the trailing consonant is the vowel, and any
+  // consonant after it is the real final.
+  let long, vLive = false, finalChar = null;
+  const th = s => trailing.indexOf(s) >= 0;
+  if (tail[0] === "อ" && trailing === "") { long = true; finalChar = tail[1] || null; if (tail.length > 2) return null; }
+  else if (tail[0] === "อ" && leading.includes("เ") && th("ื")) { long = true; vLive = true; finalChar = tail[1] || null; if (tail.length > 2) return null; }
+  else if (tail[0] === "ว" && trailing === "ั") { long = true; vLive = true; finalChar = tail[1] || null; if (tail.length > 2) return null; }
+  else if (tail[0] === "ย" && leading.includes("เ") && th("ี")) { long = true; vLive = true; finalChar = tail[1] || null; if (tail.length > 2) return null; }
+  else {
+    const vi = _vowelLength(leading, trailing, taikhu);
+    if (!vi) return null;
+    long = vi.long; vLive = !!vi.live;
+    if (tail.length > 1) return null;
+    finalChar = tail[0] || null;
+  }
+
+  let live;
+  if (finalChar) {
+    const fk = _finalKind(finalChar);
+    if (fk === null) return null;
+    live = fk === "live";
+  } else {
+    live = vLive || long;
+  }
+  return { cls, mark, live, shortVowel: !long };
+}
+
+// Full reasoning for one syllable (for the tone explainer), or null.
+function syllableToneInfo(syllable) {
+  const p = _analyseSyllable(syllable);
+  if (!p) return null;
+  return { ...p, tone: toneFromParts(p.cls, p) };
+}
+
+// The tone of one written syllable, or null when the shape can't be read.
+function syllableTone(syllable) {
+  const info = syllableToneInfo(syllable);
+  return info ? info.tone : null;
+}
