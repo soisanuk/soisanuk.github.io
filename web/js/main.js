@@ -34,6 +34,7 @@ document.addEventListener("keydown", e => {
     else if (key === "0") showStats();
     else if (key === "v" || key === "V") showVocabList();
     else if (key === "t" || key === "T") startToneDrill();
+    else if (key === "d" || key === "D") startReader();
     else if (key === "s" || key === "S") startSentSRS();
     else if (key === "g" || key === "G") startGame();
     else if (key === "k" || key === "K") startTutor();

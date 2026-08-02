@@ -156,6 +156,41 @@ body {
 .learn-summary { text-align: center; padding: 0.5rem; opacity: 0.85; }
 .quiz-choices li.correct { border-color: #2fbf71; background: rgba(47,191,113,0.15); }
 .quiz-choices li.wrong { border-color: #e34a4a; background: rgba(227,74,74,0.12); }
+/* tone unit: minimal-set chips, the calculator, the result line */
+.tone-row { display:flex; flex-wrap:wrap; justify-content:center; gap:0.4rem; margin:0.7rem auto; }
+.tone-chip { display:flex; flex-direction:column; align-items:center; padding:0.28em 0.55em;
+  font-size:1.7em; border:2px solid; border-radius:10px; cursor:pointer; line-height:1.1; }
+.tone-chip small { font-size:0.4em; letter-spacing:0.06em; opacity:0.9; margin-top:2px; }
+.tone-calc { max-width:520px; margin:0.5rem auto; }
+.tone-calc-row { display:flex; align-items:center; gap:0.5rem; margin:0.45rem 0; }
+.tone-calc-label { width:56px; text-align:right; opacity:0.75; font-size:0.85em; }
+.tone-calc-btns { display:flex; flex-wrap:wrap; gap:0.3rem; }
+.tone-opt { min-width:auto; padding:0.45rem 0.7rem; }
+.tone-opt.sel { outline:2px solid var(--accent,#ff1493); background:#2a0a3f; }
+.tone-calc-out { display:flex; align-items:center; justify-content:center; gap:0.6rem;
+  margin:0.9rem 0 0.2rem; font-size:1.7em; }
+.tone-eg { cursor:pointer; }
+.tone-arrow { opacity:0.5; }
+.tone-name { font-size:0.85em; white-space:nowrap; }
+/* graded reader */
+.reader-intro { max-width:560px; margin:0.4rem auto; text-align:center; opacity:0.85; }
+.reader-levels { list-style:none; padding:0; max-width:480px; margin:0.6rem auto; }
+.reader-level { display:flex; justify-content:space-between; align-items:center; gap:1rem;
+  padding:0.9rem 1.1rem; margin:0.5rem 0; border:1px solid #552277; border-radius:10px; cursor:pointer; }
+.reader-level:active { background:#2a0040; }
+.reader-level-name { font-size:1.1em; }
+.reader-level-count { opacity:0.65; font-size:0.9em; white-space:nowrap; }
+.reader-topline { display:flex; justify-content:space-between; align-items:center;
+  max-width:560px; margin:0.2rem auto; padding:0 0.3rem; }
+.reader-counter { opacity:0.7; font-size:0.9em; }
+.reader-thai { max-width:560px; margin:0.7rem auto 0.3rem; font-size:1.9em; line-height:1.7; text-align:center; }
+.reader-thai .w-token { border-radius:5px; padding:0 2px; }
+.reader-thai .w-token:hover { background:rgba(255,212,71,0.18); }
+.reader-legend { display:flex; flex-wrap:wrap; justify-content:center; gap:0.7rem;
+  font-size:0.8em; margin:0.2rem auto 0.4rem; }
+.reader-rtgs { text-align:center; opacity:0.85; font-size:1.05em; margin:0.2rem 0; }
+.reader-en { text-align:center; color:var(--gold,#ffd447); margin:0.2rem 0 0.6rem; }
+.reader-controls { align-items:center; }
 
 .sidebar-section {
   padding: 0.7rem 1.2rem 0.1rem;
@@ -1769,6 +1804,7 @@ body.mobile #app-shell {
   <ul class="sidebar-list">
     <li id="nav-Q2" onclick="startContinue()">▶ Continue <span id="nav-cont-stats" style="opacity:0.7;font-size:0.85em"></span></li>
     <li id="nav-G" onclick="startLearn()">🎓 Guided Course</li>
+    <li id="nav-D" onclick="startReader()">📖 Graded Reader</li>
     <li id="nav-U" onclick="startBusWords()">🚌 Words from the bus</li>
   </ul>
   <div class="sidebar-section">Vocabulary</div>
@@ -1846,6 +1882,7 @@ body.mobile #app-shell {
   <ul class="menu-list">
     <li onclick="startContinue()"><span class="menu-key">▶</span> Continue <span id="nav-cont-stats2" style="opacity:0.7;font-size:0.85em"></span></li>
     <li onclick="startLearn()"><span class="menu-key">🎓</span> Guided Course</li>
+    <li onclick="startReader()"><span class="menu-key">📖</span> Graded Reader</li>
     <li onclick="startBusWords()"><span class="menu-key">🚌</span> Words from the bus</li>
   </ul>
   <div class="menu-section">Vocabulary</div>
@@ -1986,6 +2023,14 @@ body.mobile #app-shell {
   <div class="screen-footer">
     <button class="btn" onclick="startLearn()">← Path</button>
     <button class="btn" onclick="endSession()">Menu</button>
+  </div>
+</div>
+
+<div id="reader-screen" class="screen">
+  <div class="screen-header">📖 Graded Reader</div>
+  <div class="card-body" id="reader-body"></div>
+  <div class="screen-footer">
+    <button class="btn" onclick="endSession()">← Menu</button>
   </div>
 </div>
 
@@ -2359,6 +2404,7 @@ body.mobile #app-shell {
 <script src="js/sessions.js"></script>
 <script src="js/curriculum.js"></script>
 <script src="js/learn.js"></script>
+<script src="js/reader.js"></script>
 <script src="js/backup.js"></script>
 <script src="js/tutor.js"></script>
 <script src="js/soi-buakhao.js"></script>

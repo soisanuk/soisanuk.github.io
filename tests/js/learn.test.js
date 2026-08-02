@@ -138,6 +138,26 @@ test("units carry the corpus cloze, the 5-pair match, and both listen modes", ()
     "listening answers alternate script and meaning");
 });
 
+test("the tone unit teaches then drills, with a stable unique id", () => {
+  const unit = COURSE.find(u => u.kind === "tone");
+  assert.ok(unit, "COURSE has a tone unit");
+  assert.equal(_unitId(unit), "tone1", "tone unit keeps a stable id (not the 'review' fallback)");
+  const q = _unitQueue(unit, []);
+  const kinds = q.map(i => i.kind);
+  assert.deepEqual(kinds.slice(0, 2), ["toneIntro", "tonecalc"], "teach the rule before drilling");
+  // ear drills use MID-class hosts only — mid + the four marks spans all tones
+  const ear = q.filter(i => i.kind === "toneear");
+  assert.ok(ear.length >= 3, "several ear drills");
+  for (const it of ear) assert.equal(_consClass(it.cons), "mid", it.cons + " must be mid class");
+  // read drills are real WORDS the tone parser can read
+  const read = q.filter(i => i.kind === "toneread");
+  assert.ok(read.length >= 1, "at least one real-word tone read");
+  for (const it of read) {
+    assert.ok(WORDS.some(w => w[0] === it.word[0]), it.word[0] + " is a real word");
+    assert.ok(syllableTone(it.word[0]), it.word[0] + " reads a tone");
+  }
+});
+
 test("backup merge: more-reviewed cards win, done units stay done", () => {
   const mine = { progress: { "มา": { totalReviews: 5, due: 1 } },
     path: { units: { L0: { done: true, acc: 0.8, msAvg: 3000 } } } };
