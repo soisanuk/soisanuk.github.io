@@ -159,7 +159,7 @@ function _scriptFlashShow() {
 
   setProgress("flash-prog", idx, deck.length);
   document.getElementById("flash-counter").textContent = `${label}  ${idx + 1} / ${deck.length}`;
-  document.getElementById("flash-thai").textContent  = vowelDisp(thai);
+  document.getElementById("flash-thai").textContent  = vowelDisp(thai, "อ"); // อ host: vowels read as their pure sound (no-op for consonants)
   document.getElementById("flash-rtgs").textContent  = `(${rtgs})`;
   _flashThaiClearClickable();
   // Reset shared flash-screen state left over from a vocab session: the 🔊
@@ -339,7 +339,7 @@ function drillShowVowelTone() {
   document.getElementById("drill-section-label").textContent = sectionLabel;
   document.getElementById("drill-counter").textContent =
     `${item.rank} / ${item.total}  (${idx + 1} / ${deck.length} total)`;
-  document.getElementById("drill-thai").textContent = vowelDisp(symbol);
+  document.getElementById("drill-thai").textContent = vowelDisp(symbol, "อ"); // อ host: vowels read as their pure sound (no-op for consonants/marks)
   document.getElementById("drill-rtgs").textContent = `(${rtgs})`;
   // Single marks get the "sound, name" form (e.g. ◌า → "อา, สระอา");
   // compound patterns fall back to speaking the example word.
@@ -435,7 +435,7 @@ function srsShow() {
 
   setProgress("srs-prog", idx, deck.length);
   document.getElementById("srs-counter").textContent = `${session.title}  ${idx + 1} / ${deck.length}`;
-  document.getElementById("srs-thai").textContent  = vowelDisp(thai);
+  document.getElementById("srs-thai").textContent  = vowelDisp(thai, "อ"); // อ host: vowels read as their pure sound (no-op for consonants/marks)
   document.getElementById("srs-rtgs").textContent  = `(${rtgs})`;
   document.getElementById("srs-prompt").textContent = "Do you know this?";
   if (!thai.includes("◌")) _tts.speak(letterSpeechParts(thai));

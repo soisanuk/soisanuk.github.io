@@ -81,13 +81,15 @@ const _LETTER_SPEECH_EXTRA = {
   "ๆ": "ไม้ยมก",
 };
 
-// Display form of a vowel pattern: the ◌ placeholder becomes a ก host, so
-// combining marks always shape correctly. (U+25CC DOTTED CIRCLE is missing
-// from many system fonts; a ◌+mark cluster then renders as a tofu box —
-// Chrome must shape the pair with one font.) Matches the keyboard tutor's
-// host-consonant convention. Identity for text without ◌.
-function vowelDisp(sym) {
-  return sym.replace(/◌/g, "ก");
+// Display form of a vowel pattern: the ◌ placeholder becomes a host consonant,
+// so combining marks always shape correctly. (U+25CC DOTTED CIRCLE is missing
+// from many system fonts; a ◌+mark cluster then renders as a tofu box — Chrome
+// must shape the pair with one font.) Defaults to ก (the keyboard tutor's
+// convention); pass "อ" where the vowel should read as its pure sound (อา = the
+// vowel "aa", not กา), which also matches how vowels are voiced. Identity for
+// text without ◌.
+function vowelDisp(sym, host = "ก") {
+  return sym.replace(/◌/g, host);
 }
 
 // Compound vowel patterns (keyed by their canonical ◌ form in VOWELS);
