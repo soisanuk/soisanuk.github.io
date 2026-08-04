@@ -19,6 +19,10 @@ function _unitId(u) { return u.id || (u.kind === "letters" ? "L" + u.batch : (u.
 function _unitDone(path, u) { return !!(path.units && path.units[_unitId(u)] && path.units[_unitId(u)].done); }
 function _unitUnlocked(path, idx) {
   if (idx === 0) return true;
+  // a completed unit is always re-enterable, regardless of what unlocked it —
+  // otherwise inserting a new unit mid-spine locks review of whatever used to
+  // sit right after it, for anyone who'd already finished that unit
+  if (_unitDone(path, COURSE[idx])) return true;
   return _unitDone(path, COURSE[idx - 1]);
 }
 
@@ -748,6 +752,10 @@ function _placementApply(path, cut) {
   path.units = path.units || {};
   const last = COURSE.findIndex(u => u.kind === "letters" && u.batch === cut);
   for (let i = 0; i <= last; i++) {
+    // placement only tests letter DECODING, never tone identification — skip
+    // tone units so a placed learner resumes at the one skill placement
+    // didn't measure, instead of having it silently marked done unseen
+    if (COURSE[i].kind === "tone") continue;
     const id = _unitId(COURSE[i]);
     path.units[id] = { ...(path.units[id] || {}), done: true, placed: true };
   }
