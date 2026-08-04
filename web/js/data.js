@@ -68,11 +68,11 @@ const VOWELS = [
 ];
 
 const TONES = [
-  ["สามัญ", "mid", "normal tone — no mark", "กา (kaa) = crow"],
-  ["เอก", "low", "falling tone — ่", "ข่า (khàa) = galangal"],
-  ["โท", "falling", "falling from high — ้", "ข้า (khâa) = servant"],
-  ["ตรี", "high", "high tone — ๊", "ค๊าน — rare"],
-  ["จัตวา", "rising", "rising tone — ๋", "ค๋าน — rare"],
+  ["สามัญ", "mid", "mid tone — no mark", "กา (kaa) = crow"],
+  ["เอก", "low", "low tone — ่ (mai ek)", "ข่า (khàa) = galangal"],
+  ["โท", "falling", "falling tone — ้ (mai tho)", "ข้า (khâa) = servant"],
+  ["ตรี", "high", "high tone — ๊ (mai tri)", "ค๊าน — rare"],
+  ["จัตวา", "rising", "rising tone — ๋ (mai chattawa)", "ค๋าน — rare"],
 ];
 
 const TONE_CLASSES = {

@@ -43,6 +43,23 @@ test("_detectWordTone falls back to 0 for words it can't grade", () => {
   assert.equal(_detectWordTone(""), 0);
 });
 
+// ── _toneRuleLine: the reveal's rule explanation ────────────────────────────
+// Spells out WHY a word has the tone it has — cls + mark → REALISED tone —
+// so a learner reading the written mark (e.g. ้ mai tho on a low-class
+// consonant) isn't contradicted by a bare "โท" choice label that names the
+// mark, not the tone (โท the mark produces ตรี the tone on low class).
+
+test("_toneRuleLine states class + mark → the realised tone", () => {
+  assert.equal(_toneRuleLine("ม้า"), "low class + ้ mai tho → HIGH tone");
+  assert.equal(_toneRuleLine("ข่า"), "high class + ่ mai ek → LOW tone");
+  assert.equal(_toneRuleLine("มา"), "low class + no mark → MID tone");
+});
+
+test("_toneRuleLine is blank for words the engine can't grade", () => {
+  assert.equal(_toneRuleLine("ครับ"), "");
+  assert.equal(_toneRuleLine(""), "");
+});
+
 // ── _toneDrillPool: filter + cap over WORDS ─────────────────────────────────
 // Skips words longer than 5 UTF-16 units and caps the session at 100. shuffle
 // lives in the DOM-heavy app.js, so stub it deterministically.
