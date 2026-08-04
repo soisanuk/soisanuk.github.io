@@ -128,3 +128,19 @@ describe("syllableToneInfo exposes the reasoning", () => {
     assert.equal(syllableToneInfo("รักษ์"), null);
   });
 });
+
+// ── TONE_ORDER / TONE_LABELS / TONE_COLORS: the single tone vocabulary ──────
+// TONE_ORDER is the canonical order every enumeration (drill choices, chart
+// legends) is built from; TONES (data.js) must stay in the same row order —
+// _detectWordTone (sessions.js) finds a TONES row by its tone name and uses
+// that row's INDEX, so if the two orderings ever drift, the Tone Drill starts
+// grading against the wrong choice with no error.
+describe("TONE_ORDER is the single source of tone order/labels/colours", () => {
+  test("TONES (data.js) rows are in TONE_ORDER order", () => {
+    assert.deepEqual(TONES.map(t => t[1]), TONE_ORDER);
+  });
+  test("TONE_LABELS and TONE_COLORS cover exactly the tones in TONE_ORDER", () => {
+    assert.deepEqual(Object.keys(TONE_LABELS), TONE_ORDER);
+    assert.deepEqual(Object.keys(TONE_COLORS), TONE_ORDER);
+  });
+});

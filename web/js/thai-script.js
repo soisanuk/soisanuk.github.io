@@ -292,3 +292,14 @@ function syllableTone(syllable) {
   const info = syllableToneInfo(syllable);
   return info ? info.tone : null;
 }
+
+// The engine's tone vocabulary — the exact strings toneFromParts/syllableTone
+// return — with a canonical order and display contract. Single source: any
+// consumer that needs to enumerate all five tones (drill choices, chart rows,
+// legends) uses TONE_ORDER rather than hardcoding its own ["mid","low",…]
+// array, so the labels/colours/order can never drift from what the engine
+// actually produces. data.js's TONES must stay in this same row order — see
+// the comment there and tests/js/tone.test.js.
+const TONE_ORDER = ["mid", "low", "falling", "high", "rising"];
+const TONE_LABELS = { mid: "Mid", low: "Low", falling: "Falling", high: "High", rising: "Rising" };
+const TONE_COLORS = { mid: "#b0b6bd", low: "#4aa3ff", falling: "#ff6b6b", high: "#2fbf71", rising: "#f7b32b" };

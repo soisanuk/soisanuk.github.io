@@ -692,7 +692,7 @@ function _wToneRead(item, body) {
     <div class="learn-mean">${_esc(w[2])}</div>
     <div class="card-prompt">What tone is it? (tap the word to hear it)</div>
     <ul class="quiz-choices" id="learn-choices"></ul>`;
-  const labels = ["mid", "low", "falling", "high", "rising"].map(k => TONE_LABELS[k]);
+  const labels = TONE_ORDER.map(k => TONE_LABELS[k]);
   _mcWire(labels, TONE_LABELS[tone], _wordKey(w[0]), 0, () => _tts.speak(w[0]), w);
 }
 
