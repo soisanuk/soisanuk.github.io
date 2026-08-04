@@ -462,7 +462,6 @@ const EXAMPLES = {
   "แสงสว่าง": ["แสงสว่างในห้องนี้น้อยเกินไป", "sǎeng-sà-wàang nai hôong níi nóoi kooen-pai", "The light in this room is too dim"],
   "เงาะ": ["เงาะผลนี้หวานและอร่อยมาก", "ngó phǒn níi wǎan láe à-ròoi mâak", "This rambutan fruit is very sweet and delicious"],
   "สัมผัส": ["สัมผัสของผ้าไหมนุ่มมาก", "sǎm-phàt khǒong phâa-mǎi nûm mâak", "The feel of silk fabric is very soft"],
-  "ความความฝัน": ["ความความฝันของเธอยิ่งใหญ่มาก", "khwaam-fǎn khǒong thoe yîng-yài mâak", "Her dream is very grand"],
   "หัว": ["หัวของเขาใหญ่มาก", "hǔa khǒong khǎo yài mâak", "His head is very big."],
   "หน้า": ["หน้าของเธอสวยมาก", "nâa khǒong thoe sǔay mâak", "Her face is very beautiful."],
   "ตา": ["ตาของแมวสีเขียว", "taa khǒong maeo sǐi khǐao", "The cat's eyes are green."],
