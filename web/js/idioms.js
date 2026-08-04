@@ -44,9 +44,10 @@ const PATTAYA_IDIOMS = [
   ]},
 ];
 
+// delegates to _wcEsc (wordcard.js, loaded first) — the single escaping
+// implementation (this one already matched it exactly)
 function _idEsc(s) {
-  return String(s).replace(/[&<>"']/g, c =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  return _wcEsc(s);
 }
 
 // tap a phrase → the shared word-card (decomposition / translation / examples)

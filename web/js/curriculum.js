@@ -227,8 +227,10 @@ function toneMinimalSet(cons, vowel) {
 // syllableTone. The runner filters to the ones actually present and readable.
 const TONE_READ_WORDS = ["ห้า", "สาม", "สี่", "สอง", "หก", "ไม่", "มา", "คุณ", "ผม", "น้ำ", "ดี", "นี้"];
 
+// delegates to _wcEsc (wordcard.js, loaded first) — the single escaping
+// implementation
 function _tcEsc(s) {
-  return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  return _wcEsc(s);
 }
 // The tone of a Thai WORD, but only when it's safe to colour it one colour:
 // syllableTone reads a single syllable, so a multi-syllable word (its RTGS has

@@ -1,12 +1,15 @@
 // Pattaya Idioms data — PATTAYA_IDIOMS and _idEsc.
 // idioms.js is DOM-free at load (the DOM + openWordModal/_tts are only touched
-// inside functions the tests never call), so it vm-loads cleanly.
+// inside functions the tests never call), so it vm-loads cleanly. wordcard.js
+// loads first: _idEsc delegates to its _wcEsc, the single escaping impl.
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { runInThisContext } from "node:vm";
 
-runInThisContext(readFileSync(new URL("../../web/js/idioms.js", import.meta.url), "utf8"), { filename: "idioms.js" });
+for (const f of ["wordcard.js", "idioms.js"]) {
+  runInThisContext(readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"), { filename: f });
+}
 
 const THAI = /[฀-๿]/;
 

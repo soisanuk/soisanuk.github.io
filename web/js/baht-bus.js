@@ -140,8 +140,10 @@ function _bbLater(ms, fn) {
   _bbTimerId = setTimeout(() => { _bbTimerId = null; if (_bbActive()) fn(); }, ms);
 }
 
+// delegates to _wcEsc (wordcard.js, loaded first) — the single escaping
+// implementation; also gets " and ' escaped now (this one didn't before)
 function _bbEsc(s) {
-  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return _wcEsc(s);
 }
 
 function _bbHUD() {

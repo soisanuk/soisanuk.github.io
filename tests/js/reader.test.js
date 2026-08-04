@@ -1,7 +1,8 @@
 // Tests for the graded reader (web/js/reader.js) and the tone-colouring helper
 // (web/js/curriculum.js). The real sources are evaluated via node:vm as classic
 // browser scripts. reader.js needs the ladder from curriculum.js and taughtGlyphs;
-// toneColorHtml needs the tokeniser and the tone engine.
+// toneColorHtml needs the tokeniser and the tone engine, and (via _tcEsc)
+// wordcard.js's _wcEsc — the single HTML-escaping implementation.
 // Run with: node --test tests/js/
 
 import { test, describe } from "node:test";
@@ -9,7 +10,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-for (const f of ["data.js", "examples.js", "thai-script.js", "tokeniser.js", "curriculum.js", "reader.js"]) {
+for (const f of ["data.js", "examples.js", "thai-script.js", "tokeniser.js", "wordcard.js", "curriculum.js", "reader.js"]) {
   vm.runInThisContext(
     readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"),
     { filename: f }
