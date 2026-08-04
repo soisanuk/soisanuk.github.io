@@ -1,12 +1,13 @@
 // Baht Bus — Thai number composition, fare/change generation, charter
 // negotiation. baht-bus.js is DOM-free at load time, so it vm-loads whole;
-// scene/UI functions exist but are never called here.
+// scene/UI functions exist but are never called here. wordcard.js loads
+// first: _bbEsc delegates to its _wcEsc, the single escaping implementation.
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { runInThisContext } from "node:vm";
 
-for (const f of ["baht-bus.js"]) {
+for (const f of ["wordcard.js", "baht-bus.js"]) {
   runInThisContext(readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"), { filename: f });
 }
 

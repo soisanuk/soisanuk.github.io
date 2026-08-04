@@ -1,4 +1,7 @@
 // The guided course: curriculum integrity + runner logic (DOM-free at load).
+// wordcard.js + app.js load first: learn.js's widget renderers call _esc
+// (app.js), which delegates to _wcEsc (wordcard.js) — the single escaping
+// implementation.
 import { test } from "node:test";
 import assert from "node:assert";
 import fs from "node:fs";
@@ -7,7 +10,7 @@ import vm from "node:vm";
 import { fileURLToPath } from "node:url";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-for (const f of ["data.js", "examples.js", "thai-script.js", "srs.js", "curriculum.js", "learn.js", "backup.js"]) {
+for (const f of ["data.js", "examples.js", "thai-script.js", "srs.js", "wordcard.js", "app.js", "curriculum.js", "learn.js", "backup.js"]) {
   vm.runInThisContext(fs.readFileSync(path.join(root, "web", "js", f), "utf8"), { filename: f });
 }
 
@@ -159,12 +162,13 @@ test("the tone unit teaches then drills, with a stable unique id", () => {
   // ear drills use MID-class hosts only — mid + the four marks spans all tones
   const ear = q.filter(i => i.kind === "toneear");
   assert.ok(ear.length >= 3, "several ear drills");
+  const setLen = toneMinimalSet("ก", "า").length; // derived, not hardcoded — matches _unitQueue
   for (const it of ear) {
     assert.equal(_consClass(it.cons), "mid", it.cons + " must be mid class");
     // the target is chosen HERE, not at render, so a revisit shows the same
     // question it was answered against instead of re-rolling
-    assert.ok(Number.isInteger(it.pick) && it.pick >= 0 && it.pick <= 4,
-      "pick is a stable index into the 5-entry minimal set");
+    assert.ok(Number.isInteger(it.pick) && it.pick >= 0 && it.pick < setLen,
+      "pick is a stable, in-range index into toneMinimalSet's own length");
   }
   // read drills are real WORDS the tone parser can read
   const read = q.filter(i => i.kind === "toneread");
@@ -351,4 +355,30 @@ test("revisiting a completed card records nothing (no SRS/streak double-count)",
   _lu = { at: 3, max: 5, results: [] };
   assert.ok(_lu.at < _lu.max, "behind the frontier = reviewable");
   _lu = saved;
+});
+
+test("_wReviewCard actually renders (exercises _esc, catching a missing wordcard.js/app.js load)", () => {
+  // A DOM-free stand-in: _wReviewCard only ever calls body.innerHTML = ...,
+  // never reads the DOM back, so a plain object with a settable property
+  // is a faithful enough double — this test's real job is proving _esc
+  // resolves (wordcard.js's _wcEsc via app.js), not exercising layout.
+  const body = { innerHTML: "" };
+  const w = WORDS.find(x => x[0] === "มา");
+  _wReviewCard({ word: w, kind: "mc" }, body);
+  assert.match(body.innerHTML, /มา/, "renders the word");
+  assert.match(body.innerHTML, /REVIEW/, "tagged as a review recap");
+  // the toneear shape (no .word/.item) is the one that used to fall through
+  // to a crash — see commit history around _wReviewCard's kind branches
+  _wReviewCard({ kind: "toneear", cons: "ก", vowel: "า", pick: 1 }, body);
+  assert.match(body.innerHTML, /tone/, "toneear recap names a tone");
+});
+
+test("_wReviewCard degrades safely instead of throwing on an unrecognised item shape", () => {
+  // a hypothetical future kind with none of .pairs/.word/.item and a kind
+  // _wReviewCard doesn't special-case — must not throw (the old code did:
+  // `const p = item.item; th = p.th` on undefined .item)
+  const body = { innerHTML: "" };
+  assert.doesNotThrow(() => _wReviewCard({ kind: "some-future-kind" }, body));
+  assert.match(body.innerHTML, /REVIEW/);
+  assert.match(body.innerHTML, /Next/, "still offers a way to move on");
 });

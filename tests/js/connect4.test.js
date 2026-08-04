@@ -1,6 +1,8 @@
 // Tests for the Soi 6 Connect สี่ board logic, AI, and vowel quiz in
 // web/js/connect4.js. The file is DOM-free at load time, so it can be
-// evaluated via node:vm. data.js provides VOWELS for the quiz.
+// evaluated via node:vm. data.js provides VOWELS for the quiz; wordcard.js
+// loads first because _c4Esc delegates to its _wcEsc, the single escaping
+// implementation.
 // Run with: node --test tests/js/
 
 import { test, describe } from "node:test";
@@ -8,7 +10,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-for (const f of ["data.js", "connect4.js"]) {
+for (const f of ["data.js", "wordcard.js", "connect4.js"]) {
   vm.runInThisContext(
     readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"),
     { filename: f }

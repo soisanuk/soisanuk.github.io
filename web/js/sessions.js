@@ -552,10 +552,10 @@ function toneDrillPlay() {
 }
 
 // The rule that produced the tone, spelled out for the reveal — e.g.
-// "low class + ้ mai tho → HIGH tone". Uses syllableToneInfo (thai-script.js)
-// for cls/mark and TONE_LABELS (curriculum.js) for the display name; both
-// load after sessions.js in index.html but this only runs at click time,
-// once every script has loaded (same pattern baht-bus.js uses for game.js).
+// "low class + ้ mai tho → HIGH tone". Uses syllableToneInfo AND
+// TONE_LABELS, both in thai-script.js, which loads before sessions.js — but
+// this only runs at click time regardless (same pattern baht-bus.js uses
+// for game.js: reference across files inside functions, never at load).
 const _TONE_MARK_DESC = { none: "no mark", ek: "่ mai ek", tho: "้ mai tho", tri: "๊ mai tri", chattawa: "๋ mai chattawa" };
 function _toneRuleLine(thai) {
   const info = (typeof syllableToneInfo === "function") ? syllableToneInfo(thai) : null;
@@ -636,13 +636,21 @@ function sentSrsShow() {
   // data), then replace the escaped target substring with the trusted
   // blank markup — Thai text never contains &<>"', so the escaped target
   // still matches inside the escaped sentence.
-  const blank = `<span class="sent-blank">${_esc(thai)}</span>`;
-  const displaySent = _esc(sentThai).replace(_esc(thai), blank);
+  //
+  // One WORDS entry is a phrase template ("ขอ..." = "please may I have...");
+  // its example sentence correctly contains only the fixed prefix "ขอ", not
+  // the literal "...", so matching on the raw word/rtgs never finds it and
+  // the card ships unblanked. Strip a trailing "..." before matching — same
+  // convention as tests/js/data.test.js's headword-containment check.
+  const target = thai.replace(/\.\.\.$/, "");
+  const targetRtgs = rtgs.replace(/\.\.\.$/, "");
+  const blank = `<span class="sent-blank">${_esc(target)}</span>`;
+  const displaySent = _esc(sentThai).replace(_esc(target), blank);
   document.getElementById("sent-sentence").innerHTML = displaySent;
 
   // Romanisation with blank
   const blankRtgs = `<span style="color:var(--saffron)">___</span>`;
-  document.getElementById("sent-rtgs").innerHTML = _esc(sentRtgs).replace(_esc(rtgs), blankRtgs);
+  document.getElementById("sent-rtgs").innerHTML = _esc(sentRtgs).replace(_esc(targetRtgs), blankRtgs);
   document.getElementById("sent-en").textContent = sentEn;
 
   document.getElementById("sent-answer").textContent = `${thai}  (${rtgs})  —  ${english}`;
