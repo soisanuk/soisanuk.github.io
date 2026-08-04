@@ -18,7 +18,8 @@ cd web && python3 -m http.server 8000
 # or just open web/index.html — works from file://, no network requests
 
 # Re-copy the files The Last Baht Bus vendors from here (after editing any of
-# data.js / examples.js / tokeniser.js / thai-script.js / wordcard.js / wordcard.test.js)
+# data.js / examples.js / tokeniser.js / thai-script.js / wordcard.js / wordcard.test.js),
+# and mirror web/ into the (gitignored) Capacitor android/ios native trees
 node scripts/sync-vendored.mjs          # write the copies
 node scripts/sync-vendored.mjs --check  # verify sync; exit 1 on drift
 ```
@@ -32,7 +33,7 @@ Single-page Thai vocabulary/script trainer PWA with SM-2 spaced repetition. `web
 - All `web/js/` files are **classic script tags sharing globals**, not ES modules — this keeps the app working from `file://` (module scripts don't load there). Do not add `import`/`export` to them. Load order in index.html matters for top-level constants; `mobile.js` must stay first (it defines `IS_MOBILE`/`IS_IOS`, used by `tts.js` and `game.js`) and `main.js` (keyboard shortcuts + init) must stay last. The root `package.json` `"type": "module"` exists only so `node --test` treats the test files as ESM.
 - Vowel symbols must be **displayed** via `vowelDisp(sym, host = "ก")` (in `thai-script.js`), which swaps the data's ◌ placeholder for a host consonant (◌ุ → กุ): U+25CC is missing from many system fonts and a ◌+combining cluster renders as tofu. Pass `"อ"` where the vowel should read as its pure sound (matches how it's voiced — the reference chart, vowel flashcards, Vowels & Tones drill, and Script SRS all do); the ก default remains elsewhere (course glyph cards, Connect สี่). The data keeps ◌ as its canonical form; only rendering changes. (Single letters must always be **spoken** via `letterSpeechParts(ch)` — see the catalog.)
 - `web/sw.js` — cache-first service worker. The cache name is `"soisanuk-dev"` in the repo and is rewritten to `soisanuk-<commit sha>` by both CI pipelines at deploy time, so **never hardcode a version bump**; do add new assets to `PRECACHE`.
-- **Vendored to The Last Baht Bus:** `data.js`, `examples.js`, `tokeniser.js`, `thai-script.js`, `wordcard.js` (+ `tests/js/wordcard.test.js`). THIS repo is the source of truth — edit here, never in LBB; after editing any of them run `node scripts/sync-vendored.mjs` (`--check` verifies, exit 1 on drift). Details in [docs/architecture.md](docs/architecture.md).
+- **Vendored to The Last Baht Bus:** `data.js`, `examples.js`, `tokeniser.js`, `thai-script.js`, `wordcard.js` (+ `tests/js/wordcard.test.js`). THIS repo is the source of truth — edit here, never in LBB; after editing any of them run `node scripts/sync-vendored.mjs` (`--check` verifies, exit 1 on drift). The same script also mirrors all of `web/` into the gitignored Capacitor native trees (`android/.../public`, `ios/App/App/public`) — `npx cap copy` does the same job and is the canonical pre-build step; the script exists so `--check` catches drift too. Details in [docs/architecture.md](docs/architecture.md).
 
 ### Tests load the real sources via node:vm
 
