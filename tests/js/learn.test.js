@@ -80,6 +80,17 @@ test("the path gates on the previous unit, first unit always open", () => {
   assert.equal(new Set(ids).size, ids.length);
 });
 
+test("a completed unit stays re-enterable even if its predecessor isn't done", () => {
+  // simulates inserting a new unit right before one a returning user already
+  // finished: the predecessor (freshly inserted) isn't done, but the unit
+  // itself is — it must still open, or the user loses review access to it
+  const idx = 2; // some unit past the first
+  const id = _unitId(COURSE[idx]);
+  const path = { units: { [id]: { done: true } } }; // COURSE[idx-1] left undone
+  assert.ok(!_unitDone(path, COURSE[idx - 1]), "predecessor is NOT done (the scenario)");
+  assert.ok(_unitUnlocked(path, idx), "the done unit itself stays unlocked");
+});
+
 test("MC distractors prefer the same part of speech", () => {
   const verb = WORDS.find(w => w[3] === "verb");
   for (let i = 0; i < 5; i++) {
@@ -247,6 +258,23 @@ test("placement: 80% per batch sets the cut, prefix units complete, levels name 
   assert.equal(_levelName(0), "Fresh off the plane");
   assert.equal(_levelName(8), "Soi regular");
   assert.equal(_levelName(14), "เจ้าของบาร์");
+});
+
+test("placement never completes the tone unit — it tests letter decoding, not tones", () => {
+  const toneIdx = COURSE.findIndex(u => u.kind === "tone");
+  const toneId = _unitId(COURSE[toneIdx]);
+  const cutBatch = LETTER_BATCHES.length - 1; // place past the whole ladder
+  const p = _placementApply({}, cutBatch);
+  assert.ok(!p.units[toneId] || !p.units[toneId].done, "tone unit not marked done by placement");
+  // surrounding letters/chunks ARE marked, up through the cut batch
+  const lastLetterIdx = COURSE.findIndex(u => u.kind === "letters" && u.batch === cutBatch);
+  for (let i = 0; i < lastLetterIdx; i++) {
+    if (i === toneIdx) continue;
+    assert.ok(_unitDone(p, COURSE[i]), _unitId(COURSE[i]) + " should be placed done");
+  }
+  // the tone unit is the first not-done, unlocked unit — placement resumes there
+  const firstOpen = COURSE.findIndex((u, i) => _unitUnlocked(p, i) && !_unitDone(p, u));
+  assert.equal(firstOpen, toneIdx, "the tone unit is where a placed learner resumes");
   // placement queue spans the whole ladder, two words a batch
   const q = [];
   for (let b = 0; b < LETTER_BATCHES.length; b++) q.push(...courseNewWords(b).slice(0, 2));
