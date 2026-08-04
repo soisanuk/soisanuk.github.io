@@ -254,14 +254,19 @@ function toneOfWord(text) {
 // Colour each token of a Thai string by its tone (multi-syllable / unreadable
 // tokens stay plain — a colour is never wrong). Uses the app tokeniser for
 // sentences when present, else treats the whole input as one word.
-function toneColorHtml(thai) {
+//
+// `decorate(escapedText, tone, token)` renders one token's html; the default
+// wraps a colour span whenever a tone is known. Callers that need extra
+// per-token structure (tap-to-define spans, colouring only KNOWN words) pass
+// their own decorator instead of duplicating the tokenise+escape loop — the
+// reader (reader.js _readerThaiHtml) does this.
+function toneColorHtml(thai, decorate) {
   const toks = (typeof _tokenise === "function")
-    ? _tokenise(thai).map(t => t.text)
-    : [String(thai)];
-  return toks.map(t => {
-    const tone = toneOfWord(t);
-    return tone ? `<span style="color:${TONE_COLORS[tone]}">${_tcEsc(t)}</span>` : _tcEsc(t);
-  }).join("");
+    ? _tokenise(thai)
+    : [{ text: String(thai), word: null }];
+  const deco = decorate || ((escaped, tone) =>
+    tone ? `<span style="color:${TONE_COLORS[tone]}">${escaped}</span>` : escaped);
+  return toks.map(t => deco(_tcEsc(t.text), toneOfWord(t.text), t)).join("");
 }
 
 // ── The course spine ─────────────────────────────────────────────────────────
