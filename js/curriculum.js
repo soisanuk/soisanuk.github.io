@@ -203,10 +203,9 @@ const GRAMMAR_LESSONS = [
 // ── Tones (the tone-engine course unit) ──────────────────────────────────────
 // The reading wall isn't the letters — it's getting the TONE off the page.
 // Pure data + the minimal-set generator live here; the interactive calculator
-// and the ear drills are in learn.js. The actual computation is
-// toneFromParts/syllableTone in thai-script.js (tests/js/tone.test.js).
-const TONE_LABELS = { mid: "Mid", low: "Low", falling: "Falling", high: "High", rising: "Rising" };
-const TONE_COLORS = { mid: "#b0b6bd", low: "#4aa3ff", falling: "#ff6b6b", high: "#2fbf71", rising: "#f7b32b" };
+// and the ear drills are in learn.js. The actual computation — and the
+// TONE_ORDER/TONE_LABELS/TONE_COLORS vocabulary — is in thai-script.js
+// (vendored, so LBB gets the full contract too; tests/js/tone.test.js).
 const _TONE_MARK_BY_KEY = { none: "", ek: "่", tho: "้", tri: "๊", chattawa: "๋" };
 
 // The canonical minimal set: one mid-class consonant + a long vowel, once per
