@@ -12,6 +12,7 @@ const PRECACHE = [
   "./js/examples.js",
   "./js/tokeniser.js",
   "./js/thai-script.js",
+  "./js/wordcard.js",
   "./js/app.js",
   "./js/tts.js",
   "./js/audio.js",
@@ -27,6 +28,7 @@ const PRECACHE = [
   "./js/game.js",
   "./js/baht-bus.js",
   "./js/numbers.js",
+  "./js/idioms.js",
   "./js/main.js",
   "./manifest.json",
 ];
