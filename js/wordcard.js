@@ -53,33 +53,33 @@ function _scriptTooltipHtml(ch) {
     const c = CONSONANTS.find(x => x[0] === ch);
     if (c) {
       const clsLabel = c[2] === "mid" ? "mid class" : c[2] === "high" ? "high class" : "low class";
-      return `<span class="st-char">${ch}</span>
+      return `<span class="st-char" lang="th">${ch}</span>
         <div class="st-row">Name: <span>${c[3]}</span></div>
         <div class="st-row">Romanisation: <span>/${c[1]}/</span></div>
         <div class="st-row">Class: <span>${clsLabel}</span></div>
         <div class="st-row">Initial: <span>/${c[4]}/</span> · Final: <span>/${c[5]}/</span></div>`;
     }
-    return `<span class="st-char">${ch}</span><div class="st-row">consonant</div>`;
+    return `<span class="st-char" lang="th">${ch}</span><div class="st-row">consonant</div>`;
   }
 
   if (kind === "vowel") {
     // find matching VOWELS entry by char
     const v = VOWELS.find(x => x[0].replace(/◌/g, "").includes(ch));
     if (v) {
-      return `<span class="st-char">${ch}</span>
+      return `<span class="st-char" lang="th">${ch}</span>
         <div class="st-row">Vowel: <span>${v[0]}</span></div>
         <div class="st-row">Sound: <span>${v[1]}</span></div>
         <div class="st-row">${_wcEsc(v[2])}</div>`;
     }
-    return `<span class="st-char">${ch}</span><div class="st-row">vowel marker</div>`;
+    return `<span class="st-char" lang="th">${ch}</span><div class="st-row">vowel marker</div>`;
   }
 
   if (kind === "tone") {
     const names = { "่": "mai ek ่ — low/falling", "้": "mai tho ้ — falling", "๊": "mai tri ๊ — high", "๋": "mai jattawa ๋ — rising" };
-    return `<span class="st-char">${ch}</span><div class="st-row">Tone mark: <span>${names[ch] || ch}</span></div>`;
+    return `<span class="st-char" lang="th">${ch}</span><div class="st-row">Tone mark: <span>${names[ch] || ch}</span></div>`;
   }
 
-  return `<span class="st-char">${ch}</span><div class="st-row">U+${cp.toString(16).toUpperCase().padStart(4,"0")}</div>`;
+  return `<span class="st-char" lang="th">${ch}</span><div class="st-row">U+${cp.toString(16).toUpperCase().padStart(4,"0")}</div>`;
 }
 
 function renderDecomposition(container, word) {
@@ -134,8 +134,8 @@ function openWordModal(word) {
       <button class="wc-close" title="Close">✕</button>
       ${isNested ? `<button class="wc-back">← Back</button>` : ""}
       <div style="text-align:center">
-        <span class="wc-thai" title="Click to decompose" style="cursor:pointer">${_wcEsc(thai)}</span>
-        ${_tts.available() ? `<button class="wc-speak example-speak" title="Listen" style="float:none;display:inline-block;vertical-align:middle;margin-left:0.5rem">🔊</button>` : ""}
+        <span class="wc-thai" title="Click to decompose" style="cursor:pointer" lang="th">${_wcEsc(thai)}</span>
+        ${_tts.available() ? `<button class="wc-speak example-speak" title="Listen" style="float:none;display:inline-block;vertical-align:middle;margin-left:0.5rem" aria-label="Listen">🔊</button>` : ""}
       </div>
       <div class="wc-rtgs">${_wcEsc(rtgs)}</div>
       <div class="wc-en">${_wcEsc(english)}</div>
@@ -261,7 +261,7 @@ function showExample(containerId, vocabWord) {
     : "";
 
   el.innerHTML = `
-    <div class="example-thai">${speakBtn}${thaiHtml}</div>
+    <div class="example-thai" lang="th">${speakBtn}${thaiHtml}</div>
     <div class="example-rtgs">${highlightedRtgs}</div>
     <div class="example-en">${_wcEsc(eng)}</div>
   `;

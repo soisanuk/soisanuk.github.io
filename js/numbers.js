@@ -129,7 +129,7 @@ function _setAlphaOrder(order) {
 
 function _alphaCell({ ch, rom, cls, name }) {
   return `<button class="alpha-cell alpha-${cls}" onclick="_alphaCellSpeak('${ch}')" title="${ch}อ${name}">` +
-    `<span class="alpha-char">${ch}</span>` +
+    `<span class="alpha-char" lang="th">${ch}</span>` +
     `<span class="alpha-rom">${rom}</span>` +
     `<span class="alpha-name">${name}</span>` +
     `</button>`;
@@ -159,7 +159,7 @@ function _buildAlphabetChart() {
     const sorted = rows.slice().sort((a, b) => a.ch.codePointAt(0) - b.ch.codePointAt(0));
     html += `<div class="alpha-legend">` +
       [["mid", "ก", "Mid · กลาง"], ["high", "ข", "High · สูง"], ["low", "ค", "Low · ต่ำ"]].map(([cls, ch, lbl]) =>
-        `<span class="alpha-legend-item alpha-${cls}"><span class="alpha-char">${ch}</span>${lbl}</span>`).join("") +
+        `<span class="alpha-legend-item alpha-${cls}"><span class="alpha-char" lang="th">${ch}</span>${lbl}</span>`).join("") +
       `</div>`;
     html += `<div class="alpha-grid">${sorted.map(_alphaCell).join("")}</div>`;
   }
@@ -176,7 +176,7 @@ function _buildVowelChart() {
     // matching the audio (letterSpeech says "อา, สระอา").
     const disp = vowelDisp(sym, "อ");
     html += `<button class="alpha-cell" onclick="_vowelCellSpeak(${i})" title="${desc}">` +
-      `<span class="alpha-char" style="color:var(--lotus);font-size:1.3rem">${disp}</span>` +
+      `<span class="alpha-char" style="color:var(--lotus);font-size:1.3rem" lang="th">${disp}</span>` +
       `<span class="alpha-rom">${rom}</span>` +
       `<span class="alpha-name">${desc.split(" ")[0]}</span>` +
       `</button>`;
@@ -200,10 +200,10 @@ function _buildToneChart() {
     <tr><th>Mark</th><th>Name</th><th>Type</th><th>Example</th></tr>`;
   for (const t of marks) {
     const markDisplay = t.mark === "—" ? `<span style="color:var(--dim)">—</span>` :
-      `<span class="tone-mark-cell" style="font-size:1.5rem">ก${t.mark}</span>`;
+      `<span class="tone-mark-cell" style="font-size:1.5rem" lang="th">ก${t.mark}</span>`;
     html += `<tr onclick="_tts.speak('${t.speak}')" style="cursor:pointer">` +
       `<td style="text-align:center">${markDisplay}</td>` +
-      `<td><div class="tone-name-th">${t.nameTh}</div><div class="tone-name-en">${t.nameEn}</div></td>` +
+      `<td><div class="tone-name-th" lang="th">${t.nameTh}</div><div class="tone-name-en">${t.nameEn}</div></td>` +
       `<td class="tone-desc">${t.desc}</td>` +
       `<td class="tone-ex-cell">${t.example}</td>` +
       `</tr>`;
@@ -221,8 +221,8 @@ function _buildNumChart() {
     // Digits 0-9: show Thai numeral glyph + spelling in parentheses
     return `<button class="num-chart-cell" onclick="_tts.speak('${card.th}')">` +
       `<span class="num-chart-arabic">${card.n}</span>` +
-      `<span class="num-chart-thai-dig">${_THAI_DIGITS[card.n]}</span>` +
-      `<span class="num-chart-th" style="font-size:.7rem">(${card.th})</span>` +
+      `<span class="num-chart-thai-dig" lang="th">${_THAI_DIGITS[card.n]}</span>` +
+      `<span class="num-chart-th" style="font-size:.7rem" lang="th">(${card.th})</span>` +
       `<span class="num-chart-rom">${card.rom}</span>` +
       `</button>`;
   }
@@ -230,7 +230,7 @@ function _buildNumChart() {
   function wordCell(card, thStyle) {
     return `<button class="num-chart-cell" onclick="_tts.speak('${card.th}')">` +
       `<span class="num-chart-arabic">${card.n.toLocaleString()}</span>` +
-      `<span class="num-chart-th" ${thStyle || ""}>${card.th}</span>` +
+      `<span class="num-chart-th" ${thStyle || ""} lang="th">${card.th}</span>` +
       `<span class="num-chart-rom">${card.rom}</span>` +
       `</button>`;
   }
