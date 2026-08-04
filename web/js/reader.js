@@ -19,35 +19,66 @@ const READER_LEVELS = [
 ];
 const READER_COLOR_KEY = "soisanuk_tonecolor";
 
+// glyph -> earliest LETTER_BATCHES index, built once (LETTER_BATCHES is
+// static data). readerGrade was doing up to LETTER_BATCHES.length fresh Set
+// builds (taughtGlyphs) per glyph; this makes each lookup O(1) instead.
+let _glyphBatchMap = null;
+function _glyphBatch(ch) {
+  if (!_glyphBatchMap) {
+    _glyphBatchMap = new Map();
+    for (let i = 0; i < LETTER_BATCHES.length; i++) {
+      for (const g of LETTER_BATCHES[i].glyphs) {
+        if (!_glyphBatchMap.has(g)) _glyphBatchMap.set(g, i);
+      }
+    }
+  }
+  return _glyphBatchMap.has(ch) ? _glyphBatchMap.get(ch) : LETTER_BATCHES.length;
+}
+
 // the latest ladder rung a sentence needs (max over its Thai letters/vowels/
 // marks); a glyph taught in no batch pushes the sentence past the ladder.
 function readerGrade(thai) {
   let g = 0;
   for (const ch of String(thai)) {
     const cp = ch.codePointAt(0);
+    // ฿ (U+0E3F, baht sign) falls inside the mark range below but is
+    // currency, not a letter — skip it so a price doesn't inflate the grade.
+    if (cp === 0x0E3F) continue;
     const isLetter = (cp >= 0x0E01 && cp <= 0x0E2E) || (cp >= 0x0E30 && cp <= 0x0E4B);
     if (!isLetter) continue; // skip spaces, punctuation, digits
-    let b = LETTER_BATCHES.length; // default: harder than the whole ladder
-    for (let i = 0; i < LETTER_BATCHES.length; i++) {
-      if (taughtGlyphs(i).has(ch)) { b = i; break; }
-    }
-    g = Math.max(g, b);
+    g = Math.max(g, _glyphBatch(ch));
   }
   return g;
 }
 
-// every EXAMPLES sentence decodable by `maxBatch`, easiest first, de-duped.
-function readerFeed(maxBatch, examples) {
-  const src = examples || (typeof EXAMPLES !== "undefined" ? EXAMPLES : {});
+// grade + de-dupe + sort a {key: [th,rtgs,en]} corpus, easiest first.
+function _gradeCorpus(src) {
   const out = [], seen = new Set();
   for (const key in src) {
     const e = src[key];
     if (!e || seen.has(e[0])) continue;
-    const g = readerGrade(e[0]);
-    if (g <= maxBatch) { seen.add(e[0]); out.push({ th: e[0], rtgs: e[1], en: e[2], grade: g, key }); }
+    seen.add(e[0]);
+    out.push({ th: e[0], rtgs: e[1], en: e[2], grade: readerGrade(e[0]), key });
   }
   out.sort((a, b) => a.grade - b.grade || [...a.th].length - [...b.th].length);
   return out;
+}
+
+// the full EXAMPLES corpus, graded once and memoized — it's static data, so
+// startReader's 4-level count pass (and readerOpen right after it) reuse this
+// instead of re-grading ~870 sentences on every screen open.
+let _readerCorpusCache = null;
+function _readerCorpus() {
+  if (!_readerCorpusCache) _readerCorpusCache = _gradeCorpus(typeof EXAMPLES !== "undefined" ? EXAMPLES : {});
+  return _readerCorpusCache;
+}
+
+// every EXAMPLES sentence decodable by `maxBatch`, easiest first, de-duped.
+// An explicit `examples` override (tests) always grades fresh, bypassing the
+// memo, which only ever caches the real corpus.
+function readerFeed(maxBatch, examples) {
+  const graded = examples ? _gradeCorpus(examples) : _readerCorpus();
+  return graded.filter(s => s.grade <= maxBatch);
 }
 
 // ── Rendering ────────────────────────────────────────────────────────────────
