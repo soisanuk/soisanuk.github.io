@@ -12,29 +12,32 @@
 //    directory (this is the same app, not a fork — no banner, straight
 //    mirror). `npx cap copy` regenerates them from web/, but that's a step a
 //    native build can forget; syncing them here means `--check` catches a
-//    file that's DIFFERENT from web/ before it ships in a build instead of
+//    file that's DIFFERENT from web/ (or present in the target but no longer
+//    in web/ — a rename/delete orphan) before it ships in a build instead of
 //    after. Capacitor's own runtime shims (cordova.js, cordova_plugins.js)
-//    live only in the target and are never touched — this only ever writes
-//    files that exist in web/. Known gap: it's a one-way mirror, so a file
-//    DELETED from web/ is never removed from the target and --check won't
-//    flag the leftover — `npx cap copy` (which regenerates the whole tree)
-//    is the only way to fully prune. Run it occasionally, or after a rename.
+//    are the only files in the target this never touches; write mode
+//    deletes every other orphan, matching what `npx cap copy` would do by
+//    regenerating the tree from scratch.
 //
 //   node scripts/sync-vendored.mjs           # write both jobs
 //   node scripts/sync-vendored.mjs --check   # verify everything; exit 1 on drift
+//   node scripts/sync-vendored.mjs --no-cap  # skip job 2 (e.g. testing --dest
+//                                             # against a scratch LBB checkout,
+//                                             # without touching your real
+//                                             # android/.../public or ios/.../public)
 //
-// `--dest <dir>` / LBB_DIR retarget ONLY the LBB job (job 1) — the Capacitor
-// mirror (job 2) always writes into this same repo's android/ios trees and
-// ignores both. Testing sync-vendored against a scratch LBB checkout with
-// --dest still touches your real android/.../public and ios/.../public.
+// `--dest <dir>` / LBB_DIR retarget ONLY the LBB job (job 1) — job 2 always
+// writes into this same repo's android/ios trees regardless; pass --no-cap
+// alongside --dest if you don't want that side effect.
 
-import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, unlinkSync, existsSync, readdirSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, relative } from "node:path";
 
 const SRC_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
 const check = args.includes("--check");
+const noCap = args.includes("--no-cap");
 const destArg = args.indexOf("--dest");
 const LBB_ROOT = destArg >= 0 ? args[destArg + 1]
   : process.env.LBB_DIR || "/Users/mario/projects/last-baht-bus";
@@ -85,12 +88,14 @@ function walkFiles(dir, base = dir) {
   return out;
 }
 
+const CORDOVA_SHIMS = new Set(["cordova.js", "cordova_plugins.js"]);
 const webRoot = join(SRC_ROOT, "web");
 const webFiles = walkFiles(webRoot);
 
-for (const target of CAP_TARGETS) {
+if (!noCap) for (const target of CAP_TARGETS) {
   const targetRoot = join(SRC_ROOT, target);
   if (!existsSync(targetRoot)) continue; // native project not checked out here — skip, not an error
+
   for (const rel of webFiles) {
     const src = join(webRoot, rel);
     const dest = join(targetRoot, rel);
@@ -106,6 +111,16 @@ for (const target of CAP_TARGETS) {
       wrote++;
       console.log(`wrote  ${label}`);
     }
+  }
+
+  // orphans: files in the target with no web/ source (a rename/delete this
+  // mirror wouldn't otherwise catch), minus Capacitor's own runtime shims
+  const webSet = new Set(webFiles);
+  const orphans = walkFiles(targetRoot).filter(rel => !webSet.has(rel) && !CORDOVA_SHIMS.has(rel));
+  for (const rel of orphans) {
+    const label = `${target}/${rel}`;
+    if (check) { drift++; console.error(`ORPHAN ${label}  (no matching file in web/)`); }
+    else { unlinkSync(join(targetRoot, rel)); wrote++; console.log(`removed ${label}`); }
   }
 }
 
