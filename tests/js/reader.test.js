@@ -37,6 +37,12 @@ describe("readerGrade", () => {
     assert.equal(readerGrade("มา a 1 ๆ".replace("ๆ", "")), 0);
     assert.equal(readerGrade("ก b 9"), 0);
   });
+  test("฿ (baht sign) is ignored — currency, not a letter", () => {
+    // U+0E3F falls inside the mark codepoint range but isn't a taught glyph;
+    // without the exclusion a price like "20฿" would grade past the ladder
+    assert.equal(readerGrade("฿"), 0);
+    assert.equal(readerGrade("มา฿"), 0);
+  });
 });
 
 // ── readerFeed ───────────────────────────────────────────────────────────────
@@ -65,6 +71,23 @@ describe("readerFeed", () => {
   });
   test("the real corpus fills every level with something to read", () => {
     for (const lv of READER_LEVELS) assert.ok(readerFeed(lv.max).length > 0, lv.name + " is empty");
+  });
+  test("the real corpus is memoized: repeated calls return the same content, not stale/shared mutable state", () => {
+    // readerFeed(max) with no `examples` override grades+caches the full
+    // EXAMPLES corpus once; two independent calls must agree, and mutating
+    // one call's result must not corrupt the memo (each call gets its own
+    // array from .filter, but the underlying entry OBJECTS are shared —
+    // that's fine as long as nothing mutates them, which nothing does).
+    const a = readerFeed(8), b = readerFeed(8);
+    assert.deepEqual(a, b);
+    assert.notEqual(a, b, "each call returns its own array (filter), not the same reference");
+  });
+  test("an explicit `examples` override bypasses the memo (doesn't cache test data)", () => {
+    const custom = { x: ["ก", "k", "test"] };
+    const before = readerFeed(8).length; // warms/uses the real-corpus memo
+    const f = readerFeed(8, custom);
+    assert.deepEqual(f.map(s => s.th), ["ก"]);
+    assert.equal(readerFeed(8).length, before, "the real corpus memo is untouched by the override call");
   });
 });
 
