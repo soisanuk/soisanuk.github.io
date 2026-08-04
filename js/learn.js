@@ -38,7 +38,7 @@ function startLearn() {
     li.className = "learn-unit" + (done ? " done" : open ? " open" : " locked");
     const rec = path.units && path.units[_unitId(u)];
     li.innerHTML = `<span class="learn-badge">${done ? "✓" : open ? "▶" : "🔒"}</span>` +
-      `<span class="learn-label">${u.label}</span>` +
+      `<span class="learn-label">${_esc(u.label)}</span>` +
       (rec && rec.acc != null ? `<span class="learn-acc">${Math.round(rec.acc * 100)}%${rec.msAvg ? " · " + (rec.msAvg / 1000).toFixed(1) + "s/word" : ""}</span>` : "");
     if (open) li.onclick = () => _unitStart(idx);
     list.appendChild(li);
@@ -61,7 +61,7 @@ function startLearn() {
     sp.innerHTML = !bests.length ? "" :
       `<div class="sidebar-section" style="text-align:center">🏁 Fastest reads</div>` +
       bests.slice(0, 5).map(([th, ms]) =>
-        `<span class="learn-best">${th} <b>${(ms / 1000).toFixed(1)}s</b></span>`).join(" ");
+        `<span class="learn-best">${_esc(th)} <b>${(ms / 1000).toFixed(1)}s</b></span>`).join(" ");
   }
   showScreen("learn-screen", "G");
 }
@@ -203,7 +203,7 @@ function _wReviewCard(item, body) {
   if (item.pairs) {
     body.innerHTML = `<div class="learn-teach-tag">REVIEW</div>` +
       item.pairs.map(p => `<div class="learn-ex-block" onclick="_tts.speak(${esc(p[0])})">` +
-        `<span style="font-size:1.4em">${p[0]}</span> — ${(p[2] || "").split(" — ")[0]}</div>`).join("") +
+        `<span style="font-size:1.4em">${_esc(p[0])}</span> — ${_esc((p[2] || "").split(" — ")[0])}</div>`).join("") +
       fwdBtn;
     return;
   }
@@ -212,7 +212,7 @@ function _wReviewCard(item, body) {
   if (item.kind === "toneear") {
     const target = toneMinimalSet(item.cons, item.vowel)[item.pick || 0];
     body.innerHTML = `<div class="learn-teach-tag">REVIEW</div>
-      <div class="thai-big learn-glyph" onclick="_tts.speak(${esc(target.thai)})">${target.thai}</div>
+      <div class="thai-big learn-glyph" onclick="_tts.speak(${esc(target.thai)})">${_esc(target.thai)}</div>
       <div class="learn-mean" style="color:${TONE_COLORS[target.tone]}">${TONE_LABELS[target.tone]} tone</div>${fwdBtn}`;
     return;
   }
@@ -224,9 +224,9 @@ function _wReviewCard(item, body) {
   } else if (item.word) { [th, rtgs, mean] = item.word; speak = th; }
   else { const p = item.item; th = p.th; rtgs = ""; mean = p.answer; speak = p.th; }
   body.innerHTML = `<div class="learn-teach-tag">REVIEW</div>
-    <div class="thai-big learn-glyph" onclick="_tts.speak(${esc(speak)})">${th}</div>
-    <div class="rtgs">${rtgs} ${_speakBtn(speak)}</div>
-    <div class="learn-mean">${mean}</div>${toneLine}${fwdBtn}`;
+    <div class="thai-big learn-glyph" onclick="_tts.speak(${esc(speak)})">${_esc(th)}</div>
+    <div class="rtgs">${_esc(rtgs)} ${_speakBtn(speak)}</div>
+    <div class="learn-mean">${_esc(mean)}</div>${toneLine}${fwdBtn}`;
 }
 
 // personal-best read times per word (ms) — the speedometer's data
@@ -307,8 +307,8 @@ function _wGlyph(item, body) {
   const isMark = ["่", "้", "๊", "๋", "็", "ๆ", "ำ"].includes(g);
   const disp = typeof vowelDisp === "function" ? vowelDisp(g) : g;
   const name = typeof letterSpeech === "function" && !isMark ? letterSpeech(g) : "";
-  body.innerHTML = `<div class="thai-big learn-glyph" onclick="_tts.speak(letterSpeechParts(${JSON.stringify(g).replace(/"/g, "&quot;")}))">${disp}</div>
-    <div class="rtgs">${name}</div>
+  body.innerHTML = `<div class="thai-big learn-glyph" onclick="_tts.speak(letterSpeechParts(${JSON.stringify(g).replace(/"/g, "&quot;")}))">${_esc(disp)}</div>
+    <div class="rtgs">${_esc(name)}</div>
     <div class="card-prompt">${isMark ? "A mark, not a letter — it rides above and bends the tone. Learn each word's tone with the word." : "Tap the glyph to hear it. Say it back. Twice."}</div>
     <div class="btn-row"><button class="btn btn-primary" onclick="_learnNext()">Got it →</button></div>`;
   if (typeof letterSpeechParts === "function") _tts.speak(letterSpeechParts(g));
@@ -326,13 +326,13 @@ function _wWordIntro(item, body) {
     const txt = Array.isArray(c) ? c.join("") : c;
     const parts = JSON.stringify(Array.isArray(c) ? c.flatMap(ch =>
       typeof letterSpeechParts === "function" ? letterSpeechParts(ch) : [ch]) : [txt]).replace(/"/g, "&quot;");
-    return `<span class="learn-decode-chip" onclick="_tts.speak(${parts})">${txt}</span>`;
+    return `<span class="learn-decode-chip" onclick="_tts.speak(${parts})">${_esc(txt)}</span>`;
   }).join('<span class="learn-decode-plus">+</span>');
   const wt = JSON.stringify(w[0]).replace(/"/g, "&quot;");
   body.innerHTML = `<div class="learn-teach-tag">NEW WORD</div>
-    <div class="thai-big learn-glyph" onclick="_tts.speak(${wt})">${w[0]}</div>
-    <div class="rtgs">${w[1]} ${_speakBtn(w[0])}</div>
-    <div class="learn-mean">${w[2]}</div>
+    <div class="thai-big learn-glyph" onclick="_tts.speak(${wt})">${_esc(w[0])}</div>
+    <div class="rtgs">${_esc(w[1])} ${_speakBtn(w[0])}</div>
+    <div class="learn-mean">${_esc(w[2])}</div>
     ${clusters.length > 1 ? `<div class="learn-decode">${chips}</div>
       <div class="card-prompt" style="font-size:0.9em;opacity:0.8">Tap each piece to hear the letters build the word.</div>` : ""}
     <div id="learn-ex" class="learn-ex-block"></div>
@@ -355,7 +355,7 @@ function _wMC(item, body) {
   const w = item.word;
   const timed = item.kind === "speed";
   const opts = _mcOptions(w, 2);
-  body.innerHTML = `<div class="thai-big">${w[0]}</div><div class="rtgs">${timed ? "" : w[1]}</div>
+  body.innerHTML = `<div class="thai-big">${_esc(w[0])}</div><div class="rtgs">${timed ? "" : _esc(w[1])}</div>
     ${timed ? '<div class="learn-timer"><div class="learn-timer-fill" id="learn-timer"></div></div>' : ""}
     <div class="card-prompt">${timed ? "Fast — what does it mean?" : "What does it mean?"}</div>
     <ul class="quiz-choices" id="learn-choices"></ul>`;
@@ -364,7 +364,7 @@ function _wMC(item, body) {
 // grammar-practice MC (item carries its own options)
 function _wMC2(item, body) {
   const p = item.item;
-  body.innerHTML = `<div class="thai-big">${p.th}</div>
+  body.innerHTML = `<div class="thai-big">${_esc(p.th)}</div>
     <div class="card-prompt">What does it mean?</div>
     <ul class="quiz-choices" id="learn-choices"></ul>`;
   _mcWire(_shuffle(p.options.slice()), p.answer, _wordKey(p.th), 0, () => _tts.speak(p.th));
@@ -375,7 +375,7 @@ function _wordKey(th) { return WORDS.some(w => w[0] === th) ? th : null; }
 function _wMCTH(item, body) {
   const w = item.word;
   const opts = _mcOptions(w, 0, item.pool);
-  body.innerHTML = `<div class="screen-title" style="padding:1rem 0">${w[2]}</div>
+  body.innerHTML = `<div class="screen-title" style="padding:1rem 0">${_esc(w[2])}</div>
     <div class="card-prompt">Which one says it?</div>
     <ul class="quiz-choices learn-thai-choices" id="learn-choices"></ul>`;
   _mcWire(opts, w[0], w[0], 0, () => _tts.speak(w[0]), w);
@@ -403,7 +403,7 @@ function _enMatch(typed, gloss) {
 // type the English for the Thai — production, not recognition
 function _wTypeEN(item, body) {
   const w = item.word;
-  body.innerHTML = `<div class="thai-big">${w[0]}</div><div class="rtgs">${w[1]}</div>
+  body.innerHTML = `<div class="thai-big">${_esc(w[0])}</div><div class="rtgs">${_esc(w[1])}</div>
     <div class="card-prompt">Type the meaning in English</div>
     <div class="learn-type-row">
       <input id="learn-type-in" class="learn-type-in" type="text" autocomplete="off"
@@ -441,8 +441,8 @@ function _wTypeEN(item, body) {
 function _wTypeTH(item, body) {
   const w = item.word;
   const target = [...w[0]];
-  body.innerHTML = `<div class="screen-title" style="padding:0.5rem 0">${w[2]}</div>
-    <div class="rtgs">${w[1]}</div>
+  body.innerHTML = `<div class="screen-title" style="padding:0.5rem 0">${_esc(w[2])}</div>
+    <div class="rtgs">${_esc(w[1])}</div>
     <div class="thai-big" id="learn-th-buf" style="min-height:1.4em">&nbsp;</div>
     <div class="card-prompt" id="learn-th-fb">Type it in Thai — every key speaks</div>
     <div id="learn-kbd" class="t-kbd"></div>`;
@@ -468,7 +468,7 @@ function _wTypeTH(item, body) {
       misses++;
       bufEl.classList.add("learn-buf-wrong");
       setTimeout(() => bufEl.classList.remove("learn-buf-wrong"), 250);
-      if (misses === 2) fb.innerHTML = "It looks like: <b>" + w[0] + "</b>";
+      if (misses === 2) fb.innerHTML = "It looks like: <b>" + _esc(w[0]) + "</b>";
     }
   });
 }
@@ -492,8 +492,8 @@ function _wClozeX(item, body) {
   const ex = EXAMPLES[w[0]];
   const blanked = ex[0].split(w[0]).join("＿＿");
   const opts = _mcOptions(w, 0, item.pool);
-  body.innerHTML = `<div class="thai-big" style="font-size:1.6em">${blanked}</div>
-    <div class="card-prompt">${ex[2]}</div>
+  body.innerHTML = `<div class="thai-big" style="font-size:1.6em">${_esc(blanked)}</div>
+    <div class="card-prompt">${_esc(ex[2])}</div>
     <ul class="quiz-choices learn-thai-choices" id="learn-choices"></ul>`;
   _mcWire(opts, w[0], w[0], 0, () => _tts.speak(ex[0]), w);
 }
@@ -501,8 +501,8 @@ function _wClozeX(item, body) {
 // cloze: the chunk with a hole in it
 function _wCloze(item, body) {
   const p = item.item;
-  body.innerHTML = `<div class="thai-big">${p.th.replace("___", "＿＿")}</div>
-    <div class="card-prompt">${p.en}</div>
+  body.innerHTML = `<div class="thai-big">${_esc(p.th.replace("___", "＿＿"))}</div>
+    <div class="card-prompt">${_esc(p.en)}</div>
     <ul class="quiz-choices learn-thai-choices" id="learn-choices"></ul>`;
   _mcWire(_shuffle(p.options.slice()), p.answer, _wordKey(p.answer), 0,
     () => _tts.speak(p.th.replace("___", p.answer)));
@@ -591,8 +591,8 @@ function _wMatch(item, body) {
 // chunk lesson intro + per-chunk absorb cards
 function _wChunkIntro(item, body) {
   const l = item.lesson;
-  body.innerHTML = `<div class="screen-title">${l.title}</div>
-    <div class="card-prompt learn-intro-text">${l.intro}</div>
+  body.innerHTML = `<div class="screen-title">${_esc(l.title)}</div>
+    <div class="card-prompt learn-intro-text">${_esc(l.intro)}</div>
     <div class="btn-row"><button class="btn btn-primary" onclick="_learnNext()">Learn the chunks →</button></div>`;
 }
 function _wChunk(item, body) {
@@ -600,9 +600,9 @@ function _wChunk(item, body) {
   // the signage lesson renders as street furniture: font-shock is the training
   const signCls = item.sign === null || item.sign === undefined ? "" :
     " learn-sign learn-sign-" + item.sign;
-  body.innerHTML = `<div class="thai-big${signCls}" onclick="_tts.speak(${JSON.stringify(th).replace(/"/g, "&quot;")})">${th}</div>
-    <div class="rtgs">${rtgs}</div>
-    <div class="card-prompt">${en}</div>
+  body.innerHTML = `<div class="thai-big${signCls}" onclick="_tts.speak(${JSON.stringify(th).replace(/"/g, "&quot;")})">${_esc(th)}</div>
+    <div class="rtgs">${_esc(rtgs)}</div>
+    <div class="card-prompt">${_esc(en)}</div>
     <div class="card-prompt">Tap it. Hear it. Say it out loud — chunks stick by mouth, not by eye. ${_speakBtn(th)}</div>
     <div class="btn-row">${_wordCardBtn([th, rtgs, en])}<button class="btn btn-primary" onclick="_learnNext()">Next →</button></div>`;
   _tts.speak(th);
@@ -616,7 +616,7 @@ function _wToneIntro(item, body) {
   const set = typeof toneMinimalSet === "function" ? toneMinimalSet("ก", "า") : [];
   const chips = set.map(s =>
     `<span class="tone-chip" style="border-color:${TONE_COLORS[s.tone]};color:${TONE_COLORS[s.tone]}" ` +
-    `onclick="_tts.speak(${_toneSpeak(s.thai)})">${s.thai}<small>${TONE_LABELS[s.tone].toLowerCase()}</small></span>`).join("");
+    `onclick="_tts.speak(${_toneSpeak(s.thai)})">${_esc(s.thai)}<small>${TONE_LABELS[s.tone].toLowerCase()}</small></span>`).join("");
   body.innerHTML = `<div class="learn-teach-tag">READING THE TONES</div>
     <div class="card-prompt learn-intro-text">Same letters, one small mark, a different word. Three things fix a syllable's tone: the initial consonant's <b>class</b> (mid / high / low), whether the syllable is <b>live</b> (long vowel, or ends in m·n·ng·y·w) or <b>dead</b> (short vowel, or ends in a p·t·k stop), and any <b>tone mark</b>. Here is one mid-class syllable under all five — tap each and hear the pitch move:</div>
     <div class="tone-row">${chips}</div>
@@ -660,7 +660,7 @@ function _wToneCalc(item, body) {
     const syl = EG[state.cls] + _TONE_MARK_BY_KEY[state.mark] + (state.vlong ? "า" : "ะ");
     const out = document.createElement("div");
     out.className = "tone-calc-out";
-    out.innerHTML = `<span class="tone-eg" onclick="_tts.speak(${_toneSpeak(syl)})">${syl}</span>` +
+    out.innerHTML = `<span class="tone-eg" onclick="_tts.speak(${_toneSpeak(syl)})">${_esc(syl)}</span>` +
       `<span class="tone-arrow">→</span>` +
       `<b class="tone-name" style="color:${TONE_COLORS[tone]}">${TONE_LABELS[tone]} tone</b>`;
     box.appendChild(out);
@@ -684,8 +684,8 @@ function _wToneEar(item, body) {
 function _wToneRead(item, body) {
   const w = item.word;
   const tone = toneOfWord(w[0]); // the queue only ever puts gradable words here, but toneOfWord is the contract for any word-shaped input
-  body.innerHTML = `<div class="thai-big learn-glyph" onclick="_tts.speak(${_toneSpeak(w[0])})">${w[0]}</div>
-    <div class="learn-mean">${w[2]}</div>
+  body.innerHTML = `<div class="thai-big learn-glyph" onclick="_tts.speak(${_toneSpeak(w[0])})">${_esc(w[0])}</div>
+    <div class="learn-mean">${_esc(w[2])}</div>
     <div class="card-prompt">What tone is it? (tap the word to hear it)</div>
     <ul class="quiz-choices" id="learn-choices"></ul>`;
   const labels = ["mid", "low", "falling", "high", "rising"].map(k => TONE_LABELS[k]);
@@ -824,7 +824,7 @@ function showRecords() {
      <div class="learn-summary">📅 Biggest day: <b>${st.bestDay ? st.bestDay.cards + " cards (" + st.bestDay.date + ")" : "—"}</b></div>
      <div class="sidebar-section" style="text-align:center">🏁 Fastest reads</div>
      <div style="text-align:center">${bests.length ? bests.map(([th, ms]) =>
-       `<span class="learn-best">${th} <b>${(ms / 1000).toFixed(1)}s</b></span>`).join(" ") : "run some speed reads"}</div>`;
+       `<span class="learn-best">${_esc(th)} <b>${(ms / 1000).toFixed(1)}s</b></span>`).join(" ") : "run some speed reads"}</div>`;
   showScreen("records-screen", "Y");
 }
 

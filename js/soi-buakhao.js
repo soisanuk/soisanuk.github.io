@@ -211,8 +211,10 @@ let _sbAnswered = false;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
+// delegates to _wcEsc (wordcard.js, loaded first) — the single escaping
+// implementation; also gets " and ' escaped now (this one didn't before)
 function _sbEsc(s) {
-  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  return _wcEsc(s);
 }
 
 function _sbSample(arr, n) {
