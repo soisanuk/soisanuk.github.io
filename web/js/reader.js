@@ -147,16 +147,16 @@ function _readerShow() {
   body.innerHTML = `
     <div class="reader-topline">
       <span class="reader-counter">${_rd.level.name} · ${_rd.at + 1}/${_rd.feed.length}</span>
-      <button class="btn btn-small ${colorOn ? "sel" : ""}" onclick="_readerToggleColor()">🎨 tones</button>
+      <button class="btn btn-small ${colorOn ? "sel" : ""}" onclick="_readerToggleColor()" aria-label="Toggle tone colours">🎨 tones</button>
     </div>
-    <div class="reader-thai" id="reader-thai">${_readerThaiHtml(s.th, colorOn)}</div>
+    <div class="reader-thai" id="reader-thai" lang="th">${_readerThaiHtml(s.th, colorOn)}</div>
     ${colorOn ? _readerLegend() : ""}
     <div class="reader-rtgs">${_tcEsc(s.rtgs)}</div>
     <div class="reader-en">${_tcEsc(s.en)}</div>
     <div class="btn-row reader-controls">
-      <button class="btn btn-small" onclick="_readerPrev()" ${_rd.at === 0 ? "disabled" : ""}>‹</button>
-      <button class="btn btn-small" onclick="_tts.speak(${speak})">🔊</button>
-      <button class="btn btn-small" onclick="_tts.speak(${speak}, null, 1.25)">🚀</button>
+      <button class="btn btn-small" onclick="_readerPrev()" ${_rd.at === 0 ? "disabled" : ""} aria-label="Previous sentence">‹</button>
+      <button class="btn btn-small" onclick="_tts.speak(${speak})" aria-label="Listen">🔊</button>
+      <button class="btn btn-small" onclick="_tts.speak(${speak}, null, 1.25)" aria-label="Listen at street speed">🚀</button>
       <button class="btn btn-primary" onclick="_readerNext()">${_rd.at + 1 === _rd.feed.length ? "Done" : "Next ›"}</button>
     </div>`;
   // wire tap-to-define + hover tooltips onto every known-word token
