@@ -1941,7 +1941,7 @@ body.mobile #app-shell {
   <div class="screen-header" id="flash-header">Flashcard</div>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="flash-prog"></div></div>
   <div class="screen-title" id="flash-counter"></div>
-  <div class="thai-big" id="flash-thai"></div>
+  <div class="thai-big" id="flash-thai" lang="th"></div>
   <div style="text-align:center;margin-top:-0.5rem;margin-bottom:0.4rem">
     <button class="example-speak" id="flash-speak-btn" style="display:none" title="Listen" aria-label="Speak word">🔊</button>
   </div>
@@ -2015,9 +2015,9 @@ body.mobile #app-shell {
   <div class="screen-header">🎓 Lesson</div>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="lesson-prog"></div></div>
   <div class="lesson-nav">
-    <button class="btn btn-small" id="lesson-back" onclick="_learnBack()" style="visibility:hidden">‹ Back</button>
+    <button class="btn btn-small" id="lesson-back" onclick="_learnBack()" style="visibility:hidden" aria-label="Back">‹ Back</button>
     <span class="screen-title" id="lesson-counter"></span>
-    <button class="btn btn-small" id="lesson-fwd" onclick="_learnFwd()" style="visibility:hidden">Next ›</button>
+    <button class="btn btn-small" id="lesson-fwd" onclick="_learnFwd()" style="visibility:hidden" aria-label="Next">Next ›</button>
   </div>
   <div class="card-body" id="lesson-body"></div>
   <div class="screen-footer">
@@ -2038,7 +2038,7 @@ body.mobile #app-shell {
   <div class="screen-header">Quiz</div>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="quiz-prog"></div></div>
   <div class="screen-title" id="quiz-counter"></div>
-  <div class="thai-big" id="quiz-thai"></div>
+  <div class="thai-big" id="quiz-thai" lang="th"></div>
   <div class="rtgs" id="quiz-rtgs"></div>
   <div class="card-body">
     <div class="card-prompt">What is the meaning of this word?</div>
@@ -2058,7 +2058,7 @@ body.mobile #app-shell {
   <div class="screen-header" id="drill-section-label"></div>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="drill-prog"></div></div>
   <div class="screen-title" id="drill-counter"></div>
-  <div class="thai-big" id="drill-thai"></div>
+  <div class="thai-big" id="drill-thai" lang="th"></div>
   <div class="rtgs" id="drill-rtgs"></div>
   <div class="drill-info" id="drill-info"></div>
   <div class="btn-row">
@@ -2072,7 +2072,7 @@ body.mobile #app-shell {
   <div class="screen-header" id="srs-header">SRS Review</div>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="srs-prog"></div></div>
   <div class="screen-title" id="srs-counter"></div>
-  <div class="thai-big" id="srs-thai"></div>
+  <div class="thai-big" id="srs-thai" lang="th"></div>
   <div class="rtgs" id="srs-rtgs"></div>
   <div class="card-body">
     <div class="card-prompt" id="srs-prompt"></div>
@@ -2216,7 +2216,7 @@ body.mobile #app-shell {
   <div id="game-ref"></div>
   <div id="game-kbd"></div>
   <div class="screen-footer" style="background:#05001a;border-color:#ff149340;color:#bf5fff">
-    <span class="kb-hint">Type the key shown on each sign · </span><span class="touch-hint">Tap the matching key below · </span><button class="btn audio-mute-btn" style="padding:0.15rem 0.5rem;font-size:0.8rem;border-color:#ff149360" onclick="this.textContent=_audio.toggleMute()?'🔇':'🔊'">🔊</button> <button class="btn" style="padding:0.15rem 0.6rem;font-size:0.8rem;border-color:#ff149360;color:#ff1493" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
+    <span class="kb-hint">Type the key shown on each sign · </span><span class="touch-hint">Tap the matching key below · </span><button class="btn audio-mute-btn" style="padding:0.15rem 0.5rem;font-size:0.8rem;border-color:#ff149360" onclick="this.textContent=_audio.toggleMute()?'🔇':'🔊'" aria-label="Toggle sound">🔊</button> <button class="btn" style="padding:0.15rem 0.6rem;font-size:0.8rem;border-color:#ff149360;color:#ff1493" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
   </div>
 </div>
 
@@ -2231,7 +2231,7 @@ body.mobile #app-shell {
   <div id="bb-chart"></div>
   <div class="screen-footer" style="background:#160822;border-top:1px solid #ff8c4230;color:#ffb37a80;font-size:.78rem;text-align:center;padding:.5rem;">
     <span class="kb-hint">1–7 money · Enter give · 1–4 quote · R replay &nbsp;·&nbsp;</span>
-    <button class="btn audio-mute-btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff8c4240" onclick="this.textContent=_audio.toggleMute()?'🔇':'🔊'">🔊</button>
+    <button class="btn audio-mute-btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff8c4240" onclick="this.textContent=_audio.toggleMute()?'🔇':'🔊'" aria-label="Toggle sound">🔊</button>
     <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff8c4240;color:#ff8c42" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
   </div>
 </div>
@@ -2246,7 +2246,7 @@ body.mobile #app-shell {
   <div id="c4-body"></div>
   <div class="screen-footer" style="background:#0d0015;border-top:1px solid #ff006630;color:#bf5fff50;font-size:.78rem;text-align:center;padding:.5rem;">
     <span class="kb-hint">1–4 answer · 1–7 drop column &nbsp;·&nbsp;</span>
-    <button class="btn audio-mute-btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640" onclick="this.textContent=_audio.toggleMute()?'🔇':'🔊'">🔊</button>
+    <button class="btn audio-mute-btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640" onclick="this.textContent=_audio.toggleMute()?'🔇':'🔊'" aria-label="Toggle sound">🔊</button>
     <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640;color:#ff149380" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
   </div>
 </div>
@@ -2260,7 +2260,7 @@ body.mobile #app-shell {
   <div id="soi-body"></div>
   <div class="screen-footer" style="background:#0d0015;border-top:1px solid #ff006630;color:#bf5fff50;font-size:.78rem;text-align:center;padding:.5rem;">
     <span class="kb-hint">1–4 select · Enter/Space advance &nbsp;·&nbsp;</span>
-    <button class="btn audio-mute-btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640" onclick="this.textContent=_audio.toggleMute()?'🔇':'🔊'">🔊</button>
+    <button class="btn audio-mute-btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640" onclick="this.textContent=_audio.toggleMute()?'🔇':'🔊'" aria-label="Toggle sound">🔊</button>
     <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#ff006640;color:#ff149380" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
   </div>
 </div>
@@ -2306,7 +2306,7 @@ body.mobile #app-shell {
     </div>
     <div id="nf-answer-area" style="display:none">
       <hr class="divider-accent">
-      <div class="thai-big" id="nf-thai" style="text-align:center"></div>
+      <div class="thai-big" id="nf-thai" style="text-align:center" lang="th"></div>
       <div class="rtgs" id="nf-rom"></div>
       <div style="text-align:center;margin:.3rem 0">
         <button class="example-speak" id="nf-speak-btn" title="Listen" onclick="nfSpeak()">🔊</button>
