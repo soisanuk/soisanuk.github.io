@@ -64,8 +64,8 @@ const GRAMMAR_LESSONS = [
       "shape — you line them up, subject-verb-object, and you're speaking. " +
       "ไม่ (mâi) in front of a verb makes it negative. That's lesson one.",
     pattern: [
-      ["ผมกินข้าว", "phǒm gin khâao", "I eat (rice) — subject, verb, object"],
-      ["ผมไม่กิน", "phǒm mâi gin", "I don't eat — ไม่ before the verb"],
+      ["ผมกินข้าว", "phǒm kin khâao", "I eat (rice) — subject, verb, object"],
+      ["ผมไม่กิน", "phǒm mâi kin", "I don't eat — ไม่ before the verb"],
       ["อร่อย", "à-ròi", "delicious — one word is a full sentence here"],
       ["ไม่อร่อย", "mâi à-ròi", "not delicious — same trick, any verb or adjective"],
     ],
@@ -82,8 +82,8 @@ const GRAMMAR_LESSONS = [
       "particle = thank you.",
     pattern: [
       ["สวัสดีครับ", "sà-wàt-dii khráp", "hello (man speaking)"],
-      ["ขอบคุณค่ะ", "khàawp-khun khâ", "thank you (woman speaking)"],
-      ["ไม่เป็นไร", "mâi bpen rai", "no problem / it's nothing — the national motto"],
+      ["ขอบคุณค่ะ", "khòop-khun khâ", "thank you (woman speaking)"],
+      ["ไม่เป็นไร", "mâi pen rai", "no problem / it's nothing — the national motto"],
     ],
     practice: [
       { kind: "cloze", th: "ขอบคุณ___", answer: "ครับ", options: ["ครับ", "ไม่", "ไหม", "อร่อย"], en: "thank you (as a man)" },
@@ -97,7 +97,7 @@ const GRAMMAR_LESSONS = [
       "particle. ไม่เผ็ด (mâi phèt) = not spicy. You now survive any menu.",
     pattern: [
       ["เอาอันนี้ครับ", "ao an níi khráp", "I'll take this one"],
-      ["ขอน้ำหน่อยครับ", "khǎaw náam nòi khráp", "some water, please"],
+      ["ขอน้ำหน่อยครับ", "khǒo náam nòi khráp", "some water, please"],
       ["ไม่เผ็ดนะ", "mâi phèt ná", "not spicy, yeah?"],
       ["เช็คบิลครับ", "chék bin khráp", "the bill, please"],
     ],
@@ -115,9 +115,9 @@ const GRAMMAR_LESSONS = [
       "the smile is half the discount.",
     pattern: [
       ["อันนี้เท่าไหร่", "an níi thâo-rài", "how much is this one?"],
-      ["แพงไป", "phaaeng bpai", "too expensive (said fondly)"],
-      ["ลดหน่อยได้ไหม", "lót nòi dâai mǎi", "can you drop it a little?"],
-      ["สองร้อยได้ไหม", "sǎawng ráawy dâai mǎi", "two hundred, can do?"],
+      ["แพงไป", "phaeng pai", "too expensive (said fondly)"],
+      ["ลดหน่อยได้ไหม", "lót nòi dâi mǎi", "can you drop it a little?"],
+      ["สองร้อยได้ไหม", "sǒong rói dâi mǎi", "two hundred, can do?"],
     ],
     practice: [
       { kind: "cloze", th: "อันนี้___", answer: "เท่าไหร่", options: ["เท่าไหร่", "อร่อย", "ไม่ดี", "ขอบคุณ"], en: "how much is THIS?" },
@@ -130,10 +130,10 @@ const GRAMMAR_LESSONS = [
     intro: "The signs that matter, in the order they matter. ห้าม (hâam) in " +
       "front of anything = forbidden — the most useful prefix in the country.",
     pattern: [
-      ["ห้องน้ำ", "hâawng náam", "toilet — the sign you'll hunt most"],
-      ["ทางออก", "thaang àawk", "exit"],
-      ["เปิด", "bpòoet", "open"],
-      ["ปิด", "bpìt", "closed"],
+      ["ห้องน้ำ", "hông náam", "toilet — the sign you'll hunt most"],
+      ["ทางออก", "thaang-òok", "exit"],
+      ["เปิด", "pòoet", "open"],
+      ["ปิด", "pìt", "closed"],
       ["ห้ามสูบบุหรี่", "hâam sùup bù-rìi", "no smoking — ห้าม + anything = forbidden"],
       ["ลดราคา", "lót raa-khaa", "sale / prices down"],
     ],
@@ -152,7 +152,7 @@ const GRAMMAR_LESSONS = [
       ["อันนี้", "an níi", "this one"],
       ["อันนั้น", "an nán", "that one"],
       ["อันนี้อร่อยไหม", "an níi à-ròi mǎi", "is this one tasty? — ไหม makes a question"],
-      ["เอาอันนั้นสองอัน", "ao an nán sǎawng an", "I'll take two of those"],
+      ["เอาอันนั้นสองอัน", "ao an nán sǒong an", "I'll take two of those"],
     ],
     practice: [
       { kind: "mc", th: "อันนั้น", answer: "that one", options: ["that one", "this one", "which one", "every one"] },
@@ -166,11 +166,11 @@ const GRAMMAR_LESSONS = [
       "stop). ตรงไป is straight, เลี้ยว is turn. Ten baht down Beach Road — no " +
       "haggling, just name where you're going and add your particle.",
     pattern: [
-      ["ไปจอมเทียนครับ", "bpai jom-tian khráp", "to Jomtien — just name the place"],
-      ["ตรงไป", "dtrong bpai", "straight ahead"],
+      ["ไปจอมเทียนครับ", "pai jom-tian khráp", "to Jomtien — just name the place"],
+      ["ตรงไป", "trong pai", "straight ahead"],
       ["เลี้ยวซ้าย", "líao sáai", "turn left"],
       ["เลี้ยวขวา", "líao khwǎa", "turn right"],
-      ["จอดตรงนี้", "jàawt dtrong níi", "stop right here — call it or hit the buzzer"],
+      ["จอดตรงนี้", "jòot trong níi", "stop right here — call it or hit the buzzer"],
     ],
     practice: [
       { kind: "cloze", th: "เลี้ยว___", answer: "ซ้าย", options: ["ซ้าย", "ขวา", "ตรง", "ไป"], en: "turn LEFT" },
@@ -186,11 +186,11 @@ const GRAMMAR_LESSONS = [
       "(khít ngoen, 'count the money') calls for the tab. Digits themselves " +
       "are drilled in Baht Bus — here it's the shape of a price.",
     pattern: [
-      ["เบียร์ขวดละเท่าไหร่", "bia khùuat lá thâo-rài", "how much per bottle of beer?"],
-      ["ขวดละแปดสิบ", "khùuat lá bpàaet sìp", "eighty a bottle"],
-      ["เอาสองขวด", "ao sǎawng khùuat", "I'll take two bottles — number + classifier"],
-      ["คนละร้อย", "khon lá ráawy", "a hundred each (per person)"],
-      ["คิดเงินด้วยครับ", "khít ngoen dûai khráp", "the bill, please"],
+      ["เบียร์ขวดละเท่าไหร่", "bia khùat lá thâo-rài", "how much per bottle of beer?"],
+      ["ขวดละแปดสิบ", "khùat lá pàet sìp", "eighty a bottle"],
+      ["เอาสองขวด", "ao sǒong khùat", "I'll take two bottles — number + classifier"],
+      ["คนละร้อย", "khon lá rói", "a hundred each (per person)"],
+      ["คิดเงินด้วยครับ", "khít ngoen dûay khráp", "the bill, please"],
     ],
     practice: [
       { kind: "cloze", th: "เบียร์ขวด___เท่าไหร่", answer: "ละ", options: ["ละ", "ไม่", "มา", "ดี"], en: "how much PER bottle?" },
