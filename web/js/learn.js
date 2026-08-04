@@ -198,11 +198,10 @@ function _learnFwd() { if (_lu && _lu.at < _lu.max) { _lu.at++; _learnStep(); } 
 // read-only recap of an already-completed card: the prompt and its answer,
 // nothing to grade — just reinforcement while you page back and forth
 function _wReviewCard(item, body) {
-  const esc = t => JSON.stringify(t).replace(/"/g, "&quot;");
   const fwdBtn = `<div class="btn-row"><button class="btn btn-primary" onclick="_learnFwd()">Next →</button></div>`;
   if (item.pairs) {
     body.innerHTML = `<div class="learn-teach-tag">REVIEW</div>` +
-      item.pairs.map(p => `<div class="learn-ex-block" onclick="_tts.speak(${esc(p[0])})">` +
+      item.pairs.map(p => `<div class="learn-ex-block" onclick="_tts.speak(${_toneSpeak(p[0])})">` +
         `<span style="font-size:1.4em">${_esc(p[0])}</span> — ${_esc((p[2] || "").split(" — ")[0])}</div>`).join("") +
       fwdBtn;
     return;
@@ -212,7 +211,7 @@ function _wReviewCard(item, body) {
   if (item.kind === "toneear") {
     const target = toneMinimalSet(item.cons, item.vowel)[item.pick || 0];
     body.innerHTML = `<div class="learn-teach-tag">REVIEW</div>
-      <div class="thai-big learn-glyph" lang="th" onclick="_tts.speak(${esc(target.thai)})">${_esc(target.thai)}</div>
+      <div class="thai-big learn-glyph" lang="th" onclick="_tts.speak(${_toneSpeak(target.thai)})">${_esc(target.thai)}</div>
       <div class="learn-mean" style="color:${TONE_COLORS[target.tone]}">${TONE_LABELS[target.tone]} tone</div>${fwdBtn}`;
     return;
   }
@@ -224,7 +223,7 @@ function _wReviewCard(item, body) {
   } else if (item.word) { [th, rtgs, mean] = item.word; speak = th; }
   else { const p = item.item; th = p.th; rtgs = ""; mean = p.answer; speak = p.th; }
   body.innerHTML = `<div class="learn-teach-tag">REVIEW</div>
-    <div class="thai-big learn-glyph" lang="th" onclick="_tts.speak(${esc(speak)})">${_esc(th)}</div>
+    <div class="thai-big learn-glyph" lang="th" onclick="_tts.speak(${_toneSpeak(speak)})">${_esc(th)}</div>
     <div class="rtgs">${_esc(rtgs)} ${_speakBtn(speak)}</div>
     <div class="learn-mean">${_esc(mean)}</div>${toneLine}${fwdBtn}`;
 }
@@ -295,7 +294,7 @@ function _mcOptions(word, field, pool) {
   return _shuffle([word[field], ...wrong]);
 }
 function _speakBtn(text) {
-  const t = JSON.stringify(text).replace(/"/g, "&quot;");
+  const t = _toneSpeak(text);
   // 🔊 learner pace · 🚀 street speed — comprehension of FAST Thai is the wall
   return `<button class="btn btn-small" onclick="_tts.speak(${t})" aria-label="Listen">🔊</button>` +
     `<button class="btn btn-small" onclick="_tts.speak(${t}, null, 1.25)" aria-label="Listen at street speed">🚀</button>`;
@@ -307,7 +306,7 @@ function _wGlyph(item, body) {
   const isMark = ["่", "้", "๊", "๋", "็", "ๆ", "ำ"].includes(g);
   const disp = typeof vowelDisp === "function" ? vowelDisp(g) : g;
   const name = typeof letterSpeech === "function" && !isMark ? letterSpeech(g) : "";
-  body.innerHTML = `<div class="thai-big learn-glyph" lang="th" onclick="_tts.speak(letterSpeechParts(${JSON.stringify(g).replace(/"/g, "&quot;")}))">${_esc(disp)}</div>
+  body.innerHTML = `<div class="thai-big learn-glyph" lang="th" onclick="_tts.speak(letterSpeechParts(${_toneSpeak(g)}))">${_esc(disp)}</div>
     <div class="rtgs">${_esc(name)}</div>
     <div class="card-prompt">${isMark ? "A mark, not a letter — it rides above and bends the tone. Learn each word's tone with the word." : "Tap the glyph to hear it. Say it back. Twice."}</div>
     <div class="btn-row"><button class="btn btn-primary" onclick="_learnNext()">Got it →</button></div>`;
@@ -328,7 +327,7 @@ function _wWordIntro(item, body) {
       typeof letterSpeechParts === "function" ? letterSpeechParts(ch) : [ch]) : [txt]).replace(/"/g, "&quot;");
     return `<span class="learn-decode-chip" lang="th" onclick="_tts.speak(${parts})">${_esc(txt)}</span>`;
   }).join('<span class="learn-decode-plus">+</span>');
-  const wt = JSON.stringify(w[0]).replace(/"/g, "&quot;");
+  const wt = _toneSpeak(w[0]);
   body.innerHTML = `<div class="learn-teach-tag">NEW WORD</div>
     <div class="thai-big learn-glyph" lang="th" onclick="_tts.speak(${wt})">${_esc(w[0])}</div>
     <div class="rtgs">${_esc(w[1])} ${_speakBtn(w[0])}</div>
@@ -600,7 +599,7 @@ function _wChunk(item, body) {
   // the signage lesson renders as street furniture: font-shock is the training
   const signCls = item.sign === null || item.sign === undefined ? "" :
     " learn-sign learn-sign-" + item.sign;
-  body.innerHTML = `<div class="thai-big${signCls}" lang="th" onclick="_tts.speak(${JSON.stringify(th).replace(/"/g, "&quot;")})">${_esc(th)}</div>
+  body.innerHTML = `<div class="thai-big${signCls}" lang="th" onclick="_tts.speak(${_toneSpeak(th)})">${_esc(th)}</div>
     <div class="rtgs">${_esc(rtgs)}</div>
     <div class="card-prompt">${_esc(en)}</div>
     <div class="card-prompt">Tap it. Hear it. Say it out loud — chunks stick by mouth, not by eye. ${_speakBtn(th)}</div>
@@ -608,8 +607,13 @@ function _wChunk(item, body) {
   _tts.speak(th);
 }
 
-// ── Tone unit widgets ────────────────────────────────────────────────────────
+// escapes a JS string literal for embedding inside an HTML onclick="" attribute
+// (e.g. onclick="_tts.speak(${_toneSpeak(word)})") — the single implementation;
+// every inline JSON.stringify(...).replace(/"/g,"&quot;") in this file used to
+// duplicate this. Named for its original tone-widget use; general-purpose now.
 function _toneSpeak(t) { return JSON.stringify(t).replace(/"/g, "&quot;"); }
+
+// ── Tone unit widgets ────────────────────────────────────────────────────────
 
 // the rule, then one mid-class syllable shown under all five tones (tap each)
 function _wToneIntro(item, body) {

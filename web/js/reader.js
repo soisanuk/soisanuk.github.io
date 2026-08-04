@@ -116,13 +116,11 @@ function readerOpen(levelIdx) {
 
 // interactive, optionally tone-coloured Thai line (reuses the word-card modal)
 function _readerThaiHtml(thai, colorOn) {
-  const toks = _tokenise(thai);
-  return toks.map(tok => {
-    if (!tok.word) return _tcEsc(tok.text);
-    const tone = colorOn ? toneOfWord(tok.text) : null;
-    const style = tone ? ` style="color:${TONE_COLORS[tone]}"` : "";
-    return `<span class="w-token"${style} data-w="${_tcEsc(tok.text)}">${_tcEsc(tok.text)}</span>`;
-  }).join("");
+  return toneColorHtml(thai, (escaped, tone, tok) => {
+    if (!tok.word) return escaped; // unknown token: plain, no tap-to-define span
+    const style = (colorOn && tone) ? ` style="color:${TONE_COLORS[tone]}"` : "";
+    return `<span class="w-token"${style} data-w="${escaped}">${escaped}</span>`;
+  });
 }
 
 const _READER_TONE_ORDER = ["mid", "low", "falling", "high", "rising"];
@@ -143,7 +141,6 @@ function _readerShow() {
   }
   const colorOn = _readerColorOn();
   const s = _rd.feed[_rd.at];
-  const speak = JSON.stringify(s.th).replace(/"/g, "&quot;");
   body.innerHTML = `
     <div class="reader-topline">
       <span class="reader-counter">${_rd.level.name} · ${_rd.at + 1}/${_rd.feed.length}</span>
@@ -155,21 +152,10 @@ function _readerShow() {
     <div class="reader-en">${_tcEsc(s.en)}</div>
     <div class="btn-row reader-controls">
       <button class="btn btn-small" onclick="_readerPrev()" ${_rd.at === 0 ? "disabled" : ""} aria-label="Previous sentence">‹</button>
-      <button class="btn btn-small" onclick="_tts.speak(${speak})" aria-label="Listen">🔊</button>
-      <button class="btn btn-small" onclick="_tts.speak(${speak}, null, 1.25)" aria-label="Listen at street speed">🚀</button>
+      ${_speakBtn(s.th)}
       <button class="btn btn-primary" onclick="_readerNext()">${_rd.at + 1 === _rd.feed.length ? "Done" : "Next ›"}</button>
     </div>`;
-  // wire tap-to-define + hover tooltips onto every known-word token
-  document.querySelectorAll("#reader-thai .w-token").forEach(span => {
-    const w = _wcMap()[span.dataset.w];
-    if (!w) return;
-    span.style.cursor = "pointer";
-    span.addEventListener("click", () => openWordModal(w));
-    if (typeof _tt !== "undefined") {
-      span.addEventListener("mouseenter", e => _tt.show(w[0], w[1], w[2], e.clientX, e.clientY));
-      span.addEventListener("mouseleave", () => _tt.hide());
-    }
-  });
+  _wcWireTokens(document.getElementById("reader-thai"));
 }
 
 function _readerNext() { if (_rd) { _rd.at++; _readerShow(); } }

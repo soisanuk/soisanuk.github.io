@@ -270,13 +270,22 @@ function showExample(containerId, vocabWord) {
   const btn = el.querySelector(".example-speak");
   if (btn) btn.addEventListener("click", () => _tts.speak(thai, btn));
 
-  // Attach tooltip + click-to-speak events to every token span
-  el.querySelectorAll(".w-token").forEach(span => {
+  _wcWireTokens(el);
+}
+
+// Wire tap-to-define (click → openWordModal) + hover tooltip onto every
+// .w-token span within a container — shared by showExample and the graded
+// reader (reader.js _readerShow). data-w must hold the exact WORD_MAP/WORDS
+// key for the token; tokens whose key doesn't resolve are left inert.
+function _wcWireTokens(container) {
+  container.querySelectorAll(".w-token").forEach(span => {
     const w = _wcMap()[span.dataset.w];
     if (!w) return;
-    span.addEventListener("mouseenter", e => _tt.show(w[0], w[1], w[2], e.clientX, e.clientY));
-    span.addEventListener("mouseleave", () => _tt.hide());
     span.style.cursor = "pointer";
     span.addEventListener("click", () => openWordModal(w));
+    if (typeof _tt !== "undefined") {
+      span.addEventListener("mouseenter", e => _tt.show(w[0], w[1], w[2], e.clientX, e.clientY));
+      span.addEventListener("mouseleave", () => _tt.hide());
+    }
   });
 }
