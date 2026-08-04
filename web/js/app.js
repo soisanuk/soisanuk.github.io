@@ -202,8 +202,10 @@ function setProgress(id, idx, total) {
   document.getElementById(id).style.width = total ? `${Math.round(idx / total * 100)}%` : "0%";
 }
 
+// delegates to _wcEsc (wordcard.js, loaded first) — the single escaping
+// implementation; this also gets ' for free (the others didn't escape it)
 function _esc(s) {
-  return s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  return _wcEsc(s);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

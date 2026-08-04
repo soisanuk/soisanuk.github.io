@@ -1,6 +1,7 @@
 // Tests for the Soi Buakhao dialogue data and pure helpers in
 // web/js/soi-buakhao.js. The file is DOM-free at load time, so it can be
-// evaluated via node:vm like the other sources.
+// evaluated via node:vm like the other sources. wordcard.js is loaded first:
+// _sbEsc delegates to its _wcEsc, the single HTML-escaping implementation.
 // Run with: node --test tests/js/
 
 import { test, describe } from "node:test";
@@ -8,10 +9,12 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-vm.runInThisContext(
-  readFileSync(new URL("../../web/js/soi-buakhao.js", import.meta.url), "utf8"),
-  { filename: "soi-buakhao.js" }
-);
+for (const f of ["wordcard.js", "soi-buakhao.js"]) {
+  vm.runInThisContext(
+    readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"),
+    { filename: f }
+  );
+}
 // Note: const/let from vm scripts live in the global lexical scope, not on
 // globalThis — reference them as bare identifiers, don't destructure.
 
@@ -99,8 +102,8 @@ describe("bars and hostesses", () => {
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 describe("_sbEsc", () => {
-  test("escapes HTML metacharacters", () => {
-    assert.equal(_sbEsc("<b>&\"x\"</b>"), "&lt;b&gt;&amp;\"x\"&lt;/b&gt;");
+  test("escapes HTML metacharacters, including \" and ' (delegates to _wcEsc)", () => {
+    assert.equal(_sbEsc(`<b>&"x's"</b>`), "&lt;b&gt;&amp;&quot;x&#39;s&quot;&lt;/b&gt;");
   });
 
   test("coerces non-strings", () => {
