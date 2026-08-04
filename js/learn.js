@@ -114,11 +114,16 @@ function _unitQueue(unit, dueWords) {
     // pick is chosen NOW, not at render — so revisiting a completed toneear
     // card (paging back) shows the same target it was answered against,
     // instead of re-rolling a fresh random question every time it's viewed.
-    // Derived from toneMinimalSet's own length (not hardcoded) so the index
-    // can never go out of range if the set's shape ever changes.
-    const toneEarSetLen = typeof toneMinimalSet === "function" ? toneMinimalSet("ก", "า").length : 5;
+    // The range comes from toneMinimalSet(cons, vowel) — the SAME call
+    // _wToneEar/_wReviewCard make to index it — for THIS item's own host,
+    // not a shared probe on a fixed consonant: if the set's length were ever
+    // host-dependent, a shared probe could silently disagree with what a
+    // given card actually renders, and reintroduce an out-of-range pick.
     for (let i = 0; i < 4; i++) {
-      queue.push({ kind: "toneear", cons: hosts[i % hosts.length] || "ก", vowel: "า", pick: Math.floor(Math.random() * toneEarSetLen) });
+      const cons = hosts[i % hosts.length] || "ก";
+      const vowel = "า";
+      const setLen = toneMinimalSet(cons, vowel).length;
+      queue.push({ kind: "toneear", cons, vowel, pick: Math.floor(Math.random() * setLen) });
     }
     const readWords = _shuffle((typeof TONE_READ_WORDS !== "undefined" ? TONE_READ_WORDS : []).slice())
       .map(th => WORDS.find(w => w[0] === th)).filter(Boolean)
