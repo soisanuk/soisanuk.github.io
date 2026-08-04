@@ -272,6 +272,14 @@ function _analyseSyllable(input) {
   return { cls, mark, live, shortVowel: !long };
 }
 
+// CONTRACT: input is ONE syllable. A multi-syllable string (a whole word or
+// phrase) gets silently mis-parsed — e.g. syllableTone("อร่อย") reads only
+// the leader+first syllable and returns a confidently WRONG tone, it does
+// NOT return null. For any text that isn't already known to be a single
+// syllable (a word from data.js, user-facing text, …), call
+// toneOfWord(text) (curriculum.js) instead — it checks the word's
+// romanisation for a hyphen/space and returns null rather than guess.
+
 // Full reasoning for one syllable (for the tone explainer), or null.
 function syllableToneInfo(syllable) {
   const p = _analyseSyllable(syllable);

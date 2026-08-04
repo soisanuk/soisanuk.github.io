@@ -43,6 +43,19 @@ test("_detectWordTone falls back to 0 for words it can't grade", () => {
   assert.equal(_detectWordTone(""), 0);
 });
 
+test("_detectWordTone warns (not fails silently) if TONES and the engine's tone vocabulary drift apart", (t) => {
+  const warnMock = t.mock.method(console, "warn", () => {});
+  const origToneOfWord = globalThis.toneOfWord;
+  globalThis.toneOfWord = () => "nonexistent-tone"; // simulates a renamed/drifted tone name
+  try {
+    assert.equal(_detectWordTone("มา"), 0, "still falls back to 0, but loudly");
+    assert.equal(warnMock.mock.calls.length, 1, "warns exactly once");
+    assert.match(warnMock.mock.calls[0].arguments[0], /nonexistent-tone/);
+  } finally {
+    globalThis.toneOfWord = origToneOfWord;
+  }
+});
+
 // ── _toneRuleLine: the reveal's rule explanation ────────────────────────────
 // Spells out WHY a word has the tone it has — cls + mark → REALISED tone —
 // so a learner reading the written mark (e.g. ้ mai tho on a low-class
