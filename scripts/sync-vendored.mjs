@@ -1,31 +1,41 @@
 #!/usr/bin/env node
-// Sync the files The Last Baht Bus vendors from this trainer.
+// Two sync jobs live here, both idempotent and both checkable:
 //
-// This repo is the source of truth for the shared Thai stack (data, examples,
-// tokeniser, thai-script, wordcard) and the wordcard test. LBB carries copies.
-// Before, the copies were kept in sync by hand — one stale file could ship
-// silently, and the "VENDORED" banner was on some copies but not others. This
-// script is the single, idempotent sync: it writes each copy with the banner,
-// so an LBB copy can never be mistaken for an editable original.
+// 1. VENDORED FILES — the shared Thai stack (data, examples, tokeniser,
+//    thai-script, wordcard) + the wordcard test, copied into The Last Baht
+//    Bus (a separate repo) with a banner so a copy can never be mistaken for
+//    an editable original. This repo is the source of truth; LBB carries
+//    copies.
 //
-//   node scripts/sync-vendored.mjs           # write the copies into LBB
-//   node scripts/sync-vendored.mjs --check   # verify they match; exit 1 on drift
+// 2. CAPACITOR NATIVE TREES — android/app/src/main/assets/public and
+//    ios/App/App/public are Capacitor's packaged copies of the ENTIRE web/
+//    directory (this is the same app, not a fork — no banner, straight
+//    mirror). `npx cap copy` regenerates them from web/, but that's a step a
+//    native build can forget; syncing them here means `--check` catches
+//    stale JS before it ships in a build instead of after. Capacitor's own
+//    runtime shims (cordova.js, cordova_plugins.js) live only in the target
+//    and are never touched — this only ever writes files that exist in web/.
 //
-// Point at a different LBB checkout with `--dest <dir>` or `LBB_DIR=<dir>`.
+//   node scripts/sync-vendored.mjs           # write both jobs
+//   node scripts/sync-vendored.mjs --check   # verify everything; exit 1 on drift
+//
+// Point the LBB job at a different checkout with `--dest <dir>` or LBB_DIR.
 
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { dirname, join, relative } from "node:path";
 
 const SRC_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
 const check = args.includes("--check");
 const destArg = args.indexOf("--dest");
-const DEST_ROOT = destArg >= 0 ? args[destArg + 1]
+const LBB_ROOT = destArg >= 0 ? args[destArg + 1]
   : process.env.LBB_DIR || "/Users/mario/projects/last-baht-bus";
 
-// Path is relative to both repo roots; each copy is banner + source, verbatim.
-const FILES = [
+let drift = 0, wrote = 0;
+
+// ── 1. Vendored files → LBB ─────────────────────────────────────────────────
+const VENDORED_FILES = [
   "web/js/data.js",
   "web/js/examples.js",
   "web/js/tokeniser.js",
@@ -38,10 +48,9 @@ const banner = rel =>
   `// VENDORED from the Soi Sanuk trainer (soisanuk.github.io ${rel}) —\n` +
   `// source of truth lives there; edit there and re-copy. Do not fork.\n`;
 
-let drift = 0, wrote = 0;
-for (const rel of FILES) {
+for (const rel of VENDORED_FILES) {
   const want = banner(rel) + readFileSync(join(SRC_ROOT, rel), "utf8");
-  const dest = join(DEST_ROOT, rel);
+  const dest = join(LBB_ROOT, rel);
   if (check) {
     const have = existsSync(dest) ? readFileSync(dest, "utf8") : "";
     if (have === want) { console.log(`ok     ${rel}`); }
@@ -53,8 +62,48 @@ for (const rel of FILES) {
   }
 }
 
+// ── 2. web/ → Capacitor native trees (this repo, no banner) ────────────────
+const CAP_TARGETS = [
+  "android/app/src/main/assets/public",
+  "ios/App/App/public",
+];
+
+function walkFiles(dir, base = dir) {
+  const out = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...walkFiles(full, base));
+    else out.push(relative(base, full));
+  }
+  return out;
+}
+
+const webRoot = join(SRC_ROOT, "web");
+const webFiles = walkFiles(webRoot);
+
+for (const target of CAP_TARGETS) {
+  const targetRoot = join(SRC_ROOT, target);
+  if (!existsSync(targetRoot)) continue; // native project not checked out here — skip, not an error
+  for (const rel of webFiles) {
+    const src = join(webRoot, rel);
+    const dest = join(targetRoot, rel);
+    const label = `${target}/${rel}`;
+    if (check) {
+      const want = readFileSync(src);
+      const have = existsSync(dest) ? readFileSync(dest) : null;
+      if (have && have.equals(want)) { console.log(`ok     ${label}`); }
+      else { drift++; console.error(`DRIFT  ${label}`); }
+    } else {
+      mkdirSync(dirname(dest), { recursive: true });
+      writeFileSync(dest, readFileSync(src));
+      wrote++;
+      console.log(`wrote  ${label}`);
+    }
+  }
+}
+
 if (check && drift) {
-  console.error(`\n${drift} vendored file(s) out of sync — run: node scripts/sync-vendored.mjs`);
+  console.error(`\n${drift} file(s) out of sync — run: node scripts/sync-vendored.mjs`);
   process.exit(1);
 }
-console.log(check ? "\nAll vendored files in sync." : `\nSynced ${wrote} file(s) → ${DEST_ROOT}`);
+console.log(check ? "\nAll vendored/synced files in sync." : `\nSynced ${wrote} file(s).`);
