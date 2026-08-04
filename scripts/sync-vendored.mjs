@@ -11,15 +11,22 @@
 //    ios/App/App/public are Capacitor's packaged copies of the ENTIRE web/
 //    directory (this is the same app, not a fork — no banner, straight
 //    mirror). `npx cap copy` regenerates them from web/, but that's a step a
-//    native build can forget; syncing them here means `--check` catches
-//    stale JS before it ships in a build instead of after. Capacitor's own
-//    runtime shims (cordova.js, cordova_plugins.js) live only in the target
-//    and are never touched — this only ever writes files that exist in web/.
+//    native build can forget; syncing them here means `--check` catches a
+//    file that's DIFFERENT from web/ before it ships in a build instead of
+//    after. Capacitor's own runtime shims (cordova.js, cordova_plugins.js)
+//    live only in the target and are never touched — this only ever writes
+//    files that exist in web/. Known gap: it's a one-way mirror, so a file
+//    DELETED from web/ is never removed from the target and --check won't
+//    flag the leftover — `npx cap copy` (which regenerates the whole tree)
+//    is the only way to fully prune. Run it occasionally, or after a rename.
 //
 //   node scripts/sync-vendored.mjs           # write both jobs
 //   node scripts/sync-vendored.mjs --check   # verify everything; exit 1 on drift
 //
-// Point the LBB job at a different checkout with `--dest <dir>` or LBB_DIR.
+// `--dest <dir>` / LBB_DIR retarget ONLY the LBB job (job 1) — the Capacitor
+// mirror (job 2) always writes into this same repo's android/ios trees and
+// ignores both. Testing sync-vendored against a scratch LBB checkout with
+// --dest still touches your real android/.../public and ios/.../public.
 
 import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
