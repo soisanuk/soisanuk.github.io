@@ -524,7 +524,12 @@ function toneDrillShow() {
 
   TONES.forEach((tone, i) => {
     const li = document.createElement("li");
-    li.innerHTML = `<span class="tc-thai">${_esc(tone[0])}</span><span class="tc-en">${_esc(tone[1])}</span>`;
+    // เสียง prefix: สามัญ/เอก/โท/ตรี/จัตวา are ALSO the names of the tone
+    // MARKS (ไม้เอก ่, ไม้โท ้, …), and on a low-class consonant the mark
+    // named "โท" produces the ตรี tone, not โท — so a bare "โท" choice reads
+    // as "the mai-tho mark" to a learner. "เสียงโท" unambiguously names the
+    // tone, not the mark.
+    li.innerHTML = `<span class="tc-thai">เสียง${_esc(tone[0])}</span><span class="tc-en">${_esc(tone[1])}</span>`;
     li.addEventListener("click", () => toneDrillAnswer(i, li));
     ul.appendChild(li);
   });
@@ -535,6 +540,19 @@ function toneDrillShow() {
 
 function toneDrillPlay() {
   if (session.currentWord) _tts.speak(session.currentWord[0]);
+}
+
+// The rule that produced the tone, spelled out for the reveal — e.g.
+// "low class + ้ mai tho → HIGH tone". Uses syllableToneInfo (thai-script.js)
+// for cls/mark and TONE_LABELS (curriculum.js) for the display name; both
+// load after sessions.js in index.html but this only runs at click time,
+// once every script has loaded (same pattern baht-bus.js uses for game.js).
+const _TONE_MARK_DESC = { none: "no mark", ek: "่ mai ek", tho: "้ mai tho", tri: "๊ mai tri", chattawa: "๋ mai chattawa" };
+function _toneRuleLine(thai) {
+  const info = (typeof syllableToneInfo === "function") ? syllableToneInfo(thai) : null;
+  if (!info) return "";
+  const label = (typeof TONE_LABELS !== "undefined" && TONE_LABELS[info.tone]) || info.tone;
+  return `${info.cls} class + ${_TONE_MARK_DESC[info.mark]} → ${label.toUpperCase()} tone`;
 }
 
 function toneDrillAnswer(chosen, liEl) {
@@ -554,10 +572,12 @@ function toneDrillAnswer(chosen, liEl) {
 
   const fb = document.getElementById("tone-feedback");
   const word = session.currentWord;
+  const rule = _toneRuleLine(word[0]);
+  const ruleLine = rule ? `<br><span style="color:var(--dim);font-size:0.85em">${_esc(rule)}</span>` : "";
   if (correct) {
-    fb.innerHTML = `<span style="color:var(--jade)">❀ Correct! — ${_esc(word[0])} (${_esc(word[1])}) "${_esc(word[2])}"</span>`;
+    fb.innerHTML = `<span style="color:var(--jade)">❀ Correct! — ${_esc(word[0])} (${_esc(word[1])}) "${_esc(word[2])}"</span>${ruleLine}`;
   } else {
-    fb.innerHTML = `<span style="color:var(--vermilion)">✗ Wrong — tone is <strong>${_esc(TONES[session.correctToneIdx][0])}</strong> (${_esc(TONES[session.correctToneIdx][1])})</span><br><span style="color:var(--dim)">${_esc(word[0])} = "${_esc(word[2])}"</span>`;
+    fb.innerHTML = `<span style="color:var(--vermilion)">✗ Wrong — tone is <strong>เสียง${_esc(TONES[session.correctToneIdx][0])}</strong> (${_esc(TONES[session.correctToneIdx][1])})</span><br><span style="color:var(--dim)">${_esc(word[0])} = "${_esc(word[2])}"</span>${ruleLine}`;
   }
 
   document.getElementById("tone-next-row").style.display = "";
