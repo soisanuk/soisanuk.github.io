@@ -83,6 +83,12 @@ const KNOWN = [
   ["เขา", "rising"],
   // ห / อ leaders (silent, class-promoting)
   ["หมา", "rising"], ["หนึ่ง", "low"], ["หญิง", "rising"],
+  // bare ◌ือ (long "ue", no final — as opposed to ◌ื + final, e.g. มืด)
+  ["มือ", "mid"], ["คือ", "mid"], ["ชื่อ", "falling"], ["ซื้อ", "high"],
+  ["หรือ", "rising"], // ห leader promotes ร (low) to high before the ◌ือ
+  // reduced ◌ัว (the ั is dropped from the ua vowel before a final consonant)
+  ["สวย", "rising"], ["ด้วย", "falling"], ["ช่วย", "falling"],
+  ["ควร", "mid"], ["ขวด", "low"], ["รวย", "mid"],
 ];
 
 describe("syllableTone: real words", () => {
@@ -100,6 +106,14 @@ describe("syllableTone: declines what it can't read", () => {
   test("empty and non-Thai input return null", () => {
     assert.equal(syllableTone(""), null);
     assert.equal(syllableTone("cat"), null);
+  });
+  test("initial consonant clusters stay out of scope (no cluster support)", () => {
+    // ค+ว+า+ย (ควาย) and ก+ล+ั+ว (กลัว): ว/ล is a genuine cluster member
+    // here, not a vowel-carrier — the ◌ือ/reduced-◌ัว branches don't touch
+    // these because a real vowel mark (า, ั) still follows.
+    assert.equal(syllableTone("ควาย"), null);
+    assert.equal(syllableTone("กลัว"), null);
+    assert.equal(syllableTone("ครับ"), null);
   });
 });
 
