@@ -159,7 +159,13 @@ test("the tone unit teaches then drills, with a stable unique id", () => {
   // ear drills use MID-class hosts only — mid + the four marks spans all tones
   const ear = q.filter(i => i.kind === "toneear");
   assert.ok(ear.length >= 3, "several ear drills");
-  for (const it of ear) assert.equal(_consClass(it.cons), "mid", it.cons + " must be mid class");
+  for (const it of ear) {
+    assert.equal(_consClass(it.cons), "mid", it.cons + " must be mid class");
+    // the target is chosen HERE, not at render, so a revisit shows the same
+    // question it was answered against instead of re-rolling
+    assert.ok(Number.isInteger(it.pick) && it.pick >= 0 && it.pick <= 4,
+      "pick is a stable index into the 5-entry minimal set");
+  }
   // read drills are real WORDS the tone parser can read
   const read = q.filter(i => i.kind === "toneread");
   assert.ok(read.length >= 1, "at least one real-word tone read");
@@ -167,6 +173,16 @@ test("the tone unit teaches then drills, with a stable unique id", () => {
     assert.ok(WORDS.some(w => w[0] === it.word[0]), it.word[0] + " is a real word");
     assert.ok(toneOfWord(it.word[0]), it.word[0] + " reads a tone");
   }
+});
+
+test("toneear/toneread are graded quiz cards, not teach cards — they get a real recap on revisit", () => {
+  // _TEACH_KINDS gates which kinds skip _wReviewCard on revisit (learn.js
+  // _learnStep). toneIntro/tonecalc are genuine teach cards (no grading);
+  // toneear/toneread are MC quizzes like mc/cloze/… and must revisit like one.
+  assert.ok(_TEACH_KINDS.has("toneIntro"));
+  assert.ok(_TEACH_KINDS.has("tonecalc"));
+  assert.ok(!_TEACH_KINDS.has("toneear"), "toneear must revisit read-only via _wReviewCard");
+  assert.ok(!_TEACH_KINDS.has("toneread"), "toneread must revisit read-only via _wReviewCard");
 });
 
 test("backup merge: more-reviewed cards win, done units stay done", () => {
