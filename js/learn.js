@@ -113,9 +113,12 @@ function _unitQueue(unit, dueWords) {
       typeof _consClass === "function" && _consClass(c) === "mid" && taught.has(c));
     // pick is chosen NOW, not at render — so revisiting a completed toneear
     // card (paging back) shows the same target it was answered against,
-    // instead of re-rolling a fresh random question every time it's viewed
+    // instead of re-rolling a fresh random question every time it's viewed.
+    // Derived from toneMinimalSet's own length (not hardcoded) so the index
+    // can never go out of range if the set's shape ever changes.
+    const toneEarSetLen = typeof toneMinimalSet === "function" ? toneMinimalSet("ก", "า").length : 5;
     for (let i = 0; i < 4; i++) {
-      queue.push({ kind: "toneear", cons: hosts[i % hosts.length] || "ก", vowel: "า", pick: Math.floor(Math.random() * 5) });
+      queue.push({ kind: "toneear", cons: hosts[i % hosts.length] || "ก", vowel: "า", pick: Math.floor(Math.random() * toneEarSetLen) });
     }
     const readWords = _shuffle((typeof TONE_READ_WORDS !== "undefined" ? TONE_READ_WORDS : []).slice())
       .map(th => WORDS.find(w => w[0] === th)).filter(Boolean)
@@ -221,7 +224,15 @@ function _wReviewCard(item, body) {
     const tone = toneOfWord(th);
     toneLine = `<div class="learn-mean" style="color:${TONE_COLORS[tone]}">${TONE_LABELS[tone]} tone</div>`;
   } else if (item.word) { [th, rtgs, mean] = item.word; speak = th; }
-  else { const p = item.item; th = p.th; rtgs = ""; mean = p.answer; speak = p.th; }
+  else if (item.item) { const p = item.item; th = p.th; rtgs = ""; mean = p.answer; speak = p.th; }
+  else {
+    // no recognised shape (.pairs / kind-specific / .word / .item) — a future
+    // graded kind that never got its own review branch lands here instead of
+    // throwing on undefined.item.th and crashing the whole lesson screen.
+    body.innerHTML = `<div class="learn-teach-tag">REVIEW</div>
+      <div class="card-prompt">(no recap available for this card)</div>${fwdBtn}`;
+    return;
+  }
   body.innerHTML = `<div class="learn-teach-tag">REVIEW</div>
     <div class="thai-big learn-glyph" lang="th" onclick="_tts.speak(${_toneSpeak(speak)})">${_esc(th)}</div>
     <div class="rtgs">${_esc(rtgs)} ${_speakBtn(speak)}</div>
@@ -323,8 +334,8 @@ function _wWordIntro(item, body) {
   const clusters = typeof _buildDecomposition === "function" ? _buildDecomposition(w[0]) : [[...w[0]].join("")];
   const chips = clusters.map(c => {
     const txt = Array.isArray(c) ? c.join("") : c;
-    const parts = JSON.stringify(Array.isArray(c) ? c.flatMap(ch =>
-      typeof letterSpeechParts === "function" ? letterSpeechParts(ch) : [ch]) : [txt]).replace(/"/g, "&quot;");
+    const parts = _toneSpeak(Array.isArray(c) ? c.flatMap(ch =>
+      typeof letterSpeechParts === "function" ? letterSpeechParts(ch) : [ch]) : [txt]);
     return `<span class="learn-decode-chip" lang="th" onclick="_tts.speak(${parts})">${_esc(txt)}</span>`;
   }).join('<span class="learn-decode-plus">+</span>');
   const wt = _toneSpeak(w[0]);
