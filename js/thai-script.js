@@ -241,7 +241,17 @@ function _analyseSyllable(input) {
   const th = s => trailing.indexOf(s) >= 0;
   if (tail[0] === "อ" && trailing === "") { long = true; finalChar = tail[1] || null; if (tail.length > 2) return null; }
   else if (tail[0] === "อ" && leading.includes("เ") && th("ื")) { long = true; vLive = true; finalChar = tail[1] || null; if (tail.length > 2) return null; }
+  // bare ◌ือ (no leading เ): the long "ue" vowel written with its อ carrier
+  // and NO final (มือ, คือ, ชื่อ) — as opposed to ◌ื alone, used when a real
+  // final follows (มืด). Same shape as ◌อ above, keyed off the ื before it.
+  else if (tail[0] === "อ" && trailing === "ื") { long = true; finalChar = tail[1] || null; if (tail.length > 2) return null; }
   else if (tail[0] === "ว" && trailing === "ั") { long = true; vLive = true; finalChar = tail[1] || null; if (tail.length > 2) return null; }
+  // reduced ◌ัว: the ั is conventionally dropped from the ua vowel when a
+  // final consonant follows (สวย, ด้วย, ควร, ขวด, รวย) — cons+ว+final, no
+  // vowel mark at all. Long, same as the written-out ◌ัว above. A real
+  // /Cw/-cluster-then-vowel word (กวาด, ควาย) always has ANOTHER vowel after
+  // the ว (trailing !== ""), so this can't collide with that case.
+  else if (tail[0] === "ว" && trailing === "" && tail.length === 2) { long = true; finalChar = tail[1]; }
   else if (tail[0] === "ย" && leading.includes("เ") && th("ี")) { long = true; vLive = true; finalChar = tail[1] || null; if (tail.length > 2) return null; }
   else {
     const vi = _vowelLength(leading, trailing, taikhu);
@@ -261,6 +271,14 @@ function _analyseSyllable(input) {
   }
   return { cls, mark, live, shortVowel: !long };
 }
+
+// CONTRACT: input is ONE syllable. A multi-syllable string (a whole word or
+// phrase) gets silently mis-parsed — e.g. syllableTone("อร่อย") reads only
+// the leader+first syllable and returns a confidently WRONG tone, it does
+// NOT return null. For any text that isn't already known to be a single
+// syllable (a word from data.js, user-facing text, …), call
+// toneOfWord(text) (curriculum.js) instead — it checks the word's
+// romanisation for a hyphen/space and returns null rather than guess.
 
 // Full reasoning for one syllable (for the tone explainer), or null.
 function syllableToneInfo(syllable) {

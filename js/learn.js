@@ -111,10 +111,18 @@ function _unitQueue(unit, dueWords) {
     const taught = typeof taughtGlyphs === "function" ? taughtGlyphs(3) : new Set(["ก", "ด"]);
     const hosts = ["ก", "ด", "ต", "บ", "ป"].filter(c =>
       typeof _consClass === "function" && _consClass(c) === "mid" && taught.has(c));
-    for (let i = 0; i < 4; i++) queue.push({ kind: "toneear", cons: hosts[i % hosts.length] || "ก", vowel: "า" });
+    // pick is chosen NOW, not at render — so revisiting a completed toneear
+    // card (paging back) shows the same target it was answered against,
+    // instead of re-rolling a fresh random question every time it's viewed
+    for (let i = 0; i < 4; i++) {
+      queue.push({ kind: "toneear", cons: hosts[i % hosts.length] || "ก", vowel: "า", pick: Math.floor(Math.random() * 5) });
+    }
     const readWords = _shuffle((typeof TONE_READ_WORDS !== "undefined" ? TONE_READ_WORDS : []).slice())
       .map(th => WORDS.find(w => w[0] === th)).filter(Boolean)
-      .filter(w => typeof syllableTone === "function" && syllableTone(w[0]))
+      // toneOfWord, not syllableTone directly: syllableTone assumes ONE
+      // syllable and misreads a polysyllable with confidence, so any text
+      // that isn't already known-monosyllabic must go through toneOfWord
+      .filter(w => typeof toneOfWord === "function" && toneOfWord(w[0]))
       .slice(0, 4);
     for (const w of readWords) queue.push({ kind: "toneread", word: w });
   } else {
@@ -138,10 +146,12 @@ function _unitStart(idx) {
 }
 
 // cards you can revisit render read-only; teaching cards teach the same either
-// way. Tone cards re-run live on revisit (harmless — _learnRecord no-ops when
-// reviewing) rather than route through _wReviewCard, which expects a word/pair.
+// way. toneear/toneread are graded quiz cards (like mc/cloze/…), NOT teach
+// cards — they route through _wReviewCard on revisit same as any other quiz,
+// which is why their target is chosen at queue-build time (item.pick), not
+// per-render: a stable recap needs a stable question.
 const _TEACH_KINDS = new Set(["glyph", "wordintro", "chunkIntro", "chunk",
-  "toneIntro", "tonecalc", "toneear", "toneread"]);
+  "toneIntro", "tonecalc"]);
 
 function _learnStep() {
   if (!_lu || _lu.at >= _lu.queue.length) { _unitFinish(); return; }
@@ -197,13 +207,26 @@ function _wReviewCard(item, body) {
       fwdBtn;
     return;
   }
-  let th, rtgs, mean, speak;
-  if (item.word) { [th, rtgs, mean] = item.word; speak = th; }
+  // toneear has no .word/.item — its target is the minimal-set entry picked
+  // at queue-build time (item.pick), the same one the live card answered
+  if (item.kind === "toneear") {
+    const target = toneMinimalSet(item.cons, item.vowel)[item.pick || 0];
+    body.innerHTML = `<div class="learn-teach-tag">REVIEW</div>
+      <div class="thai-big learn-glyph" onclick="_tts.speak(${esc(target.thai)})">${target.thai}</div>
+      <div class="learn-mean" style="color:${TONE_COLORS[target.tone]}">${TONE_LABELS[target.tone]} tone</div>${fwdBtn}`;
+    return;
+  }
+  let th, rtgs, mean, speak, toneLine = "";
+  if (item.kind === "toneread") {
+    [th, rtgs, mean] = item.word; speak = th;
+    const tone = toneOfWord(th);
+    toneLine = `<div class="learn-mean" style="color:${TONE_COLORS[tone]}">${TONE_LABELS[tone]} tone</div>`;
+  } else if (item.word) { [th, rtgs, mean] = item.word; speak = th; }
   else { const p = item.item; th = p.th; rtgs = ""; mean = p.answer; speak = p.th; }
   body.innerHTML = `<div class="learn-teach-tag">REVIEW</div>
     <div class="thai-big learn-glyph" onclick="_tts.speak(${esc(speak)})">${th}</div>
     <div class="rtgs">${rtgs} ${_speakBtn(speak)}</div>
-    <div class="learn-mean">${mean}</div>${fwdBtn}`;
+    <div class="learn-mean">${mean}</div>${toneLine}${fwdBtn}`;
 }
 
 // personal-best read times per word (ms) — the speedometer's data
@@ -648,7 +671,7 @@ function _wToneCalc(item, body) {
 // hear a tone, pick the written syllable — the five differ only by their mark
 function _wToneEar(item, body) {
   const set = toneMinimalSet(item.cons, item.vowel);
-  const target = set[Math.floor(Math.random() * set.length)];
+  const target = set[item.pick || 0]; // chosen at queue-build time — stable across revisits
   body.innerHTML = `<div class="thai-big">👂</div>
     <div class="card-prompt">Which one did you hear? ${_speakBtn(target.thai)}</div>
     <ul class="quiz-choices learn-thai-choices" id="learn-choices"></ul>`;
@@ -660,7 +683,7 @@ function _wToneEar(item, body) {
 // away); a correct answer feeds the word's own SRS card
 function _wToneRead(item, body) {
   const w = item.word;
-  const tone = syllableTone(w[0]);
+  const tone = toneOfWord(w[0]); // the queue only ever puts gradable words here, but toneOfWord is the contract for any word-shaped input
   body.innerHTML = `<div class="thai-big learn-glyph" onclick="_tts.speak(${_toneSpeak(w[0])})">${w[0]}</div>
     <div class="learn-mean">${w[2]}</div>
     <div class="card-prompt">What tone is it? (tap the word to hear it)</div>
