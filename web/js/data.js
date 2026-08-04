@@ -67,6 +67,10 @@ const VOWELS = [
   ["เ◌า", "ao", "ao vowel", "เขา (khao) = he/she"],
 ];
 
+// Row order must match TONE_ORDER (thai-script.js) — _detectWordTone
+// (sessions.js) finds a row by column 1 and uses its INDEX; if the two
+// orderings drift apart, the Tone Drill starts grading against the wrong
+// choice. tests/js/tone.test.js asserts TONES.map(t=>t[1]) === TONE_ORDER.
 const TONES = [
   ["สามัญ", "mid", "mid tone — no mark", "กา (kaa) = crow"],
   ["เอก", "low", "low tone — ่ (mai ek)", "ข่า (khàa) = galangal"],

@@ -123,9 +123,8 @@ function _readerThaiHtml(thai, colorOn) {
   });
 }
 
-const _READER_TONE_ORDER = ["mid", "low", "falling", "high", "rising"];
 function _readerLegend() {
-  return `<div class="reader-legend">` + _READER_TONE_ORDER.map(t =>
+  return `<div class="reader-legend">` + TONE_ORDER.map(t =>
     `<span style="color:${TONE_COLORS[t]}">● ${TONE_LABELS[t]}</span>`).join("") + `</div>`;
 }
 
