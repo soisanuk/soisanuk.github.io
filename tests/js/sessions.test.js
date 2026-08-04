@@ -12,9 +12,11 @@ import vm from "node:vm";
 
 // thai-script.js + curriculum.js provide the tone engine (toneOfWord) that the
 // drill's answer key now uses; data.js provides TONES it indexes into.
-// wordcard.js loads first: curriculum.js's _tcEsc (toneColorHtml) and
-// sessions.js's _esc-driven renderers delegate to its _wcEsc.
-for (const f of ["data.js", "thai-script.js", "wordcard.js", "curriculum.js", "srs.js", "sessions.js"]) {
+// wordcard.js loads first: curriculum.js's _tcEsc (toneColorHtml) delegates
+// to its _wcEsc, and so does app.js's _esc — which sessions.js's own
+// renderers (quizAnswer, drillShowConsonant, toneDrillAnswer, sentSrsShow)
+// call directly, so app.js has to load too, not just wordcard.js.
+for (const f of ["data.js", "thai-script.js", "wordcard.js", "srs.js", "app.js", "curriculum.js", "sessions.js"]) {
   vm.runInThisContext(
     readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"),
     { filename: f }

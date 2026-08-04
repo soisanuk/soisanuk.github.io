@@ -162,13 +162,16 @@ test("the tone unit teaches then drills, with a stable unique id", () => {
   // ear drills use MID-class hosts only — mid + the four marks spans all tones
   const ear = q.filter(i => i.kind === "toneear");
   assert.ok(ear.length >= 3, "several ear drills");
-  const setLen = toneMinimalSet("ก", "า").length; // derived, not hardcoded — matches _unitQueue
   for (const it of ear) {
     assert.equal(_consClass(it.cons), "mid", it.cons + " must be mid class");
     // the target is chosen HERE, not at render, so a revisit shows the same
-    // question it was answered against instead of re-rolling
+    // question it was answered against instead of re-rolling. The bound is
+    // toneMinimalSet(it.cons, it.vowel) — THIS item's own host, not a fixed
+    // probe — so a future host-dependent set length can't silently diverge
+    // between what was pushed and what a card actually renders.
+    const setLen = toneMinimalSet(it.cons, it.vowel).length;
     assert.ok(Number.isInteger(it.pick) && it.pick >= 0 && it.pick < setLen,
-      "pick is a stable, in-range index into toneMinimalSet's own length");
+      "pick is a stable, in-range index into this item's own toneMinimalSet");
   }
   // read drills are real WORDS the tone parser can read
   const read = q.filter(i => i.kind === "toneread");
@@ -373,12 +376,34 @@ test("_wReviewCard actually renders (exercises _esc, catching a missing wordcard
   assert.match(body.innerHTML, /tone/, "toneear recap names a tone");
 });
 
-test("_wReviewCard degrades safely instead of throwing on an unrecognised item shape", () => {
-  // a hypothetical future kind with none of .pairs/.word/.item and a kind
-  // _wReviewCard doesn't special-case — must not throw (the old code did:
-  // `const p = item.item; th = p.th` on undefined .item)
+test("_wReviewCard's generic fallback is a last-resort safety net, never real coverage", () => {
+  // a hypothetical, deliberately-synthetic kind matching none of
+  // .pairs/kind-specific/.word/.item — must not throw (the old code did:
+  // `const p = item.item; th = p.th` on undefined .item). This ONLY proves
+  // the net catches an unknown shape without crashing the lesson screen —
+  // see the next test for proof that every REAL kind never needs the net.
   const body = { innerHTML: "" };
   assert.doesNotThrow(() => _wReviewCard({ kind: "some-future-kind" }, body));
   assert.match(body.innerHTML, /REVIEW/);
   assert.match(body.innerHTML, /Next/, "still offers a way to move on");
+});
+
+test("every real, non-teach queue item kind gets an actual recap, not the generic fallback", () => {
+  // The generic fallback above exists so an unforeseen shape degrades safely
+  // instead of throwing — but it must never be how a REAL kind is covered:
+  // a future kind added to _unitQueue without teaching _wReviewCard its
+  // shape should fail loudly here, not silently show "(no recap available)"
+  // to a user who happens to page back over it.
+  const letters = COURSE.find(u => u.kind === "letters");
+  const tone = COURSE.find(u => u.kind === "tone");
+  const chunks = COURSE.find(u => u.kind === "chunks");
+  const allItems = [letters, tone, chunks].flatMap(u => _unitQueue(u, []));
+  const reviewable = allItems.filter(it => !_TEACH_KINDS.has(it.kind));
+  assert.ok(reviewable.length > 10, "sanity: plenty of graded kinds to check");
+  for (const item of reviewable) {
+    const body = { innerHTML: "" };
+    _wReviewCard(item, body);
+    assert.ok(!body.innerHTML.includes("no recap available"),
+      `kind "${item.kind}" has no real _wReviewCard branch — falls through to the generic safety net`);
+  }
 });
