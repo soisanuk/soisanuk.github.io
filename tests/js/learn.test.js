@@ -165,7 +165,7 @@ test("the tone unit teaches then drills, with a stable unique id", () => {
   assert.ok(read.length >= 1, "at least one real-word tone read");
   for (const it of read) {
     assert.ok(WORDS.some(w => w[0] === it.word[0]), it.word[0] + " is a real word");
-    assert.ok(syllableTone(it.word[0]), it.word[0] + " reads a tone");
+    assert.ok(toneOfWord(it.word[0]), it.word[0] + " reads a tone");
   }
 });
 

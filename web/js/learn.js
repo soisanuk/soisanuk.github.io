@@ -114,7 +114,10 @@ function _unitQueue(unit, dueWords) {
     for (let i = 0; i < 4; i++) queue.push({ kind: "toneear", cons: hosts[i % hosts.length] || "ก", vowel: "า" });
     const readWords = _shuffle((typeof TONE_READ_WORDS !== "undefined" ? TONE_READ_WORDS : []).slice())
       .map(th => WORDS.find(w => w[0] === th)).filter(Boolean)
-      .filter(w => typeof syllableTone === "function" && syllableTone(w[0]))
+      // toneOfWord, not syllableTone directly: syllableTone assumes ONE
+      // syllable and misreads a polysyllable with confidence, so any text
+      // that isn't already known-monosyllabic must go through toneOfWord
+      .filter(w => typeof toneOfWord === "function" && toneOfWord(w[0]))
       .slice(0, 4);
     for (const w of readWords) queue.push({ kind: "toneread", word: w });
   } else {
@@ -660,7 +663,7 @@ function _wToneEar(item, body) {
 // away); a correct answer feeds the word's own SRS card
 function _wToneRead(item, body) {
   const w = item.word;
-  const tone = syllableTone(w[0]);
+  const tone = toneOfWord(w[0]); // the queue only ever puts gradable words here, but toneOfWord is the contract for any word-shaped input
   body.innerHTML = `<div class="thai-big learn-glyph" onclick="_tts.speak(${_toneSpeak(w[0])})">${w[0]}</div>
     <div class="learn-mean">${w[2]}</div>
     <div class="card-prompt">What tone is it? (tap the word to hear it)</div>

@@ -494,8 +494,17 @@ function startToneDrill() {
 // words are pre-filtered to ones the engine can grade, so 0 is a safe fallback.
 function _detectWordTone(thai) {
   const tone = (typeof toneOfWord === "function") ? toneOfWord(thai) : null;
-  const i = tone ? TONES.findIndex(t => t[1] === tone) : -1;
-  return i >= 0 ? i : 0;
+  if (!tone) return 0; // not gradable (shouldn't happen — the pool is pre-filtered) — safe, silent fallback
+  const i = TONES.findIndex(t => t[1] === tone);
+  if (i < 0) {
+    // the engine returned a real tone but no TONES row names it — data.js's
+    // TONES and the engine's tone vocabulary have drifted apart. This must
+    // never fail silently: it means the drill is about to teach a wrong
+    // answer with no signal that anything broke.
+    console.warn(`_detectWordTone: "${tone}" (from toneOfWord("${thai}")) matches no TONES row`);
+    return 0;
+  }
+  return i;
 }
 
 function toneDrillShow() {
