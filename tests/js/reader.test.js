@@ -18,7 +18,7 @@ for (const f of ["data.js", "examples.js", "thai-script.js", "tokeniser.js", "wo
 }
 // functions are hoisted onto globalThis; READER_LEVELS is a top-level const, so
 // it lives in the realm's lexical scope and must be referenced bare (see CLAUDE.md).
-const { readerGrade, readerFeed, toneColorHtml, toneOfWord } = globalThis;
+const { readerGrade, readerFeed, toneColorHtml, toneOfWord, _readerThaiHtml } = globalThis;
 
 // ── readerGrade ──────────────────────────────────────────────────────────────
 describe("readerGrade", () => {
@@ -111,5 +111,24 @@ describe("tone colouring", () => {
   });
   test("html-escapes token text", () => {
     assert.ok(!toneColorHtml("มา").includes("<script"));
+  });
+  test("an optional decorator receives (escapedText, tone, token) and fully controls rendering", () => {
+    const calls = [];
+    const html = toneColorHtml("ผมกิน", (escaped, tone, tok) => {
+      calls.push({ escaped, tone, hasWord: !!tok.word });
+      return `[${escaped}]`;
+    });
+    assert.equal(html, "[ผม][กิน]", "decorator output replaces the default span rendering entirely");
+    assert.equal(calls.length, 2);
+    assert.equal(calls[0].tone, "rising", "the decorator still receives the computed tone");
+    assert.ok(calls.every(c => c.hasWord), "known WORDS tokens carry tok.word");
+  });
+  test("_readerThaiHtml (reader.js) is built on toneColorHtml's decorator, not a separate implementation", () => {
+    // unknown-to-WORDS tokens render plain, with no w-token wrapper — even
+    // with colours on — exercising the exact branch _readerThaiHtml's
+    // decorator adds on top of the shared default
+    const html = _readerThaiHtml("ผมxyz", true);
+    assert.match(html, /<span class="w-token"[^>]*data-w="ผม">ผม<\/span>/);
+    assert.ok(html.endsWith("xyz"), "an unresolved run stays unwrapped plain text");
   });
 });
