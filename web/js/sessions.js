@@ -251,7 +251,7 @@ function quizAnswer(chosen) {
   const fb = document.getElementById("quiz-feedback");
   fb.innerHTML = correct
     ? `<div class="result-correct">❀ Correct!</div>`
-    : `<div class="result-wrong">✗ Wrong — ${session.choices[session.correctIdx][2]}</div>`;
+    : `<div class="result-wrong">✗ Wrong — ${_esc(session.choices[session.correctIdx][2])}</div>`;
   fb.style.display = "";
   document.getElementById("quiz-next-row").style.display = "";
 }
@@ -297,11 +297,11 @@ function drillShowConsonant() {
     </div>
     <div class="drill-row">
       <span class="drill-label">Name (ชื่อ)</span>
-      <span class="drill-value">${name}</span>
+      <span class="drill-value">${_esc(name)}</span>
     </div>
     <div class="drill-row">
       <span class="drill-label">Initial / Final</span>
-      <span class="drill-value">/${initial}/ → /${final}/</span>
+      <span class="drill-value">/${_esc(initial)}/ → /${_esc(final)}/</span>
     </div>
     <div class="drill-row">
       <span class="drill-label">Frequency</span>
@@ -365,11 +365,11 @@ function drillShowVowelTone() {
   document.getElementById("drill-info").innerHTML = `
     <div class="drill-row">
       <span class="drill-label">Description</span>
-      <span class="drill-value">${desc}</span>
+      <span class="drill-value">${_esc(desc)}</span>
     </div>
     <div class="drill-row">
       <span class="drill-label">Example</span>
-      <span class="drill-value" style="color:var(--vermilion)">${example}</span>
+      <span class="drill-value" style="color:var(--vermilion)">${_esc(example)}</span>
     </div>
     ${freqHtml}
   `;
@@ -631,14 +631,18 @@ function sentSrsShow() {
   setProgress("sent-prog", idx, deck.length);
   document.getElementById("sent-counter").textContent = `Sentence SRS  ${idx + 1} / ${deck.length}`;
 
-  // Build sentence with target word blanked
+  // Build sentence with target word blanked. Escape the WHOLE sentence
+  // first (the surrounding text, not just the blanked word, is EXAMPLES
+  // data), then replace the escaped target substring with the trusted
+  // blank markup — Thai text never contains &<>"', so the escaped target
+  // still matches inside the escaped sentence.
   const blank = `<span class="sent-blank">${_esc(thai)}</span>`;
-  const displaySent = sentThai.replace(thai, blank);
+  const displaySent = _esc(sentThai).replace(_esc(thai), blank);
   document.getElementById("sent-sentence").innerHTML = displaySent;
 
   // Romanisation with blank
   const blankRtgs = `<span style="color:var(--saffron)">___</span>`;
-  document.getElementById("sent-rtgs").innerHTML = sentRtgs.replace(rtgs, blankRtgs);
+  document.getElementById("sent-rtgs").innerHTML = _esc(sentRtgs).replace(_esc(rtgs), blankRtgs);
   document.getElementById("sent-en").textContent = sentEn;
 
   document.getElementById("sent-answer").textContent = `${thai}  (${rtgs})  —  ${english}`;
