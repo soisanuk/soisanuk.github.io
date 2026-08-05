@@ -104,8 +104,9 @@ function _unitQueue(unit, dueWords) {
   } else if (unit.kind === "tone") {
     // the tone unit: teach the rule (intro + interactive calculator), then
     // drill it — hear a tone and pick the script (ear), read a real word and
-    // name its tone (feeds that word's SRS). Ear hosts must be MID class: only
-    // mid + the four marks spans all five tones cleanly.
+    // name its tone. Neither drill touches the word's vocab SRS (tone is a
+    // separate skill — see _wToneRead); they only gate the tone unit itself.
+    // Ear hosts must be MID class: mid + the four marks spans all five tones.
     queue.push({ kind: "toneIntro" });
     queue.push({ kind: "tonecalc" });
     const taught = typeof taughtGlyphs === "function" ? taughtGlyphs(3) : new Set(["ก", "ด"]);
@@ -700,7 +701,11 @@ function _wToneEar(item, body) {
 }
 
 // read a real word, name its tone — no romanisation shown (that would give it
-// away); a correct answer feeds the word's own SRS card
+// away). Naming a word's TONE is a separate skill from knowing the WORD, so
+// this deliberately passes a null SRS key: a wrong tone must never knock the
+// word's vocabulary review schedule backward. It still counts toward the tone
+// unit's own accuracy and feeds the streak (both keyed off the result, not the
+// SRS card), and a miss still offers the study word-card via the `w` arg.
 function _wToneRead(item, body) {
   const w = item.word;
   const tone = toneOfWord(w[0]); // the queue only ever puts gradable words here, but toneOfWord is the contract for any word-shaped input
@@ -709,7 +714,7 @@ function _wToneRead(item, body) {
     <div class="card-prompt">What tone is it? (tap the word to hear it)</div>
     <ul class="quiz-choices" id="learn-choices"></ul>`;
   const labels = TONE_ORDER.map(k => TONE_LABELS[k]);
-  _mcWire(labels, TONE_LABELS[tone], _wordKey(w[0]), 0, () => _tts.speak(w[0]), w);
+  _mcWire(labels, TONE_LABELS[tone], null, 0, () => _tts.speak(w[0]), w);
 }
 
 // ── Continue + streak (engagement 2/7) ──────────────────────────────────────
