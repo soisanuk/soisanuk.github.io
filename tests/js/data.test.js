@@ -31,11 +31,20 @@ test("every EXAMPLES key exists in WORDS", () => {
 
 test("every example's Thai sentence contains its own headword", () => {
   // one WORDS entry is a phrase TEMPLATE ("ขอ..." = "please may I have...");
-  // its sentence correctly contains the fixed prefix, not the literal "...".
+  // its sentence correctly contains the fixed part, not the literal "..." —
+  // wordLiteral (data.js) is the shared definition of that rule.
   const missing = Object.entries(EXAMPLES)
-    .filter(([key, ex]) => !ex[0].includes(key.replace(/\.\.\.$/, "")))
+    .filter(([key, ex]) => !ex[0].includes(wordLiteral(key)))
     .map(([key]) => key);
   assert.deepEqual(missing, [], "example sentences that don't contain their own headword");
+});
+
+test("wordLiteral strips a trailing template ellipsis, leaves ordinary words alone", () => {
+  assert.equal(wordLiteral("ขอ..."), "ขอ");
+  assert.equal(wordLiteral("khǒo..."), "khǒo");
+  assert.equal(wordLiteral("มา"), "มา");        // no ellipsis → unchanged
+  assert.equal(wordLiteral("..."), "");          // degenerate
+  assert.equal(wordLiteral("a...b"), "a...b");   // only a TRAILING ellipsis
 });
 
 test("every WORDS row has non-empty rtgs, english, pos, and category", () => {

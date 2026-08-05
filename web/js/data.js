@@ -237,7 +237,7 @@ const WORDS = [
   ["แพง", "phaeng", "expensive", "adjective", "adjectives"],
   ["ฟรี", "frii", "free (no cost)", "adjective", "adjectives"],
   ["เต็ม", "tem", "full (capacity)", "adjective", "adjectives"],
-  ["ว่าง", "wâang", "empty/free (time)", "adjective", "adjectives"],
+  ["ว่าง", "wâang", "free/vacant/available", "adjective", "adjectives"],
   ["สะอาด", "sà-àat", "clean", "adjective", "adjectives"],
   ["สกปรก", "sòk-kà-pròk", "dirty", "adjective", "adjectives"],
   ["เงียบ", "ngîap", "quiet/silent", "adjective", "adjectives"],
@@ -1165,3 +1165,14 @@ const CAT_LABELS = {
   "classroom": "Classroom Language",
   "nightlife": "Love & Nightlife",
 };
+
+// A trailing "..." on a WORDS headword (or its rtgs) marks a phrase TEMPLATE,
+// e.g. ["ขอ...", "khǒo...", "please may I have..."] — the fixed part is ขอ,
+// the "..." stands for whatever follows. Downstream code that matches the word
+// against an example sentence (blank it, highlight it) must match the literal
+// fixed part, not the "...". This is the single definition of that convention;
+// callers (sessions.js sentSrsShow, wordcard.js showExample, data.test.js) use
+// it instead of open-coding the strip. Idempotent for ordinary words.
+function wordLiteral(s) {
+  return String(s).replace(/\.\.\.$/, "");
+}
