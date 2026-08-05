@@ -637,13 +637,11 @@ function sentSrsShow() {
   // blank markup — Thai text never contains &<>"', so the escaped target
   // still matches inside the escaped sentence.
   //
-  // One WORDS entry is a phrase template ("ขอ..." = "please may I have...");
-  // its example sentence correctly contains only the fixed prefix "ขอ", not
-  // the literal "...", so matching on the raw word/rtgs never finds it and
-  // the card ships unblanked. Strip a trailing "..." before matching — same
-  // convention as tests/js/data.test.js's headword-containment check.
-  const target = thai.replace(/\.\.\.$/, "");
-  const targetRtgs = rtgs.replace(/\.\.\.$/, "");
+  // A phrase-template headword ("ขอ...") appears in its example sentence as
+  // only its fixed part (ขอ), so match on wordLiteral() — the fixed part —
+  // not the raw word, or the card ships unblanked. (data.js owns the rule.)
+  const target = wordLiteral(thai);
+  const targetRtgs = wordLiteral(rtgs);
   const blank = `<span class="sent-blank">${_esc(target)}</span>`;
   const displaySent = _esc(sentThai).replace(_esc(target), blank);
   document.getElementById("sent-sentence").innerHTML = displaySent;

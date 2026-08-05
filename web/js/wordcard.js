@@ -233,13 +233,11 @@ function showExample(containerId, vocabWord) {
   const [thai, rtgs, eng] = ex;
   const tokens = _tokenise(thai);
 
-  // One WORDS entry is a phrase template ("ขอ..." = "please may I have...");
-  // its example sentence correctly contains only the fixed prefix "ขอ", not
-  // the literal "...", so matching the raw vocabWord/vocabRtgs never finds
-  // it and neither highlight applies. Strip a trailing "..." before
-  // matching — same convention as sessions.js's sentSrsShow and
-  // tests/js/data.test.js's headword-containment check.
-  const targetWord = vocabWord.replace(/\.\.\.$/, "");
+  // A phrase-template headword ("ขอ...") appears in its example sentence as
+  // only its fixed part (ขอ), so highlight-match on wordLiteral() — the fixed
+  // part — not the raw vocabWord, or neither highlight applies. data.js (also
+  // vendored) owns the rule and loads before this file.
+  const targetWord = wordLiteral(vocabWord);
 
   // Build interactive Thai line
   let thaiHtml = "";
@@ -254,7 +252,7 @@ function showExample(containerId, vocabWord) {
   }
 
   // Highlight vocab word's romanisation in the sentence rtgs
-  const vocabRtgs = ((_wcMap()[vocabWord] || [])[1] || "").replace(/\.\.\.$/, "");
+  const vocabRtgs = wordLiteral((_wcMap()[vocabWord] || [])[1] || "");
   let highlightedRtgs = _wcEsc(rtgs);
   if (vocabRtgs) {
     const escaped = vocabRtgs.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
