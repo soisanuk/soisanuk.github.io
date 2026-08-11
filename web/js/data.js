@@ -1028,6 +1028,24 @@ const WORDS = [
   ["เรนโบว์", "ren-bôo", "rainbow (loanword)", "noun", "general"],
   ["สตาร์ไลท์", "sà-taa-lái", "starlight (loanword)", "noun", "general"],
   ["เซเว่นอีเลฟเว่น", "see-wên-ii-léf-wên", "7-Eleven (loanword)", "noun", "places"],
+  // ── Belief & luck ──────────────────────────────────────────────────────
+  // The commercial-animism vocabulary that surrounds any Thai till: the spirit
+  // house out front, the beckoning lady beside the register, and the words for
+  // luck good and bad. Everyday shop talk, not religious register.
+  ["ผี", "phǐi", "ghost, spirit", "noun", "beliefs"],
+  ["โชค", "chôok", "luck, fortune", "noun", "beliefs"],
+  ["โชคดี", "chôok-dii", "good luck!; to be lucky", "phrase", "beliefs"],
+  ["ซวย", "suay", "unlucky, jinxed (not สวย sǔay, beautiful)", "adjective", "beliefs"],
+  ["เฮง", "heng", "lucky, prosperous (Chinese loan)", "adjective", "beliefs"],
+  ["ไหว้", "wâai", "to wai, greet with joined palms", "verb", "beliefs"],
+  ["ธูป", "thûup", "incense stick", "noun", "beliefs"],
+  ["ศาล", "sǎan", "shrine; court of law", "noun", "beliefs"],
+  ["ศาลพระภูมิ", "sǎan-phrá-phuum", "spirit house (the shrine on a post)", "noun", "beliefs"],
+  ["เจ้าที่", "jâo-thîi", "guardian spirit of a piece of land", "noun", "beliefs"],
+  ["นางกวัก", "naang-kwàk", "beckoning lady — luck figure at the till", "noun", "beliefs"],
+  ["แม่ย่านาง", "mâe-yâa-naang", "guardian spirit of vehicles and boats", "noun", "beliefs"],
+  ["เปิดบิล", "pòoet-bin", "to open the bill — make the first sale; start a tab", "verb", "beliefs"],
+  ["ขายดี", "khǎai-dii", "to sell well, do good business", "verb", "beliefs"],
 
 ];
 
@@ -1140,6 +1158,7 @@ const TOP_20 = TOP_100.slice(0, 20);
 const CAT_LABELS = {
   "adjectives": "Adjectives",
   "adverbs": "Adverbs",
+  "beliefs": "Belief & Luck",
   "body": "Body",
   "colors": "Colors",
   "connectors": "Connectors & Prepositions",
