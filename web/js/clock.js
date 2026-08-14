@@ -48,6 +48,29 @@ function _ckClock(h, m) {
   return (h % 12 === 0 ? 12 : h % 12) + ":" + String(m).padStart(2, "0") + (h < 12 ? " AM" : " PM");
 }
 
+// Readings that are equally correct but aren't what thaiTime() returns.
+// Deliberately short: only variants in everyday use — not archaic forms
+// (ย่ำรุ่ง 06:00, ย่ำค่ำ 18:00, สองยาม midnight) and not the older โมงเช้า
+// counting that starts 07:00 at โมงเช้า, both of which would teach noise.
+// เที่ยงวัน is hourOnly because เที่ยงวันครึ่ง isn't how half twelve is said.
+const _CK_ALTS = {
+  12: [{ th: "เที่ยงวัน",   rom: "thîang wan",     hourOnly: true }],
+  16: [{ th: "บ่ายสี่โมง",  rom: "bàai sìi moong" }],
+  17: [{ th: "บ่ายห้าโมง", rom: "bàai hâa moong" }],
+};
+
+// Alternate readings of h:m, suffixed exactly as thaiTime() suffixes.
+function thaiTimeAlts(h, m) {
+  h = ((Math.trunc(h) % 24) + 24) % 24;
+  m = Math.trunc(m || 0);
+  return (_CK_ALTS[h] || []).filter(a => !(a.hourOnly && m)).map(a => {
+    let th = a.th, rom = a.rom;
+    if (m === 30)   { th += "ครึ่ง";                rom += " khrûeng"; }
+    else if (m)     { th += _bbThaiNum(m) + "นาที"; rom += " " + _bbRomanNum(m) + " naa-thii"; }
+    return { h, m, th, rom };
+  });
+}
+
 // The number word actually heard in an hour's reading. Two hours sharing one
 // are the trap this game is built on; เที่ยง/เที่ยงคืน carry no number, and
 // share 0 with each other (their own real confusion).
@@ -182,9 +205,16 @@ function startClock() {
 function _ckNextRound() {
   if (_ckIdx >= _CK_ROUNDS || _ckLives <= 0) { _ckEnd(); return; }
   const plan = _ckPlanned[_ckIdx];
+  const time = thaiTime(plan.h, plan.m);
+  const alts = thaiTimeAlts(plan.h, plan.m);
   _ckCur = {
     ...plan,
-    time: thaiTime(plan.h, plan.m),
+    time,
+    alts,
+    // A setting round grades on the hour, not the wording, so it can safely
+    // say either form — and hearing บ่ายสี่โมง half the time is the only way
+    // the variant ever reaches the player's ear.
+    spoken: (plan.type === "set" && alts.length && Math.random() < 0.5) ? alts[0] : time,
     line: _CK_LINES[(_ckIdx * 5 + plan.h) % _CK_LINES.length],
   };
   _ckReplays = 0;
@@ -219,7 +249,7 @@ function _ckReadUI() {
 
 // Setting round: you hear the Thai, you set the clock.
 function _ckSetUI() {
-  const t = _ckCur.time, hasTts = _tts.available();
+  const t = _ckCur.spoken, hasTts = _tts.available();
   document.getElementById("ck-body").innerHTML = `
     <div class="ck-caption">${_ckEsc(_ckCur.line)}</div>
     <div class="ck-prompt">
@@ -315,6 +345,14 @@ function _ckJudge(ok, got) {
     : `<div class="ck-v-top">✗ ตกรถ — missed it</div>
        <div class="ck-v-line">${t.h24} is <span class="ck-thai">${t.th}</span> — ${t.rom}</div>
        <div class="ck-v-line ck-dim">you said <span class="ck-thai">${got.th}</span>, which is ${got.h24}</div>`;
+  // Where a second reading is just as correct, say so — otherwise the game
+  // quietly teaches that the one it picked is the only way to say it.
+  for (const alt of _ckCur.alts) {
+    const line = document.createElement("div");
+    line.className = "ck-v-line ck-dim";
+    line.innerHTML = `also said <span class="ck-thai">${alt.th}</span> — ${alt.rom}`;
+    card.appendChild(line);
+  }
   body.appendChild(card);
   if (!ok) _ckLater(1400, () => _ckSpeak(t));
   _ckIdx++;

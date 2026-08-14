@@ -96,6 +96,57 @@ test("hours wrap and non-integers are floored", () => {
   assert.equal(thaiTime(-3, 0).th, thaiTime(21, 0).th);
 });
 
+// ── Alternate readings ─────────────────────────────────────────────────────
+
+test("hours with a second everyday reading offer it", () => {
+  assert.deepEqual(thaiTimeAlts(16, 0).map(a => a.th), ["บ่ายสี่โมง"]);
+  assert.deepEqual(thaiTimeAlts(17, 0).map(a => a.th), ["บ่ายห้าโมง"]);
+  assert.deepEqual(thaiTimeAlts(12, 0).map(a => a.th), ["เที่ยงวัน"]);
+  assert.equal(thaiTimeAlts(16, 0)[0].rom, "bàai sìi moong");
+});
+
+test("hours with one settled reading offer nothing", () => {
+  for (const h of [0, 3, 9, 13, 18, 21]) {
+    assert.deepEqual(thaiTimeAlts(h, 0), [], `hour ${h} grew an alternate`);
+  }
+});
+
+test("alternates take the same minute suffixes", () => {
+  assert.deepEqual(thaiTimeAlts(16, 30).map(a => a.th), ["บ่ายสี่โมงครึ่ง"]);
+  assert.equal(thaiTimeAlts(16, 30)[0].rom, "bàai sìi moong khrûeng");
+  assert.deepEqual(thaiTimeAlts(16, 15).map(a => a.th), ["บ่ายสี่โมงสิบห้านาที"]);
+});
+
+test("เที่ยงวัน is offered on the hour only", () => {
+  // เที่ยงครึ่ง is how half twelve is said; เที่ยงวันครึ่ง isn't
+  assert.deepEqual(thaiTimeAlts(12, 30), []);
+  assert.deepEqual(thaiTimeAlts(12, 0).map(a => a.th), ["เที่ยงวัน"]);
+});
+
+test("no alternate collides with another hour's reading", () => {
+  // an alternate that doubles as some other hour's canonical form would be
+  // ambiguous — the player would hear it and correctly set a different time
+  const canonical = new Map();
+  for (let h = 0; h < 24; h++) canonical.set(thaiTime(h, 0).th, h);
+  for (let h = 0; h < 24; h++) {
+    for (const alt of thaiTimeAlts(h, 0)) {
+      const clash = canonical.get(alt.th);
+      assert.ok(clash === undefined || clash === h,
+        `${alt.th} (alternate for ${h}:00) also reads as ${clash}:00`);
+    }
+  }
+});
+
+test("no two hours share an alternate", () => {
+  const seen = new Map();
+  for (let h = 0; h < 24; h++) {
+    for (const alt of thaiTimeAlts(h, 0)) {
+      assert.equal(seen.has(alt.th), false, `${alt.th} is shared by ${seen.get(alt.th)} and ${h}`);
+      seen.set(alt.th, h);
+    }
+  }
+});
+
 // ── Display formats ────────────────────────────────────────────────────────
 
 test("24h and 12h display strings", () => {
