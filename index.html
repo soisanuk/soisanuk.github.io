@@ -1483,6 +1483,135 @@ body.mobile #bb-body { padding: .4rem .5rem .5rem; gap: .4rem; }
 .bb-end-title { font-size:1.3rem; color:#ff8c42; text-shadow:0 0 12px #ff8c4280; }
 .bb-end-earn { font-size:2rem; color:#ffe600; font-weight:800; text-shadow:0 0 14px #ffe60060; }
 
+/* ── Last Bus (Thai six-hour clock) ──────────────────────────────────────── */
+#ck-screen { flex-direction:column; background:#061024; }
+#ck-hud {
+  display:flex; justify-content:center; gap:1.8rem; padding:.4rem .8rem;
+  background:#0a1a33; border-bottom:1px solid #4dd8ff30;
+  color:#9fc6e8; font-size:.85rem;
+}
+#ck-hud strong { color:#ffe600; }
+#ck-body {
+  flex:1; overflow-y:auto; padding:.9rem .9rem 1.2rem; width:100%; max-width:560px;
+  margin:0 auto; box-sizing:border-box; display:flex; flex-direction:column;
+  gap:.75rem; align-items:center;
+}
+body.mobile #ck-body { padding:.5rem .5rem .7rem; gap:.5rem; }
+.ck-caption { color:#cfe6ff; font-size:.95rem; text-align:center; line-height:1.6; }
+.ck-dim { color:#7f9ec4; font-size:.86em; font-style:italic; }
+.ck-thai { color:#ffe600; font-size:1.35em; }
+.ck-prompt { display:flex; align-items:center; gap:.6rem; min-height:2.4rem; }
+.ck-hint { color:#ffe600; font-size:1.05rem; font-style:italic; }
+.ck-speak {
+  background:#04101f; border:1px solid #4dd8ff40; color:#4dd8ff;
+  border-radius:50%; width:2.4rem; height:2.4rem;
+  cursor:pointer; font-size:1.05rem; transition:all .15s;
+}
+.ck-speak:hover { border-color:#4dd8ff; box-shadow:0 0 12px #4dd8ff50; }
+
+/* schedule board — the digits you read off */
+.ck-board {
+  background:#04101f; border:1px solid #4dd8ff35; border-radius:10px;
+  padding:.5rem 1.6rem; text-align:center; box-shadow:0 0 18px #4dd8ff15;
+}
+.ck-board-h24 {
+  font-size:2.6rem; font-weight:800; color:#4dd8ff; letter-spacing:.06em;
+  text-shadow:0 0 16px #4dd8ff70; font-variant-numeric:tabular-nums;
+}
+.ck-board-ap { color:#7f9ec4; font-size:.78rem; letter-spacing:.12em; }
+
+/* clock face — 12 hour buttons on a ring, --ck-r is the ring radius */
+.ck-face {
+  --ck-r: 86px;
+  position:relative; width:224px; height:224px; border-radius:50%;
+  border:1px solid #4dd8ff30; background:radial-gradient(circle at 50% 45%, #0c1e3a, #04101f 70%);
+  box-shadow:0 0 24px #4dd8ff18 inset; flex:0 0 auto;
+}
+body.mobile .ck-face { --ck-r: 74px; width:196px; height:196px; }
+.ck-hr {
+  position:absolute; left:50%; top:50%;
+  width:2.3rem; height:2.3rem; border-radius:50%;
+  background:#0d1f3b; border:1px solid #4dd8ff28; color:#cfe6ff;
+  font-family:inherit; font-size:.95rem; font-weight:700; cursor:pointer;
+  transition:background .12s, border-color .12s, color .12s;
+}
+.ck-hr:hover { border-color:#4dd8ff; color:#fff; }
+.ck-hr-on { background:#4dd8ff; border-color:#4dd8ff; color:#04101f; box-shadow:0 0 14px #4dd8ff80; }
+.ck-readout {
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  color:#ffe600; font-size:1.25rem; font-weight:800; letter-spacing:.04em;
+  font-variant-numeric:tabular-nums; pointer-events:none; white-space:nowrap;
+}
+.ck-toggles { display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; justify-content:center; }
+.ck-tog {
+  background:#0d1f3b; border:1px solid #4dd8ff30; border-radius:20px;
+  color:#9fc6e8; padding:.4rem .95rem; font-family:inherit; font-size:.88rem;
+  font-weight:700; cursor:pointer; transition:all .12s; min-width:4.6rem;
+}
+.ck-tog:hover { border-color:#4dd8ff; color:#fff; }
+.ck-tog-on { background:#123a5c; border-color:#4dd8ff; color:#4dd8ff; }
+.ck-confirm { font-size:1rem; padding:.45rem 1.3rem; }
+
+/* reading round — Thai options */
+.ck-choices { display:flex; flex-direction:column; gap:.45rem; width:100%; max-width:420px; }
+.ck-choice {
+  background:#04101f; border:1px solid #4dd8ff28; border-radius:9px; color:#cfe6ff;
+  padding:.5rem .85rem; cursor:pointer; text-align:left; font-size:.95rem;
+  transition:all .12s; font-family:inherit; display:flex; align-items:center; gap:.6rem;
+}
+.ck-choice:hover:not(:disabled) { border-color:#4dd8ff; box-shadow:0 0 10px #4dd8ff35; }
+.ck-choice:disabled { cursor:default; opacity:.92; }
+.ck-choice.ck-ok  { border-color:#00ff88; color:#00ff88; background:#04240f; box-shadow:0 0 12px #00ff8830; }
+.ck-choice.ck-bad { border-color:#ff6680; color:#ff6680; background:#26000c; }
+/* the Thai sets its own colour, so the graded state has to reclaim it */
+.ck-choice.ck-ok  .ck-thai { color:#00ff88; }
+.ck-choice.ck-bad .ck-thai { color:#ff6680; }
+.ck-choice.ck-ok  .ck-cletter { color:#00ff88; }
+.ck-choice.ck-bad .ck-cletter { color:#ff6680; }
+.ck-cletter { color:#4dd8ff; font-size:.75rem; font-weight:700; }
+
+/* verdict card */
+.ck-verdict {
+  border-radius:10px; padding:.55rem .9rem; text-align:center; width:100%;
+  max-width:420px; display:flex; flex-direction:column; gap:.2rem;
+}
+.ck-verdict-ok  { background:#001a0a; border:1px solid #00cc6640; }
+.ck-verdict-bad { background:#1a0008; border:1px solid #ff006640; }
+.ck-v-top { font-weight:800; font-size:.95rem; }
+.ck-verdict-ok  .ck-v-top { color:#00ff88; }
+.ck-verdict-bad .ck-v-top { color:#ff6680; }
+.ck-v-line { color:#cfe6ff; font-size:.9rem; line-height:1.7; }
+
+/* cycle chart, docked under the game */
+#ck-chart {
+  flex:0 0 auto; border-top:1px solid #4dd8ff28; background:#050e1d;
+  padding:.45rem .7rem .6rem;
+}
+.ck-chart-title {
+  text-align:center; color:#7f9ec4; font-size:.7rem; letter-spacing:.06em;
+  margin-bottom:.35rem;
+}
+.ck-chart-grid {
+  display:grid; grid-template-columns:repeat(7,1fr); gap:.35rem;
+  max-width:620px; margin:0 auto;
+}
+.ck-chart-cell {
+  background:#0c1e3a; border:1px solid #4dd8ff22; border-radius:8px;
+  padding:.28rem .12rem; cursor:pointer; display:flex; flex-direction:column;
+  align-items:center; gap:.06rem; font-family:inherit; transition:all .12s;
+}
+.ck-chart-cell:hover { border-color:#4dd8ff; box-shadow:0 0 8px #4dd8ff30; }
+.ck-chart-span { color:#4dd8ff; font-weight:700; font-size:.7rem; font-variant-numeric:tabular-nums; }
+.ck-chart-th   { color:#ffe600; font-size:.95rem; }
+.ck-chart-eg   { color:#7f9ec4; font-size:.55rem; }
+/* collapsed on mobile by default; tap the title row to expand */
+body.mobile #ck-chart .ck-chart-grid { display:none; }
+body.mobile #ck-chart.ck-chart-open .ck-chart-grid { display:grid; grid-template-columns:repeat(4,1fr); }
+body.mobile .ck-chart-title { cursor:pointer; user-select:none; -webkit-user-select:none; }
+.ck-end { text-align:center; display:flex; flex-direction:column; gap:.6rem; align-items:center; padding-top:.5rem; }
+.ck-end-title { font-size:1.3rem; color:#4dd8ff; text-shadow:0 0 12px #4dd8ff80; }
+.ck-end-score { font-size:2.2rem; color:#ffe600; font-weight:800; text-shadow:0 0 14px #ffe60060; }
+
 /* ── Number flashcard screen ──────────────────────────────────────────────── */
 #num-flash-screen { flex-direction:column; }
 .nf-num-display {
@@ -1834,6 +1963,7 @@ body.mobile #app-shell {
     <li id="nav-B" onclick="startSoiBuakhao()">   🌺 Soi Buakhao</li>
     <li id="nav-C" onclick="startConnect4()">     🍹 Soi 6: Connect สี่</li>
     <li id="nav-R" onclick="startBahtBus()">      🚌 Baht Bus</li>
+    <li id="nav-L" onclick="startClock()">        ⏰ Last Bus</li>
   </ul>
 
   <div class="sidebar-section">Numbers</div>
@@ -1910,6 +2040,7 @@ body.mobile #app-shell {
     <li onclick="startSoiBuakhao()">  <span class="menu-key">B</span> 🌺 Soi Buakhao</li>
     <li onclick="startConnect4()">    <span class="menu-key">C</span> 🍹 Soi 6: Connect สี่</li>
     <li onclick="startBahtBus()">     <span class="menu-key">R</span> 🚌 Baht Bus</li>
+    <li onclick="startClock()">       <span class="menu-key">L</span> ⏰ Last Bus — what time?</li>
   </ul>
   <div class="menu-section">Numbers</div>
   <ul class="menu-list">
@@ -2237,6 +2368,21 @@ body.mobile #app-shell {
   </div>
 </div>
 
+<!-- ═══ LAST BUS (THAI SIX-HOUR CLOCK) ═══════════════════════════════════════ -->
+<div id="ck-screen" class="screen">
+  <div class="screen-header" style="background:#0a1a33;color:#4dd8ff;border-color:#4dd8ff;text-shadow:0 0 10px #4dd8ff;letter-spacing:0.08em">
+    ⏰ Last Bus — รถคันสุดท้าย
+  </div>
+  <div id="ck-hud"></div>
+  <div id="ck-body"></div>
+  <div id="ck-chart"></div>
+  <div class="screen-footer" style="background:#0a1a33;border-top:1px solid #4dd8ff30;color:#9fc6e880;font-size:.78rem;text-align:center;padding:.5rem;">
+    <span class="kb-hint">1–4 pick · digits/← → hour · ↑↓ AM/PM · H ครึ่ง · Enter set · R replay &nbsp;·&nbsp;</span>
+    <button class="btn audio-mute-btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#4dd8ff40" onclick="this.textContent=_audio.toggleMute()?'🔇':'🔊'" aria-label="Toggle sound">🔊</button>
+    <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;border-color:#4dd8ff40;color:#4dd8ff" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
+  </div>
+</div>
+
 <!-- ═══ SOI 6 CONNECT สี่ (VOWEL CONNECT 4) ══════════════════════════════════ -->
 <div id="c4-screen" class="screen">
   <div class="screen-header" style="background:#0d0015;color:#ff1493;border-color:#ff1493;text-shadow:0 0 10px #ff1493;letter-spacing:0.08em">
@@ -2412,6 +2558,7 @@ body.mobile #app-shell {
 <script src="js/connect4.js"></script>
 <script src="js/game.js"></script>
 <script src="js/baht-bus.js"></script>
+<script src="js/clock.js"></script>
 <script src="js/numbers.js"></script>
 <script src="js/idioms.js"></script>
 <script src="js/main.js"></script>

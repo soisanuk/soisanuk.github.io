@@ -42,6 +42,7 @@ document.addEventListener("keydown", e => {
     else if (key === "c" || key === "C") startConnect4();
     else if (key === "r" || key === "R") startBahtBus();
     else if (key === "n" || key === "N") startNumFlash();
+    else if (key === "l" || key === "L") startClock();
     else if (key === "a" || key === "A") showCharts();
     else if (key === "?") showTutorial();
   }
@@ -52,6 +53,11 @@ document.addEventListener("keydown", e => {
   }
   if (active === "bb-screen") {
     if (_bbKey(key)) { e.preventDefault(); return; } // Backspace must not navigate
+    if (key === "Escape") endSession();
+    return;
+  }
+  if (active === "ck-screen") {
+    if (_ckKey(key)) { e.preventDefault(); return; } // arrows must not scroll
     if (key === "Escape") endSession();
     return;
   }
