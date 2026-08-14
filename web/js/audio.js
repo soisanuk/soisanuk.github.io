@@ -135,6 +135,13 @@ const _audio = (() => {
         64,62,60,null, 62,64,67,null,
       ],
     },
+    // Last Bus — late, unhurried, a clock ticking somewhere. A minor
+    // (Am F C G), slow arpeggios, hats off so the 🔊 prompts stay legible.
+    night: {
+      bpm: 88, lead: "triangle", leadVol: 0.13, hat: false, bassEvery: 4,
+      bass: [33, 29, 36, 31],
+      prog: [[69, 72, 76, 72], [65, 69, 72, 69], [72, 76, 79, 76], [67, 71, 74, 71]],
+    },
   };
 
   let _track = null, _trackName = null, _step = 0, _nextT = 0, _timer = null;
@@ -195,7 +202,7 @@ const _audio = (() => {
 // Screen → music track. Called by showScreen, so entering a game starts its
 // loop and navigating anywhere else stops it.
 function _audioScreen(id) {
-  const track = { "game-screen": "street", "soi-screen": "soi", "c4-screen": "soi6", "bb-screen": "bus" }[id];
+  const track = { "game-screen": "street", "soi-screen": "soi", "c4-screen": "soi6", "bb-screen": "bus", "ck-screen": "night" }[id];
   if (track) _audio.music(track);
   else _audio.stop();
 }
