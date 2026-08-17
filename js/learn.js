@@ -182,11 +182,32 @@ function _learnStep() {
   if (fwd) fwd.style.visibility = _lu.at < _lu.max ? "visible" : "hidden";
   body.innerHTML = "";
   showScreen("lesson-screen", "Q");
-  if (review && !_TEACH_KINDS.has(item.kind)) { _wReviewCard(item, body); return; }
-  ({ glyph: _wGlyph, wordintro: _wWordIntro, mc: _wMC, mc2: _wMC2, speed: _wMC, listen: _wListen,
-     mcth: _wMCTH, typeen: _wTypeEN, typeth: _wTypeTH, clozex: _wClozeX,
-     cloze: _wCloze, match: _wMatch, chunkIntro: _wChunkIntro, chunk: _wChunk,
-     toneIntro: _wToneIntro, tonecalc: _wToneCalc, toneear: _wToneEar, toneread: _wToneRead }[item.kind])(item, body);
+  if (review && !_TEACH_KINDS.has(item.kind)) { _wReviewCard(item, body); }
+  else {
+    ({ glyph: _wGlyph, wordintro: _wWordIntro, mc: _wMC, mc2: _wMC2, speed: _wMC, listen: _wListen,
+       mcth: _wMCTH, typeen: _wTypeEN, typeth: _wTypeTH, clozex: _wClozeX,
+       cloze: _wCloze, match: _wMatch, chunkIntro: _wChunkIntro, chunk: _wChunk,
+       toneIntro: _wToneIntro, tonecalc: _wToneCalc, toneear: _wToneEar, toneread: _wToneRead }[item.kind])(item, body);
+  }
+  _ensureCardEndVisible(body);
+}
+
+// A tall card (decomposition chips, an example sentence, chunk prose) can
+// push its closing control below the fold on a phone-height screen, with
+// nothing telling the learner a scroll would reveal it — reported as the
+// "Got it →" button sitting one pixel below the visible screen, looking
+// stuck. scrollIntoView({block:"nearest"}) only moves the minimum distance
+// needed, so a card that already fits is untouched; one that doesn't gets
+// nudged up just far enough to bring its last element into view. Also called
+// after _mcWire appends a miss's "Next →" row, since that can arrive after
+// the card's own initial render already settled.
+function _ensureCardEndVisible(body) {
+  const last = body.lastElementChild;
+  const scr = document.getElementById("lesson-screen");
+  if (!last || !scr) return;
+  if (last.getBoundingClientRect().bottom > scr.getBoundingClientRect().bottom) {
+    last.scrollIntoView({ block: "nearest" });
+  }
 }
 
 function _learnRecord(key, quality, ms) {
@@ -560,6 +581,10 @@ function _mcWire(options, answer, key, fastMs, onRight, word) {
           row.className = "btn-row";
           row.innerHTML = `${_wordCardBtn(word)} <button class="btn btn-primary" onclick="_learnNext()">Next →</button>`;
           ul.parentElement.appendChild(row);
+          // appended after the card's own initial-render nudge already ran —
+          // check again, since the choice list plus this new row can now
+          // overflow a screen the original (shorter, button-less) card fit.
+          _ensureCardEndVisible(document.getElementById("lesson-body"));
         } else {
           setTimeout(_learnNext, missed ? 900 : 550);
         }

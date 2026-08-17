@@ -61,23 +61,29 @@ function updateMenuStats() {
     `<span style="color:var(--jade)">${s.mature}</span> mature`;
 }
 
-// ─── collapsible sidebar sections (desktop nav) ────────────────────────────
+// ─── collapsible nav sections ──────────────────────────────────────────────
 // Each section header toggles the list(s) beneath it; open/closed state
 // persists. Secondary sections start collapsed so the whole nav fits a laptop.
 const NAV_KEY = "soisanuk_nav";
 const NAV_DEFAULT_COLLAPSED = ["Games", "Numbers", "More"];
-function _navCollapseInit() {
-  const sb = document.getElementById("sidebar");
-  if (!sb) return;
+
+// Wires one nav container. Shared by the desktop sidebar and the mobile menu
+// screen, which are the same list of destinations in two layouts — and the
+// menu screen needs it MORE: on a phone it ran 1758px, nearly three screens,
+// so everything past Vocabulary was undiscoverable without scrolling. Both
+// read/write the same NAV_KEY, so a section you collapse stays collapsed
+// whichever layout you meet it in.
+function _collapseSections(root, sectionCls, listCls, stopId) {
+  if (!root) return;
   let state = {};
   try { state = JSON.parse(localStorage.getItem(NAV_KEY) || "{}"); } catch (e) {}
-  for (const sec of sb.querySelectorAll(".sidebar-section")) {
+  for (const sec of root.querySelectorAll("." + sectionCls)) {
     const name = sec.textContent.trim();
     const lists = [];
     for (let el = sec.nextElementSibling;
-         el && !el.classList.contains("sidebar-section") && el.id !== "sidebar-footer";
+         el && !el.classList.contains(sectionCls) && el.id !== stopId;
          el = el.nextElementSibling) {
-      if (el.classList.contains("sidebar-list")) lists.push(el);
+      if (el.classList.contains(listCls)) lists.push(el);
     }
     const apply = c => {
       sec.classList.toggle("collapsed", c);
@@ -85,13 +91,23 @@ function _navCollapseInit() {
     };
     apply(name in state ? state[name] : NAV_DEFAULT_COLLAPSED.includes(name));
     sec.setAttribute("role", "button");
-    sec.addEventListener("click", () => {
+    sec.setAttribute("tabindex", "0");
+    const toggle = () => {
       const c = !sec.classList.contains("collapsed");
       apply(c);
       state[name] = c;
       try { localStorage.setItem(NAV_KEY, JSON.stringify(state)); } catch (e) {}
+    };
+    sec.addEventListener("click", toggle);
+    sec.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
     });
   }
+}
+
+function _navCollapseInit() {
+  _collapseSections(document.getElementById("sidebar"), "sidebar-section", "sidebar-list", "sidebar-footer");
+  _collapseSections(document.getElementById("menu-screen"), "menu-section", "menu-list", null);
 }
 
 // ─── character frequency (built once from WORDS) ───────────────────────────
