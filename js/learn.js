@@ -791,20 +791,32 @@ function _streakText(st, t) {
     (t.cards ? ` · today ${t.cards} cards` : "") +
     (t.msN ? ` · ${(t.msSum / t.msN / 1000).toFixed(1)}s/word` : "");
 }
-// ▶ Continue: due reviews first, else the next open unit, else a speed round
-function startContinue() {
+// What ▶ Continue would do right now: due reviews first, else the next open
+// unit, else a speed round. Split out from startContinue so the desktop home
+// card can ANNOUNCE the same decision the button will act on — if the two
+// computed it separately they'd drift, and the card would promise one thing
+// and the click deliver another. Read-only: safe to call while rendering.
+function continuePlan() {
   const prog = loadProgress();
   const due = dueCards(prog, WORDS.map(w => w[0])).slice(0, 10)
     .map(th => WORDS.find(x => x[0] === th)).filter(Boolean);
-  if (due.length >= 3) {
+  if (due.length >= 3) return { kind: "review", due };
+  const path = _pathLoad();
+  const next = COURSE.findIndex((u, i) => _unitUnlocked(path, i) && !_unitDone(path, u));
+  if (next >= 0) return { kind: "unit", unitIdx: next, unit: COURSE[next] };
+  return { kind: "speed" };
+}
+
+// ▶ Continue: act on the plan above.
+function startContinue() {
+  const plan = continuePlan();
+  if (plan.kind === "review") {
     _lu = { idx: -1, unit: { kind: "review", label: "Review" },
-      queue: due.map(w => ({ kind: "mc", word: w, tag: "review" })), at: 0, results: [] };
+      queue: plan.due.map(w => ({ kind: "mc", word: w, tag: "review" })), at: 0, results: [] };
     _learnStep();
     return;
   }
-  const path = _pathLoad();
-  const next = COURSE.findIndex((u, i) => _unitUnlocked(path, i) && !_unitDone(path, u));
-  if (next >= 0) { _unitStart(next); return; }
+  if (plan.kind === "unit") { _unitStart(plan.unitIdx); return; }
   const pool = _shuffle(courseDecodable(LETTER_BATCHES.length - 1)).slice(0, 10);
   _lu = { idx: -1, unit: { kind: "review", label: "Speed round" },
     queue: pool.map(w => ({ kind: "speed", word: w })), at: 0, results: [] };

@@ -219,6 +219,11 @@ function showScreen(id, navKey) {
 
 function showMenu() {
   updateMenuStats();
+  // the desktop home pane reports due counts, streak and next-up, so it has
+  // to be rebuilt on every return to the menu, not just at load — and the
+  // sidebar's own streak hint alongside it, or the two disagree
+  if (typeof _streakRender === "function") _streakRender();
+  if (typeof _homeRender === "function") _homeRender();
   showScreen("menu-screen");
 }
 
