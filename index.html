@@ -411,6 +411,23 @@ body {
   min-height: 44px;                 /* it's a control now — make it tappable */
 }
 .menu-section:hover { color: var(--saffron); }
+
+/* Focus ring for the keyboard-operable rows (_rowA11yInit, app.js). The
+   browser default is a thin light outline that all but disappears on this
+   near-black palette, and rows sit flush against each other — so use the
+   app's own accent, inset so it can't be clipped by the next row. */
+.sidebar-list li:focus-visible,
+.menu-list li:focus-visible,
+.cat-list li:focus-visible,
+.quiz-choices li:focus-visible,
+.tone-choices li:focus-visible,
+.learn-unit:focus-visible,
+.sidebar-section:focus-visible,
+.menu-section:focus-visible {
+  outline: 2px solid var(--saffron);
+  outline-offset: -2px;
+  border-radius: 5px;
+}
 .menu-section::after { content: "▾"; opacity: 0.45; font-size: 0.8em; }
 .menu-section.collapsed::after { content: "▸"; }
 .menu-list.nav-hidden { display: none; }
@@ -450,6 +467,7 @@ body {
   .screen-footer {
     position: sticky; bottom: 0; z-index: 3; flex-shrink: 0; background-color: var(--bg);
   }
+
 
   /* compact sidebar so the whole nav fits a laptop without feeling cramped */
   #sidebar-title { padding-top: 0.8rem; font-size: 1.4rem; }
@@ -2088,10 +2106,10 @@ body.mobile #app-shell {
   </div>
   <div class="menu-section">Guided</div>
   <ul class="menu-list">
-    <li onclick="startContinue()"><span class="menu-icon">▶</span> Continue <span id="nav-cont-stats2" style="opacity:0.7;font-size:0.85em"></span></li>
-    <li onclick="startLearn()"><span class="menu-icon">🎓</span> Guided Course</li>
-    <li onclick="startReader()"><span class="menu-icon">📖</span> Graded Reader</li>
-    <li onclick="startBusWords()"><span class="menu-icon">🚌</span> Words from the bus</li>
+    <li onclick="startContinue()"><span class="menu-key">⏎</span><span class="menu-icon">▶</span> Continue <span id="nav-cont-stats2" style="opacity:0.7;font-size:0.85em"></span></li>
+    <li onclick="startLearn()"><span class="menu-key">Q</span><span class="menu-icon">🎓</span> Guided Course</li>
+    <li onclick="startReader()"><span class="menu-key">D</span><span class="menu-icon">📖</span> Graded Reader</li>
+    <li onclick="startBusWords()"><span class="menu-key">U</span><span class="menu-icon">🚌</span> Words from the bus</li>
   </ul>
   <div class="menu-section">Vocabulary</div>
   <ul class="menu-list">
@@ -2125,11 +2143,11 @@ body.mobile #app-shell {
   </ul>
   <div class="menu-section">More</div>
   <ul class="menu-list">
-    <li onclick="showRecords()">      <span class="menu-icon">🏆</span> Records</li>
-    <li onclick="showScreen('backup-screen','X')"><span class="menu-icon">💾</span> Backup &amp; Restore &amp; Export</li>
+    <li onclick="showRecords()">      <span class="menu-key">Y</span><span class="menu-icon">🏆</span> Records</li>
+    <li onclick="showScreen('backup-screen','X')"><span class="menu-key">X</span><span class="menu-icon">💾</span> Backup &amp; Restore &amp; Export</li>
     <li onclick="showCharts()">   <span class="menu-key">A</span> Reference Charts</li>
     <li onclick="showVocabList()"> <span class="menu-key">V</span> Vocab List</li>
-    <li onclick="showIdioms()">    <span class="menu-icon">🎭</span> Pattaya Idioms</li>
+    <li onclick="showIdioms()">    <span class="menu-key">I</span><span class="menu-icon">🎭</span> Pattaya Idioms</li>
     <li onclick="showStats()">     <span class="menu-key">0</span> Statistics</li>
     <li onclick="showTutorial()">  <span class="menu-key">?</span> How to use this app</li>
   </ul>

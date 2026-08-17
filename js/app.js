@@ -110,6 +110,57 @@ function _navCollapseInit() {
   _collapseSections(document.getElementById("menu-screen"), "menu-section", "menu-list", null);
 }
 
+// ─── keyboard-operable rows ────────────────────────────────────────────────
+// This app's clickable-row idiom is <li onclick> — visually a button, but
+// invisible to the keyboard. Tab reached NONE of the sidebar's destinations,
+// nor any category row, quiz choice or course unit; combined with the six
+// entries that have no letter shortcut (Continue, Guided Course, Words from
+// the bus, Records, Backup, Idioms), a keyboard-only user simply could not
+// get to them. These selectors are the app's discrete control sets — small,
+// ordered lists where tabbing is the natural gesture.
+//
+// Deliberately NOT included: the Vocab List's 950-word grid. Making a grid
+// that size tabbable would bury every later control behind 950 stops; it has
+// its own search box, and it's a browse surface rather than a control set.
+const ROW_SELECTOR = [
+  "#sidebar .sidebar-list li",
+  "#menu-screen .menu-list li",
+  ".cat-list li.selectable",
+  ".quiz-choices li",
+  ".tone-choices li",
+  "#learn-units .learn-unit",
+].join(", ");
+
+function _rowsA11yUpgrade(root) {
+  if (!root || !root.querySelectorAll) return;
+  for (const el of root.querySelectorAll(ROW_SELECTOR)) {
+    // a locked course unit has no click handler — don't advertise it as one
+    if (el.classList.contains("locked")) { el.removeAttribute("tabindex"); continue; }
+    if (el.dataset.kbd) continue;
+    el.dataset.kbd = "1";
+    el.setAttribute("role", "button");
+    el.tabIndex = 0;
+  }
+}
+
+// Quiz choices, tone choices and course units are re-rendered on every
+// question, so a one-shot pass at init would only cover what exists at load.
+// One observer keeps every future row keyboard-operable too.
+function _rowA11yInit() {
+  _rowsA11yUpgrade(document);
+  document.addEventListener("keydown", e => {
+    const row = e.target.closest && e.target.closest("[data-kbd]");
+    if (!row) return;
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); row.click(); }
+  });
+  if (typeof MutationObserver === "undefined") return;
+  new MutationObserver(muts => {
+    for (const m of muts) {
+      for (const n of m.addedNodes) if (n.nodeType === 1) _rowsA11yUpgrade(n.parentElement || n);
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+}
+
 // ─── character frequency (built once from WORDS) ───────────────────────────
 const CHAR_FREQ = (() => {
   const freq = {};
