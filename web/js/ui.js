@@ -175,11 +175,30 @@ function showStats() {
 
 // ─── tutorial ────────────────────────────────────────────────────────────────
 const _TUT_KEY = "soisanuk_seen_tutorial";
-const _TUT_TOTAL = 4;
+const _TUT_TOTAL = 5;
 let _tutStep = 0;
+
+// The tour used to hard-code its own counts ("878 vocabulary words"), which
+// silently went stale the moment vocabulary was added — it was 72 words out
+// of date, and describing a version of the app from before the Guided Course
+// existed, when nobody noticed. Counts are now filled from the data at open
+// time, so they cannot drift; tests/js/ui.test.js guards against a future
+// edit re-hardcoding one.
+function _tutFillCounts() {
+  const counts = {
+    words: (typeof WORDS !== "undefined") ? WORDS.length : 0,
+    script: ((typeof CONSONANTS !== "undefined") ? CONSONANTS.length : 0) +
+            ((typeof VOWELS !== "undefined") ? VOWELS.length : 0),
+  };
+  document.querySelectorAll(".tut-count").forEach(el => {
+    const n = counts[el.dataset.count];
+    if (n) el.textContent = n;
+  });
+}
 
 function showTutorial() {
   _tutStep = 0;
+  _tutFillCounts();
   _tutRender();
   document.getElementById("tutorial-overlay").classList.add("open");
 }
