@@ -35,6 +35,22 @@ function saveAndRefresh() {
   updateMenuStats();
 }
 
+// Clears every LEARNING-progress store this app owns: SRS reviews, the
+// course path (including personal-best read times), and the daily streak.
+// Deliberately leaves UI preferences alone (mute, nav-collapse state, chart
+// order, "seen the tutorial") — those aren't progress, resetting them would
+// just be annoying — and never touches lbb_save, which belongs to a
+// different app (The Last Baht Bus) sharing this origin. LEARN_KEY/
+// STREAK_KEY are learn.js constants; safe to reference here since this only
+// runs later, from a click handler, well after every script has loaded.
+function resetAllProgress() {
+  localStorage.removeItem(SRS_KEY);
+  localStorage.removeItem(LEARN_KEY);
+  localStorage.removeItem(STREAK_KEY);
+  progress = {};
+  if (typeof _streakRender === "function") _streakRender();
+}
+
 function updateMenuStats() {
   const s = srsStats(progress);
   const txt = `vocab seen: ${s.totalSeen}  ·  due: ${s.dueNow}  ·  mature: ${s.mature}`;
@@ -232,38 +248,8 @@ function showSessionEnd(allCaughtUp) {
   showScreen("end-screen");
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Progress Export / Import
-// ═══════════════════════════════════════════════════════════════════════════
-function exportProgress() {
-  const data = { version: 1, exported: new Date().toISOString(), progress };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "soisanuk-progress.json";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function importProgress(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      const imported = data.progress || data;
-      if (typeof imported !== "object") throw new Error("invalid");
-      if (!confirm(`Import ${Object.keys(imported).length} card records? This will REPLACE your current progress.`)) return;
-      progress = imported;
-      saveProgress(progress);
-      updateMenuStats();
-      alert("Progress imported successfully!");
-    } catch {
-      alert("Could not read that file. Make sure it's a valid Soi Sanuk progress export.");
-    }
-    event.target.value = ""; // reset so same file can be re-imported
-  };
-  reader.readAsText(file);
-}
+// Progress export/import lives in backup.js (backupExport/backupImportFile/
+// backupImportPaste) — merge semantics, covers SRS + course path + streak,
+// reachable from the Backup & Restore screen. This file used to carry a
+// second, older, REPLACE-semantics exporter/importer (progress only) wired
+// to Stats-screen buttons; retired in favour of the one real export format.

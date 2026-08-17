@@ -164,9 +164,8 @@ function showStats() {
       ${catRows}
     </div>
     <div class="btn-row export-import-row" style="margin-top:1rem;">
-      <button class="btn" onclick="exportProgress()">⬇ Export Progress</button>
-      <button class="btn" onclick="document.getElementById('import-file-input').click()">⬆ Import Progress</button>
-      <button class="btn" onclick="if(confirm('Reset ALL progress?')) { localStorage.removeItem('soisanuk_progress'); progress={}; showStats(); updateMenuStats(); }">
+      <button class="btn" onclick="showScreen('backup-screen','X')">💾 Backup &amp; Restore</button>
+      <button class="btn" onclick="if(confirm('Reset all learning progress? This clears SRS reviews, the guided course path, and your streak. Cannot be undone.')) { resetAllProgress(); showStats(); updateMenuStats(); }">
         Reset
       </button>
     </div>
