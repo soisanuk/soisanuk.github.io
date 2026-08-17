@@ -385,20 +385,47 @@ body {
   color: var(--deep-saffron);
   font-weight: bold;
 }
+/* An ICON, not a keyboard shortcut. Same slot and metrics as .menu-key, but
+   it survives on mobile — where .menu-key is (correctly) hidden, since a
+   phone has no keyboard to press "4" on. Seven entries used to smuggle their
+   emoji through .menu-key and so rendered icon-less on mobile: the whole
+   Guided section (the app's recommended path) went to flat text while the
+   Games section — whose emoji sit outside the span — kept its colour, which
+   inverted the visual priority on exactly the platform most people use. */
+.menu-list .menu-icon {
+  display: inline-block;
+  width: 1.6rem;
+}
 .menu-section {
   padding: 0.7rem 2rem 0.15rem;
   font-size: 0.78rem;
   color: var(--deep-saffron);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;                 /* it's a control now — make it tappable */
 }
+.menu-section:hover { color: var(--saffron); }
+.menu-section::after { content: "▾"; opacity: 0.45; font-size: 0.8em; }
+.menu-section.collapsed::after { content: "▸"; }
+.menu-list.nav-hidden { display: none; }
 
 /* ── Narrow/mobile: hide sidebar ────────────────────────────────────────── */
 /* NOTE: no `#menu-screen { display:flex }` here — the ID selector would beat
    `.screen { display:none }` and keep the menu permanently rendered under
    every other screen (content pushed below the fold / invisible screens).
    The menu starts as `.screen.active` and showMenu() handles the rest. */
-@media (max-width: 700px) {
+/* Narrow OR short: a phone held sideways is 852x393 — wide enough to pass a
+   width-only test, so it used to get the full desktop sidebar eating a third
+   of the screen while the content squeezed into 393px of height. Gate on
+   height too. 500px cleanly separates a landscape phone (≤430) from a
+   landscape tablet (≥768), which genuinely does want the sidebar. */
+@media (max-width: 700px), (max-height: 499px) {
   #sidebar { display: none; }
   .screen { padding: 0 0 2rem; }
   .thai-big { font-size: 7.5rem; min-height: 10rem; margin: 0.75rem 0.75rem 0.5rem; }
@@ -406,7 +433,7 @@ body {
 
 /* ── Wide/desktop: sidebar is the nav — hide duplicate menu-screen nav ───── */
 #menu-welcome { display: none; }
-@media (min-width: 701px) {
+@media (min-width: 701px) and (min-height: 500px) {
   /* Fixed app-shell: the page never scrolls. The sidebar scrolls its own
      overflow; the active screen scrolls its body while header + footer stay
      pinned — so Path/Menu are always in view, no matter how tall the lesson. */
@@ -626,6 +653,7 @@ body {
   flex-wrap: wrap;
 }
 
+
 /* ── Result / feedback ───────────────────────────────────────────────────── */
 .result-correct {
   text-align: center;
@@ -732,6 +760,13 @@ body {
 }
 .example-speak:hover { color: var(--gold); border-color: var(--gold); }
 .example-speak.speaking { color: var(--saffron); border-color: var(--saffron); }
+/* float:right is right for a speak button tucked beside a block of example
+   text, but wrong when the button sits alone on its own centred line: the
+   float pulls it to the container's right edge and the negative right margin
+   then pushes it PAST that edge — on the flashcard (a full-bleed container
+   with no side padding) it hung half off the screen. These two are inside
+   text-align:center wrappers, so honour that instead. */
+#flash-speak-btn, #nf-speak-btn { float: none; margin-right: 0; }
 
 /* ── Word hover tokens ───────────────────────────────────────────────────── */
 .w-token {
@@ -1030,6 +1065,17 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+/* 27 wrapped filter chips are fine on a desktop column, but on a phone they
+   grew to 504px of a 659px screen and squeezed the word grid — which is the
+   entire point of this screen — down to SIXTEEN pixels holding 950 words.
+   Cap the strip at roughly three rows and let it scroll itself, so the list
+   always keeps the majority of the viewport. */
+body.mobile .vocab-list-cats {
+  max-height: 7.5rem;
+  overflow-y: auto;
+  flex: 0 0 auto;
+  -webkit-overflow-scrolling: touch;
 }
 .cat-progress-chip {
   display: flex;
@@ -1879,13 +1925,44 @@ body.mobile #game-kbd {
 #game-kbd .tkey.dim .tkey-th  { color: #bf5fff58; }
 #game-kbd .tkey.dim .tkey-lat { color: #bf5fff2a; }
 
-/* Finger-sized targets */
-body.mobile .menu-list li  { padding: 0.7rem 0; }
-body.mobile .cat-list li   { padding: 0.65rem 1rem; }
+/* Finger-sized targets — Apple HIG asks for 44x44pt minimum. Where growing
+   the box would cost layout (chips, icon buttons), grow the HIT AREA with a
+   pseudo-element instead: the control looks identical, the finger gets the
+   44px. Anything already tapped through a parent row keeps its own size. */
+/* gap, because a flex container drops the whitespace between text nodes —
+   without it "Continue" and its "start today" hint render as "Continuestart" */
+body.mobile .menu-list li  { padding: 0.7rem 0; min-height: 44px; display: flex; align-items: center; gap: 0.3rem; }
+body.mobile .cat-list li   { padding: 0.65rem 1rem; min-height: 44px; align-items: center; }
 body.mobile .btn           { min-height: 44px; }
 body.mobile .rating-btn    { min-height: 46px; padding: 0.4rem 0.7rem; }
 body.mobile .quiz-choices li { padding: 0.75rem 1rem; }
 body.mobile .sb-choice     { padding: 0.75rem 0.8rem; }
+body.mobile .chart-tab     { min-height: 44px; padding: .3rem 1rem; }
+body.mobile .t-mbtn        { min-height: 44px; padding: .25rem 1rem; }
+body.mobile .alpha-order-btn { min-height: 44px; padding: .25rem 1rem; }
+body.mobile .idiom-thai    { min-height: 44px; }
+body.mobile .learn-unit    { min-height: 44px; }
+body.mobile .cat-progress-chip { min-height: 44px; padding: 0.2rem 0.75rem 0.2rem 0.4rem; }
+/* The idioms 🔊 was 24x31 — the tightest target in the app. Keep the glyph
+   its current size and project a centred 44x44 hit area around it. */
+body.mobile .idiom-spk { position: relative; }
+body.mobile .idiom-spk::after {
+  content: ""; position: absolute; top: 50%; left: 50%;
+  width: 44px; height: 44px; transform: translate(-50%, -50%);
+}
+
+/* Keyboard tutor on a phone: the stack sat at the top and left ~40% of the
+   screen empty below the stats row. Let the prompt absorb the slack instead,
+   which centres the target glyph in the free space AND drops the keyboard
+   into comfortable thumb reach at the bottom, where a typing UI belongs. */
+body.mobile #tutor-prompt {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+body.mobile #tutor-body { padding-bottom: .4rem; }
 
 /* Keyboard tutor: fill the phone width with finger-sized tappable keys */
 body.mobile .tkey    { width: calc((100vw - 44px) / 10); max-width: 40px; height: 48px; }
@@ -2011,10 +2088,10 @@ body.mobile #app-shell {
   </div>
   <div class="menu-section">Guided</div>
   <ul class="menu-list">
-    <li onclick="startContinue()"><span class="menu-key">▶</span> Continue <span id="nav-cont-stats2" style="opacity:0.7;font-size:0.85em"></span></li>
-    <li onclick="startLearn()"><span class="menu-key">🎓</span> Guided Course</li>
-    <li onclick="startReader()"><span class="menu-key">📖</span> Graded Reader</li>
-    <li onclick="startBusWords()"><span class="menu-key">🚌</span> Words from the bus</li>
+    <li onclick="startContinue()"><span class="menu-icon">▶</span> Continue <span id="nav-cont-stats2" style="opacity:0.7;font-size:0.85em"></span></li>
+    <li onclick="startLearn()"><span class="menu-icon">🎓</span> Guided Course</li>
+    <li onclick="startReader()"><span class="menu-icon">📖</span> Graded Reader</li>
+    <li onclick="startBusWords()"><span class="menu-icon">🚌</span> Words from the bus</li>
   </ul>
   <div class="menu-section">Vocabulary</div>
   <ul class="menu-list">
@@ -2048,11 +2125,11 @@ body.mobile #app-shell {
   </ul>
   <div class="menu-section">More</div>
   <ul class="menu-list">
-    <li onclick="showRecords()">      <span class="menu-key">🏆</span> Records</li>
-    <li onclick="showScreen('backup-screen','X')"><span class="menu-key">💾</span> Backup &amp; Restore &amp; Export</li>
+    <li onclick="showRecords()">      <span class="menu-icon">🏆</span> Records</li>
+    <li onclick="showScreen('backup-screen','X')"><span class="menu-icon">💾</span> Backup &amp; Restore &amp; Export</li>
     <li onclick="showCharts()">   <span class="menu-key">A</span> Reference Charts</li>
     <li onclick="showVocabList()"> <span class="menu-key">V</span> Vocab List</li>
-    <li onclick="showIdioms()">    <span class="menu-key">🎭</span> Pattaya Idioms</li>
+    <li onclick="showIdioms()">    <span class="menu-icon">🎭</span> Pattaya Idioms</li>
     <li onclick="showStats()">     <span class="menu-key">0</span> Statistics</li>
     <li onclick="showTutorial()">  <span class="menu-key">?</span> How to use this app</li>
   </ul>
@@ -2496,13 +2573,19 @@ body.mobile #app-shell {
     <div class="tutorial-slide">
       <div class="tut-icon">ก</div>
       <h2>Welcome to Thai Trainer: Pattaya Edition</h2>
-      <p>Your personal Thai tutor: 878 vocabulary words, 60+ consonants &amp; vowels, and SM‑2 spaced repetition — all in one app.</p>
-      <p>This quick tour highlights the key features. Find it again any time under <strong>Other → How to use</strong>.</p>
+      <p>Your personal Thai tutor: <span class="tut-count" data-count="words"></span> vocabulary words, <span class="tut-count" data-count="script"></span> consonants &amp; vowels, and SM‑2 spaced repetition — all in one app.</p>
+      <p>Not sure where to start? The next slide has you covered.</p>
+    </div>
+
+    <div class="tutorial-slide">
+      <h2>🎓 Start here: the Guided Course</h2>
+      <p><strong>Guided Course</strong> is the recommended way in — a step-by-step reading path from your first six Thai letters up to real street phrases. The app teaches, quizzes, and grades you as you go; you never have to rate yourself.</p>
+      <p>Once you've begun, <strong>▶ Continue</strong> on the menu always picks up where you left off — due reviews first, then your next lesson. Find the full tour again any time under <strong>Other → How to use</strong>.</p>
     </div>
 
     <div class="tutorial-slide">
       <h2>📚 Flashcards &amp; SRS Review</h2>
-      <p>Start with <strong>Flashcards Thai→English</strong><span class="kb-hint"> (key <kbd class="tut-key">1</kbd>)</span>. Reveal the answer, then rate yourself 1–5.</p>
+      <p>For free-form practice outside the course, try <strong>Flashcards Thai→English</strong><span class="kb-hint"> (key <kbd class="tut-key">1</kbd>)</span>. Reveal the answer, then rate yourself 1–5.</p>
       <p>The SM‑2 algorithm schedules each card's next review so you see it right before you'd forget it. <strong>SRS Review</strong><span class="kb-hint"> (key <kbd class="tut-key">4</kbd>)</span> shows only what's due today.</p>
     </div>
 
@@ -2518,7 +2601,7 @@ body.mobile #app-shell {
 
     <div class="tutorial-slide">
       <h2>📖 Vocab List &amp; Script</h2>
-      <p><strong>Vocab List</strong><span class="kb-hint"> (key <kbd class="tut-key">V</kbd>)</span> shows all 878 words — search, filter by category, tap any word for the detail card with decomposition.</p>
+      <p><strong>Vocab List</strong><span class="kb-hint"> (key <kbd class="tut-key">V</kbd>)</span> shows all <span class="tut-count" data-count="words"></span> words — search, filter by category, tap any word for the detail card with decomposition.</p>
       <p><strong>Script cards</strong><span class="kb-hint"> (keys <kbd class="tut-key">5</kbd>–<kbd class="tut-key">9</kbd>)</span> teach consonants and vowels with SRS. <strong>Tone Drill</strong><span class="kb-hint"> (<kbd class="tut-key">T</kbd>)</span> plays audio and asks you to identify the tone class.</p>
     </div>
 
@@ -2527,6 +2610,7 @@ body.mobile #app-shell {
       <div class="tutorial-dot" onclick="_tutGoTo(1)"></div>
       <div class="tutorial-dot" onclick="_tutGoTo(2)"></div>
       <div class="tutorial-dot" onclick="_tutGoTo(3)"></div>
+      <div class="tutorial-dot" onclick="_tutGoTo(4)"></div>
     </div>
     <div id="tutorial-nav">
       <button id="tutorial-prev" onclick="_tutPrev()">← Back</button>
