@@ -27,9 +27,15 @@ const NUM_CARDS = [
   { n: 70,   th: "เจ็ดสิบ",                              rom: "jèt-sìp" },
   { n: 80,   th: "แปดสิบ",                              rom: "pàet-sìp" },
   { n: 90,   th: "เก้าสิบ",                              rom: "kâo-sìp" },
-  { n: 100,  th: "หนึ่งร้อย",                            rom: "nùeng-rói" },
-  { n: 1000, th: "หนึ่งพัน",                             rom: "nùeng-phan" },
-  { n: 9999, th: "เก้าพันเก้าร้อยเก้าสิบเก้า",       rom: "kâo-phan kâo-rói kâo-sìp kâo" },
+  { n: 100,     th: "หนึ่งร้อย",                       rom: "nùeng-rói" },
+  { n: 1000,    th: "หนึ่งพัน",                        rom: "nùeng-phan" },
+  // The scale words above 1,000 — no dedicated game teaches these (Baht Bus
+  // caps at 999; the Last Bus clock never needs them), so the flashcards are
+  // the only place a learner meets หมื่น/แสน/ล้าน at all.
+  { n: 10000,   th: "หนึ่งหมื่น",                      rom: "nùeng-mùuen" },
+  { n: 100000,  th: "หนึ่งแสน",                        rom: "nùeng-sǎen" },
+  { n: 1000000, th: "หนึ่งล้าน",                        rom: "nùeng-láan" },
+  { n: 9999,    th: "เก้าพันเก้าร้อยเก้าสิบเก้า",   rom: "kâo-phan kâo-rói kâo-sìp kâo" },
 ];
 
 // ─── Number flashcard session ─────────────────────────────────────────────────
@@ -257,7 +263,7 @@ function _buildNumChart() {
   for (const c of tens) html += wordCell(c);
   html += `</div>`;
 
-  html += `<div class="num-chart-label">Hundreds &amp; Thousands</div>`;
+  html += `<div class="num-chart-label">Hundreds, Thousands &amp; Beyond</div>`;
   html += `<div class="num-chart-grid" style="grid-template-columns:repeat(3,1fr)">`;
   for (const c of big) html += wordCell(c, 'style="font-size:.72rem"');
   html += `</div>`;

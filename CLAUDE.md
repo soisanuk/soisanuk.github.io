@@ -24,7 +24,7 @@ node scripts/sync-vendored.mjs          # write the copies
 node scripts/sync-vendored.mjs --check  # verify sync; exit 1 on drift
 ```
 
-Deploy is automatic: any push to `main` triggers `.github/workflows/pages.yml`, which publishes `web/` to the `gh-pages` branch via peaceiris/actions-gh-pages (live at https://mari0d.github.io/thaicab/). `.gitlab-ci.yml` does the same for GitLab Pages.
+Deploy is automatic: any push to `main` triggers `.github/workflows/pages.yml`, which publishes `web/` to the `gh-pages` branch via peaceiris/actions-gh-pages (live at https://soisanuk.github.io/). `.gitlab-ci.yml` does the same for GitLab Pages.
 
 ## Architecture
 

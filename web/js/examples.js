@@ -75,7 +75,7 @@ const EXAMPLES = {
   "วาง": ["วางกระเป๋าไว้บนโต๊ะได้เลย", "waang krà-pǎo wái bon tó dâi looei", "You can put your bag on the table."],
   "เอาออก": ["เธอเอาออกหนังสือออกจากกล่อง", "thoe ao-òok nǎng-sǔue òok jàak klòong", "She took the books out of the box."],
   "เปลี่ยน": ["ฉันอยากเปลี่ยนงานใหม่", "chǎn yàak plìian ngaan mài", "I want to change to a new job."],
-  "หา": ["เขากำลังหากุญแจที่หายไป", "khǎo kam-lang hǎa kun-jae thîi hǎai pai", "He is looking for the lost key."],
+  "หา": ["เขากำลังหากระเป๋าของเขา", "khǎo kam-lang hǎa krà-pǎo khǎong khǎo", "He is looking for his bag."],
   "ลืม": ["ฉันลืมชื่อเพื่อนคนนั้นแล้ว", "chǎn luuem chûue phûuean khon nán láeo", "I have already forgotten that friend's name."],
   "จำ": ["คุณจำฉันได้ไหม เราเคยเจอกัน", "khun jam chǎn dâi mǎi rao khooei jooe kan", "Do you remember me? We have met before."],
   "รอ": ["ฉันรอแฟนอยู่หน้าห้างมานานแล้ว", "chǎn roo faen yùu nâa hâang maa naan láeo", "I have been waiting for my partner in front of the mall for a long time."],

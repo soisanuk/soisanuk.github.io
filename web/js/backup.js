@@ -5,11 +5,31 @@
 // per SRS card the record with more reviews wins; course units stay done and
 // keep their best accuracy. Pure merge logic up top (vm-testable, DOM-free).
 
+function _readJSON(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key) || "null") || fallback; }
+  catch { return fallback; }
+}
+
 function backupSnapshot() {
   return { app: "soisanuk", v: 1, at: new Date().toISOString(),
-    progress: loadProgress(), path: (function () {
-      try { return JSON.parse(localStorage.getItem(LEARN_KEY) || "{}"); }
-      catch { return {}; } })() };
+    progress: loadProgress(),
+    path: _readJSON(LEARN_KEY, {}),
+    streak: _readJSON(STREAK_KEY, {}) };
+}
+
+// Streak state is device/date-local, not additive like SRS cards — merging
+// means "which side's streak is still current", not summing anything.
+// Whichever side logged a MORE RECENT day wins the live streak; the
+// personal-best fields (maxDays/bestDay) are historical records, so those
+// carry forward from BOTH sides regardless of which "last" wins.
+function _streakMerge(mine, theirs) {
+  mine = mine || {}; theirs = theirs || {};
+  const newer = (theirs.last || "") > (mine.last || "") ? theirs : mine;
+  const maxDays = Math.max(mine.maxDays || 0, theirs.maxDays || 0, newer.days || 0);
+  const bestDay = [mine.bestDay, theirs.bestDay].filter(Boolean)
+    .sort((a, b) => b.cards - a.cards)[0] || null;
+  if (!newer.last) return { maxDays, bestDay };
+  return { last: newer.last, days: newer.days || 0, maxDays, bestDay, today: newer.today };
 }
 
 function backupMerge(mine, theirs) {
@@ -24,7 +44,12 @@ function backupMerge(mine, theirs) {
       acc: Math.max(cur.acc || 0, u.acc || 0),
       msAvg: Math.min(cur.msAvg || 1e9, u.msAvg || 1e9) === 1e9 ? undefined : Math.min(cur.msAvg || 1e9, u.msAvg || 1e9) };
   }
-  return { progress: prog, path: { units } };
+  // Personal-best read times (ms) — lower is better, so keep the faster side.
+  const best = { ...((mine.path || {}).best || {}) };
+  for (const [k, ms] of Object.entries((theirs.path || {}).best || {})) {
+    if (!best[k] || ms < best[k]) best[k] = ms;
+  }
+  return { progress: prog, path: { units, best }, streak: _streakMerge(mine.streak, theirs.streak) };
 }
 
 function backupValid(d) {
@@ -35,6 +60,7 @@ function backupApply(theirs) {
   const merged = backupMerge(backupSnapshot(), theirs);
   saveProgress(merged.progress);
   localStorage.setItem(LEARN_KEY, JSON.stringify(merged.path));
+  localStorage.setItem(STREAK_KEY, JSON.stringify(merged.streak));
   return Object.keys(merged.progress).length;
 }
 

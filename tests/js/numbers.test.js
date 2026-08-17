@@ -1,16 +1,23 @@
 // Number flashcard data — NUM_CARDS and _THAI_DIGITS.
 // numbers.js is DOM-free at load time (DOM is only touched inside functions
-// that the tests never call), so it vm-loads cleanly.
+// that the tests never call), so it vm-loads cleanly. data.js + app.js are
+// loaded too, so the scale-word cards (หมื่น/แสน/ล้าน) can be checked against
+// WORD_MAP's canonical rtgs, the same spelling the rest of the app teaches.
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { runInThisContext } from "node:vm";
 
-runInThisContext(readFileSync(new URL("../../web/js/numbers.js", import.meta.url), "utf8"), { filename: "numbers.js" });
+for (const f of ["data.js", "srs.js", "wordcard.js", "app.js", "numbers.js"]) {
+  runInThisContext(
+    readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"),
+    { filename: f }
+  );
+}
 
 describe("NUM_CARDS", () => {
-  test("has 25 cards covering the full set", () => {
-    assert.equal(NUM_CARDS.length, 25);
+  test("has 28 cards covering the full set", () => {
+    assert.equal(NUM_CARDS.length, 28);
   });
 
   test("every card has a numeric n, non-empty th and rom", () => {
@@ -33,22 +40,33 @@ describe("NUM_CARDS", () => {
     assert.equal(byN[11].th,   "สิบเอ็ด");   // เอ็ด, not หนึ่ง
     assert.equal(byN[20].th,   "ยี่สิบ");    // ยี่, not สอง
     assert.equal(byN[21].th,   "ยี่สิบเอ็ด");
-    assert.equal(byN[100].th,  "หนึ่งร้อย");
-    assert.equal(byN[1000].th, "หนึ่งพัน");
+    assert.equal(byN[100].th,     "หนึ่งร้อย");
+    assert.equal(byN[1000].th,    "หนึ่งพัน");
+    assert.equal(byN[10000].th,   "หนึ่งหมื่น");
+    assert.equal(byN[100000].th,  "หนึ่งแสน");
+    assert.equal(byN[1000000].th, "หนึ่งล้าน");
     assert.ok(byN[9999],       "9999 card missing");
     // romanisations
     assert.equal(byN[0].rom,   "sǔun");
     assert.equal(byN[20].rom,  "yîi-sìp");
     assert.equal(byN[11].rom,  "sìp èt");
+    // the scale words' rtgs must match their canonical data.js entries
+    // (หมื่น/แสน/ล้าน), so a learner isn't taught two different spellings
+    assert.equal(byN[10000].rom,   "nùeng-" + WORD_MAP["หมื่น"][1]);
+    assert.equal(byN[100000].rom,  "nùeng-" + WORD_MAP["แสน"][1]);
+    assert.equal(byN[1000000].rom, "nùeng-" + WORD_MAP["ล้าน"][1]);
   });
 
-  test("covers digits 0–9, key teens, all tens 10–90, 100, 1000, 9999", () => {
+  test("covers digits 0–9, key teens, all tens 10–90, 100, 1000, the scale words, 9999", () => {
     const ns = new Set(NUM_CARDS.map(c => c.n));
     for (let i = 0; i <= 9; i++)   assert.ok(ns.has(i), `missing ${i}`);
     for (const n of [10, 11, 12, 20, 21]) assert.ok(ns.has(n), `missing ${n}`);
     for (let n = 30; n <= 90; n += 10) assert.ok(ns.has(n), `missing ${n}`);
     assert.ok(ns.has(100));
     assert.ok(ns.has(1000));
+    assert.ok(ns.has(10000),   "missing หมื่น (10,000)");
+    assert.ok(ns.has(100000),  "missing แสน (100,000)");
+    assert.ok(ns.has(1000000), "missing ล้าน (1,000,000)");
     assert.ok(ns.has(9999));
   });
 });

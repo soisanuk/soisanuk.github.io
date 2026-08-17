@@ -2,35 +2,71 @@
 // sentence SRS, and the shared rating row.
 
 // ═══════════════════════════════════════════════════════════════════════════
+// Deck assembly (shared by every mode below)
+// ═══════════════════════════════════════════════════════════════════════════
+// Every mode used to hand-roll its own due/fresh combination, differing in
+// small, unexplained ways that looked like drift rather than decisions. Two
+// named policies cover all of them — pick the one that matches what the mode
+// IS, not what it happens to do today:
+//
+//  - "union" (default): due ∪ fresh(freshCap), deduped. Keeps teaching new
+//    material even while reviews pile up — an exploratory learn+review
+//    hybrid. Used by flashcards, script flashcards, and the quiz.
+//  - "due-first": due cards only, when any exist; else fresh(freshCap). A
+//    pure spaced-repetition queue that clears everything due before ever
+//    introducing new material. Used by SRS Review and Sentence SRS — modes
+//    whose whole point is "show me what's due," so silently mixing in new
+//    words would undercut that.
+//
+// `cap` (optional) hard-limits the FINAL deck length after shuffling — the
+// quiz wants a short, snappy round even with a huge due pile; ordinary
+// flashcard review doesn't cap at all, so a big due pile just means a
+// longer session.
+// `fallback` (optional) fires ONLY when the policy above produces zero
+// cards (nothing due, nothing new): flashcards/quiz fall back to the first
+// N keys so a session is never blank; SRS Review/Sentence SRS pass no
+// fallback, so a genuinely empty deck correctly triggers "all caught up"
+// instead of stuffing in content nobody asked to review yet.
+function buildDeck(keys, { mode = "union", freshCap = 10, cap = null, fallback = null } = {}) {
+  const due = dueCards(progress, keys);
+  const fresh = newCards(progress, keys, freshCap);
+  let deck = mode === "due-first"
+    ? (due.length ? due : fresh)
+    : [...new Set([...due, ...fresh])];
+  if (!deck.length && fallback) deck = keys.slice(0, fallback);
+  deck = shuffle(deck);
+  return cap ? deck.slice(0, cap) : deck;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // Flashcards
 // ═══════════════════════════════════════════════════════════════════════════
 function startVocab(mode) {
   pickCategory(words => _startFlash(mode, words));
 }
 
-function _buildVocabDeck(wordList) {
-  const keys = wordList.map(w => w[0]);
-  const due   = dueCards(progress, keys);
-  const fresh = newCards(progress, keys, 10);
-  const combined = [...new Set([...due, ...fresh])];
-  const deck = combined.length ? combined : keys.slice(0, 20);
-  return shuffle(deck);
-}
-
 function _startFlash(mode, wordList) {
-  const deck = _buildVocabDeck(wordList);
+  const deck = buildDeck(wordList.map(w => w[0]), { fallback: 20 });
   session = { mode, wordList, deck, idx: 0, correct: 0, type: "vocab" };
   flashShow();
   showScreen("flash-screen", mode === "th2en" ? "1" : "2");
 }
 
-let _flashThaiHandler = null;
+let _flashThaiHandler = null, _flashThaiKeyHandler = null;
 
 function _flashThaiMakeClickable(word) {
   const el = document.getElementById("flash-thai");
   if (_flashThaiHandler) el.removeEventListener("click", _flashThaiHandler);
+  if (_flashThaiKeyHandler) el.removeEventListener("keydown", _flashThaiKeyHandler);
   _flashThaiHandler = () => openWordModal(word);
+  // role="button"/tabindex make this keyboard-FOCUSABLE, but a <div> doesn't
+  // natively respond to Enter/Space the way a real <button> does — without
+  // this it's reachable by keyboard but not actually operable by it.
+  _flashThaiKeyHandler = e => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); _flashThaiHandler(); }
+  };
   el.addEventListener("click", _flashThaiHandler);
+  el.addEventListener("keydown", _flashThaiKeyHandler);
   el.style.cursor = "pointer";
   el.title = "Click for details";
   el.setAttribute("role", "button");
@@ -40,6 +76,7 @@ function _flashThaiMakeClickable(word) {
 function _flashThaiClearClickable() {
   const el = document.getElementById("flash-thai");
   if (_flashThaiHandler) { el.removeEventListener("click", _flashThaiHandler); _flashThaiHandler = null; }
+  if (_flashThaiKeyHandler) { el.removeEventListener("keydown", _flashThaiKeyHandler); _flashThaiKeyHandler = null; }
   el.style.cursor = "";
   el.title = "";
   el.removeAttribute("role");
@@ -120,10 +157,7 @@ function flashReveal() {
 // ─── consonant / vowel flashcards ──────────────────────────────────────────
 function startConsonantFlash() {
   const keys = CONSONANT_SORTED.map(c => `sc:${c[0]}`);
-  const due   = dueCards(progress, keys);
-  const fresh = newCards(progress, keys, 10);
-  const deck  = shuffle([...new Set([...due, ...fresh])].length ?
-    [...new Set([...due, ...fresh])] : keys.slice(0, 15));
+  const deck = buildDeck(keys, { fallback: 15 });
   const map = {};
   for (const c of CONSONANTS)
     map[`sc:${c[0]}`] = [c[0], c[1], `${c[2]} class  ·  ${c[3]}  ·  /${c[4]}/ → /${c[5]}/`];
@@ -132,10 +166,7 @@ function startConsonantFlash() {
 
 function startVowelFlash() {
   const keys = VOWEL_SORTED.map(v => `sv:${v[0]}`);
-  const due   = dueCards(progress, keys);
-  const fresh = newCards(progress, keys, 10);
-  const deck  = shuffle([...new Set([...due, ...fresh])].length ?
-    [...new Set([...due, ...fresh])] : keys.slice(0, 10));
+  const deck = buildDeck(keys, { fallback: 10 });
   const backMap = {};
   for (const v of VOWELS)
     backMap[`sv:${v[0]}`] = `${v[2]}  ·  e.g. ${v[3]}`;
@@ -188,14 +219,21 @@ function startQuiz() {
 }
 
 function _startQuiz(wordList) {
-  const keys  = wordList.map(w => w[0]);
-  const due   = dueCards(progress, keys);
-  const fresh = newCards(progress, keys, 10);
-  const pool  = shuffle([...new Set([...due, ...fresh])].length ?
-    [...new Set([...due, ...fresh])] : keys.slice(0, 20)).slice(0, 20);
+  const keys = wordList.map(w => w[0]);
+  const pool = buildDeck(keys, { fallback: 20, cap: 20 });
   session = { wordList, deck: pool, idx: 0, correct: 0, answered: false };
   quizShow();
   showScreen("quiz-screen", "3");
+}
+
+// 3 distractors from the full WORDS pool: different Thai key AND different
+// English gloss. Two WORDS entries can share an identical gloss (ส้ม/สีส้ม
+// both "orange", ชำระเงิน/จ่าย both "to pay") — filtering on the Thai key
+// alone let a distractor with the SAME displayed answer text appear in the
+// choice list, so the quiz could show "orange" twice with only one marked
+// correct. Mirrors learn.js's _mcOptions, which already guards on gloss too.
+function _quizDistractors(word, pool) {
+  return shuffle(pool.filter(w => w[0] !== word[0] && w[2] !== word[2])).slice(0, 3);
 }
 
 function quizShow() {
@@ -208,8 +246,7 @@ function quizShow() {
 
   const [thai, rtgs, english] = word;
 
-  // 3 distractors from full WORDS pool
-  const distractors = shuffle(WORDS.filter(w => w[0] !== key)).slice(0, 3);
+  const distractors = _quizDistractors(word, WORDS);
   const choices = shuffle([word, ...distractors]);
   session.correctIdx = choices.findIndex(c => c[0] === thai);
   session.choices = choices;
@@ -407,9 +444,7 @@ function startScriptSRS() {
 }
 
 function _startSRS(keys, title, lookupFn) {
-  const due   = dueCards(progress, keys);
-  const fresh = newCards(progress, keys, 20);
-  const deck  = shuffle(due.length ? due : fresh);
+  const deck = buildDeck(keys, { mode: "due-first", freshCap: 20 });
   session = {
     type: "srs", keys, deck, idx: 0, correct: 0, title,
     lookup: lookupFn || (key => {
@@ -604,14 +639,35 @@ function startSentSRS() {
   // Build deck from words that have example sentences; use SRS key "sent:<word>"
   const wordsWith = WORDS.filter(w => EXAMPLES && EXAMPLES[w[0]]);
   const keys = wordsWith.map(w => `sent:${w[0]}`);
-  const due   = dueCards(progress, keys);
-  const fresh = newCards(progress, keys, 15);
-  const deck  = shuffle(due.length ? due : fresh);
+  const deck = buildDeck(keys, { mode: "due-first", freshCap: 15 });
   session = { type: "sent-srs", keys, deck, idx: 0, correct: 0 };
   document.getElementById("sent-counter").textContent = "";
   if (!deck.length) { showSessionEnd(true); return; }
   sentSrsShow();
   showScreen("sent-srs-screen", "S");
+}
+
+// Blank EVERY occurrence of `target` in `sentThai`, not just the first. The
+// original code used a single String.replace(), which leaked the answer
+// whenever the headword appears twice in its own example sentence (ศาสนา…
+// ศาสนา, วิธี…วิธี, หนาว…หนาว) — only the first copy got blanked, the second
+// stayed readable. Escape the WHOLE sentence first (the surrounding text is
+// EXAMPLES data too), then split/join on the escaped target — Thai text never
+// contains &<>"', so the escaped target still matches inside the escaped
+// sentence, exactly as the original single-replace version relied on.
+function _sentBlankThai(sentThai, target) {
+  const escSent = _esc(sentThai), escTarget = _esc(target);
+  if (!escTarget) return escSent;
+  const blank = `<span class="sent-blank">${escTarget}</span>`;
+  return escSent.split(escTarget).join(blank);
+}
+
+// Same fix for the romanisation: split on whitespace/hyphen (RTGS compounds
+// are hyphenated, e.g. "khǎai-dii") so a hit inside a longer romanised word
+// is never blanked — only a standalone occurrence of the target.
+function _sentBlankRtgs(sentRtgs, targetRtgs) {
+  const blank = `<span style="color:var(--saffron)">___</span>`;
+  return sentRtgs.split(/(\s+|-)/).map(tok => tok === targetRtgs ? blank : _esc(tok)).join("");
 }
 
 function sentSrsShow() {
@@ -631,24 +687,14 @@ function sentSrsShow() {
   setProgress("sent-prog", idx, deck.length);
   document.getElementById("sent-counter").textContent = `Sentence SRS  ${idx + 1} / ${deck.length}`;
 
-  // Build sentence with target word blanked. Escape the WHOLE sentence
-  // first (the surrounding text, not just the blanked word, is EXAMPLES
-  // data), then replace the escaped target substring with the trusted
-  // blank markup — Thai text never contains &<>"', so the escaped target
-  // still matches inside the escaped sentence.
-  //
-  // A phrase-template headword ("ขอ...") appears in its example sentence as
-  // only its fixed part (ขอ), so match on wordLiteral() — the fixed part —
-  // not the raw word, or the card ships unblanked. (data.js owns the rule.)
+  // Build sentence with target word blanked. A phrase-template headword
+  // ("ขอ...") appears in its example sentence as only its fixed part (ขอ),
+  // so match on wordLiteral() — the fixed part — not the raw word, or the
+  // card ships unblanked. (data.js owns the rule.)
   const target = wordLiteral(thai);
   const targetRtgs = wordLiteral(rtgs);
-  const blank = `<span class="sent-blank">${_esc(target)}</span>`;
-  const displaySent = _esc(sentThai).replace(_esc(target), blank);
-  document.getElementById("sent-sentence").innerHTML = displaySent;
-
-  // Romanisation with blank
-  const blankRtgs = `<span style="color:var(--saffron)">___</span>`;
-  document.getElementById("sent-rtgs").innerHTML = _esc(sentRtgs).replace(_esc(targetRtgs), blankRtgs);
+  document.getElementById("sent-sentence").innerHTML = _sentBlankThai(sentThai, target);
+  document.getElementById("sent-rtgs").innerHTML = _sentBlankRtgs(sentRtgs, targetRtgs);
   document.getElementById("sent-en").textContent = sentEn;
 
   document.getElementById("sent-answer").textContent = `${thai}  (${rtgs})  —  ${english}`;
