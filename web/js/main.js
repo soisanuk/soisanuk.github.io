@@ -44,6 +44,18 @@ document.addEventListener("keydown", e => {
     else if (key === "n" || key === "N") startNumFlash();
     else if (key === "l" || key === "L") startClock();
     else if (key === "a" || key === "A") showCharts();
+    // Six destinations used to have no shortcut at all — including the two
+    // that matter most, Continue and the Guided Course. Each key matches its
+    // sidebar nav id, the convention every other entry already follows.
+    else if (key === "q" || key === "Q") startLearn();
+    else if (key === "u" || key === "U") startBusWords();
+    else if (key === "y" || key === "Y") showRecords();
+    else if (key === "x" || key === "X") showScreen("backup-screen", "X");
+    else if (key === "i" || key === "I") showIdioms();
+    // ▶ Continue is the primary action and has no letter of its own; Enter is
+    // the natural key. Guard on the body so it can't double-fire when a row
+    // or button already holds focus and is handling its own Enter.
+    else if (key === "Enter" && e.target === document.body) startContinue();
     else if (key === "?") showTutorial();
   }
   if (active === "c4-screen") {
@@ -150,6 +162,7 @@ document.addEventListener("keydown", e => {
 // ─── init ──────────────────────────────────────────────────────────────────
 updateMenuStats();
 _navCollapseInit();
+_rowA11yInit();
 maybeShowTutorial();
 // Reflect the persisted mute state on the games' 🔊/🔇 toggles
 document.querySelectorAll(".audio-mute-btn").forEach(b => {
