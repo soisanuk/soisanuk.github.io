@@ -244,6 +244,34 @@ test("streak day-roll: same day holds, consecutive grows, a gap resets", () => {
   assert.equal(_streakBump(st, "2026-07-25", "2026-07-24").days, 1, "gap resets");
 });
 
+// _localDateStr formats a Date using its LOCAL calendar fields, not UTC —
+// regression coverage: _streakRecord used to call toISOString().slice(0,10),
+// which is UTC and rolls the day boundary at 07:00 for a Thailand-based user,
+// so a pre-dawn session could wrongly land on "yesterday" (or wrongly extend
+// a streak that should have broken). These constructions/comparisons are
+// entirely local-to-local, so the assertions hold regardless of the test
+// runner's own timezone — they'd fail equally under the old UTC-based code
+// only in timezones east/west of UTC, which is exactly the bug.
+test("_localDateStr matches the Date's own local calendar fields", () => {
+  const d = new Date(2026, 6, 17, 14, 30); // local: 2026-07-17
+  assert.equal(_localDateStr(d),
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+});
+
+test("_localDateStr pads single-digit month and day", () => {
+  assert.equal(_localDateStr(new Date(2026, 0, 5, 3, 0)), "2026-01-05");
+});
+
+test("_localDateStr treats a late-night local session as still today, not tomorrow", () => {
+  const lateNight = new Date(2026, 6, 17, 23, 45);
+  assert.equal(_localDateStr(lateNight), "2026-07-17");
+});
+
+test("_localDateStr treats an early-morning local session as still today, not yesterday", () => {
+  const earlyMorning = new Date(2026, 6, 17, 0, 15);
+  assert.equal(_localDateStr(earlyMorning), "2026-07-17");
+});
+
 test("the signage lesson's chunks carry rotating sign styles; others don't", () => {
   const g5 = _unitQueue(COURSE.find(u => u.lesson === "g5"), []).filter(i => i.kind === "chunk");
   assert.ok(g5.length >= 3);

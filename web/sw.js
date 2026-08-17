@@ -54,12 +54,25 @@ self.addEventListener("fetch", e => {
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
-      return fetch(e.request).then(res => {
-        if (!res || res.status !== 200 || res.type === "opaque") return res;
-        const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
-        return res;
-      });
+      return fetch(e.request)
+        .then(res => {
+          if (!res || res.status !== 200 || res.type === "opaque") return res;
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+          return res;
+        })
+        .catch(() => {
+          // Offline and nothing cached under this exact URL. This is a
+          // single-page app — every "screen" is in-page JS state, not a
+          // real sub-route — so any top-level page load (e.request.mode ===
+          // "navigate") should fall back to the cached app shell rather
+          // than the browser's offline error page. This matters because
+          // the precache only keys "./index.html" — the PWA's own
+          // start_url ("/", from manifest.json) is a DIFFERENT cache key
+          // and would otherwise miss here every time the app is launched
+          // offline from its home-screen icon.
+          if (e.request.mode === "navigate") return caches.match("./index.html");
+        });
     })
   );
 });

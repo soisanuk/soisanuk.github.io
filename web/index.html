@@ -1933,7 +1933,7 @@ body.mobile #app-shell {
   <div class="sidebar-section">Guided</div>
   <ul class="sidebar-list">
     <li id="nav-Q2" onclick="startContinue()">▶ Continue <span id="nav-cont-stats" style="opacity:0.7;font-size:0.85em"></span></li>
-    <li id="nav-G" onclick="startLearn()">🎓 Guided Course</li>
+    <li id="nav-Q" onclick="startLearn()">🎓 Guided Course</li>
     <li id="nav-D" onclick="startReader()">📖 Graded Reader</li>
     <li id="nav-U" onclick="startBusWords()">🚌 Words from the bus</li>
   </ul>
@@ -2235,7 +2235,7 @@ body.mobile #app-shell {
   <div style="text-align:center">
     <button id="tone-play-btn" onclick="toneDrillPlay()">🔊 Play word</button>
   </div>
-  <div class="tone-word-big" id="tone-word-display"></div>
+  <div class="tone-word-big" id="tone-word-display" lang="th"></div>
   <ul class="tone-choices" id="tone-choices"></ul>
   <div class="tone-feedback" id="tone-feedback"></div>
   <div class="btn-row" id="tone-next-row" style="display:none">
@@ -2252,7 +2252,7 @@ body.mobile #app-shell {
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="sent-prog"></div></div>
   <div class="screen-title" id="sent-counter"></div>
   <div class="card-body">
-    <div class="sent-sentence" id="sent-sentence"></div>
+    <div class="sent-sentence" id="sent-sentence" lang="th"></div>
     <div class="sent-rtgs" id="sent-rtgs"></div>
     <div class="sent-en" id="sent-en"></div>
     <div class="srs-meta" id="sent-meta"></div>
@@ -2309,8 +2309,6 @@ body.mobile #app-shell {
   </div>
 </div>
 
-<!-- hidden import file input -->
-<input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importProgress(event)">
 
 <!-- ═══ SESSION END ════════════════════════════════════════════════════════════ -->
 <div id="end-screen" class="screen">

@@ -56,6 +56,14 @@ function dueCards(p, keys) {
   return keys.filter(k => p[k] && p[k].due <= now);
 }
 
+// "New" = never reviewed, OR just lapsed (a wrong answer resets repetitions
+// to 0 — see reviewCard). The second case is intentional, not an oversight:
+// a card someone just got wrong is exactly the one worth resurfacing sooner
+// than its nominal 1-day `due` date, the same way Anki's short-term
+// relearning queue works. The tradeoff is that a "union" deck (buildDeck in
+// sessions.js) can pull a just-lapsed card back in the very same session,
+// ahead of its schedule — accepted, since reinforcing a fresh mistake beats
+// strict adherence to the interval.
 function newCards(p, keys, limit = 10) {
   return keys.filter(k => !p[k] || p[k].repetitions === 0).slice(0, limit);
 }

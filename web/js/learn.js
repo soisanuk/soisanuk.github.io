@@ -63,7 +63,7 @@ function startLearn() {
       bests.slice(0, 5).map(([th, ms]) =>
         `<span class="learn-best">${_esc(th)} <b>${(ms / 1000).toFixed(1)}s</b></span>`).join(" ");
   }
-  showScreen("learn-screen", "G");
+  showScreen("learn-screen", "Q");
 }
 
 // ── The unit runner ─────────────────────────────────────────────────────────
@@ -181,7 +181,7 @@ function _learnStep() {
   if (back) back.style.visibility = _lu.at > 0 ? "visible" : "hidden";
   if (fwd) fwd.style.visibility = _lu.at < _lu.max ? "visible" : "hidden";
   body.innerHTML = "";
-  showScreen("lesson-screen", "G");
+  showScreen("lesson-screen", "Q");
   if (review && !_TEACH_KINDS.has(item.kind)) { _wReviewCard(item, body); return; }
   ({ glyph: _wGlyph, wordintro: _wWordIntro, mc: _wMC, mc2: _wMC2, speed: _wMC, listen: _wListen,
      mcth: _wMCTH, typeen: _wTypeEN, typeth: _wTypeTH, clozex: _wClozeX,
@@ -533,10 +533,14 @@ function _mcWire(options, answer, key, fastMs, onRight, word) {
   const t0 = Date.now();
   let missed = false;
   if (fastMs) {
+    // Drain over fastMs itself, not an unrelated fixed duration — fastMs IS
+    // the cutoff courseGrade rewards with a 5 (see below), so the bar
+    // hitting empty must be the same moment the fast bonus stops being
+    // available. A bar on its own separate clock just teaches a wrong pace.
     const fill = document.getElementById("learn-timer");
     requestAnimationFrame(function tick() {
       if (!document.getElementById("learn-timer")) return;
-      const left = Math.max(0, 1 - (Date.now() - t0) / 5000);
+      const left = Math.max(0, 1 - (Date.now() - t0) / fastMs);
       fill.style.width = (left * 100) + "%";
       if (left > 0) requestAnimationFrame(tick);
     });
@@ -729,10 +733,17 @@ function _streakBump(st, today, yesterday) {
   return { last: today, days, maxDays: Math.max(st.maxDays || 0, days),
     bestDay: st.bestDay || null, today: { cards: 0, msSum: 0, msN: 0 } };
 }
+// "Today" in the LEARNER's own clock, not UTC. toISOString() is UTC — for a
+// Thailand-based user (UTC+7) that rolls the day boundary at 07:00 local,
+// so a session any time before 7am could wrongly count as "yesterday" (or
+// wrongly extend a streak that should have broken).
+function _localDateStr(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") +
+    "-" + String(d.getDate()).padStart(2, "0");
+}
 function _streakRecord(ms) {
   const d = new Date(), y = new Date(Date.now() - 864e5);
-  const iso = x => x.toISOString().slice(0, 10);
-  let st = _streakBump(_streakLoad(), iso(d), iso(y));
+  let st = _streakBump(_streakLoad(), _localDateStr(d), _localDateStr(y));
   st.today = st.today || { cards: 0, msSum: 0, msN: 0 };
   st.today.cards++;
   if (ms > 0) { st.today.msSum += ms; st.today.msN++; }
