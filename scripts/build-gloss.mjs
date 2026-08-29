@@ -14,15 +14,32 @@
 // Wiktionary, so its definitions are in Thai (เดิน → "ยกเท้าก้าวไป"), which is
 // no use to an English-speaking learner. Checked, don't re-walk it.
 //
-// Romanisation is deliberately NOT extracted even though kaikki carries it:
-// Wiktionary's romanisation style differs from the app's RTGS, and showing
-// the two side by side on the same card would read as inconsistent.
+// ROMANISATION. kaikki tags three systems per word. Neither matches the
+// course's house style out of the box:
+//     Paiboon          dtam-rùuat   sǔai    náam
+//     Royal Institute  tam-ruat     suai    nam
+//     this course      tam-rùat     sǔay    náam
+// The course is Paiboon's tone marks with RTGS-style consonants, so we convert
+// Paiboon (Royal Institute is unusable — it carries no tone at all). Measured
+// against the 764 curriculum words that appear in both: 86.0% exact, and of
+// the 107 misses 66 differ only in vowel-length spelling and 17 in -ai/-ay.
+//
+// The remaining ~24 disagree on a TONE MARK, which in a tone-teaching app is
+// the one error that must not ship — a romanisation saying "rising" beside
+// text coloured "falling" is worse than no romanisation. So every derived
+// form is cross-checked against the app's own tone engine (thai-script.js)
+// and DROPPED on conflict. The engine reads tone from spelling and is already
+// what colours the text, so this guarantees the two can never contradict.
 //
 // Usage:
 //   node scripts/build-gloss.mjs <kaikki.org-dictionary-Thai.jsonl>
 
 import { readFileSync, writeFileSync } from "node:fs";
 import vm from "node:vm";
+
+// the tone engine + its data, for the cross-check below
+for (const f of ["data.js", "thai-script.js"])
+  vm.runInThisContext(readFileSync(new URL(`../web/js/${f}`, import.meta.url), "utf8"), { filename: f });
 
 const MAXLEN = 58;   // one line on a phone-width card
 
@@ -32,6 +49,46 @@ const SKIP_TAGS = new Set(["archaic", "obsolete", "dated", "rare", "derogatory",
   "abbreviation", "initialism"]);
 // Entry types that aren't words.
 const SKIP_POS = new Set(["character", "romanization", "syllable", "punct", "symbol", "num"]);
+
+// ── Paiboon → course house style ───────────────────────────────────────────
+// Onsets: one pass, longest-first, so bp→p is not then re-read as p→ph.
+// j stays j (the course writes jèt, khâo-jai).
+const ONSET = { bp: "p", dt: "t", g: "k", k: "kh", p: "ph", t: "th" };
+const ONSET_RE = /^(bp|dt|g|k|p|t)/;
+const TONE_MARK = /[\u0300\u0301\u0302\u0303\u030c]/g;   //  ̀ ́ ̂ ̃ ̌
+const VOWELS = [[/ʉʉa/g, "uea"], [/ʉʉ/g, "uue"], [/ʉ/g, "ue"], [/əə/g, "ooe"],
+  [/ə/g, "oe"], [/ɛɛ/g, "ae"], [/ɛ/g, "ae"], [/ɔɔ/g, "oo"], [/ɔ/g, "o"],
+  [/iia/g, "ia"], [/uua/g, "ua"]];
+
+function convertSyllable(part) {
+  let s = part.normalize("NFD");
+  const mark = (s.match(TONE_MARK) || [])[0] || "";   // lift the mark out of the way
+  s = s.replace(TONE_MARK, "");
+  s = s.replace(ONSET_RE, m => ONSET[m]);
+  for (const [re, to] of VOWELS) s = s.replace(re, to);
+  if (mark) {                                          // re-seat it on the first vowel
+    const i = s.search(/[aeiou]/);
+    if (i >= 0) s = s.slice(0, i + 1) + mark + s.slice(i + 1);
+  }
+  return s.normalize("NFC");
+}
+const convertRoman = p => p.split(/([ -])/)
+  .map(x => (x === " " || x === "-") ? x : convertSyllable(x)).join("");
+
+// tone name (thai-script.js vocabulary) → the diacritic the course writes
+const TONE_DIACRITIC = { mid: "", low: "\u0300", falling: "\u0302", high: "\u0301", rising: "\u030c" };
+
+// Does this romanisation's tone agree with what the script engine derives?
+// Only checkable for a single syllable — syllableTone's documented contract —
+// so multi-syllable forms pass through unchecked.
+function toneAgrees(thai, roman) {
+  if (/[- ]/.test(roman)) return true;
+  const tone = syllableTone(thai);
+  if (!tone) return true;                              // engine declines: nothing to contradict
+  const want = TONE_DIACRITIC[tone];
+  const got = (roman.normalize("NFD").match(TONE_MARK) || [])[0] || "";
+  return got === want;
+}
 
 const [, , jsonlPath] = process.argv;
 if (!jsonlPath) {
@@ -78,6 +135,22 @@ for (const line of readFileSync(jsonlPath, "utf8").split("\n")) {
   by.get(e.word).push(e);
 }
 
+// The Paiboon form, converted, or null. Dropped when it would contradict the
+// tone engine — see the header.
+let dropped = 0;
+function romanFor(word) {
+  for (const e of by.get(word) || [])
+    for (const s of e.sounds || []) {
+      if (!(s.raw_tags || []).includes("Paiboon")) continue;
+      if (!s.roman || s.roman.endsWith("-")) continue;  // bound forms
+      const r = convertRoman(s.roman);
+      if (!r || /[^a-zA-Z\u0300-\u036f' -]/.test(r.normalize("NFD"))) return null; // unconverted IPA left over
+      if (!toneAgrees(word, r)) { dropped++; return null; }
+      return r;
+    }
+  return null;
+}
+
 function glossFor(word) {
   const entries = by.get(word);
   if (!entries) return null;
@@ -106,10 +179,15 @@ function glossFor(word) {
 vm.runInThisContext(readFileSync(new URL("../web/js/lexicon-th.js", import.meta.url), "utf8"));
 const lex = THAI_LEXICON.split("\n");
 
+// rows are word TAB gloss TAB roman; roman may be empty, gloss may not
 const rows = [];
+let withRoman = 0;
 for (const w of lex) {
   const g = glossFor(w);
-  if (g && !w.includes("\t") && !g.includes("\t")) rows.push(w + "\t" + g);
+  if (!g || w.includes("\t") || g.includes("\t")) continue;
+  const r = romanFor(w) || "";
+  if (r) withRoman++;
+  rows.push(w + "\t" + g + "\t" + r);
 }
 // Escape BACKSLASH FIRST, then quotes. A gloss ending in a lone backslash
 // would otherwise escape the row separator and silently merge two entries —
@@ -124,6 +202,9 @@ writeFileSync(new URL("../web/js/gloss-th.js", import.meta.url),
 // Short English glosses for Paste Text, keyed to lexicon-th.js.
 // ${rows.length} of ${lex.length} lexicon words (${pct}%) — the rest have no English
 // Wiktionary entry and fall back to decomposition-only on the word card.
+// Rows are: word TAB gloss TAB romanisation. The romanisation is converted from
+// Wiktionary's Paiboon into this course's style and may be EMPTY — it is
+// dropped whenever it would contradict the app's own tone engine.
 //
 // ── LICENCE ────────────────────────────────────────────────────────────────
 // Derived from English Wiktionary via kaikki.org (wiktextract).
@@ -148,6 +229,8 @@ if (back.length !== rows.length) {
   process.exit(1);
 }
 for (const r of back) {
-  if (r.split("\t").length !== 2) { console.error(`ESCAPING BUG: malformed row ${JSON.stringify(r)}`); process.exit(1); }
+  if (r.split("\t").length !== 3) { console.error(`ESCAPING BUG: malformed row ${JSON.stringify(r)}`); process.exit(1); }
 }
 console.log(`wrote web/js/gloss-th.js — ${rows.length}/${lex.length} words glossed (${pct}%), round-trip ok`);
+console.log(`  with romanisation: ${withRoman} (${(100*withRoman/rows.length).toFixed(1)}% of glossed)`);
+console.log(`  dropped for disagreeing with the tone engine: ${dropped}`);

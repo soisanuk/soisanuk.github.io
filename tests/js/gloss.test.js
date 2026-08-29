@@ -8,13 +8,13 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-for (const f of ["data.js", "gloss.js", "gloss-th.js"]) {
+for (const f of ["data.js", "thai-script.js", "gloss.js", "gloss-th.js"]) {
   vm.runInThisContext(
     readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"),
     { filename: f }
   );
 }
-const { thaiGloss, _glossInit, _glossReady } = globalThis;
+const { thaiGloss, thaiRoman, _glossInit, _glossReady } = globalThis;
 globalThis.WORD_MAP = Object.fromEntries(WORDS.map(w => [w[0], w]));
 
 describe("thaiGloss before the dictionary loads", () => {
@@ -34,12 +34,14 @@ describe("the generated dictionary", () => {
     assert.equal(_glossReady(), true);
   });
 
-  test("every row is word + TAB + gloss, with no empty halves", () => {
+  test("every row is word + TAB + gloss + TAB + romanisation", () => {
     // guards the generator's escaping: a stray backslash once merged two rows
     for (const line of THAI_GLOSS.split("\n")) {
       const parts = line.split("\t");
-      assert.equal(parts.length, 2, `malformed row: ${JSON.stringify(line)}`);
-      assert.ok(parts[0].length > 0 && parts[1].length > 0, `empty half: ${JSON.stringify(line)}`);
+      assert.equal(parts.length, 3, `malformed row: ${JSON.stringify(line)}`);
+      assert.ok(parts[0].length > 0, `empty word: ${JSON.stringify(line)}`);
+      assert.ok(parts[1].length > 0, `empty gloss: ${JSON.stringify(line)}`);
+      // parts[2] MAY be empty — a romanisation the tone check refused
     }
   });
 
@@ -48,6 +50,41 @@ describe("the generated dictionary", () => {
       const g = line.split("\t")[1];
       assert.ok(g.length <= 58, `${g.length} chars: ${g}`);
     }
+  });
+
+  test("romanisations are converted to the course's style, not raw Paiboon", () => {
+    // raw Paiboon writes ก as g, ป as bp, ต as dt, and keeps IPA vowel letters
+    const bad = [];
+    for (const line of THAI_GLOSS.split("\n")) {
+      const r = line.split("\t")[2];
+      if (!r) continue;
+      if (/[ɛɔʉə]/.test(r)) bad.push(["unconverted IPA vowel", line]);
+      if (/(^|[- ])(g|bp|dt)[aeiouāīū]/.test(r)) bad.push(["raw Paiboon onset", line]);
+    }
+    assert.deepEqual(bad.slice(0, 5), [], `${bad.length} bad romanisations`);
+  });
+
+  test("a derived romanisation never contradicts the tone engine", () => {
+    // the generator drops conflicts; this pins that it actually ran. Checked
+    // here for monosyllables only — syllableTone's contract.
+    const MARK = { mid: "", low: "\u0300", falling: "\u0302", high: "\u0301", rising: "\u030c" };
+    let checked = 0;
+    for (const line of THAI_GLOSS.split("\n")) {
+      const [w, , r] = line.split("\t");
+      if (!r || /[- ]/.test(r)) continue;
+      const tone = syllableTone(w);
+      if (!tone) continue;
+      checked++;
+      const got = (r.normalize("NFD").match(/[\u0300\u0301\u0302\u0303\u030c]/) || [""])[0];
+      assert.equal(got, MARK[tone], `${w} reads ${tone} but romanises as ${r}`);
+    }
+    assert.ok(checked > 200, `only ${checked} monosyllables checked`);
+  });
+
+  test("thaiRoman prefers the course's own romanisation", () => {
+    assert.equal(thaiRoman("ตำรวจ"), WORD_MAP["ตำรวจ"][1]);
+    assert.equal(thaiRoman("มาตรการ"), "mâat-trà-kaan");
+    assert.equal(thaiRoman("ไม่มีคำนี้จริงๆนะ"), null);
   });
 
   test("glosses are English, not Thai (the wrong-corpus trap)", () => {
