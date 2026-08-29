@@ -21,8 +21,8 @@
 //     this course      tam-rùat     sǔay    náam
 // The course is Paiboon's tone marks with RTGS-style consonants, so we convert
 // Paiboon (Royal Institute is unusable — it carries no tone at all). Measured
-// against the 764 curriculum words that appear in both: 86.0% exact, and of
-// the 107 misses 66 differ only in vowel-length spelling and 17 in -ai/-ay.
+// against the 764 curriculum words that appear in both: 86.1% exact, and of
+// the 106 misses 67 differ only in vowel-length spelling and 15 in -ai/-ay.
 //
 // The remaining ~24 disagree on a TONE MARK, which in a tone-teaching app is
 // the one error that must not ship — a romanisation saying "rising" beside

@@ -84,3 +84,32 @@ test("words lacking an example entirely (informational — not an error)", () =>
   const missing = WORDS.filter(w => !EXAMPLES[w[0]]).length;
   assert.ok(missing < 150, `${missing} words have no example — investigate if this jumps sharply`);
 });
+
+// ── romanisation scheme ─────────────────────────────────────────────────────
+// The app writes one hybrid scheme: RTGS-style consonants (ph/th/kh, and k/p/t
+// where Paiboon writes g/bp/dt) carrying Paiboon's tone marks and explicit
+// vowel length. Neither pure system works here — RTGS drops tone and length
+// (เขา/เข่า/ข้าว/ข่าว/เข้า all collapse to "khao"), and Paiboon's g/bp/dt do not
+// match the RTGS spellings on every road sign in Thailand. See
+// docs/architecture.md, "Romanisation".
+//
+// This has now drifted twice: the 2026-08 review found curriculum.js using a
+// second scheme (P2.3), and a later sweep found 19 Paiboon spellings still in
+// data.js and examples.js. It is a data-entry slip, not a design question, so
+// pin it rather than re-grep for it.
+test("romanisations follow the house scheme, not raw Paiboon", () => {
+  const VIOLATIONS = [
+    [/(^|[- ])bp/, "bp — write p (ป)"],
+    [/(^|[- ])dt/, "dt — write t (ต), or d if the letter is ด"],
+    [/(^|[- ])g[aeiou]/, "g- — write k (ก)"],
+    [/aaw/, "aaw — write oo"],
+    [/[ɛɔʉə]/, "raw IPA vowel — spell it out (ae/oo/uue/oe)"],
+  ];
+  const bad = [];
+  const check = (where, key, roman) => {
+    for (const [re, why] of VIOLATIONS) if (re.test(roman)) bad.push(`${where} ${key}: "${roman}" — ${why}`);
+  };
+  for (const w of WORDS) check("WORDS", w[0], w[1]);
+  for (const k of Object.keys(EXAMPLES)) check("EXAMPLES", k, EXAMPLES[k][1]);
+  assert.deepEqual(bad, [], `${bad.length} romanisation(s) off-scheme`);
+});

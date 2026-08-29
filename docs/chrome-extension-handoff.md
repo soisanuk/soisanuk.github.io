@@ -365,8 +365,8 @@ kaikki tags three systems, and none matches the course out of the box:
 
 The house style is Paiboon's tone marks over RTGS-style consonants, so the
 generator converts Paiboon (Royal Institute is unusable — no tone at all).
-Validated against the 764 curriculum words present in both: **86.0% exact**.
-Of the 107 misses, 66 differ only in vowel-length spelling and 17 in `-ai`/`-ay`
+Validated against the 764 curriculum words present in both: **86.1% exact**.
+Of the 106 misses, 67 differ only in vowel-length spelling and 15 in `-ai`/`-ay`
 — cosmetic. The ~24 that disagreed on a **tone mark** are the dangerous ones in
 a tone-teaching app, so every derived form is cross-checked against
 `syllableTone` and dropped on conflict. 31 dropped; 99.2% keep a romanisation.
