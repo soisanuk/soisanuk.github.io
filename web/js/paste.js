@@ -6,8 +6,8 @@
 // (segment.js), with the analysis degrading honestly:
 //
 //   • a word the curriculum teaches  → the full word card, gloss and examples
-//   • a word Wiktionary knows         → the card with a short English gloss
-//     (gloss.js, ~63% of the lexicon) but no romanisation or examples
+//   • a word Wiktionary knows         → the card with a short English gloss and
+//     a romanisation (gloss.js, ~63% of the lexicon), but no examples
 //   • anything else                   → the card with no gloss at all: character
 //     decomposition and per-syllable tone reasoning, which the script engine
 //     derives from spelling alone and so works on vocabulary we've never seen
@@ -123,7 +123,7 @@ function _pasteWireTokens(container) {
   container.querySelectorAll(".w-token").forEach(span => {
     const thai = span.dataset.w;
     const w = (typeof _wcMap === "function") ? _wcMap()[thai] : null;
-    const entry = w || [thai, "", thaiGloss(thai) || ""];
+    const entry = w || [thai, thaiRoman(thai) || "", thaiGloss(thai) || ""];
     span.style.cursor = "pointer";
     span.addEventListener("click", () => openWordModal(entry));
     if (typeof _tt !== "undefined" && (w || entry[2])) {

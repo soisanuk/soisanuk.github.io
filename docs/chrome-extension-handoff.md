@@ -353,9 +353,27 @@ front-loaded where it matters:
 Ordinary prose comes out fully glossed. The misses are mostly compound function
 phrases English Wiktionary simply lacks (หรือไม่, ส่วนใหญ่, รวมทั้ง, ดังนี้).
 
-Romanisation was deliberately **not** extracted, though kaikki has it:
-Wiktionary's style differs from the app's RTGS, and the two side by side on one
-card read as inconsistent.
+### Romanisation — converted, then verified against our own tone engine
+
+kaikki tags three systems, and none matches the course out of the box:
+
+| | ตำรวจ | สวย | น้ำ |
+|---|---|---|---|
+| Paiboon | dtam-rùuat | sǔai | náam |
+| Royal Institute | tam-ruat | suai | nam |
+| **this course** | tam-rùat | sǔay | náam |
+
+The house style is Paiboon's tone marks over RTGS-style consonants, so the
+generator converts Paiboon (Royal Institute is unusable — no tone at all).
+Validated against the 764 curriculum words present in both: **86.0% exact**.
+Of the 107 misses, 66 differ only in vowel-length spelling and 17 in `-ai`/`-ay`
+— cosmetic. The ~24 that disagreed on a **tone mark** are the dangerous ones in
+a tone-teaching app, so every derived form is cross-checked against
+`syllableTone` and dropped on conflict. 31 dropped; 99.2% keep a romanisation.
+
+A side benefit: several of those disagreements are errors in `data.js`, not in
+Wiktionary (`คะ khâ` should be `khá`, `กรุณา ka-` should be `kà-`), so the
+comparison doubles as an audit of the course's own romanisations.
 
 ### The licence consequence, stated plainly
 

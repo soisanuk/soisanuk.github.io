@@ -163,12 +163,14 @@ function openWordModal(word) {
   const thaiSpan  = layer.querySelector(".wc-thai");
   const decompDiv = layer.querySelector(`#${decompId}`);
   let decompBuilt = false;
-  // Keyed on the ROMANISATION, not the gloss: only curriculum words have one,
-  // and only they come with example sentences. Anything else (open text pasted
-  // into the trainer — see paste.js) has the decomposition as the main thing
-  // the card can offer, whether or not a dictionary gloss was found, so open
-  // it rather than making the reader hunt for it.
-  if (!rtgs) { renderDecomposition(decompDiv, thai); decompBuilt = true; }
+  // Keyed on having no EXAMPLE SENTENCE — the honest test for "this card has
+  // nothing else to show". Open text pasted into the trainer (see paste.js)
+  // can arrive with a gloss and even a romanisation but never with examples,
+  // so the decomposition is the main thing on offer; open it rather than
+  // making the reader hunt for it. Curriculum words keep it collapsed.
+  if (!(typeof EXAMPLES !== "undefined" && EXAMPLES[thai])) {
+    renderDecomposition(decompDiv, thai); decompBuilt = true;
+  }
   thaiSpan.addEventListener("click", () => {
     if (!decompBuilt) {
       renderDecomposition(decompDiv, thai);

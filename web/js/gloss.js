@@ -9,6 +9,11 @@
 // Coverage is ~63% of the lexicon. A word with no gloss is NOT a failure —
 // the word card still shows its decomposition and tone reasoning, which the
 // script engine derives from spelling alone. Glosses are a bonus layer.
+//
+// Rows carry a romanisation too, converted from Wiktionary's Paiboon into this
+// course's style by scripts/build-gloss.mjs. It can be empty: the generator
+// drops any form whose tone mark disagrees with the app's own tone engine,
+// rather than print a romanisation that contradicts the colour on the text.
 
 let _glossMap = null;
 let _glossLoading = null;
@@ -18,8 +23,8 @@ function _glossReady() { return _glossMap !== null; }
 function _glossInit(text) {
   _glossMap = new Map();
   for (const line of String(text).split("\n")) {
-    const tab = line.indexOf("\t");
-    if (tab > 0) _glossMap.set(line.slice(0, tab), line.slice(tab + 1));
+    const p = line.split("\t");                 // word, gloss, romanisation
+    if (p.length === 3 && p[0]) _glossMap.set(p[0], { en: p[1], roman: p[2] });
   }
   return _glossMap.size;
 }
@@ -51,5 +56,15 @@ function _glossLoad(cb) {
 // Wiktionary layer only fills the gaps.
 function thaiGloss(word) {
   if (typeof WORD_MAP !== "undefined" && WORD_MAP[word]) return WORD_MAP[word][2];
-  return _glossMap ? (_glossMap.get(word) || null) : null;
+  const e = _glossMap && _glossMap.get(word);
+  return e ? e.en : null;
+}
+
+// The romanisation, same precedence: the course's hand-written one first, then
+// the derived one, then null. Never a guess — an empty derived field means the
+// generator refused it.
+function thaiRoman(word) {
+  if (typeof WORD_MAP !== "undefined" && WORD_MAP[word]) return WORD_MAP[word][1];
+  const e = _glossMap && _glossMap.get(word);
+  return (e && e.roman) ? e.roman : null;
 }
