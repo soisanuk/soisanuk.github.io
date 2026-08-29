@@ -60,6 +60,29 @@ describe("tutorial content", () => {
       "no slide tells a new user where to start");
   });
 
+  // The Back button is styled visibility:hidden in index.html so it is absent
+  // before _tutRender first runs. Clearing the inline style with "" falls back
+  // to that rule rather than showing it, which hid Back on EVERY slide — the
+  // fix is an explicit "visible", and this pins it.
+  test("_tutRender shows Back with an explicit value, not an empty string", () => {
+    const src = readFileSync(new URL("../../web/js/ui.js", import.meta.url), "utf8");
+    const line = src.split("\n").find(l => l.includes("tutorial-prev") && l.includes("visibility"));
+    assert.ok(line, "_tutRender no longer sets tutorial-prev visibility");
+    assert.match(line, /"visible"/,
+      'must set "visible" explicitly — "" falls back to the stylesheet\'s visibility:hidden');
+  });
+
+  // Thai stores (and types) a tone mark straight after its consonant, so the
+  // decomposition grid shows it in a different row for แม่ than for ค้า — the
+  // leading vowel แ takes the first slot. That looks like a bug until someone
+  // explains it, so the tour has to.
+  test("explains that clusters read in typing order", () => {
+    assert.match(tutorialHtml, /typing order/i,
+      "the decomposition slide must name typing order — it is why a tone mark's row moves");
+    assert.match(tutorialHtml, /แม่/,
+      "keep a worked example of a leading vowel pushing the tone mark down");
+  });
+
   test("slide count matches the dot count and _TUT_TOTAL", () => {
     const slides = (html.match(/class="tutorial-slide"/g) || []).length;
     const dots = (html.match(/class="tutorial-dot"/g) || []).length;
