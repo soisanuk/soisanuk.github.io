@@ -218,7 +218,7 @@ const WORDS = [
   ["เผ็ด", "phèt", "spicy", "adjective", "adjectives"],
   ["มีความสุข", "mii-khwaam-sùk", "happy", "adjective", "adjectives"],
   ["เศร้า", "sâo", "sad", "adjective", "adjectives"],
-  ["โกรธ", "krôot", "angry", "adjective", "adjectives"],
+  ["โกรธ", "kròot", "angry", "adjective", "adjectives"],
   ["กลัว", "klua", "afraid/scared", "adjective", "adjectives"],
   ["เหนื่อย", "nùueai", "tired", "adjective", "adjectives"],
   ["หิว", "hǐu", "hungry", "adjective", "adjectives"],

@@ -24,7 +24,7 @@ const EXAMPLES = {
   "เผ็ด": ["แกงนี้เผ็ดมาก", "kaeng níi phèt mâak", "This curry is very spicy."],
   "มีความสุข": ["ฉันมีความสุขมากวันนี้", "chǎn mii-khwaam-sùk mâak wan níi", "I am very happy today."],
   "เศร้า": ["เขาเศร้ามากเพราะแมวหาย", "khǎo sâo mâak phró maeo hǎai", "He is very sad because his cat is missing."],
-  "โกรธ": ["แม่โกรธเพราะฉันกลับบ้านดึก", "mâe krôot phró chǎn klàp bâan dùek", "Mom is angry because I came home late."],
+  "โกรธ": ["แม่โกรธเพราะฉันกลับบ้านดึก", "mâe kròot phró chǎn klàp bâan dùek", "Mom is angry because I came home late."],
   "กลัว": ["เด็กกลัวสุนัขตัวใหญ่", "dèk klua sù-nák tua yài", "The child is scared of the big dog."],
   "เหนื่อย": ["ฉันเหนื่อยมากหลังทำงาน", "chǎn nùueai mâak lǎng tham-ngaan", "I am very tired after work."],
   "หิว": ["ฉันหิวมากอยากกินข้าว", "chǎn hǐu mâak yàak kin khâao", "I am very hungry and want to eat."],

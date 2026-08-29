@@ -73,8 +73,12 @@ test("_toneRuleLine states class + mark → the realised tone", () => {
 });
 
 test("_toneRuleLine is blank for words the engine can't grade", () => {
-  assert.equal(_toneRuleLine("ครับ"), "");
+  assert.equal(_toneRuleLine("รักษ์"), ""); // การันต์ silent letters: still out of scope
   assert.equal(_toneRuleLine(""), "");
+});
+
+test("_toneRuleLine explains a clustered syllable", () => {
+  assert.equal(_toneRuleLine("ครับ"), "low class + no mark → HIGH tone");
 });
 
 // ── _toneDrillPool: filter + cap over WORDS ─────────────────────────────────
