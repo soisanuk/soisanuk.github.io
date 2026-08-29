@@ -193,6 +193,28 @@ body {
 .reader-en { text-align:center; color:var(--gold,#ffd447); margin:0.2rem 0 0.6rem; }
 .reader-controls { align-items:center; }
 
+/* ── Paste Text ──────────────────────────────────────────────────────────── */
+.paste-intro { max-width:640px; margin:0 auto 0.6rem; }
+.paste-input { display:block; width:100%; max-width:640px; margin:0 auto; box-sizing:border-box;
+  padding:0.6rem 0.7rem; font-size:1.15em; line-height:1.6; border-radius:8px;
+  color:var(--parchment); background:rgba(0,0,0,0.25);
+  border:1px solid rgba(255,212,71,0.28); resize:vertical; }
+.paste-input:focus { outline:none; border-color:var(--gold,#ffd447); }
+.paste-controls { justify-content:center; margin:0.6rem 0 0.2rem; }
+.paste-topline { display:flex; justify-content:space-between; align-items:center;
+  max-width:640px; margin:0.6rem auto 0.2rem; padding:0 0.3rem; }
+.paste-count { opacity:0.7; font-size:0.9em; }
+.paste-text { max-width:640px; margin:0.4rem auto; font-size:1.55em; line-height:1.85; }
+.paste-line { margin:0.15rem 0; }
+.paste-line-blank { height:0.7em; }
+/* every token is tappable here, so they need to look separable — the reader
+   can lean on sentence rhythm, a wall of pasted text cannot */
+.paste-text .w-token { border-radius:5px; padding:0 3px; margin:0 1px;
+  border-bottom:1px solid rgba(255,212,71,0.18); }
+.paste-text .w-token:hover { background:rgba(255,212,71,0.18); }
+.paste-status { text-align:center; opacity:0.75; margin:0.8rem auto; }
+.paste-error { color:var(--vermilion,#ff6b6b); opacity:1; max-width:520px; }
+
 .sidebar-section {
   padding: 0.7rem 1.2rem 0.1rem;
   font-size: 0.72rem;
@@ -986,6 +1008,12 @@ body {
   font-size: 1.05rem;
   color: var(--parchment);
   margin-bottom: 0.6rem;
+}
+.wc-nogloss {
+  text-align: center;
+  color: var(--dim);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
 }
 .wc-example { margin-top: 0.4rem; }
 
@@ -2098,6 +2126,7 @@ body.mobile #app-shell {
     <li id="nav-Q2" onclick="startContinue()">▶ Continue <span id="nav-cont-stats" style="opacity:0.7;font-size:0.85em"></span></li>
     <li id="nav-Q" onclick="startLearn()">🎓 Guided Course</li>
     <li id="nav-D" onclick="startReader()">📖 Graded Reader</li>
+    <li id="nav-P" onclick="startPaste()">📝 Paste Text</li>
     <li id="nav-U" onclick="startBusWords()">🚌 Words from the bus</li>
   </ul>
   <div class="sidebar-section">Vocabulary</div>
@@ -2177,6 +2206,7 @@ body.mobile #app-shell {
     <li onclick="startContinue()"><span class="menu-key">⏎</span><span class="menu-icon">▶</span> Continue <span id="nav-cont-stats2" style="opacity:0.7;font-size:0.85em"></span></li>
     <li onclick="startLearn()"><span class="menu-key">Q</span><span class="menu-icon">🎓</span> Guided Course</li>
     <li onclick="startReader()"><span class="menu-key">D</span><span class="menu-icon">📖</span> Graded Reader</li>
+    <li onclick="startPaste()"><span class="menu-key">P</span><span class="menu-icon">📝</span> Paste Text</li>
     <li onclick="startBusWords()"><span class="menu-key">U</span><span class="menu-icon">🚌</span> Words from the bus</li>
   </ul>
   <div class="menu-section">Vocabulary</div>
@@ -2324,6 +2354,14 @@ body.mobile #app-shell {
 <div id="reader-screen" class="screen">
   <div class="screen-header">📖 Graded Reader</div>
   <div class="card-body" id="reader-body"></div>
+  <div class="screen-footer">
+    <button class="btn" onclick="endSession()">← Menu</button>
+  </div>
+</div>
+
+<div id="paste-screen" class="screen">
+  <div class="screen-header">📝 Paste Text</div>
+  <div class="card-body" id="paste-body"></div>
   <div class="screen-footer">
     <button class="btn" onclick="endSession()">← Menu</button>
   </div>
@@ -2720,6 +2758,8 @@ body.mobile #app-shell {
 <script src="js/curriculum.js"></script>
 <script src="js/learn.js"></script>
 <script src="js/reader.js"></script>
+<script src="js/segment.js"></script>
+<script src="js/paste.js"></script>
 <script src="js/backup.js"></script>
 <script src="js/tutor.js"></script>
 <script src="js/soi-buakhao.js"></script>

@@ -87,8 +87,14 @@ let _rd = null; // { feed, at, level }
 function _readerColorOn() {
   try { return localStorage.getItem(READER_COLOR_KEY) === "1"; } catch { return false; }
 }
+// The write on its own. Paste Text shares this preference (one 🎨 setting for
+// both screens) but must NOT inherit _readerShow() — with no reader session
+// open that falls through to startReader() and navigates away mid-toggle.
+function _readerSetColor(on) {
+  try { localStorage.setItem(READER_COLOR_KEY, on ? "1" : "0"); } catch {}
+}
 function _readerToggleColor() {
-  try { localStorage.setItem(READER_COLOR_KEY, _readerColorOn() ? "0" : "1"); } catch {}
+  _readerSetColor(!_readerColorOn());
   _readerShow();
 }
 
