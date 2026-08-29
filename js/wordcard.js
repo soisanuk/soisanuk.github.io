@@ -137,8 +137,9 @@ function openWordModal(word) {
         <span class="wc-thai" title="Click to decompose" style="cursor:pointer" lang="th">${_wcEsc(thai)}</span>
         ${_tts.available() ? `<button class="wc-speak example-speak" title="Listen" style="float:none;display:inline-block;vertical-align:middle;margin-left:0.5rem" aria-label="Listen">🔊</button>` : ""}
       </div>
-      <div class="wc-rtgs">${_wcEsc(rtgs)}</div>
-      <div class="wc-en">${_wcEsc(english)}</div>
+      ${rtgs ? `<div class="wc-rtgs">${_wcEsc(rtgs)}</div>` : ""}
+      ${english ? `<div class="wc-en">${_wcEsc(english)}</div>` : ""}
+      ${rtgs || english ? "" : `<div class="wc-nogloss">Not in the course — here's how it's written.</div>`}
       <div id="${decompId}" style="display:none"></div>
       <hr class="divider-accent">
       <div id="${exId}" class="wc-example example-block" style="display:none"></div>
@@ -162,6 +163,10 @@ function openWordModal(word) {
   const thaiSpan  = layer.querySelector(".wc-thai");
   const decompDiv = layer.querySelector(`#${decompId}`);
   let decompBuilt = false;
+  // A word with no gloss (open text pasted into the trainer — see paste.js)
+  // has nothing to show ABOVE the fold, and the decomposition is the whole
+  // reason the card opened, so don't make the reader hunt for it.
+  if (!rtgs && !english) { renderDecomposition(decompDiv, thai); decompBuilt = true; }
   thaiSpan.addEventListener("click", () => {
     if (!decompBuilt) {
       renderDecomposition(decompDiv, thai);
