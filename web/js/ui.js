@@ -213,7 +213,10 @@ function _tutRender() {
     s.classList.toggle("active", i === _tutStep));
   document.querySelectorAll(".tutorial-dot").forEach((d, i) =>
     d.classList.toggle("active", i === _tutStep));
-  document.getElementById("tutorial-prev").style.visibility = _tutStep === 0 ? "hidden" : "";
+  // "visible", not "" — index.html defaults #tutorial-prev to visibility:hidden
+  // so it isn't there before this ever runs, and clearing the inline style just
+  // falls back to that rule, which left Back invisible on every slide.
+  document.getElementById("tutorial-prev").style.visibility = _tutStep === 0 ? "hidden" : "visible";
   document.getElementById("tutorial-next").textContent =
     _tutStep === _TUT_TOTAL - 1 ? "Done ✓" : "Next →";
 }
