@@ -6,7 +6,9 @@
 // (segment.js), with the analysis degrading honestly:
 //
 //   • a word the curriculum teaches  → the full word card, gloss and examples
-//   • any other word                 → the card without a gloss: character
+//   • a word Wiktionary knows         → the card with a short English gloss
+//     (gloss.js, ~63% of the lexicon) but no romanisation or examples
+//   • anything else                   → the card with no gloss at all: character
 //     decomposition and per-syllable tone reasoning, which the script engine
 //     derives from spelling alone and so works on vocabulary we've never seen
 //   • tone colour                    → only where toneOfWord will vouch for it
@@ -23,8 +25,8 @@ function startPaste() {
   const saved = (() => { try { return localStorage.getItem(PASTE_TEXT_KEY) || ""; } catch (e) { return ""; } })();
   document.getElementById("paste-body").innerHTML = `
     <div class="card-prompt paste-intro">Paste any Thai — a headline, a menu, a LINE message — and it gets
-      split into words. Tap a word for its letters and tone rule; words the course teaches also get their
-      meaning and examples.</div>
+      split into words. Tap any word for its letters and tone rule; most also carry a meaning, and the ones
+      the course teaches bring their examples too.</div>
     <textarea id="paste-input" class="paste-input" lang="th" rows="5"
       placeholder="วางข้อความภาษาไทยที่นี่…" aria-label="Thai text to analyse">${_wcEsc(saved)}</textarea>
     <div class="btn-row paste-controls">
@@ -64,14 +66,15 @@ function pasteAnalyse() {
         (js/lexicon-th.js). Segmentation needs it — everything else in the app still works.</div>`;
       return;
     }
-    _pasteRender(text, out);
+    // Glosses are a bonus layer: render either way, never block on them.
+    _glossLoad(() => _pasteRender(text, out));
   });
 }
 
 // One line per source line, so pasted paragraphs keep their shape.
 function _pasteRender(text, out) {
   const colorOn = _readerColorOn();
-  let known = 0, total = 0;
+  let known = 0, total = 0, glossed = 0;
   const lines = text.split("\n").map(line => {
     if (!line.trim()) return `<div class="paste-line paste-line-blank"></div>`;
     const html = segmentThai(line).map(t => {
@@ -80,6 +83,7 @@ function _pasteRender(text, out) {
       if (!t.known) return _wcEsc(t.text);
       total++;
       if (typeof WORD_MAP !== "undefined" && WORD_MAP[t.text]) known++;
+      if (thaiGloss(t.text)) glossed++;
       const tone = (typeof toneOfWord === "function") ? toneOfWord(t.text) : null;
       const style = (colorOn && tone) ? ` style="color:${TONE_COLORS[tone]}"` : "";
       return `<span class="w-token" data-w="${_wcEsc(t.text)}">${
@@ -90,12 +94,17 @@ function _pasteRender(text, out) {
 
   out.innerHTML = `
     <div class="paste-topline">
-      <span class="paste-count">${total} word${total === 1 ? "" : "s"} · ${known} in the course</span>
+      <span class="paste-count">${total} word${total === 1 ? "" : "s"} · ${known} in the course ·
+        ${glossed} with a meaning</span>
       <button class="btn btn-small ${colorOn ? "sel" : ""}" onclick="_pasteToggleColor()"
         aria-label="Toggle tone colours">🎨 tones</button>
     </div>
     <div class="paste-text">${lines}</div>
-    ${colorOn ? _readerLegend() : ""}`;
+    ${colorOn ? _readerLegend() : ""}
+    <div class="paste-credit">Meanings for words outside the course come from
+      <a href="https://en.wiktionary.org/" target="_blank" rel="noopener noreferrer">Wiktionary</a>,
+      used under <a href="https://creativecommons.org/licenses/by-sa/3.0/"
+      target="_blank" rel="noopener noreferrer">CC BY-SA 3.0</a>.</div>`;
   _pasteWireTokens(document.getElementById("paste-out"));
 }
 
@@ -106,16 +115,19 @@ function _pasteToggleColor() {
 
 // Like _wcWireTokens (wordcard.js), but it does NOT skip words missing from the
 // curriculum map — on open text most words are missing, and the script/tone
-// analysis is exactly what this screen exists to show. Unknown words open the
-// same card with no gloss; see openWordModal's handling of a blank rtgs.
+// analysis is exactly what this screen exists to show. A non-curriculum word
+// opens the same card with a Wiktionary gloss when there is one and no gloss
+// at all when there isn't; both cases go through openWordModal's blank-rtgs
+// handling, which auto-opens the decomposition.
 function _pasteWireTokens(container) {
   container.querySelectorAll(".w-token").forEach(span => {
     const thai = span.dataset.w;
     const w = (typeof _wcMap === "function") ? _wcMap()[thai] : null;
+    const entry = w || [thai, "", thaiGloss(thai) || ""];
     span.style.cursor = "pointer";
-    span.addEventListener("click", () => openWordModal(w || [thai, "", ""]));
-    if (w && typeof _tt !== "undefined") {
-      span.addEventListener("mouseenter", e => _tt.show(w[0], w[1], w[2], e.clientX, e.clientY));
+    span.addEventListener("click", () => openWordModal(entry));
+    if (typeof _tt !== "undefined" && (w || entry[2])) {
+      span.addEventListener("mouseenter", e => _tt.show(entry[0], entry[1], entry[2], e.clientX, e.clientY));
       span.addEventListener("mouseleave", () => _tt.hide());
     }
   });
