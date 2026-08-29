@@ -107,13 +107,51 @@ describe("syllableTone: declines what it can't read", () => {
     assert.equal(syllableTone(""), null);
     assert.equal(syllableTone("cat"), null);
   });
-  test("initial consonant clusters stay out of scope (no cluster support)", () => {
-    // ค+ว+า+ย (ควาย) and ก+ล+ั+ว (กลัว): ว/ล is a genuine cluster member
-    // here, not a vowel-carrier — the ◌ือ/reduced-◌ัว branches don't touch
-    // these because a real vowel mark (า, ั) still follows.
-    assert.equal(syllableTone("ควาย"), null);
-    assert.equal(syllableTone("กลัว"), null);
-    assert.equal(syllableTone("ครับ"), null);
+});
+
+// ── initial clusters (ควบกล้ำ) ──────────────────────────────────────────────
+// The class comes from the FIRST consonant; the ร/ล/ว is stepped over. The
+// interesting cases are the ones that only LOOK like clusters — see
+// _isClusterPair in thai-script.js.
+describe("syllableTone: initial consonant clusters", () => {
+  const CLUSTERS = [
+    // true clusters, across all three classes
+    ["ครับ", "high"], ["ครู", "mid"], ["ควาย", "mid"], ["ครัว", "mid"],
+    ["กลัว", "mid"], ["กล้วย", "falling"], ["กลับ", "low"], ["เกลือ", "mid"],
+    ["ปลา", "mid"], ["ปลวก", "low"], ["เปล่า", "low"], ["แปลก", "low"],
+    ["เคร่ง", "falling"], ["เพราะ", "high"], ["พระ", "high"], ["โปรด", "low"],
+    ["ตรง", "mid"], ["ตรวจ", "low"], ["โกรธ", "low"],
+    // /Cw/ clusters: the vowel sits before (แขวน) or after (กวาด, กว่า) the ว
+    ["กวาด", "low"], ["กว่า", "low"], ["แขวน", "rising"],
+    // "false" clusters (ควบไม่แท้): ร silent, ทร reads /s/ — tone is still
+    // taken from the written first consonant, so they parse the same way.
+    ["ทราบ", "falling"], ["สร้าง", "falling"], ["จริง", "mid"], ["ทรง", "mid"],
+  ];
+  for (const [word, tone] of CLUSTERS) {
+    test(`${word} → ${tone}`, () => {
+      assert.equal(syllableTone(word), tone);
+    });
+  }
+
+  test("a trailing ร/ล/ว is a FINAL, not a cluster member", () => {
+    // พร = /phɔɔn/ (low class, live final, inherent vowel) → mid. Reading the
+    // ร as a cluster partner would leave a bare dead syllable → "high".
+    assert.equal(syllableTone("พร"), "mid");
+  });
+
+  test("C+ว+final with no written vowel is the reduced ◌ัว, not a cluster", () => {
+    // ควบ is the sharp one: as reduced ◌ัว it's a LONG vowel → low class dead
+    // long → falling. Mis-read as a คว cluster it would take the inherent
+    // short vowel and come out "high".
+    assert.equal(syllableTone("ควบ"), "falling");
+    assert.equal(syllableTone("ควร"), "mid");
+    assert.equal(syllableTone("ขวด"), "low");
+    assert.equal(syllableTone("สวย"), "rising");
+  });
+
+  test("syllableToneInfo names the cluster member", () => {
+    assert.equal(syllableToneInfo("ครับ").cluster, "ร");
+    assert.equal(syllableToneInfo("มา").cluster, null);
   });
 });
 

@@ -137,8 +137,8 @@ function letterSpeechParts(ch) {
 //     from known pieces.
 //   • syllableTone()   — a best-effort parser over ONE written syllable that
 //     feeds toneFromParts. It returns null whenever it can't confidently read
-//     the shape (consonant clusters, silent letters, odd vowels), so a caller
-//     that colours or labels text never shows a wrong tone — it shows none.
+//     the shape (silent letters, odd vowels), so a caller that colours or
+//     labels text never shows a wrong tone — it shows none.
 // Tones are named with the same vocabulary as TONES in data.js:
 // "mid" · "low" · "falling" · "high" · "rising".
 
@@ -204,6 +204,31 @@ function _vowelLength(leading, trailing, taikhu) {
   return null;
 }
 
+// Initial consonant clusters (ควบกล้ำ). The class comes from the FIRST
+// consonant and the ร/ล/ว after it is neither a final nor a vowel carrier, so
+// the parser steps over it. The "false" clusters (ทร ศร สร ซร จร — the ร is
+// silent, ทร reads /s/) sit in the same table because they behave IDENTICALLY
+// for tone; only the pronunciation differs, and nothing here computes that.
+// Contrast the ห / อ leaders below, which change the class — a cluster never does.
+const _CLUSTER_SECONDS = {
+  "ก": "รลว", "ข": "รลว", "ค": "รลว", "ต": "ร", "ป": "รล", "ผ": "ล",
+  "พ": "รล", "บ": "รล", "ด": "ร", "ฟ": "รล",
+  "ท": "ร", "ศ": "ร", "ส": "ร", "ซ": "ร", "จ": "ร",
+};
+// Is `second` this head's cluster partner, or is it doing another job? Two
+// shapes look like clusters and aren't — `rest` is what follows `second`:
+//   • nothing follows it → it's the FINAL, carrying the inherent vowel:
+//     พร = /phɔɔn/ (mid), not /phrá/.
+//   • C + ว + final with no written vowel at all (ควบ, ขวด, สวย, ควร) → the ว
+//     is the reduced ◌ัว vowel, handled below. A real /Cw/ cluster always has a
+//     vowel of its own, before (แขวน) or after (กวาด, กว่า) the ว.
+function _isClusterPair(head, second, leading, rest) {
+  if (!(_CLUSTER_SECONDS[head] || "").includes(second)) return false;
+  if (!rest.length) return false;
+  if (second !== "ว" || leading) return true;
+  return rest.some(ch => { const c = ch.codePointAt(0); return c >= 0x0E30 && c <= 0x0E39; });
+}
+
 // Parse one syllable into the parts toneFromParts needs, or null if unsure.
 function _analyseSyllable(input) {
   const raw = [...String(input)];
@@ -213,12 +238,18 @@ function _analyseSyllable(input) {
   let i = 0, leading = "";
   while (i < raw.length && _isLeadVowel(raw[i])) { leading += raw[i]; i++; }
   if (i >= raw.length || !_isCons(raw[i])) return null;
-  let cls = _consClass(raw[i]);
+  const head = raw[i];
+  let cls = _consClass(head);
   i++;
+  let cluster = null;
   // ห / อ leader: silent, promotes a following low-class consonant to its class
-  if ((raw[i - 1] === "ห" || raw[i - 1] === "อ") && i < raw.length &&
+  if ((head === "ห" || head === "อ") && i < raw.length &&
       _isCons(raw[i]) && _consClass(raw[i]) === "low") {
-    cls = raw[i - 1] === "ห" ? "high" : "mid";
+    cls = head === "ห" ? "high" : "mid";
+    i++;
+  } else if (i < raw.length && _isCons(raw[i]) &&
+             _isClusterPair(head, raw[i], leading, raw.slice(i + 1))) {
+    cluster = raw[i];   // ครับ, ปลวก, กวาด — class already taken from `head`
     i++;
   }
   if (!cls) return null;
@@ -269,7 +300,7 @@ function _analyseSyllable(input) {
   } else {
     live = vLive || long;
   }
-  return { cls, mark, live, shortVowel: !long };
+  return { cls, mark, live, shortVowel: !long, cluster };
 }
 
 // CONTRACT: input is ONE syllable. A multi-syllable string (a whole word or
