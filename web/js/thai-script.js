@@ -192,6 +192,9 @@ function toneFromParts(cls, opts) {
 function _vowelLength(leading, trailing, taikhu) {
   if (taikhu) return { long: false };                        // ็ mai taikhu shortens
   if (trailing.indexOf("ะ") >= 0 || trailing.indexOf("ั") >= 0) return { long: false };
+  // เ◌ิ is the LONG "oe" (เดิน, เกิด, เลิก) — it is only ever written with a
+  // final; the short counterpart is เ◌อะ. Bare ◌ิ stays short (กิน, ผิด).
+  if (leading === "เ" && trailing === "ิ") return { long: true };
   if (trailing === "ิ" || trailing === "ึ" || trailing === "ุ") return { long: false };
   if (trailing === "ำ") return { long: false, live: true };
   if (trailing === "า") return leading === "เ" ? { long: true, live: true } : { long: true }; // เ◌า = ao

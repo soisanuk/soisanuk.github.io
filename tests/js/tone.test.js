@@ -86,6 +86,11 @@ const KNOWN = [
   // bare ◌ือ (long "ue", no final — as opposed to ◌ื + final, e.g. มืด)
   ["มือ", "mid"], ["คือ", "mid"], ["ชื่อ", "falling"], ["ซื้อ", "high"],
   ["หรือ", "rising"], // ห leader promotes ร (low) to high before the ◌ือ
+  // เ◌ิ is the LONG "oe" vowel (it's only ever written with a final; the short
+  // counterpart is เ◌อะ). Length only changes the tone on a low-class DEAD
+  // syllable, so เลิก is the one word in the corpus that exposes it — the
+  // mid-class เกิด/เปิด come out "low" either way.
+  ["เลิก", "falling"], ["เดิน", "mid"], ["เกิด", "low"], ["เพิ่ม", "falling"],
   // reduced ◌ัว (the ั is dropped from the ua vowel before a final consonant)
   ["สวย", "rising"], ["ด้วย", "falling"], ["ช่วย", "falling"],
   ["ควร", "mid"], ["ขวด", "low"], ["รวย", "mid"],
