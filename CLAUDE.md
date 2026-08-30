@@ -42,6 +42,7 @@ Single-page Thai vocabulary/script trainer PWA with SM-2 spaced repetition. `web
 Gotcha: top-level `const`/`let` from vm-loaded scripts land in the global *lexical* scope, not on the `globalThis` object — reference them as bare identifiers in tests; destructuring `globalThis` only works for `function` declarations.
 
 <!-- Capacitor packaging (native Android/iOS build & `npx cap sync`): docs/capacitor.md -->
+<!-- Finding pedagogical/UX/translation-quality defects nothing else can catch — the persona-playtest method: docs/persona-playtests.md -->
 
 ## Post-Compaction Recovery
 

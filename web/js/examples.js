@@ -793,7 +793,7 @@ const EXAMPLES = {
   "อำเภอ": ["บ้านของฉันอยู่ในอำเภอนี้", "bâan khǒong chǎn yùu nai am-phoe níi", "My house is in this district"],
   "ใจ": ["เขาใจดีและช่วยทุกคนเสมอ", "khǎo jai-dii láe chûay thúk khon sà-mǒe", "He is kind-hearted and always helps everyone"],
   "นัด": ["ฉันมีนัดหมอตอนสิบโมงเช้า", "chǎn mii nát mǒo toon sìp moong cháo", "I have a doctor's appointment at ten in the morning"],
-  "คะ": ["ขอบคุณมากคะ", "khòop-khun mâak khá", "Thank you very much"],
+  "คะ": ["สบายดีไหมคะ", "sà-baai-dii mǎi khá", "How are you?"],
   "บ่าย": ["ตอนบ่ายอากาศร้อนกว่าตอนเช้า", "toon bàai aa-kàat rón kwàa toon cháo", "In the afternoon it is hotter than in the morning"],
   "หนัง": ["คืนนี้เราไปดูหนังด้วยกันนะ", "khuuen-níi rao pai duu nǎng dûay-kan ná", "Tonight let's go watch a movie together"],
   "สถานี": ["รถไฟหยุดที่สถานีนี้ไหม", "rót-fai yùt thîi sà-thǎa-nii níi mǎi", "Does the train stop at this station?"],
