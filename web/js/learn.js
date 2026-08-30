@@ -59,7 +59,9 @@ function startLearn() {
   const sp = document.getElementById("learn-speed");
   if (sp) {
     sp.innerHTML = !bests.length ? "" :
-      `<div class="sidebar-section" style="text-align:center">🏁 Fastest reads</div>` +
+      `<div class="sidebar-section" style="text-align:center">🏁 Fastest reads` +
+      (bests.length > 5 ? ` <span style="opacity:0.6;font-weight:normal">5 of ${bests.length}</span>` : "") +
+      `</div>` +
       bests.slice(0, 5).map(([th, ms]) =>
         `<span class="learn-best">${_esc(th)} <b>${(ms / 1000).toFixed(1)}s</b></span>`).join(" ");
   }
@@ -920,6 +922,26 @@ function _placementCut(byBatch) {
   return cut;
 }
 // mark every COURSE unit up to (and incl.) the cut batch's unit as done
+// What placement ACTUALLY marked, said out loud. It only ever tests letter
+// DECODING — 16 multiple-choice cards, two per batch — but _placementApply
+// marks every COURSE index up to the cut, which sweeps in the "Speak:" chunk
+// lessons too. The old line read "Placed past 8 reading units" while marking
+// 14 units, six of them scenario lessons placement never showed a card from.
+// Naming them is the honest minimum; whether they should be marked at all is a
+// separate product question. Found by the 2026-08-30 completionist round.
+function _placementSummary(cut) {
+  const last = COURSE.findIndex(u => u.kind === "letters" && u.batch === cut);
+  let reading = 0, other = 0;
+  for (let i = 0; i <= last; i++) {
+    if (COURSE[i].kind === "tone") continue;
+    if (COURSE[i].kind === "letters") reading++; else other++;
+  }
+  const r = `${reading} reading unit${reading === 1 ? "" : "s"}`;
+  return other
+    ? `Placed past ${r}, and the ${other} speaking lesson${other === 1 ? "" : "s"} alongside them — those weren't tested, so revisit any from the path.`
+    : `Placed past ${r}.`;
+}
+
 function _placementApply(path, cut) {
   if (cut < 0) return path;
   path.units = path.units || {};
@@ -958,7 +980,7 @@ function _placementFinish() {
   const body = document.getElementById("lesson-body");
   body.innerHTML = `<div class="thai-big">📍</div>
     <div class="card-prompt">${cut < 0 ? "Starting from the very first letters — the right place to start." :
-      "Placed past " + (cut + 1) + " reading unit" + (cut ? "s" : "") + "."}</div>
+      _placementSummary(cut)}</div>
     <div class="btn-row"><button class="btn btn-primary" onclick="startLearn()">To the path</button></div>`;
   _lu = null;
 }
@@ -966,13 +988,17 @@ function _placementFinish() {
 // ── 🏆 Records (engagement 6/7) — the local best-night board ────────────────
 function showRecords() {
   const st = _streakNow(), path = _pathLoad();
-  const bests = Object.entries(path.best || {}).sort((a, b) => a[1] - b[1]).slice(0, 8);
+  // path.best is uncapped and can hold every word ever hit in a speed card (up
+  // to 764). Both views truncate; neither used to admit it.
+  const allBests = Object.entries(path.best || {}).sort((a, b) => a[1] - b[1]);
+  const bests = allBests.slice(0, 8);
   const done = COURSE.filter(u => _unitDone(path, u)).length;
   document.getElementById("records-body").innerHTML =
     `<div class="learn-summary">Level: <b>${_levelName(done)}</b> · ${done}/${COURSE.length} units</div>
      <div class="learn-summary">🔥 Streak: <b>${st.days || 0}</b> ${st.ended ? "(ended)" : "now"} · best <b>${st.maxDays || 0}</b> days</div>
      <div class="learn-summary">📅 Biggest day: <b>${st.bestDay ? st.bestDay.cards + " cards (" + st.bestDay.date + ")" : "—"}</b></div>
-     <div class="sidebar-section" style="text-align:center">🏁 Fastest reads</div>
+     <div class="sidebar-section" style="text-align:center">🏁 Fastest reads${
+       allBests.length > bests.length ? ` <span style="opacity:0.6;font-weight:normal">${bests.length} of ${allBests.length}</span>` : ""}</div>
      <div style="text-align:center">${bests.length ? bests.map(([th, ms]) =>
        `<span class="learn-best">${_esc(th)} <b>${(ms / 1000).toFixed(1)}s</b></span>`).join(" ") : "run some speed reads"}</div>`;
   showScreen("records-screen", "Y");

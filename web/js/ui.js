@@ -155,7 +155,7 @@ function showStats() {
       <div class="drill-row"><span class="drill-label">Script cards seen</span>
         <span class="drill-value">${scriptSeen} / ${CONSONANTS.length + VOWELS.length}</span></div>
       <div class="drill-row"><span class="drill-label">Sentence SRS seen</span>
-        <span class="drill-value">${sentSeen} seen · ${sentMature} mature</span></div>
+        <span class="drill-value">${sentSeen} / ${sentKeys.length} · ${sentMature} mature</span></div>
       <div class="drill-row"><span class="drill-label">Total vocab</span>
         <span class="drill-value">${WORDS.length} words</span></div>
     </div>
