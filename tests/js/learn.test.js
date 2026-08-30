@@ -486,3 +486,40 @@ test("without a Thai voice, no unit is gated behind cards you can only hear", ()
   assert.ok(withAudio.filter(x => x.kind === "toneear").length > 0);
   assert.ok(withAudio.filter(x => x.kind === "listen").length > 0);
 });
+
+// ── findings from the 2026-08-30 lapsed-learner persona round ───────────────
+
+test("_streakView reports the streak's CURRENT truth, not the last snapshot", () => {
+  // _streakBump only runs when a card is graded, so between sessions the stored
+  // record is a snapshot of the last day studied — and the display printed it
+  // verbatim. A learner back after six months was shown "🔥 12 days · today 41
+  // cards", invited to "keep the streak alive", then watched it snap 12 → 1
+  // mid-session with no acknowledgement.
+  const st = { last: "2026-02-28", days: 12, maxDays: 12,
+               bestDay: { date: "2026-02-24", cards: 63 }, today: { cards: 41, msSum: 120000, msN: 40 } };
+  const gap = _streakView(st, "2026-08-30", "2026-08-29");
+  assert.equal(gap.days, 0, "a streak broken months ago is not still running");
+  assert.deepEqual(gap.today, {}, "'today' from February is not today");
+  assert.equal(gap.ended, true);
+  assert.equal(gap.maxDays, 12, "the best survives the break — it's what you come back to");
+
+  const alive = _streakView({ ...st, last: "2026-08-29" }, "2026-08-30", "2026-08-29");
+  assert.equal(alive.days, 12, "yesterday still counts — the streak is live until a day is missed");
+
+  const sameDay = _streakView({ ...st, last: "2026-08-30" }, "2026-08-30", "2026-08-29");
+  assert.equal(sameDay.today.cards, 41, "today's own tally is kept");
+});
+
+test("a broken streak is named, not silently zeroed", () => {
+  const ended = _streakView({ last: "2026-01-01", days: 12, maxDays: 12 }, "2026-08-30", "2026-08-29");
+  assert.match(_streakText(ended, {}), /ended.*best 12/);
+  assert.equal(_streakText(_streakView({}, "2026-08-30", "2026-08-29"), {}), "start today",
+    "someone who never started is not told they ended something");
+});
+
+test("_streakView never writes", () => {
+  const st = { last: "2026-01-01", days: 12, maxDays: 12, today: { cards: 5 } };
+  const before = JSON.stringify(st);
+  _streakView(st, "2026-08-30", "2026-08-29");
+  assert.equal(JSON.stringify(st), before, "the display must not mutate the record");
+});

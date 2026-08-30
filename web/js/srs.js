@@ -88,9 +88,15 @@ function dueForecast(p, days = 7) {
   return buckets;
 }
 
-function srsStats(p) {
+// `keys` limits the count to cards the app can actually serve. Without it,
+// records for words that have since left data.js are counted forever: a store
+// with 40 stale keys showed "due: 100" while dueCards() — which filters by live
+// keys — could only ever serve 60, so the learner cleared everything reachable
+// and the counter still read 40 due, with no way to move it. srsStats and
+// dueCards must agree about what exists. Found by the 2026-08-30 lapsed round.
+function srsStats(p, keys) {
   const now = Date.now() / 1000;
-  const cards = Object.values(p);
+  const cards = keys ? keys.filter(k => p[k]).map(k => p[k]) : Object.values(p);
   return {
     totalSeen: cards.length,
     dueNow: cards.filter(c => c.due <= now).length,

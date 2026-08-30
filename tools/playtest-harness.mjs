@@ -130,7 +130,10 @@ export async function openApp(opts = {}) {
     async dismissTutorial() {
       return app.safe("dismissTutorial", () => {
         if (typeof closeTutorial === "function") closeTutorial();
-        try { localStorage.setItem("thaicab_tut_seen", "1"); } catch (e) {}
+        // _TUT_KEY (ui.js) — "thaicab_tut_seen" was wrong and only worked by
+        // accident, because closeTutorial() sets the real key as a side effect.
+        // Any round that seeds state and reloads got the overlay back each time.
+        try { localStorage.setItem("soisanuk_seen_tutorial", "1"); } catch (e) {}
         if (typeof closeWordModal === "function") closeWordModal();
         return true;
       });
@@ -157,6 +160,36 @@ export async function openApp(opts = {}) {
       }, str);
       return r;
     },
+
+    /**
+     * startSRS() lands on the CATEGORY PICKER, not a review session. Both
+     * rounds so far hand-rolled this click. Pass a label prefix, default "All".
+     */
+    pickCategory: (label = "All categories") => app.safe("pickCategory", l => {
+      const li = [...document.querySelectorAll("#cat-list li")]
+        .find(x => x.textContent.trim().startsWith(l));
+      if (!li) return null;
+      li.click();
+      return document.querySelector(".screen.active")?.id;
+    }, label),
+
+    /**
+     * Rate the SRS card on screen (q 0-5) and advance. The review screens use a
+     * reveal-then-rate idiom, not the lesson runner's, so driveLessonStep does
+     * not cover them — and SRS is the surface any returning-learner or
+     * scheduling persona spends all its time on.
+     */
+    rateCard: q => app.safe("rateCard", quality => {
+      const reveal = [...document.querySelectorAll(".screen.active button")]
+        .find(b => /show|reveal|answer/i.test(b.textContent));
+      if (reveal) reveal.click();
+      const row = document.querySelector(".rating-row, #srs-rating, .btn-row");
+      const btns = row ? [...row.querySelectorAll("button")] : [];
+      const btn = btns[Math.min(quality, btns.length - 1)];
+      if (!btn) return null;
+      btn.click();
+      return btn.textContent.trim();
+    }, q),
 
     /** Open the word card for a token and read it back. */
     tapWord: thai => app.safe("tapWord", w => {
