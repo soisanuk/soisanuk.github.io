@@ -215,6 +215,10 @@ body {
 /* A fragment is still readable and still tappable for its letters, but it must
    not look as trustworthy as a word we can actually vouch for. */
 .paste-text .w-token[data-frag] { border-bottom-style:dashed; opacity:0.72; }
+/* "we couldn't prove this tone" must look different from mid-tone grey, which
+   it otherwise nearly matches against the page background */
+.paste-text .w-token[data-notone] { border-bottom-style:dotted; opacity:0.68; }
+.paste-notone-key { opacity:0.6; }
 .paste-credit { max-width:640px; margin:0.8rem auto 0.2rem; font-size:0.78em; opacity:0.55;
   text-align:center; line-height:1.5; }
 .paste-credit a { color:inherit; }
