@@ -25,6 +25,11 @@
 // A round should end with a partial report, never with a stack trace and
 // nothing to show — that is what happened to the attempt this replaces.
 //
+// CAVEAT WORTH KNOWING: headless Chromium has NO Thai voice, so every `listen`
+// and `toneear` card is silent. A round cannot judge the intended audio
+// experience — but it is also a genuine test case: the 2026-08-30 round found
+// the tone unit was mathematically unpassable in exactly this condition.
+//
 // Playwright is borrowed from the sibling last-baht-bus repo, matching the
 // tools/sweep.mjs precedent. This repo declares no Playwright dependency of its
 // own; if persona rounds become routine that is worth revisiting.
@@ -42,7 +47,7 @@ const APP_URL = `file://${REPO}/web/index.html`;
 
 // Steps you advance by clicking a button, vs steps you advance by ANSWERING.
 // This split is the thing a from-scratch driver gets wrong.
-const TEACH_STEPS = new Set(["glyph", "wordintro", "toneIntro", "tonecalc", "chunkIntro"]);
+const TEACH_STEPS = new Set(["glyph", "wordintro", "toneIntro", "tonecalc", "chunkIntro", "chunk"]);
 const CHOICE_STEPS = new Set(["mc", "mc2", "speed", "listen", "mcth", "clozex", "cloze", "toneear", "toneread"]);
 
 export async function openApp(opts = {}) {
@@ -108,12 +113,16 @@ export async function openApp(opts = {}) {
     /** localStorage-backed progress, for before/after judgments. */
     state: () => app.safe("state", () => {
       const read = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return localStorage.getItem(k); } };
-      const prog = read("thaicab_progress") || {};
+      // SRS_KEY is "soisanuk_progress" (srs.js:4). docs/architecture.md said
+      // "thaicab_progress" and this read it straight out of the doc, so
+      // cardsSeen was always 0.
+      const prog = read("soisanuk_progress") || {};
       return {
         cardsSeen: Object.keys(prog).length,
         path: read("soisanuk_path"), streak: read("soisanuk_streak"),
+        // dueCards(progress, keys) — two arguments, not one
         srsDue: (() => {
-          try { return dueCards(WORDS.map(w => w[0])).length; } catch (e) { return null; }
+          try { return dueCards(prog, WORDS.map(w => w[0])).length; } catch (e) { return null; }
         })(),
       };
     }),
@@ -235,9 +244,16 @@ export async function openApp(opts = {}) {
           // the result is recorded as a possible miss, which is honest.
           const guessed = !target;
           if (!target) target = lis[0];
-          if (!wantRight) target = lis.find(li => li !== target) || target;
+          if (wantRight) { target.click(); return { picked: target.textContent.trim(), guessed, missed: false }; }
+          // A deliberate miss must be FOLLOWED by the right answer. An MC card
+          // has no next-button until it is answered correctly, so clicking only
+          // a wrong tile leaves the card stuck — and the harness would then
+          // force past it via _learnNext(), skipping it UNSCORED and reporting
+          // a perfect run. That silently invalidated every accuracy < 1 round.
+          const wrong = lis.find(li => li !== target);
+          if (wrong) wrong.click();
           target.click();
-          return { picked: target.textContent.trim(), guessed };
+          return { picked: target.textContent.trim(), guessed, missed: !!wrong };
         }, { kind, wantRight: Math.random() < accuracy });
       } else if (kind === "typeen" || kind === "typeth") {
         action = "type";
@@ -336,7 +352,7 @@ export async function openApp(opts = {}) {
     /** Machine-readable summary: what ran, what broke. */
     report() {
       const kinds = {};
-      for (const e of events) if (e.label?.startsWith("advance:") || e.label?.startsWith("choose:") || e.label?.startsWith("type:"))
+      for (const e of events) if (/^(advance|choose|type|match|skip)[:.]?/.test(e.label || ""))
         kinds[e.label] = (kinds[e.label] || 0) + 1;
       return { actions: events.length, problems: problems.length, byStepKind: kinds, problemList: problems.slice(0, 20) };
     },
