@@ -25,10 +25,14 @@
 // A round should end with a partial report, never with a stack trace and
 // nothing to show — that is what happened to the attempt this replaces.
 //
-// CAVEAT WORTH KNOWING: headless Chromium has NO Thai voice, so every `listen`
-// and `toneear` card is silent. A round cannot judge the intended audio
-// experience — but it is also a genuine test case: the 2026-08-30 round found
-// the tone unit was mathematically unpassable in exactly this condition.
+// AUDIO. An earlier version of this header claimed headless Chromium has no
+// Thai voice. MEASURE IT, don't assume: on this machine _tts.available() is
+// TRUE and speechSynthesis lists a th-TH voice, so listen/toneear cards DO
+// appear and the audio-gated path never runs. It is evidently machine- or
+// build-dependent. Pass `{ noAudio: true }` to stub _tts.available() to false
+// and exercise the other branch deliberately — that branch is what makes the
+// tone unit passable for a learner without a Thai voice, and it deserves
+// testing on purpose rather than by accident.
 //
 // Playwright is borrowed from the sibling last-baht-bus repo, matching the
 // tools/sweep.mjs precedent. This repo declares no Playwright dependency of its
@@ -262,7 +266,17 @@ export async function openApp(opts = {}) {
           //   listen mode "en"  → the ENGLISH; any other mode → the THAI
           //   mc2 / cloze       → the item carries its own answer
           let answer = null;
-          if (item.item) answer = item.item.answer;
+          // Tone cards carry their target nowhere near item.word. toneear has
+          // neither item.item.answer nor item.word, and toneread HAS item.word
+          // but its options are tone LABELS, so reading word[2] silently picked
+          // a distractor every time — the tone unit scored ~2 of 8 cards with
+          // the rest force-advanced unscored, reporting "100% first-try".
+          if (item.kind === "toneear" && typeof toneMinimalSet === "function") {
+            const set = toneMinimalSet(item.cons, item.vowel);
+            answer = set[item.pick || 0]?.thai ?? null;
+          } else if (item.kind === "toneread" && typeof toneOfWord === "function") {
+            answer = TONE_LABELS[toneOfWord(item.word[0])] ?? null;
+          } else if (item.item) answer = item.item.answer;
           else if (item.word) {
             const wantThai = kind === "mcth" || kind === "clozex" ||
                              (kind === "listen" && item.mode !== "en");
@@ -371,7 +385,10 @@ export async function openApp(opts = {}) {
         const r = await app.driveLessonStep(accuracy);
         if (!r.kind) { log.push({ done: true, reason: r.action }); break; }
         log.push({ i, kind: r.kind, action: r.action, at: r.after?.at ?? null, advanced: r.advanced, forced: r.forced });
-        if (!r.advanced) {
+        // The card after the last one is the unit summary — a non-advance there
+        // is the lesson ENDING, not a hang. Every unit was reporting stall=1.
+        if (!r.advanced && (await app.screen()) === "lesson-screen" &&
+            await page.evaluate(() => !!_lu && _lu.at < _lu.queue.length - 1)) {
           stalls++;
           if (stalls === 1) await app.shot("stall-" + r.kind);
           // a stalled step is a FINDING, not a reason to die — note it and move on
@@ -393,7 +410,24 @@ export async function openApp(opts = {}) {
     async close() { try { await browser.close(); } catch (e) {} },
   };
 
+  if (opts.noAudio) {
+    // before any script runs, so _unitStart sees it at unit-build time
+    await page.addInitScript(() => {
+      window.addEventListener("DOMContentLoaded", () => {
+        try { if (window._tts) window._tts.available = () => false; } catch (e) {}
+      });
+    });
+  }
   await page.goto(APP_URL);
+  if (opts.noAudio) await page.evaluate(() => { try { _tts.available = () => false; } catch (e) {} });
+  if (opts.fresh !== false) {
+    // Every round so far had to clear + reload + dismiss by hand, and one of
+    // them carried a previous fabricated state into a run by forgetting the
+    // reload. Fresh by default; pass { fresh: false } to keep a seeded store.
+    await app.safe("reset", () => { try { localStorage.clear(); } catch (e) {} return true; });
+    await page.reload();
+    if (opts.noAudio) await page.evaluate(() => { try { _tts.available = () => false; } catch (e) {} });
+  }
   await app.dismissTutorial();
   return app;
 }

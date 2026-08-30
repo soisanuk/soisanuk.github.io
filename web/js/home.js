@@ -84,7 +84,11 @@ function _homeRender() {
 
   const prog = loadProgress();
   const srs = srsStats(prog, WORDS.map(w => w[0]));
-  const streak = typeof _streakLoad === "function" ? _streakLoad() : {};
+  // _streakNow(), not _streakLoad(): the raw record is a snapshot of the last
+  // day studied, so this tile showed "23 / day streak" beside a sidebar that
+  // already read "streak ended · best 23 days".
+  const streak = typeof _streakNow === "function" ? _streakNow()
+    : (typeof _streakLoad === "function" ? _streakLoad() : {});
   const path = typeof _pathLoad === "function" ? _pathLoad() : {};
   const plan = typeof continuePlan === "function" ? continuePlan() : null;
   const cta = homeCta(plan, streak);
