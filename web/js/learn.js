@@ -904,8 +904,17 @@ function startContinue() {
 if (typeof document !== "undefined") setTimeout(_streakRender, 0);
 
 // ── Placement test + levels (engagement 5/7) ────────────────────────────────
+// Titles by units completed. The top one must land ON completion, not before
+// it: the last three units are the FINAL letter batch (which completes the
+// reading ladder the whole course is built around), getting around, and prices
+// — the three most useful units in the spine. The threshold was 14 against a
+// 17-unit course, so the app crowned you "bar owner" before you could read the
+// last eight letters, ask directions, or handle money, and those three units
+// then passed in silence. Four thresholds spaced 3/4/4/3 fit a 14-unit spine;
+// three units were added later and this table wasn't revisited.
+// A test pins the last threshold to COURSE.length so it can't drift again.
 const LEVELS = [[0, "Fresh off the plane"], [3, "Soi tourist"], [7, "Soi regular"],
-  [11, "Old hand"], [14, "เจ้าของบาร์"]];
+  [11, "Old hand"], [17, "เจ้าของบาร์"]];
 function _levelName(done) {
   let name = LEVELS[0][1];
   for (const [n, l] of LEVELS) if (done >= n) name = l;

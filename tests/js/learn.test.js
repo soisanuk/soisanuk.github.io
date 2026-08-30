@@ -308,7 +308,12 @@ test("placement: 80% per batch sets the cut, prefix units complete, levels name 
   assert.ok(p.units.L0.placed, "marked as placed, not earned");
   assert.equal(_levelName(0), "Fresh off the plane");
   assert.equal(_levelName(8), "Soi regular");
-  assert.equal(_levelName(14), "เจ้าของบาร์");
+  // 14 used to be the top title, which meant it arrived three units before the
+  // end — before the final letter batch, getting around, and prices. The top
+  // title now lands on completion; see "the top level title lands exactly on
+  // course completion".
+  assert.equal(_levelName(14), "Old hand");
+  assert.equal(_levelName(COURSE.length), "เจ้าของบาร์");
 });
 
 test("placement never completes the tone unit — it tests letter decoding, not tones", () => {
@@ -545,4 +550,23 @@ test("a unit's score badge keeps the BEST attempt, not the last", () => {
   u = merge(u, 0.5, 90);
   assert.equal(u.msAvg, 21, "and a slower one doesn't erase it");
   assert.equal(u.done, true, "done stays sticky");
+});
+
+test("the top level title lands exactly on course completion", () => {
+  // It was 14 against a 17-unit course, so "เจ้าของบาร์" arrived before the
+  // final letter batch, getting around, and prices — the three most useful
+  // units — which then awarded nothing at all. Pinned to COURSE.length so
+  // adding an eighteenth unit can't silently reintroduce the gap.
+  const top = LEVELS[LEVELS.length - 1];
+  assert.equal(top[0], COURSE.length,
+    `top title "${top[1]}" unlocks at ${top[0]} of ${COURSE.length} units`);
+  assert.notEqual(_levelName(COURSE.length - 1), _levelName(COURSE.length),
+    "finishing the last unit must change the title");
+});
+
+test("the level ladder is ordered and starts at zero", () => {
+  assert.equal(LEVELS[0][0], 0, "someone who has done nothing still has a title");
+  for (let i = 1; i < LEVELS.length; i++) {
+    assert.ok(LEVELS[i][0] > LEVELS[i - 1][0], `LEVELS[${i}] does not increase`);
+  }
 });
