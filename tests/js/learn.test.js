@@ -523,3 +523,26 @@ test("_streakView never writes", () => {
   _streakView(st, "2026-08-30", "2026-08-29");
   assert.equal(JSON.stringify(st), before, "the display must not mutate the record");
 });
+
+// ── findings from the 2026-08-30 completionist persona round ────────────────
+
+test("a unit's score badge keeps the BEST attempt, not the last", () => {
+  // learn.js deliberately keeps completed units re-enterable "so you can back
+  // up to review and move on" — so the app invited the exact action that
+  // destroyed the record. Pass at 100%, dip back in to refresh, have a bad
+  // night, and the badge read 35% until you replayed it cleanly.
+  // Reported independently by the first-timer and completionist rounds.
+  const merge = (prev, acc, msAvg) => ({
+    done: prev.done || true,
+    acc: Math.max(acc, prev.acc || 0),
+    msAvg: (prev.msAvg && msAvg) ? Math.min(prev.msAvg, msAvg) : (msAvg || prev.msAvg),
+  });
+  let u = merge({}, 1, 57);
+  assert.equal(u.acc, 1);
+  u = merge(u, 0.35, 21);
+  assert.equal(u.acc, 1, "a bad replay must not overwrite a good score");
+  assert.equal(u.msAvg, 21, "but a FASTER time is still an improvement");
+  u = merge(u, 0.5, 90);
+  assert.equal(u.msAvg, 21, "and a slower one doesn't erase it");
+  assert.equal(u.done, true, "done stays sticky");
+});

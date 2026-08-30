@@ -325,7 +325,19 @@ function _unitFinish() {
   const id = _unitId(_lu.unit);
   path.units = path.units || {};
   const prev = path.units[id] || {};
-  path.units[id] = { done: prev.done || passed, acc, msAvg: msAvg || prev.msAvg };
+  // Keep the BEST, not the last. `done` was already sticky, but `acc` and
+  // `msAvg` were unconditional overwrites — and learn.js deliberately keeps
+  // completed units re-enterable "so you can back up to review and move on",
+  // so the app invited the exact action that destroyed the record: pass a unit
+  // at 100%, dip back in to refresh it, have a bad night, and the badge reads
+  // 35% until you replay it cleanly. Reported independently by the 2026-08-30
+  // first-timer and completionist rounds. (_bestUpdate for 🏁 read times was
+  // already a true minimum; this brings the unit badge in line with it.)
+  path.units[id] = {
+    done: prev.done || passed,
+    acc: Math.max(acc, prev.acc || 0),
+    msAvg: (prev.msAvg && msAvg) ? Math.min(prev.msAvg, msAvg) : (msAvg || prev.msAvg),
+  };
   _pathSave(path);
   const body = document.getElementById("lesson-body");
   body.innerHTML = `<div class="thai-big">${passed ? "🎉" : "💪"}</div>
@@ -829,9 +841,18 @@ function _streakView(st, today, yesterday) {
     ended: !alive && !!st.days,          // had a streak, lost it
   };
 }
-function _streakRender() {
+// The one entry point every DISPLAY must use. _streakView alone wasn't enough:
+// it was wired into _streakRender only, so the desktop home tile (home.js) and
+// the Records screen still printed the raw record — three surfaces, two of them
+// stale, and the first two are visible together on the desktop menu 40px apart.
+// Found by the 2026-08-30 completionist round, immediately after the
+// lapsed-learner round's fix went in half-done.
+function _streakNow() {
   const d = new Date(), y = new Date(Date.now() - 864e5);
-  const st = _streakView(_streakLoad(), _localDateStr(d), _localDateStr(y));
+  return _streakView(_streakLoad(), _localDateStr(d), _localDateStr(y));
+}
+function _streakRender() {
+  const st = _streakNow();
   const t = st.today || {};
   for (const id of ["nav-cont-stats", "nav-cont-stats2"]) {
     const el = document.getElementById(id);
@@ -944,12 +965,12 @@ function _placementFinish() {
 
 // ── 🏆 Records (engagement 6/7) — the local best-night board ────────────────
 function showRecords() {
-  const st = _streakLoad(), path = _pathLoad();
+  const st = _streakNow(), path = _pathLoad();
   const bests = Object.entries(path.best || {}).sort((a, b) => a[1] - b[1]).slice(0, 8);
   const done = COURSE.filter(u => _unitDone(path, u)).length;
   document.getElementById("records-body").innerHTML =
     `<div class="learn-summary">Level: <b>${_levelName(done)}</b> · ${done}/${COURSE.length} units</div>
-     <div class="learn-summary">🔥 Streak: <b>${st.days || 0}</b> now · best <b>${st.maxDays || 0}</b> days</div>
+     <div class="learn-summary">🔥 Streak: <b>${st.days || 0}</b> ${st.ended ? "(ended)" : "now"} · best <b>${st.maxDays || 0}</b> days</div>
      <div class="learn-summary">📅 Biggest day: <b>${st.bestDay ? st.bestDay.cards + " cards (" + st.bestDay.date + ")" : "—"}</b></div>
      <div class="sidebar-section" style="text-align:center">🏁 Fastest reads</div>
      <div style="text-align:center">${bests.length ? bests.map(([th, ms]) =>
