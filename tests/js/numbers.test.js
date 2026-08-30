@@ -88,3 +88,24 @@ describe("_THAI_DIGITS", () => {
     }
   });
 });
+
+// Found by the 2026-08-30 games look-and-feel round. .thai-big is 7.5rem on
+// mobile, which is right for สิบ and catastrophic for เก้าร้อยเก้าสิบเก้า: at
+// 120px on a 390px phone it wrapped to FOUR lines and pushed the footer 533px
+// below the fold, so "← Menu" needed half a screen of scrolling to reach.
+// CSS cannot size by content length; _nfShow is the code that knows the
+// content. Measured worst-case overflow across 40 real cards: 565px → 31px,
+// with the footer on screen at every answer length.
+test("the Numbers answer shrinks as the answer gets longer", () => {
+  const src = readFileSync(new URL("../../web/js/numbers.js", import.meta.url), "utf8");
+  assert.match(src, /glyphs\s*>\s*\d+\s*\?/, "_nfShow no longer scales by glyph count");
+  // the tiers must be monotone: more glyphs never means a bigger font
+  const tiers = [...src.matchAll(/glyphs > (\d+) \? "([\d.]+)rem"/g)]
+    .map(m => ({ over: +m[1], rem: +m[2] }))
+    .sort((a, b) => a.over - b.over);
+  assert.ok(tiers.length >= 2, "expected at least two size tiers");
+  for (let i = 1; i < tiers.length; i++) {
+    assert.ok(tiers[i].rem <= tiers[i - 1].rem,
+      `tier at >${tiers[i].over} glyphs is LARGER than at >${tiers[i - 1].over}`);
+  }
+});

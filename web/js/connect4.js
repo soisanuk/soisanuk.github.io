@@ -251,7 +251,7 @@ function _c4HUD() {
     // unlabelled 0 floating between "🟡 You 0" and "🍹 Tab ฿0", on its own
     // baseline. Found by the 2026-08-30 games look-and-feel round.
     (_c4Girl ? `<span>${_c4Girl.e} ${_c4Esc(_c4Girl.name)} <strong>${_c4Losses}</strong></span>` : "") +
-    `<span>🍹 Tab <strong>฿${_c4Tab}</strong></span>`;
+    `<span>🍹 Tab <strong><span class="baht">฿</span>${_c4Tab}</strong></span>`;
 }
 
 // Speak a vowel: single marks get the letterSpeech name, compounds fall
@@ -285,7 +285,7 @@ function startConnect4() {
       <span class="c4-girl-blurb">${_c4Esc(g.blurb)}</span>
     </button>`).join("") + `</div>
     <p class="c4-stakes">House rules: answer a vowel right to aim your own shot.
-    Get it wrong and the bar drops it anywhere. Loser buys the lady drink (฿150). 🍹</p>`;
+    Get it wrong and the bar drops it anywhere. Loser buys the lady drink (<span class="baht">฿</span>150). 🍹</p>`;
   body.querySelectorAll(".c4-girl").forEach(btn =>
     btn.addEventListener("click", () => _c4Start(+btn.dataset.i)));
 }
