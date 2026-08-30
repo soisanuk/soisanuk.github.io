@@ -27,6 +27,24 @@
 // N keys so a session is never blank; SRS Review/Sentence SRS pass no
 // fallback, so a genuinely empty deck correctly triggers "all caught up"
 // instead of stuffing in content nobody asked to review yet.
+// Progress through a session, counted in DISTINCT cards cleared rather than
+// position in the deck array. Only rating-based modes requeue a lapsed card
+// (see _buildRatingHandler), and each requeue lengthens the deck — so
+// `idx + 1 / deck.length` measures you against a denominator that grows as you
+// work. Simulated over a realistic relearning curve, a 600-card session ends
+// with the deck at 962: at the halfway point the old counter read "480 / 788"
+// where 788 was never the goal and 600 was.
+//
+// Distinct-cleared is monotone, keeps the denominator the learner was given,
+// and reaches 100% exactly when the session ends. `deck.slice(idx)` is every
+// card still ahead — anything requeued is in there, anything passed is not.
+// Found by the 2026-08-30 lapsed-learner round.
+function sessionProgress(deck, idx) {
+  const total = new Set(deck).size;
+  const left = new Set(deck.slice(idx)).size;
+  return { done: total - left, total };
+}
+
 function buildDeck(keys, { mode = "union", freshCap = 10, cap = null, fallback = null } = {}) {
   const due = dueCards(progress, keys);
   const fresh = newCards(progress, keys, freshCap);
@@ -468,8 +486,9 @@ function srsShow() {
   const key = deck[idx];
   const [thai, rtgs, answer] = lookup(key);
 
-  setProgress("srs-prog", idx, deck.length);
-  document.getElementById("srs-counter").textContent = `${session.title}  ${idx + 1} / ${deck.length}`;
+  const sp = sessionProgress(deck, idx);
+  setProgress("srs-prog", sp.done, sp.total);
+  document.getElementById("srs-counter").textContent = `${session.title}  ${sp.done} / ${sp.total}`;
   document.getElementById("srs-thai").textContent  = vowelDisp(thai, "อ"); // อ host: vowels read as their pure sound (no-op for consonants/marks)
   document.getElementById("srs-rtgs").textContent  = `(${rtgs})`;
   document.getElementById("srs-prompt").textContent = "Do you know this?";
@@ -709,8 +728,9 @@ function sentSrsShow() {
 
   const [sentThai, sentRtgs, sentEn] = ex;
 
-  setProgress("sent-prog", idx, deck.length);
-  document.getElementById("sent-counter").textContent = `Sentence SRS  ${idx + 1} / ${deck.length}`;
+  const sp = sessionProgress(deck, idx);
+  setProgress("sent-prog", sp.done, sp.total);
+  document.getElementById("sent-counter").textContent = `Sentence SRS  ${sp.done} / ${sp.total}`;
 
   // Build sentence with target word blanked. A phrase-template headword
   // ("ขอ...") appears in its example sentence as only its fixed part (ขอ),
