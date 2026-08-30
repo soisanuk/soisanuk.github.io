@@ -99,8 +99,66 @@ describe("the generated dictionary", () => {
 
   test("known words resolve to sensible English", () => {
     assert.equal(thaiGloss("จับกุม"), "to arrest");
-    assert.equal(thaiGloss("มาตรการ"), "measure");
     assert.equal(thaiGloss("เศรษฐกิจ"), "economy");
+    assert.match(thaiGloss("มาตรการ"), /^measure/);
+  });
+
+  // All below found by the 2026-08-30 fluent-Thai-reader persona round.
+
+  test("no gloss redirects the learner to another Thai word", () => {
+    // "alternative form of มกร" sends someone who needed a gloss to a word they
+    // also don't know, often spelled in a romanisation scheme this app rejects.
+    // No gloss is better; those entries are dropped at build time.
+    const bad = THAI_GLOSS.split("\n").map(l => l.split("\t"))
+      .filter(r => /alternative form of|synonym of|clipping of|abstract noun of/i.test(r[1]));
+    assert.ok(bad.length <= 8, `${bad.length} redirect glosses: ${bad.slice(0,3).map(r=>r[0]+" → "+r[1])}`);
+  });
+
+  test("no gloss leaks Thai script, raw IPA, or Paiboon spellings", () => {
+    for (const line of THAI_GLOSS.split("\n")) {
+      const g = line.split("\t")[1];
+      assert.ok(!/[฀-๿]/.test(g), `Thai script in an English gloss: ${g}`);
+      assert.ok(!/[ɛɔʉə]/.test(g), `raw IPA in a gloss: ${g}`);
+      assert.ok(!/\b(bp|dt)[aeiou]/.test(g), `raw Paiboon spelling in a gloss: ${g}`);
+    }
+  });
+
+  test("no gloss ends mid-parenthesis", () => {
+    // "public (of, relating to; public" — the cap used to cut inside a bracket
+    for (const line of THAI_GLOSS.split("\n")) {
+      const g = line.split("\t")[1];
+      assert.ok((g.split("(").length - 1) <= (g.split(")").length - 1), `unclosed paren: ${g}`);
+    }
+  });
+
+  test("a register-restricted sense keeps its warning", () => {
+    // Stripping the tag is what made กู and มึง read as neutral pronouns —
+    // words whose entire point is that using them wrongly causes offence.
+    assert.match(thaiGloss("กู"), /vulgar/);
+    assert.match(thaiGloss("มึง"), /vulgar/);
+  });
+
+  test("etymology-ordered senses are overridden where they mislead", () => {
+    // English Wiktionary orders senses historically, so the everyday meaning
+    // can fall outside the two senses kept: กรุงเทพ read "Ayutthaya Kingdom".
+    assert.equal(thaiGloss("กรุงเทพ"), "Bangkok");
+    assert.match(thaiGloss("โลก"), /world/);
+    assert.match(thaiGloss("เมีย"), /wife/);
+  });
+
+  test("no romanisation ends a syllable outside Thai's final inventory", () => {
+    // Thai finals are -k -t -p -m -n -ng -w -y or open. Wiktionary keeps the
+    // foreign spelling for loanwords (โพสต์ "phóos", อีเมล "ii-meel"), which is
+    // a pronunciation no Thai speaker produces.
+    for (const line of THAI_GLOSS.split("\n")) {
+      const r = line.split("\t")[2];
+      if (!r) continue;
+      for (const syl of r.split(/[- ]/)) {
+        const t = syl.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (/ng$/.test(t)) continue;
+        assert.ok(!/(s|l|f|d|b|v|z|r|c|h|x|j|q)$/.test(t), `illegal Thai final in ${r}`);
+      }
+    }
   });
 
   test("the curriculum still wins over the dictionary", () => {

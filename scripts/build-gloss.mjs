@@ -21,8 +21,8 @@
 //     this course      tam-rùat     sǔay    náam
 // The course is Paiboon's tone marks with RTGS-style consonants, so we convert
 // Paiboon (Royal Institute is unusable — it carries no tone at all). Measured
-// against the 764 curriculum words that appear in both: 86.1% exact, and of
-// the 106 misses 67 differ only in vowel-length spelling and 15 in -ai/-ay.
+// against the 739 curriculum words that appear in both: 88.5% exact, and of
+// the 85 misses 67 differ only in vowel-length spelling and 13 in -ai/-ay.
 //
 // The remaining ~24 disagree on a TONE MARK, which in a tone-teaching app is
 // the one error that must not ship — a romanisation saying "rising" beside
@@ -46,7 +46,17 @@ const MAXLEN = 58;   // one line on a phone-width card
 // Senses we don't want as a learner's first answer. Wiktionary tags these.
 const SKIP_TAGS = new Set(["archaic", "obsolete", "dated", "rare", "derogatory",
   "slang", "vulgar", "offensive", "misspelling", "alt-of", "form-of",
-  "abbreviation", "initialism"]);
+  "abbreviation", "initialism", "historical"]);
+// When every sense of a word is skip-tagged we have to use one anyway — but
+// then the tag is the most important thing on the card, not something to
+// discard. Stripping it is how กู/มึง ended up reading as neutral pronouns and
+// กรุงเทพ as a defunct kingdom with no hint it was the historical sense.
+const SHOW_TAGS = ["vulgar", "offensive", "derogatory", "slang", "historical",
+  "archaic", "obsolete", "dated", "colloquial", "formal", "poetic"];
+// Senses that just point at another Thai word are useless to a learner — they
+// redirect to a word they also don't know, often in a romanisation scheme this
+// app doesn't use. Better no gloss than a redirect.
+const REDIRECT = /^(alternative|archaic|obsolete|dated|nonstandard|informal) (form|spelling) of\b|^abstract noun of\b|^clipping of\b|^initialism of\b|^abbreviation of\b/i;
 // Entry types that aren't words.
 const SKIP_POS = new Set(["character", "romanization", "syllable", "punct", "symbol", "num"]);
 
@@ -90,6 +100,45 @@ function toneAgrees(thai, roman) {
   return got === want;
 }
 
+// Thai's final-consonant inventory is closed: -k -t -p -m -n -ng -w -y, or an
+// open syllable. A written ส/ซ/ศ/ษ/จ/ช/ด/ต/ธ final is realised [t], ล/ฬ/ร/ญ/ณ
+// as [n], ฟ/ภ/พ/ป as [p]. Wiktionary's Paiboon keeps the foreign spelling for
+// loanwords, giving โพสต์ "phóos" and อีเมล "ii-meel" — pronunciations no Thai
+// speaker produces. The curriculum already writes the Thai realisation
+// (เชฟ chêep, เสิร์ฟ sòoep), so map to it rather than drop the romanisation.
+const FINAL_FIX = { s: "t", d: "t", j: "t", z: "t", l: "n", r: "n", f: "p", b: "p", v: "p", g: "k", c: "k" };
+function legaliseFinals(roman) {
+  return roman.split(/([ -])/).map(syl => {
+    if (syl === " " || syl === "-") return syl;
+    const d = syl.normalize("NFD");
+    const m = d.match(/^(.*?)([a-z])(\p{M}*)$/u);
+    if (!m) return syl;
+    const [, head, last, marks] = m;
+    if (/ng$/.test(head + last) || !FINAL_FIX[last]) return syl;
+    // a vowel letter before it means this really is a final consonant
+    if (!/[aeiou]\p{M}*$/u.test(head)) return syl;
+    return (head + FINAL_FIX[last] + marks).normalize("NFC");
+  }).join("");
+}
+
+// Where English Wiktionary orders senses etymologically, the first sense can be
+// a Pali/Sanskrit source meaning or a historical one, and the everyday meaning
+// never appears within the two senses we keep. There is no signal in the data
+// to fix that generically, so these are stated outright. Every one was checked
+// individually — see docs/persona-playtests.md, the 2026-08-30 reader round.
+const OVERRIDES = {
+  "กรุงเทพ": "Bangkok", "โลก": "world; the earth", "สัญญา": "contract; promise; agreement",
+  "วิจัย": "research", "ยก": "to lift; to raise", "บาง": "some; thin",
+  "กี่": "how many; how much", "ทฤษฎี": "theory", "พิมพ์": "to print; to type",
+  "ภาค": "part; region; sector", "แจ้ง": "to inform; to notify",
+  "แต่ง": "to dress; to decorate; to compose", "เมีย": "wife (informal)",
+  "เกษตร": "agriculture", "พระเจ้า": "God; king", "นิยม": "to like; to be popular",
+  "ปรับ": "to adjust; to fine", "ศูนย์": "zero; centre", "ขาด": "to be torn; to lack; to be absent",
+  "จับ": "to catch; to hold; to arrest", "หาก": "if", "รอง": "to support; deputy, vice-",
+  "ได้แก่": "namely; that is", "ไอ้": "(familiar) male prefix, rude to a stranger",
+  "กู": "(vulgar) I, me", "มึง": "(vulgar) you",
+};
+
 const [, , jsonlPath] = process.argv;
 if (!jsonlPath) {
   console.error("usage: node scripts/build-gloss.mjs <kaikki.org-dictionary-Thai.jsonl>");
@@ -102,27 +151,67 @@ function clean(g) {
   s = s.replace(/^\([^)]*\)\s*/, "");            // leading (ชาว~, คน~) usage hints
   s = s.replace(/\s*\[[^\]]*\]\s*/g, " ");       // [bracketed] editorial notes
   s = s.replace(/[\\\u0000-\u001f]/g, " ");        // stray backslashes / control chars
+  // Parenthetical asides carrying Thai script or raw IPA/Paiboon letters:
+  // "abstract noun of รู้สึก (rúu-sʉ̀k)". The Thai is unreadable to someone who
+  // needed the gloss, and the bp-/dt-/g- spellings are the very scheme the app
+  // documents as never appearing in front of a learner.
+  s = s.replace(/\s*\([^)]*[฀-๿ɛɔʉə][^)]*\)/g, "");
   s = s.replace(/\s+/g, " ").trim();
-  // "suspect: person suspected (of a crime…)" — the half before the colon is
-  // the concise gloss and the rest is the encyclopaedic expansion.
-  const colon = s.indexOf(": ");
-  if (colon >= 3) s = s.slice(0, colon);
   s = s.replace(/[.;:,]+$/, "").trim();
   if (s.length > MAXLEN) {
-    const at = Math.max(s.lastIndexOf("; ", MAXLEN), s.lastIndexOf(", ", MAXLEN));
-    s = (at > 20 ? s.slice(0, at) : s.slice(0, MAXLEN).replace(/\s+\S*$/, "")).trim();
+    // Only NOW is it worth losing information. "suspect: person suspected (of a
+    // crime…)" keeps its concise half; but "a first person pronoun: I" is short
+    // enough to keep whole, and cutting it there is what left กู glossed as a
+    // grammatical category instead of "I".
+    const colon = s.indexOf(": ");
+    if (colon >= 3 && colon <= MAXLEN) s = s.slice(0, colon);
   }
-  return s.replace(/[.;:,]+$/, "").trim();
+  if (s.length > MAXLEN) {
+    const at = Math.max(s.lastIndexOf("; ", MAXLEN), s.lastIndexOf(", ", MAXLEN));
+    s = at > 20 ? s.slice(0, at)
+                : s.slice(0, MAXLEN - 1).replace(/\s+\S*$/, "") + "\u2026";  // …
+  }
+  s = s.replace(/[.;:,]+$/, "").trim();
+  // Never end mid-parenthesis: drop the dangling fragment rather than print
+  // "public (of, relating to; public".
+  if ((s.split("(").length - 1) > (s.split(")").length - 1)) {
+    s = s.slice(0, s.lastIndexOf("(")).replace(/[\s.;:,\u2026]+$/, "").trim();
+  }
+  return s;
 }
 
 // Wiktionary nests senses: glosses[0] is the umbrella and the rest are its
 // children. An umbrella ENDS IN A COLON ("to consume:") and is useless alone,
 // so in that case take the deepest child ("to eat; to take; to drink").
 // A flat single gloss is already the answer.
+// Applied to the FINAL joined gloss. Per-sense filtering is not enough: a
+// single Wiktionary sense can read "dragon; alternative form of มกร", and two
+// senses joined with "; " can carry a redirect in the second half. Drop the
+// offending clause, keep the rest.
+const BAD_CLAUSE = /^(alternative|archaic|obsolete|dated|nonstandard|informal) (form|spelling) of\b|^(synonym|variant|clipping|abbreviation|initialism|abstract noun) of\b|^used in\b|^used to (form|precede)\b|[฀-๿]|\b(bp|dt)[aeiouāîí]|\bg[aeiou]{2}/i;
+function finalise(text) {
+  let out = String(text).split(";").map(c => c.trim()).filter(c => c && !BAD_CLAUSE.test(c)).join("; ");
+  out = out.replace(/[.;:,]+$/, "").trim();
+  // never end mid-parenthesis
+  if ((out.split("(").length - 1) > (out.split(")").length - 1)) {
+    out = out.slice(0, out.lastIndexOf("(")).replace(/[\s.;:,\u2026]+$/, "").trim();
+  }
+  if (out.length > MAXLEN) {
+    const at = Math.max(out.lastIndexOf("; ", MAXLEN), out.lastIndexOf(", ", MAXLEN));
+    out = at > 20 ? out.slice(0, at)
+                  : out.slice(0, MAXLEN - 1).replace(/\s+\S*$/, "") + "\u2026";
+    if ((out.split("(").length - 1) > (out.split(")").length - 1)) {
+      out = out.slice(0, out.lastIndexOf("(")).replace(/[\s.;:,\u2026]+$/, "").trim();
+    }
+  }
+  return out.replace(/[.;:,]+$/, "").trim();
+}
+
 function senseGloss(sense) {
   const gl = sense.glosses || [];
   if (!gl.length) return "";
   const pick = (gl.length > 1 && /:\s*$/.test(gl[0])) ? gl[gl.length - 1] : gl[0];
+  if (REDIRECT.test(String(pick).trim())) return "";
   return clean(pick);
 }
 
@@ -143,7 +232,7 @@ function romanFor(word) {
     for (const s of e.sounds || []) {
       if (!(s.raw_tags || []).includes("Paiboon")) continue;
       if (!s.roman || s.roman.endsWith("-")) continue;  // bound forms
-      const r = convertRoman(s.roman);
+      const r = legaliseFinals(convertRoman(s.roman));
       if (!r || /[^a-zA-Z\u0300-\u036f' -]/.test(r.normalize("NFD"))) return null; // unconverted IPA left over
       if (!toneAgrees(word, r)) { dropped++; return null; }
       return r;
@@ -152,16 +241,20 @@ function romanFor(word) {
 }
 
 function glossFor(word) {
+  if (OVERRIDES[word]) return OVERRIDES[word];
   const entries = by.get(word);
   if (!entries) return null;
   // pass 0 takes only untagged senses; pass 1 falls back to tagged ones, so a
   // word whose every sense is "archaic" still gets an answer rather than none
   for (const pass of [0, 1]) {
     const picks = [];
+    let tagLabel = "";
     for (const e of entries) {
       for (const s of e.senses || []) {
-        const tagged = (s.tags || []).some(t => SKIP_TAGS.has(t));
+        const tags = s.tags || [];
+        const tagged = tags.some(t => SKIP_TAGS.has(t));
         if (pass === 0 ? tagged : !tagged) continue;
+        if (pass === 1 && !tagLabel) tagLabel = SHOW_TAGS.find(t => tags.includes(t)) || "";
         const g = senseGloss(s);
         if (g && g.length > 1 && !picks.includes(g)) picks.push(g);
         if (picks.length >= 2) break;
@@ -170,7 +263,12 @@ function glossFor(word) {
     }
     if (picks.length) {
       const joined = picks.join("; ");
-      return joined.length <= MAXLEN ? joined : picks[0];
+      const body = finalise(joined.length <= MAXLEN ? joined : picks[0]);
+      if (!body || body.length < 2) continue;      // nothing usable survived
+      // pass 1 means every sense was skip-tagged; say so rather than present a
+      // vulgar or historical sense as if it were the neutral everyday one.
+      // Re-finalise so the prefix counts against the card's one-line budget.
+      return (pass === 1 && tagLabel) ? finalise(`(${tagLabel}) ${body}`) : body;
     }
   }
   return null;
