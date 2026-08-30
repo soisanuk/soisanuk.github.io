@@ -52,7 +52,7 @@ function resetAllProgress() {
 }
 
 function updateMenuStats() {
-  const s = srsStats(progress);
+  const s = srsStats(progress, WORDS.map(w => w[0]));
   const txt = `vocab seen: ${s.totalSeen}  ·  due: ${s.dueNow}  ·  mature: ${s.mature}`;
   document.getElementById("menu-stats").textContent = txt;
   document.getElementById("sidebar-stats").innerHTML =

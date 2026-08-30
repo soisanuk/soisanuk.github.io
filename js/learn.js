@@ -48,7 +48,7 @@ function startLearn() {
     "🎓 " + _levelName(done) + (done ? " · " + done + "/" + COURSE.length : "");
   const pl = document.getElementById("learn-placement");
   if (pl) pl.style.display = done === 0 ? "" : "none";
-  const stats = srsStats(loadProgress());
+  const stats = srsStats(loadProgress(), WORDS.map(w => w[0]));
   document.getElementById("learn-intro").textContent =
     stats.totalSeen === 0 ?
       "A guided road from zero: learn to READ Thai fast, pick up the street's " +
@@ -810,8 +810,28 @@ function _streakRecord(ms) {
   localStorage.setItem(STREAK_KEY, JSON.stringify(st));
   _streakRender();
 }
+// What the streak IS right now, as opposed to what was last written. _streakBump
+// only runs when a card is graded, so between sessions the stored record is a
+// snapshot of the last day you studied — and _streakRender printed it verbatim.
+// A learner returning after six months was told "🔥 12 days · today 41 cards ·
+// 3.0s/word" and invited to "keep the streak alive", on a day they had not
+// opened the app, for a streak that had already ended; it then snapped 12 → 1
+// mid-session with no acknowledgement. Pure, and read-only on purpose — the
+// display must never write. Found by the 2026-08-30 lapsed-learner round.
+function _streakView(st, today, yesterday) {
+  const alive = st.last === today || st.last === yesterday;
+  return {
+    days: alive ? (st.days || 0) : 0,
+    // "today" only means anything if the record IS today's
+    today: st.last === today ? (st.today || {}) : {},
+    maxDays: st.maxDays || 0,
+    bestDay: st.bestDay || null,
+    ended: !alive && !!st.days,          // had a streak, lost it
+  };
+}
 function _streakRender() {
-  const st = _streakLoad();
+  const d = new Date(), y = new Date(Date.now() - 864e5);
+  const st = _streakView(_streakLoad(), _localDateStr(d), _localDateStr(y));
   const t = st.today || {};
   for (const id of ["nav-cont-stats", "nav-cont-stats2"]) {
     const el = document.getElementById(id);
@@ -819,6 +839,9 @@ function _streakRender() {
   }
 }
 function _streakText(st, t) {
+  // A broken streak is named rather than silently zeroed — the best is the
+  // thing worth coming back to, and it survives the break.
+  if (st.ended) return `streak ended · best ${st.maxDays} day${st.maxDays > 1 ? "s" : ""}`;
   return !st.days ? "start today" :
     `🔥 ${st.days} day${st.days > 1 ? "s" : ""}` +
     (t.cards ? ` · today ${t.cards} cards` : "") +

@@ -83,7 +83,7 @@ function _homeRender() {
   if (!host || !_homeIsDesktop()) return;
 
   const prog = loadProgress();
-  const srs = srsStats(prog);
+  const srs = srsStats(prog, WORDS.map(w => w[0]));
   const streak = typeof _streakLoad === "function" ? _streakLoad() : {};
   const path = typeof _pathLoad === "function" ? _pathLoad() : {};
   const plan = typeof continuePlan === "function" ? continuePlan() : null;
