@@ -208,10 +208,27 @@ function startGame() {
   if (IS_MOBILE) _gBuildKbd();
 }
 
+// The canvas had TWO sizing bugs on a phone, and baht-bus.js already had the
+// cure. It sized the backing store to the WRAPPER's box in CSS pixels:
+//   • no devicePixelRatio, so on a dpr-3 phone the scene rendered at a third
+//     of native resolution — visibly soft against Baht Bus's crisp pixel art
+//   • the wrapper is not the canvas: measured 390×461 backing against a
+//     390×311 CSS box, squashing the scene to 67.5% of its height
+// Both fixed by measuring the canvas's OWN box and multiplying by dpr. The
+// drawing coordinate space stays in CSS pixels — _gDraw applies setTransform,
+// exactly as _bbFrame does — because the renderer uses absolute sizes
+// (lineWidth 7, "bold 28px") that would otherwise shrink threefold.
+// Found by the 2026-08-30 games look-and-feel round.
+let _gW = 0, _gH = 0;          // the drawing surface, in CSS pixels
 function _gResize() {
-  const wrap      = document.getElementById("game-canvas-wrap");
-  _gCanvas.width  = wrap.clientWidth;
-  _gCanvas.height = wrap.clientHeight;
+  const dpr = window.devicePixelRatio || 1;
+  const w = _gCanvas.clientWidth, h = _gCanvas.clientHeight;
+  if (!w || !h) return;         // not laid out yet; a later frame will size it
+  _gW = w; _gH = h;
+  const bw = Math.round(w * dpr), bh = Math.round(h * dpr);
+  if (_gCanvas.width !== bw || _gCanvas.height !== bh) {
+    _gCanvas.width = bw; _gCanvas.height = bh;
+  }
 }
 
 function _gReset() {
@@ -227,7 +244,7 @@ function _gReset() {
   // Start with a few pedestrians already strolling
   for (let i = 0; i < 4; i++) {
     const s = _gMakeStreetSprite(true);
-    s.x = Math.random() * Math.max(1, _gCanvas.width - 40);
+    s.x = Math.random() * Math.max(1, _gW - 40);
     _gStreetSprites.push(s);
   }
   _gHUD();
@@ -245,7 +262,7 @@ function _gSpawn(now) {
   const idx  = Math.floor(Math.random() * _gPool);
   const mode = _gHintMode[idx];
   const r    = 36;
-  const x    = r + 20 + Math.random() * (_gCanvas.width - 2 * r - 40);
+  const x    = r + 20 + Math.random() * (_gW - 2 * r - 40);
   _gBubbles.push({
     letter:    _GAME_ALL[idx],
     letterIdx: idx,
@@ -269,7 +286,7 @@ function _gTick(now) {
 
   // Street sprites — move + knocked physics
   if (now - _gLastStreetSpawn > _gNextStreetIn) _gSpawnStreetSprite(now);
-  const H = _gCanvas.height, W = _gCanvas.width;
+  const H = _gH, W = _gW;
   const groundY = H * 0.82;
   for (const s of _gStreetSprites) {
     s.x += s.vx;
@@ -287,17 +304,17 @@ function _gTick(now) {
     if (b.wrongFlash > 0) b.wrongFlash--;
     if (b.bounced) {
       b.x += b.vx; b.y += b.vy; b.vy += 0.12;
-      const offScreen = b.y - b.r > _gCanvas.height ||
-                        b.x + b.r < 0 || b.x - b.r > _gCanvas.width;
+      const offScreen = b.y - b.r > _gH ||
+                        b.x + b.r < 0 || b.x - b.r > _gW;
       if (offScreen) dead.push(b); // no life penalty
     } else {
       b.y += b.speed;
-      if (b.y - b.r > _gCanvas.height) {
+      if (b.y - b.r > _gH) {
         _gResolve(b);
         _gLives--;
         _audio.sfx("miss");
         _gHUD();
-        _gMissParticles(b.x, _gCanvas.height - 15);
+        _gMissParticles(b.x, _gH - 15);
         dead.push(b);
         if (_gLives <= 0) {
           for (const d of dead) { const i = _gBubbles.indexOf(d); if (i >= 0) _gBubbles.splice(i, 1); }
@@ -632,7 +649,10 @@ function _gGlyphDx(ctx, ch) {
 }
 
 function _gDraw() {
-  const ctx = _gCtx, W = _gCanvas.width, H = _gCanvas.height;
+  const ctx = _gCtx;
+  _gResize();                                   // pick up rotation / pane resize
+  const W = _gW, H = _gH;
+  ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
   _gDrawBg(ctx, W, H);
   _gDrawStreet(ctx, W, H);
   for (const b of _gBubbles) _gDrawBubble(ctx, b);
@@ -653,7 +673,7 @@ function _gDraw() {
 // ── Street sprites ────────────────────────────────────────────────────────
 
 function _gMakeStreetSprite(forcePerson) {
-  const W       = _gCanvas.width;
+  const W       = _gW;
   const goRight = Math.random() < 0.5;
   const roll    = forcePerson ? 0 : Math.random();
   let type, vx, rows, colors, shirtIdx;

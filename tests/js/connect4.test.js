@@ -190,3 +190,14 @@ describe("_c4MakeQuiz", () => {
     }
   });
 });
+
+// Found by the 2026-08-30 games look-and-feel round: _c4Girl is null on the
+// opponent-select screen, so the middle HUD span rendered as " <strong>0</strong>"
+// — a stray, unlabelled 0 floating between "🟡 You 0" and "🍹 Tab ฿0".
+test("the opponent counter is omitted entirely until an opponent exists", () => {
+  const src = readFileSync(new URL("../../web/js/connect4.js", import.meta.url), "utf8");
+  const hud = src.slice(src.indexOf('getElementById("c4-hud")'), src.indexOf('getElementById("c4-hud")') + 700);
+  assert.doesNotMatch(hud, /\$\{_c4Girl \? _c4Girl\.e : ""\}/,
+    "the span is still emitted with empty contents when _c4Girl is null");
+  assert.match(hud, /_c4Girl \?\s*`<span>/, "guard the whole span, not its contents");
+});

@@ -85,3 +85,19 @@ describe("street sprites", () => {
     assertSprite("bus", _BUS_ROWS, _BUS_COL);
   });
 });
+
+// Found by the 2026-08-30 games look-and-feel round. _gResize sized the backing
+// store from the WRAPPER's box in CSS pixels — two bugs at once on a phone:
+// no devicePixelRatio (a third of native resolution on dpr 3, visibly soft
+// beside Baht Bus's crisp pixel art), and the wrapper is not the canvas
+// (measured 390x461 backing against a 390x311 box, squashing the scene to
+// 67.5% of its height). baht-bus.js already had the cure.
+test("_gResize multiplies by devicePixelRatio and keeps the canvas's own aspect", () => {
+  const src = readFileSync(new URL("../../web/js/game.js", import.meta.url), "utf8");
+  const fn = src.slice(src.indexOf("function _gResize"), src.indexOf("}", src.indexOf("function _gResize")) + 1);
+  assert.match(fn, /devicePixelRatio/, "_gResize ignores devicePixelRatio");
+  assert.doesNotMatch(fn, /wrap\.client/, "_gResize sizes from the wrapper, not the canvas");
+  // the renderer uses absolute sizes (lineWidth 7, "bold 28px"), so the drawing
+  // space must stay in CSS pixels via setTransform rather than scaling coords
+  assert.match(src, /setTransform\(/, "_gDraw must set a dpr transform");
+});
