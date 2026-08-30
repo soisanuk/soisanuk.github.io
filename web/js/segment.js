@@ -22,6 +22,32 @@
 // unknown cluster costs a flat penalty. Greedy longest-match can't do this:
 // it commits to the first long match and cannot back out.
 
+// DELIBERATELY NO PER-TOKEN PENALTY — measured, and rejected. 23 lexicon
+// compounds lose to their own parts because the cost is pure unigram surprise,
+// so splitting into two very common words is nearly free: ที่อยู่ ("address")
+// costs ~5.94 against ~5.8 for ที่ + อยู่, and loses by a hair. A constant
+// per-token penalty flips exactly that class, and the 30-sentence gold set says
+// it is free — boundary-F1 stays at 95.0 across every penalty from 0 to 3.
+//
+// The gold set is simply blind to it. Scored instead by what actually changes
+// across the 940 curriculum example sentences, a penalty of 0.5 alters 7, and
+// only 4 of those are right:
+//
+//   ทาง·เข้า → ทางเข้า        entrance        correct
+//   บาง·ส่วน → บางส่วน        some parts      correct
+//   แล้ว·แต่ → แล้วแต่        in "แก่แล้วแต่ยังแข็งแรง" this is "already BUT
+//                             still", not the compound "it depends"   WRONG
+//   ที่·อยู่ → ที่อยู่        in "ลูกที่อยู่คนเดียว" this is "the child WHO
+//                             LIVES alone", not "address"             WRONG
+//
+// ที่อยู่ is genuinely ambiguous and only context decides; a unigram DP has
+// none. The penalty trades one error class for another at about 1:1, so
+// splitting stays — it is the milder failure. A split still shows two correct
+// glosses and merely misses a compound sense; a wrong merge asserts "address"
+// in a sentence that does not mean it. Fixing this properly needs bigrams or a
+// context model, not a constant.
+// Found by the 2026-08-30 learner persona round (docs/persona-playtests.md).
+
 // Cost of an unknown character cluster. Tuned against the gold set: it has to
 // exceed a plausible word's cost (log of a mid-rank ~ 9) so the DP prefers
 // real words, without being so high that it forces absurd word chains over

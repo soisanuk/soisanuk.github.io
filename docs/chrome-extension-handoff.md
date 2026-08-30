@@ -385,3 +385,36 @@ carries share-alike. It does not infect the app's code — share-alike attaches 
 the derived database — but any extension reusing this file inherits the same
 obligation, and would need its own visible credit. That is the one new string
 attached to going down this road.
+
+
+---
+
+## 9. Measured and rejected: a per-token segmentation penalty (2026-08-30)
+
+The 2026-08-30 learner persona round found 23 lexicon compounds that lose to
+their own parts — `ที่อยู่` (address) → `ที่ · อยู่`, `ต่อว่า` (to scold) →
+`ต่อ · ว่า`. Cause is real: `segment.js` scores pure unigram surprise with no
+per-token cost, so splitting into two very common words is nearly free
+(`ที่อยู่` ≈ 5.94 vs ≈ 5.8 for the split — it loses by a hair).
+
+A constant per-token penalty fixes that class, and **the gold set says it is
+free**: boundary-F1 is 95.0 at every penalty from 0 to 3. That is the gold
+set being blind, not the change being safe.
+
+Scored by what actually changes over the 940 curriculum example sentences, a
+penalty of 0.5 alters 7 sentences and only 4 are improvements. The two failures
+that matter:
+
+| sentence | merge | why it's wrong |
+|---|---|---|
+| คุณปู่แก่**แล้วแต่**ยังแข็งแรง | `แล้ว·แต่` → `แล้วแต่` | here it is "already **but** still", not the compound "it depends" |
+| แม่เป็นห่วงลูก**ที่อยู่**คนเดียว | `ที่·อยู่` → `ที่อยู่` | here it is "the child **who lives** alone", not "address" |
+
+`ที่อยู่` — the exact word the change was for — is genuinely ambiguous, and
+only context separates the two readings. A unigram DP has none, so the penalty
+trades one error class for another at roughly 1:1.
+
+**Rejected.** Splitting is the milder failure: it still shows two correct
+glosses and merely misses a compound sense, where a wrong merge asserts
+"address" in a sentence that does not mean that. Doing this properly needs a
+bigram or context model. Don't re-attempt it with a constant.
