@@ -239,9 +239,46 @@ All fixed.
 - Round 1's tone-mark disagreements were assumed to be Wiktionary's errors.
   Checking each against the tone engine showed 23 of them were **ours**.
 
-The lesson generalises: **ask a round for the finding, never for the fix.** Both
-rounds were right about what was wrong and at least once wrong about what to do
-about it.
+The lesson generalises: **ask a round for the finding, never for the fix.** Every
+round has been right about what was wrong and at least once wrong about what to
+do about it. Round 3 reported the tone unit as unpassable "verified in headless
+Chromium, which has no Thai voice"; the arithmetic was real and the fix stands,
+but headless Chromium on this machine *does* expose a th-TH voice — what it had
+actually observed was a bug in its own driver. The finding survived
+verification; its stated evidence did not.
+
+**Round 3 — a first-time learner, Guided Course.** Ran on the harness. Found
+that typing the exact gloss the app had just shown you was marked wrong (372 of
+950 words), that all eight chunk units demanded a flawless run because 80% of a
+4-card sample is 4/4, and that the tone unit was gated on cards you can only
+answer by ear with no TTS check anywhere in learn.js. All fixed.
+
+**Round 4 — a learner returning after a gap.** Fabricated 14 histories, 20-950
+cards, gaps of 1-183 days. Found the streak lying identically at every gap
+length ("🔥 12 days · today 41 cards" six months later), that reviewing the
+backlog earned no streak credit at all, and a due counter that could never be
+cleared because srsStats counted dead keys dueCards would never serve. All
+fixed.
+
+**Round 5 — a completionist.** Its first finding was that round 4's streak fix,
+landed an hour earlier, was **half done** — wired into one of three surfaces, so
+the desktop menu showed "streak ended" and "23 day streak" 40px apart. Also
+found the unit score badge storing the last attempt rather than the best, and
+three bugs in the harness itself including one that silently mis-scored the
+entire tone unit.
+
+### The second lesson: re-run after fixing, before running a new persona
+
+Round 5 was briefed as a fresh persona and its most valuable finding was a
+regression an hour old. A round costs the same whether it explores new ground
+or re-treads just-changed ground, and just-changed ground has the higher defect
+density — the fixer has fresh assumptions and no distance from them. **Before
+launching a new persona, consider pointing the next round at what you just
+changed.**
+
+Corollary, learned the same way: a fix that touches a *display* should be
+checked at every surface that renders it. `grep` for the accessor, not the
+symptom.
 
 ## Use the harness — don't write a driver
 
