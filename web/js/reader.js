@@ -10,9 +10,10 @@
 // example sentences are letter-rich, so even "First reads" sits a few rungs in;
 // the top tier (max = LETTER_BATCHES.length) also admits sentences using
 // consonants the guided course never formally teaches. Counts on the real
-// corpus: ≤4 → 18, ≤6 → 150, ≤7 → 366, ≤8 → 940. (These drift as EXAMPLES
-// grows — the UI computes them live, so only this comment and architecture.md
-// can be wrong. Both said 12/119/316/849 until 2026-08-30.)
+// corpus: ≤4 → 18, ≤6 → 151, ≤7 → 367, ≤8 → 940. (These drift with EXAMPLES —
+// editing ONE example sentence moved two of them the same day this comment was
+// last corrected. The UI computes them live, so only this comment and
+// architecture.md can ever be wrong; recount rather than trust them.)
 const READER_LEVELS = [
   { name: "First reads", max: 4 },
   { name: "Getting around", max: 6 },
@@ -20,6 +21,44 @@ const READER_LEVELS = [
   { name: "The whole soi", max: 8 },
 ];
 const READER_COLOR_KEY = "soisanuk_tonecolor";
+const READER_POS_KEY = "soisanuk_readerpos";
+
+// Where you got to in each level. The reader was the app's largest countable
+// collection — 940 sentences at the top tier — and the only one with no memory
+// at all: leaving and coming back restarted at 1/940, and the controls are
+// ‹ / Next › with no seek, so resuming at 251 meant 250 clicks. Every other
+// collection (950 words, 60 script cards, 17 units) has a store behind it.
+// Found by the 2026-08-30 completionist round.
+//
+// Keyed by level INDEX but anchored on the sentence TEXT: readerFeed is
+// computed live from EXAMPLES, so adding examples shifts every index after the
+// insertion point. On open we re-find the remembered sentence and use its
+// current position; the stored index is only a fallback for when that sentence
+// has left the corpus entirely.
+function _readerPosLoad() {
+  try { return JSON.parse(localStorage.getItem(READER_POS_KEY) || "{}"); } catch { return {}; }
+}
+function _readerPosSave(pos) {
+  try { localStorage.setItem(READER_POS_KEY, JSON.stringify(pos)); } catch { /* private mode */ }
+}
+// Pure: given what was stored for a level and the CURRENT feed, where should we
+// resume? Re-anchor on the text; fall back to the index, clamped; 0 if neither
+// is usable. Never returns the end-of-level screen — finishing and coming back
+// starts you over rather than dropping you on "you read them all".
+function _readerResumeAt(saved, feed) {
+  if (!saved || !feed || !feed.length) return 0;
+  // A cleared level starts over. Its card says "✓ read all 18", so tapping it
+  // means "again" — parking on the last sentence would be a strange place to
+  // land, and the end screen is worse.
+  if (saved.done) return 0;
+  if (saved.th) {
+    const i = feed.findIndex(s => s.th === saved.th);
+    if (i >= 0) return i;
+  }
+  const at = Number(saved.at);
+  if (!Number.isFinite(at) || at < 0) return 0;
+  return Math.min(at, feed.length - 1);
+}
 
 // glyph -> earliest LETTER_BATCHES index, built once (LETTER_BATCHES is
 // static data). readerGrade was doing up to LETTER_BATCHES.length fresh Set
@@ -103,11 +142,20 @@ function _readerToggleColor() {
 function startReader() {
   _rd = null;
   const body = document.getElementById("reader-body");
+  const pos = _readerPosLoad();
   const cards = READER_LEVELS.map((lv, i) => {
-    const n = readerFeed(lv.max).length;
+    const feed = readerFeed(lv.max);
+    const n = feed.length;
+    const saved = pos[i];
+    const read = saved ? (saved.done ? n : _readerResumeAt(saved, feed)) : 0;
+    const label = !read ? `${n} sentence${n === 1 ? "" : "s"}`
+      : saved.done ? `✓ read all ${n}`
+      : `${read} / ${n} read`;
     return `<li class="reader-level" onclick="readerOpen(${i})">
-      <span class="reader-level-name">${lv.name}</span>
-      <span class="reader-level-count">${n} sentence${n === 1 ? "" : "s"}</span></li>`;
+      <span class="reader-level-name">${_tcEsc(lv.name)}</span>
+      <span class="reader-level-count">${label}</span>
+      ${read && !saved.done ? `<span class="reader-level-bar"><i style="width:${
+        Math.round(100 * read / n)}%"></i></span>` : ""}</li>`;
   }).join("");
   body.innerHTML = `<div class="card-prompt reader-intro">Read Thai you can actually decode — every
     sentence here is built only from letters up to a level you choose. Tap any word to look it up;
@@ -116,9 +164,11 @@ function startReader() {
   showScreen("reader-screen", "D");
 }
 
-function readerOpen(levelIdx) {
+function readerOpen(levelIdx, restart) {
   const lv = READER_LEVELS[levelIdx];
-  _rd = { feed: readerFeed(lv.max), at: 0, level: lv };
+  const feed = readerFeed(lv.max);
+  const saved = _readerPosLoad()[levelIdx];
+  _rd = { feed, at: restart ? 0 : _readerResumeAt(saved, feed), level: lv, idx: levelIdx };
   _readerShow();
 }
 
@@ -140,12 +190,15 @@ function _readerShow() {
   if (!_rd) { startReader(); return; }
   const body = document.getElementById("reader-body");
   if (_rd.at >= _rd.feed.length) {
+    _readerRemember(true);
     body.innerHTML = `<div class="thai-big">📖</div>
       <div class="card-prompt">You read all ${_rd.feed.length} — nice.</div>
       <div class="btn-row"><button class="btn btn-primary" onclick="startReader()">Pick another level</button>
+      <button class="btn" onclick="readerOpen(${_rd.idx}, true)">Read it again</button>
       <button class="btn" onclick="endSession()">Menu</button></div>`;
     return;
   }
+  _readerRemember(false);
   const colorOn = _readerColorOn();
   const s = _rd.feed[_rd.at];
   body.innerHTML = `
@@ -163,6 +216,20 @@ function _readerShow() {
       <button class="btn btn-primary" onclick="_readerNext()">${_rd.at + 1 === _rd.feed.length ? "Done" : "Next ›"}</button>
     </div>`;
   _wcWireTokens(document.getElementById("reader-thai"));
+}
+
+// Save on every card rather than on exit: there is no exit event to hook —
+// the learner leaves via the sidebar, the back button, or by closing the tab.
+function _readerRemember(done) {
+  if (!_rd || _rd.idx == null) return;
+  const pos = _readerPosLoad();
+  const prev = pos[_rd.idx] || {};
+  pos[_rd.idx] = {
+    at: _rd.at,
+    th: _rd.feed[_rd.at] ? _rd.feed[_rd.at].th : (prev.th || null),
+    done: done || prev.done || false,     // once cleared, stays cleared
+  };
+  _readerPosSave(pos);
 }
 
 function _readerNext() { if (_rd) { _rd.at++; _readerShow(); } }
