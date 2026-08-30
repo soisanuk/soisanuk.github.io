@@ -10,7 +10,9 @@
 // example sentences are letter-rich, so even "First reads" sits a few rungs in;
 // the top tier (max = LETTER_BATCHES.length) also admits sentences using
 // consonants the guided course never formally teaches. Counts on the real
-// corpus: ≤4 → 12, ≤6 → 119, ≤7 → 316, ≤8 → 849.
+// corpus: ≤4 → 18, ≤6 → 150, ≤7 → 366, ≤8 → 940. (These drift as EXAMPLES
+// grows — the UI computes them live, so only this comment and architecture.md
+// can be wrong. Both said 12/119/316/849 until 2026-08-30.)
 const READER_LEVELS = [
   { name: "First reads", max: 4 },
   { name: "Getting around", max: 6 },
