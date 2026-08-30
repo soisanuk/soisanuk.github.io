@@ -29,6 +29,12 @@ let _pasteShown = "";
 // Bumped by every Analyse and by Clear, so a lexicon load that resolves late
 // can tell it has been superseded and drop its render on the floor.
 let _pasteRun = 0;
+// startPaste() re-analyses the saved text on EVERY visit. On a phone a 300k
+// paste blocks the main thread for ~4.5s, every single time, with no way to
+// tell why — and it would keep doing it forever until the user pressed Clear.
+// Above this, the text is restored into the box but not analysed: one tap gets
+// it back, and the cost is opt-in rather than a tax on entering the screen.
+const PASTE_AUTO_MAX = 5000;
 const PASTE_SAMPLE =
   "รัฐบาลประกาศมาตรการใหม่เพื่อช่วยเหลือประชาชน " +
   "ราคาน้ำมันเพิ่มขึ้นอย่างต่อเนื่องตั้งแต่ต้นปี";
@@ -50,7 +56,10 @@ function startPaste() {
   showScreen("paste-screen", "P");
   const ta = document.getElementById("paste-input");
   if (ta && !saved) ta.focus();
-  if (saved) pasteAnalyse();
+  if (saved && saved.length <= PASTE_AUTO_MAX) pasteAnalyse();
+  else if (saved) document.getElementById("paste-out").innerHTML =
+    `<div class="paste-status">${saved.length.toLocaleString()} characters saved from last time —
+      press Analyse when you're ready.</div>`;
 }
 
 function pasteSample() {
@@ -83,12 +92,18 @@ function pasteAnalyse() {
       return;
     }
     // Glosses are a bonus layer: render either way, never block on them.
-    _glossLoad(() => { if (run === _pasteRun) _pasteRender(text, out); });
+    // The setTimeout matters on a big paste: without it the status message is
+    // written and replaced inside one task, so it never paints and the screen
+    // just freezes showing the PREVIOUS result.
+    _glossLoad(() => {
+      if (run !== _pasteRun) return;
+      setTimeout(() => { if (run === _pasteRun) _pasteRender(text, out, true); }, 0);
+    });
   });
 }
 
 // One line per source line, so pasted paragraphs keep their shape.
-function _pasteRender(text, out) {
+function _pasteRender(text, out, reveal) {
   _pasteShown = text;
   const colorOn = _readerColorOn();
   let known = 0, total = 0, glossed = 0;
@@ -104,7 +119,11 @@ function _pasteRender(text, out) {
       const tone = (typeof toneOfWord === "function") ? toneOfWord(t.text) : null;
       const style = (colorOn && tone) ? ` style="color:${TONE_COLORS[tone]}"` : "";
       const frag = t.fragment ? ` data-frag="1" title="Part of a longer word — meaning not shown"` : "";
-      return `<span class="w-token"${frag} data-w="${_wcEsc(t.text)}">${
+      // With colours on, a word whose tone we can't prove is left alone — but
+      // mid-tone grey and ordinary text are nearly the same shade, so the
+      // abstention read as a claim of "mid" on most of the screen. Mark it.
+      const untoned = (colorOn && !tone) ? ` data-notone="1" title="Tone not determined"` : "";
+      return `<span class="w-token"${frag}${untoned} data-w="${_wcEsc(t.text)}">${
         `<span${style}>${_wcEsc(t.text)}</span>`}</span>`;
     }).join("");
     return `<div class="paste-line" lang="th">${html}</div>`;
@@ -118,12 +137,23 @@ function _pasteRender(text, out) {
         aria-label="Toggle tone colours">🎨 tones</button>
     </div>
     <div class="paste-text">${lines}</div>
-    ${colorOn ? _readerLegend() : ""}
+    ${colorOn ? _readerLegend().replace("</div>",
+      `<span class="paste-notone-key">◌ not determined</span></div>`) : ""}
     <div class="paste-credit">Meanings for words outside the course come from
       <a href="https://en.wiktionary.org/" target="_blank" rel="noopener noreferrer">Wiktionary</a>,
       used under <a href="https://creativecommons.org/licenses/by-sa/3.0/"
       target="_blank" rel="noopener noreferrer">CC BY-SA 3.0</a>.</div>`;
   _pasteWireTokens(document.getElementById("paste-out"));
+  // On a phone with the keyboard up the result lands ~116px below the fold, so
+  // tapping Analyse looks like it did nothing and people tap it again. Drop the
+  // keyboard and bring the result into view. Only on a fresh Analyse — a 🎨
+  // toggle must not yank you away from where you were reading.
+  if (reveal) {
+    const ta = document.getElementById("paste-input");
+    if (ta && IS_MOBILE) ta.blur();
+    const top = out.querySelector(".paste-topline");
+    if (top && top.scrollIntoView) top.scrollIntoView({ block: "start", behavior: "smooth" });
+  }
 }
 
 function _pasteToggleColor() {
