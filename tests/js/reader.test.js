@@ -147,3 +147,39 @@ describe("tone colouring", () => {
     assert.ok(html.endsWith("xyz"), "an unresolved run stays unwrapped plain text");
   });
 });
+
+// ── reading position ────────────────────────────────────────────────────────
+// The reader was the app's largest countable collection — 940 sentences — and
+// the only one with no memory: leaving and returning restarted at 1/940, and
+// with only ‹ / Next › controls, resuming at 251 meant 250 clicks.
+// Found by the 2026-08-30 completionist round.
+describe("_readerResumeAt", () => {
+  const feed = [{ th: "ก" }, { th: "ข" }, { th: "ค" }, { th: "ง" }];
+
+  test("re-anchors on the sentence text, not the index", () => {
+    // readerFeed is computed live from EXAMPLES, so adding one example shifts
+    // every index after it. The text is the stable anchor. (Editing a single
+    // example moved two level counts on the day this was written.)
+    assert.equal(_readerResumeAt({ at: 999, th: "ค" }, feed), 2);
+  });
+
+  test("falls back to the stored index when the sentence has left the corpus", () => {
+    assert.equal(_readerResumeAt({ at: 1, th: "หายไปแล้ว" }, feed), 1);
+  });
+
+  test("clamps an index past the end", () => {
+    assert.equal(_readerResumeAt({ at: 99999, th: null }, feed), feed.length - 1);
+  });
+
+  test("a cleared level starts over rather than parking on its last sentence", () => {
+    // its card reads "✓ read all N", so tapping it means "again"
+    assert.equal(_readerResumeAt({ at: 3, th: "ง", done: true }, feed), 0);
+  });
+
+  test("no saved position, an empty feed, or junk all start at 0", () => {
+    assert.equal(_readerResumeAt(null, feed), 0);
+    assert.equal(_readerResumeAt({ at: 2, th: "ค" }, []), 0);
+    assert.equal(_readerResumeAt({ at: "banana", th: null }, feed), 0);
+    assert.equal(_readerResumeAt({ at: -5, th: null }, feed), 0);
+  });
+});
