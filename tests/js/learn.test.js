@@ -435,3 +435,54 @@ test("every real, non-teach queue item kind gets an actual recap, not the generi
       `kind "${item.kind}" has no real _wReviewCard branch — falls through to the generic safety net`);
   }
 });
+
+// ── findings from the 2026-08-30 first-timer persona round ──────────────────
+
+test("typing the exact gloss the app just showed you is accepted", () => {
+  // _enVariants split the gloss on /,; and never added the whole string back,
+  // so the wordintro card taught มี as "to have/there is" and the typeen card
+  // three steps later marked that exact answer wrong — twice — then graded the
+  // SRS card quality 1, dropping its ease factor 2.5 → 1.96. 372 of 950 words.
+  const bad = WORDS.filter(w => !_enMatch(w[2], w[2]));
+  assert.deepEqual(bad.slice(0, 5).map(w => `${w[0]} "${w[2]}"`), [],
+    `${bad.length} words reject their own printed gloss`);
+});
+
+test("_enMatch still refuses a wrong answer", () => {
+  assert.equal(_enMatch("banana", "to have/there is"), false);
+  assert.equal(_enMatch("", "to have/there is"), false);
+  assert.equal(_enMatch("to have", "to have/there is"), true, "a part still counts");
+});
+
+test("no unit demands a flawless run", () => {
+  // 80% of a 4-card sample IS 4/4. All eight chunk units grade 2-4 cards, so
+  // every one of them required perfection — and units are strictly gated, so a
+  // learner who knew the material could simply be stuck.
+  const TEACH = new Set(["glyph", "wordintro", "toneIntro", "tonecalc", "chunkIntro", "chunk"]);
+  const passes = (graded, misses) => {
+    const acc = graded ? (graded - misses) / graded : 1;
+    return acc >= COURSE_PASS || (graded < COURSE_PASS_MIN_SAMPLE && misses <= 1);
+  };
+  for (const u of COURSE) {
+    const graded = _unitQueue(u, []).filter(x => !TEACH.has(x.kind)).length;
+    if (!graded) continue;
+    assert.ok(passes(graded, 1),
+      `${u.label || u.kind}: ${graded} graded cards, one miss fails the unit`);
+  }
+});
+
+test("without a Thai voice, no unit is gated behind cards you can only hear", () => {
+  // The course was the ONLY mode with no _tts.available() guard, and the one
+  // that gates progress. The tone unit had 8 graded cards, 4 of them toneear
+  // (audio-only, five choices) against a 1-miss budget: blind-guessing averages
+  // 3.2 misses, so it was unpassable — with every later unit locked behind it.
+  for (const u of COURSE) {
+    const q = _unitQueue(u, [], false);
+    assert.equal(q.filter(x => x.kind === "toneear").length, 0, `${u.label || u.kind} keeps ear-only cards`);
+    assert.equal(q.filter(x => x.kind === "listen").length, 0, `${u.label || u.kind} keeps listen cards`);
+  }
+  // and with audio they are still there — this must not silently delete content
+  const withAudio = COURSE.flatMap(u => _unitQueue(u, [], true));
+  assert.ok(withAudio.filter(x => x.kind === "toneear").length > 0);
+  assert.ok(withAudio.filter(x => x.kind === "listen").length > 0);
+});

@@ -305,6 +305,11 @@ const COURSE = [
 
 // mastery gate: a unit passes at 80% first-try accuracy
 const COURSE_PASS = 0.8;
+// Below this many graded cards, a percentage bar stops measuring mastery and
+// starts measuring luck: 80% of 4 is 4/4. Units this short pass on at most one
+// miss instead. 8 is the smallest sample where 80% still permits a miss
+// (ceil(8*0.8) = 7), so the two rules meet without a discontinuity.
+const COURSE_PASS_MIN_SAMPLE = 8;
 
 // auto-grading map for active recall → SM-2 quality (see srs.js):
 // right first try, fast → 5 · right first try → 4 · right after a miss → 2 ·
