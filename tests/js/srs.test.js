@@ -325,3 +325,20 @@ describe("srsStats", () => {
     assert.equal(srsStats(p).mature, 0);
   });
 });
+
+// Found by the 2026-08-30 lapsed-learner round. srsStats counted every record
+// in the store while dueCards filters by LIVE keys, so records for words that
+// have since left data.js were counted forever: a store with 40 stale keys
+// reported "due: 100" when only 60 could ever be served. The learner cleared
+// everything reachable and the counter still read 40 due, unmovable.
+test("srsStats(p, keys) counts only cards the app can serve", () => {
+  const now = Date.now() / 1000;
+  const card = { due: now - 100, interval: 30, easeFactor: 2.5, totalReviews: 8, correctStreak: 3 };
+  const p = { live1: { ...card }, live2: { ...card }, gone1: { ...card }, gone2: { ...card } };
+  const live = ["live1", "live2"];
+  assert.equal(srsStats(p, live).totalSeen, 2);
+  assert.equal(srsStats(p, live).dueNow, 2);
+  assert.equal(srsStats(p, live).dueNow, dueCards(p, live).length,
+    "srsStats and dueCards must agree about what exists");
+  assert.equal(srsStats(p).totalSeen, 4, "without keys it still counts everything");
+});

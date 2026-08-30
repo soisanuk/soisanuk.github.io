@@ -758,6 +758,14 @@ function _buildRatingHandler(rowId, key, nextFn) {
     // Lapsed card: relearn it later in this same session
     else session.undo.requeuedAt = requeue(session.deck, session.idx, key);
     saveProgress(progress);
+    // Feed the streak. _streakRecord had exactly one caller — _learnRecord in
+    // learn.js — so the Guided Course was the only mode that counted. A learner
+    // coming back to a backlog does the obviously-right thing, opens SRS
+    // Review, grinds 900 cards, and the engagement layer registers nothing.
+    // Every mode routed through this handler now counts. (learn.js records
+    // separately and does not come through here, so nothing double-counts.)
+    // Found by the 2026-08-30 lapsed-learner round.
+    if (typeof _streakRecord === "function") _streakRecord(0);
     session.idx++;
     nextFn();
   });

@@ -93,7 +93,7 @@ function _renderVocabList(list) {
 }
 
 function showStats() {
-  const s = srsStats(progress);
+  const s = srsStats(progress, WORDS.map(w => w[0]));
   const vocabKeys = new Set(WORDS.map(w => w[0]));
   const scriptKeys = new Set([
     ...CONSONANTS.map(c => `sc:${c[0]}`),
