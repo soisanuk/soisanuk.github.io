@@ -940,15 +940,16 @@ function _placementCut(byBatch) {
 // separate product question. Found by the 2026-08-30 completionist round.
 function _placementSummary(cut) {
   const last = COURSE.findIndex(u => u.kind === "letters" && u.batch === cut);
-  let reading = 0, other = 0;
+  let reading = 0, left = 0;
   for (let i = 0; i <= last; i++) {
-    if (COURSE[i].kind === "tone") continue;
-    if (COURSE[i].kind === "letters") reading++; else other++;
+    if (COURSE[i].kind === "letters") reading++; else left++;
   }
-  const r = `${reading} reading unit${reading === 1 ? "" : "s"}`;
-  return other
-    ? `Placed past ${r}, and the ${other} speaking lesson${other === 1 ? "" : "s"} alongside them — those weren't tested, so revisit any from the path.`
-    : `Placed past ${r}.`;
+  const r = `Placed past ${reading} reading unit${reading === 1 ? "" : "s"}`;
+  // Say what is still waiting rather than what was skipped — those units are
+  // now genuinely open, and the learner should know they are next.
+  return left
+    ? `${r}. The ${left} speaking and tone lesson${left === 1 ? " is" : "s are"} still open — placement doesn't test those.`
+    : `${r}.`;
 }
 
 function _placementApply(path, cut) {
@@ -956,10 +957,19 @@ function _placementApply(path, cut) {
   path.units = path.units || {};
   const last = COURSE.findIndex(u => u.kind === "letters" && u.batch === cut);
   for (let i = 0; i <= last; i++) {
-    // placement only tests letter DECODING, never tone identification — skip
-    // tone units so a placed learner resumes at the one skill placement
-    // didn't measure, instead of having it silently marked done unseen
-    if (COURSE[i].kind === "tone") continue;
+    // Placement only tests letter DECODING — 16 multiple-choice cards, two per
+    // batch. Anything it did not measure stays open, so a placed learner
+    // resumes at the skills placement had no view of instead of having them
+    // silently marked done unseen. That was already true for tone; the same
+    // reasoning applies word for word to the chunk lessons, which teach
+    // speaking and usage (no-conjugation grammar, ครับ/ค่ะ, ordering, haggling,
+    // ห้าม signs, classifiers) and are entirely orthogonal to decoding. A
+    // heritage speaker who reads but was never taught politeness registers
+    // sails through 16 decoding cards and used to be told they already knew
+    // how to haggle. Six short units, ~10 minutes — and it matters because
+    // continuePlan() skips anything done, so they never surfaced as "next"
+    // again. Found by the 2026-08-30 completionist round.
+    if (COURSE[i].kind !== "letters") continue;
     const id = _unitId(COURSE[i]);
     path.units[id] = { ...(path.units[id] || {}), done: true, placed: true };
   }

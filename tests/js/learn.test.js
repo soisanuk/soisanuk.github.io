@@ -316,21 +316,26 @@ test("placement: 80% per batch sets the cut, prefix units complete, levels name 
   assert.equal(_levelName(COURSE.length), "เจ้าของบาร์");
 });
 
-test("placement never completes the tone unit — it tests letter decoding, not tones", () => {
-  const toneIdx = COURSE.findIndex(u => u.kind === "tone");
-  const toneId = _unitId(COURSE[toneIdx]);
+test("placement completes only what it actually tested — the letters units", () => {
+  // It runs 16 multiple-choice DECODING cards, two per batch, and nothing else.
+  // Tone was already exempt; the chunk lessons (grammar, ครับ/ค่ะ, ordering,
+  // haggling, ห้าม signs, classifiers) teach speaking and usage and are just as
+  // untested, so they stay open too. Before this, a full-marks placement marked
+  // 14 units done having examined 8 — and continuePlan() skips anything done,
+  // so those six never surfaced as "next" again.
   const cutBatch = LETTER_BATCHES.length - 1; // place past the whole ladder
   const p = _placementApply({}, cutBatch);
-  assert.ok(!p.units[toneId] || !p.units[toneId].done, "tone unit not marked done by placement");
-  // surrounding letters/chunks ARE marked, up through the cut batch
   const lastLetterIdx = COURSE.findIndex(u => u.kind === "letters" && u.batch === cutBatch);
-  for (let i = 0; i < lastLetterIdx; i++) {
-    if (i === toneIdx) continue;
-    assert.ok(_unitDone(p, COURSE[i]), _unitId(COURSE[i]) + " should be placed done");
+  for (let i = 0; i <= lastLetterIdx; i++) {
+    const u = COURSE[i];
+    if (u.kind === "letters") assert.ok(_unitDone(p, u), _unitId(u) + " was tested, should be done");
+    else assert.ok(!_unitDone(p, u), _unitId(u) + " was NOT tested, must stay open");
   }
-  // the tone unit is the first not-done, unlocked unit — placement resumes there
+  // a placed learner resumes at the first thing placement had no view of
   const firstOpen = COURSE.findIndex((u, i) => _unitUnlocked(p, i) && !_unitDone(p, u));
-  assert.equal(firstOpen, toneIdx, "the tone unit is where a placed learner resumes");
+  assert.notEqual(firstOpen, -1, "something must remain open");
+  assert.notEqual(COURSE[firstOpen].kind, "letters",
+    "a full-marks placement should not leave a decoding unit as the next thing");
   // placement queue spans the whole ladder, two words a batch
   const q = [];
   for (let b = 0; b < LETTER_BATCHES.length; b++) q.push(...courseNewWords(b).slice(0, 2));
