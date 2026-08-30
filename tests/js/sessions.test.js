@@ -320,3 +320,38 @@ describe("buildDeck", () => {
     assert.equal(buildDeck(keys, { mode: "union" }).length, 30);
   });
 });
+
+// Found by the 2026-08-30 lapsed-learner round. Rating-based modes requeue a
+// lapsed card (_buildRatingHandler), which lengthens the deck — so
+// `idx + 1 / deck.length` measured the learner against a denominator that grew
+// as they worked. Over a realistic relearning curve a 600-card session ends
+// with the deck at 962; at the halfway point the old counter read "480 / 788",
+// where 788 was never the goal and 600 was.
+test("sessionProgress counts distinct cards cleared, against a fixed total", () => {
+  const deck = ["a", "b", "c", "d", "e"];
+  assert.deepEqual(sessionProgress(deck, 0), { done: 0, total: 5 });
+  assert.deepEqual(sessionProgress(deck, 2), { done: 2, total: 5 });
+  assert.deepEqual(sessionProgress(deck, 5), { done: 5, total: 5 }, "ends at exactly 100%");
+});
+
+test("a requeued lapse does not inflate the total or advance the count", () => {
+  const deck = ["a", "b", "c", "d", "e"];
+  const before = sessionProgress(deck, 1);
+  requeue(deck, 1, "b");                       // fail b at index 1
+  const after = sessionProgress(deck, 1);
+  assert.equal(after.total, before.total, "the goal is what you were given, not what you queued");
+  assert.equal(after.done, before.done, "failing a card clears nothing");
+  assert.equal(deck.length, 6, "the deck really did grow — the counter just doesn't");
+});
+
+test("sessionProgress never goes backwards across a whole session", () => {
+  const deck = ["a", "b", "c", "d", "e", "f", "g", "h"];
+  let prev = -1;
+  for (let i = 0; i < deck.length; i++) {
+    if (i % 3 === 0) requeue(deck, i, deck[i]);   // fail every third card
+    const p = sessionProgress(deck, i);
+    assert.ok(p.done >= prev, `cleared went backwards at ${i}`);
+    assert.equal(p.total, 8, "total is stable");
+    prev = p.done;
+  }
+});
