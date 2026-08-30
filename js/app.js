@@ -202,6 +202,10 @@ const TOP20_WORDS  = TOP100_WORDS.slice(0, 20);
 // Screen management
 // ═══════════════════════════════════════════════════════════════════════════
 function showScreen(id, navKey) {
+  // A word card is an overlay at z-index 10000; it does not belong to any
+  // screen, so navigating away used to leave it floating over the menu still
+  // open and interactive. Leaving a screen dismisses it.
+  if (typeof closeWordModal === "function") closeWordModal();
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
   _audioScreen(id); // start/stop game background music
