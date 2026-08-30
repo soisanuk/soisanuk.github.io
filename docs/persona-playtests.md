@@ -243,14 +243,43 @@ The lesson generalises: **ask a round for the finding, never for the fix.** Both
 rounds were right about what was wrong and at least once wrong about what to do
 about it.
 
-**A note on cost.** Both rounds wrote their own Playwright/vm driver from
-scratch, which worked but is the expensive part of a round — and a third
-attempt against the Guided Course stalled entirely on it, because that flow has
-at least eight distinct step shapes (`_unitQueue` in learn.js: glyph intro, MC
-both directions, typed-English, Kedmanee typed-Thai, cloze, timed speed read,
-5-pair match, listening ×2) and a driver that hunts for a generic next-button
-mishandles most of them. If persona rounds become routine, a reusable harness
-under `tools/` is the obvious next investment. Two details that cost time and
-are worth knowing up front: the screen id is `lesson-screen`, not
-`learn-screen`, and a missed answer pauses on a word-card overlay that must be
-dismissed before the flow continues.
+## Use the harness — don't write a driver
+
+`tools/playtest-harness.mjs` exists so a round never has to reverse-engineer the
+DOM again. Import `openApp()` and call verbs:
+
+```js
+import { openApp } from "./tools/playtest-harness.mjs";
+const app = await openApp({ mobile: true });
+await app.startCourse();
+await app.startUnit(0);
+const log = await app.runUnit({ steps: 60, accuracy: 0.8 });  // 0.8 = miss ~1 in 5
+await app.pasteText("ผมอยู่หน้าเซเว่น");
+console.log(app.report());
+await app.close();
+```
+
+`driveLessonStep()` asks the app what step it is on (`_lu.queue[_lu.at].kind`)
+and dispatches — it does not hunt for a button. Every verb catches its own
+failures, screenshots to `shots/playtest/`, and keeps going, so a round always
+ends with a report rather than a stack trace.
+
+**This was written because the first attempt at a Guided Course round died on
+exactly that.** The flow emits nine step shapes in one letters unit, and the
+three things that cost that attempt its whole session are now handled and worth
+knowing anyway:
+
+- **Answer steps have no next-button.** You advance an MC card by picking an
+  option. A generic "Got it / Next" hunt finds nothing and looks like a hang.
+- **Which half of the word is the answer varies.** `mc`/`speed` want the
+  English; `mcth`/`clozex` and Thai-mode `listen` want the Thai. Click the wrong
+  half and the card sits there forever.
+- **The advance is on a timer, not a click.** `setTimeout(_learnNext, 550)` on a
+  correct answer, `900` on a miss. Poll for the index to change; do not guess a
+  duration. The failed attempt bumped its timeouts 60→220 across three re-runs
+  without ever discovering 550 was the number.
+
+Also: the screen id is `lesson-screen`, not `learn-screen`; a missed answer
+shows both a "🔍 word card" button and a "Next →" button, and clicking the
+first goes nowhere; and the 5-pair match card pairs by index with the English
+chip cut at `" — "` then `"/"`, so clicking tiles blindly never completes it.
