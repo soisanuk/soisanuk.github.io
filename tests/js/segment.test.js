@@ -92,6 +92,48 @@ describe("segmentThai over the real lexicon", () => {
   });
 });
 
+// Found by the 2026-08-30 learner persona round: 7-Eleven and Grab — two of the
+// commonest nouns in a Pattaya learner's messages — were shredded into real
+// Thai words and glossed with full confidence. เซเว่น → เซ ("to stagger"),
+// แกร็บ → แก ("a second person pronoun"). The card looked exactly as
+// authoritative as the one for โรงแรม.
+describe("fragment detection", () => {
+  const seg = s => segmentThai(s);
+  const frag = s => seg(s).filter(t => t.fragment).map(t => t.text);
+
+  test("a word wedged against unmatched Thai is flagged", () => {
+    assert.deepEqual(frag("ไปเซเว่น"), ["เซ"]);
+    assert.ok(frag("เรียกแกร็บไปนะ").includes("แก"));
+    assert.ok(frag("เฟซบุ๊ก").includes("บุ๊ก"));
+  });
+
+  test("ordinary Thai is not flagged", () => {
+    for (const s of ["ตำรวจจับกุมผู้ต้องสงสัย", "รัฐบาลประกาศมาตรการใหม่",
+                     "ราคาน้ำมันเพิ่มขึ้นอย่างต่อเนื่อง"]) {
+      assert.deepEqual(frag(s), [], s);
+    }
+  });
+
+  test("a space is an ordinary boundary, not a break", () => {
+    // " John " is unmatched but its edges are spaces
+    assert.deepEqual(frag("ผมชื่อ John ครับ"), []);
+  });
+
+  test("ๆ is a repetition mark, not residue", () => {
+    // เด็กๆ correctly segments as เด็ก + an inert ๆ. Counting ๆ as Thai residue
+    // flagged เด็ก — and ๆ is common enough that it was most of the noise
+    // (0.60% of curriculum tokens flagged, down to 0.15% once excluded).
+    assert.deepEqual(frag("เด็กๆวิ่งเล่น"), []);
+    assert.deepEqual(frag("ต้มยำร้อนๆ"), []);
+  });
+
+  test("the flag is advisory — the token still segments normally", () => {
+    const t = seg("ไปเซเว่น").find(x => x.text === "เซ");
+    assert.equal(t.known, true, "still a lexicon match; only its MEANING is untrustworthy");
+    assert.equal(seg("ไปเซเว่น").map(x => x.text).join(""), "ไปเซเว่น", "still lossless");
+  });
+});
+
 describe("_segInit", () => {
   test("dedupes and keeps the FIRST (most frequent) rank", () => {
     const n = _segInit(["ก", "ข", "ก"]);

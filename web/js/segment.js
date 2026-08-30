@@ -113,5 +113,36 @@ function segmentThai(text) {
     if (!t.known && last && !last.known) last.text += t.text;   // merge unknown runs
     else out.push(t);
   }
+
+  // Flag fragments. A known token pressed flush against UNMATCHED THAI is
+  // usually not a word — it is the piece of a word the lexicon happens to
+  // contain. เซเว่น (7-Eleven) segments as เซ + an unmatched เว่น, and เซ is a
+  // real entry meaning "to stagger"; แกร็บ (Grab) gives แก, "a second person
+  // pronoun". Both then render with a full, authoritative-looking gloss.
+  //
+  // The flag is advisory: the token is still a token, and its letters and tone
+  // are still worth showing — those come from the spelling and are right either
+  // way. What callers must not do is print a MEANING for it.
+  //
+  // Only WORD-FORMING Thai residue counts, and the distinction matters twice
+  // over. "ผมชื่อ John ครับ" leaves an unmatched " John " whose edges are
+  // spaces — an ordinary boundary, not a break. And ๆ (maiyamok) is a
+  // repetition mark, not part of the word before it: เด็กๆ correctly segments
+  // as เด็ก + an inert ๆ, so เด็ก must NOT be called a fragment. Counting ๆ as
+  // residue flagged it, and ๆ is common enough that it was most of the noise.
+  // Word-forming = consonants, vowels and tone marks; NOT ๆ ฯ ๏ ๚ ๛, Thai
+  // digits, or ฿.
+  const isThai = ch => {
+    const c = ch.codePointAt(0);
+    return (c >= 0x0E01 && c <= 0x0E2E) || (c >= 0x0E30 && c <= 0x0E3A) ||
+           (c >= 0x0E40 && c <= 0x0E45) || (c >= 0x0E47 && c <= 0x0E4E);
+  };
+  for (let i = 0; i < out.length; i++) {
+    if (!out[i].known) continue;
+    const prev = out[i - 1], next = out[i + 1];
+    const brokenBefore = prev && !prev.known && isThai(prev.text[prev.text.length - 1]);
+    const brokenAfter  = next && !next.known && isThai(next.text[0]);
+    if (brokenBefore || brokenAfter) out[i].fragment = true;
+  }
   return out;
 }
