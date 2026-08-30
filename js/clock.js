@@ -204,7 +204,12 @@ function _ckEsc(s) {
 
 function _ckHUD() {
   document.getElementById("ck-hud").innerHTML =
-    `Stop <strong>${Math.min(_ckIdx + 1, _CK_ROUNDS)}</strong>/${_CK_ROUNDS}` +
+    // Wrapped in a span: #ck-hud is display:flex with a 1.8rem gap, so bare
+    // text nodes become separate flex items and this read "Stop 1 /10" with
+    // the denominator pushed 28.8px away. baht-bus.js:166 wraps the identical
+    // string and renders tight — same idiom, two results until now.
+    // Found by the 2026-08-30 games look-and-feel round.
+    `<span>Stop <strong>${Math.min(_ckIdx + 1, _CK_ROUNDS)}</strong>/${_CK_ROUNDS}</span>` +
     `<span>✓ <strong>${_ckRight}</strong></span>` +
     `<span>${"🩷".repeat(_ckLives)}${"🖤".repeat(_CK_LIVES - _ckLives)}</span>`;
 }

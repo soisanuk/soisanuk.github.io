@@ -246,7 +246,11 @@ function _c4Line(kind) {
 function _c4HUD() {
   document.getElementById("c4-hud").innerHTML =
     `<span>🟡 You <strong>${_c4Wins}</strong></span>` +
-    `<span>${_c4Girl ? _c4Girl.e : ""} ${_c4Girl ? _c4Esc(_c4Girl.name) : ""} <strong>${_c4Losses}</strong></span>` +
+    // Hide the opponent counter until there IS an opponent. _c4Girl is null on
+    // the select screen, so this rendered as " <strong>0</strong>" — a stray,
+    // unlabelled 0 floating between "🟡 You 0" and "🍹 Tab ฿0", on its own
+    // baseline. Found by the 2026-08-30 games look-and-feel round.
+    (_c4Girl ? `<span>${_c4Girl.e} ${_c4Esc(_c4Girl.name)} <strong>${_c4Losses}</strong></span>` : "") +
     `<span>🍹 Tab <strong>฿${_c4Tab}</strong></span>`;
 }
 
