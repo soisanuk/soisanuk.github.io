@@ -17,6 +17,14 @@
 // at load time.
 
 const PASTE_TEXT_KEY = "soisanuk_pastetext";
+
+// The text currently ON SCREEN — not what's in the textarea. The two diverge
+// the moment someone types without pressing Analyse, and 🎨 must re-render
+// what they are reading rather than silently swapping in the box's contents.
+let _pasteShown = "";
+// Bumped by every Analyse and by Clear, so a lexicon load that resolves late
+// can tell it has been superseded and drop its render on the floor.
+let _pasteRun = 0;
 const PASTE_SAMPLE =
   "รัฐบาลประกาศมาตรการใหม่เพื่อช่วยเหลือประชาชน " +
   "ราคาน้ำมันเพิ่มขึ้นอย่างต่อเนื่องตั้งแต่ต้นปี";
@@ -47,6 +55,8 @@ function pasteSample() {
 }
 
 function pasteClear() {
+  _pasteRun++;               // cancel any in-flight analyse
+  _pasteShown = "";
   document.getElementById("paste-input").value = "";
   document.getElementById("paste-out").innerHTML = "";
   try { localStorage.removeItem(PASTE_TEXT_KEY); } catch (e) { /* private mode */ }
@@ -59,20 +69,23 @@ function pasteAnalyse() {
   if (!text) { out.innerHTML = ""; return; }
   try { localStorage.setItem(PASTE_TEXT_KEY, text); } catch (e) { /* private mode / quota */ }
 
+  const run = ++_pasteRun;
   out.innerHTML = `<div class="paste-status">Loading the word list…</div>`;
   _segLoad(ok => {
+    if (run !== _pasteRun) return;   // superseded by another Analyse, or by Clear
     if (!ok) {
       out.innerHTML = `<div class="paste-status paste-error">Couldn't load the word list
         (js/lexicon-th.js). Segmentation needs it — everything else in the app still works.</div>`;
       return;
     }
     // Glosses are a bonus layer: render either way, never block on them.
-    _glossLoad(() => _pasteRender(text, out));
+    _glossLoad(() => { if (run === _pasteRun) _pasteRender(text, out); });
   });
 }
 
 // One line per source line, so pasted paragraphs keep their shape.
 function _pasteRender(text, out) {
+  _pasteShown = text;
   const colorOn = _readerColorOn();
   let known = 0, total = 0, glossed = 0;
   const lines = text.split("\n").map(line => {
@@ -110,7 +123,10 @@ function _pasteRender(text, out) {
 
 function _pasteToggleColor() {
   _readerSetColor(!_readerColorOn());   // shared preference, one 🎨 for both screens
-  pasteAnalyse();
+  // Re-render what is on screen. Going through pasteAnalyse() would re-read the
+  // textarea, which silently replaced the analysis with un-analysed box contents
+  // — and blanked the screen entirely when the box had been cleared.
+  if (_pasteShown) _pasteRender(_pasteShown, document.getElementById("paste-out"));
 }
 
 // Like _wcWireTokens (wordcard.js), but it does NOT skip words missing from the
@@ -125,7 +141,15 @@ function _pasteWireTokens(container) {
     const w = (typeof _wcMap === "function") ? _wcMap()[thai] : null;
     const entry = w || [thai, thaiRoman(thai) || "", thaiGloss(thai) || ""];
     span.style.cursor = "pointer";
-    span.addEventListener("click", () => openWordModal(entry));
+    // Reachable without a pointer: every token is a real control, not decoration.
+    span.tabIndex = 0;
+    span.setAttribute("role", "button");
+    span.setAttribute("aria-label", thai + (entry[2] ? " — " + entry[2] : ""));
+    const open = () => openWordModal(entry);
+    span.addEventListener("click", open);
+    span.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); }
+    });
     if (typeof _tt !== "undefined" && (w || entry[2])) {
       span.addEventListener("mouseenter", e => _tt.show(entry[0], entry[1], entry[2], e.clientX, e.clientY));
       span.addEventListener("mouseleave", () => _tt.hide());

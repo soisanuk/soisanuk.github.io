@@ -10,7 +10,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-for (const f of ["data.js", "examples.js", "thai-script.js", "tokeniser.js", "wordcard.js", "curriculum.js", "reader.js"]) {
+for (const f of ["data.js", "examples.js", "thai-script.js", "tokeniser.js", "wordcard.js", "curriculum.js", "reader.js", "gloss.js", "gloss-th.js"]) {
   vm.runInThisContext(
     readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"),
     { filename: f }
@@ -18,7 +18,9 @@ for (const f of ["data.js", "examples.js", "thai-script.js", "tokeniser.js", "wo
 }
 // functions are hoisted onto globalThis; READER_LEVELS is a top-level const, so
 // it lives in the realm's lexical scope and must be referenced bare (see CLAUDE.md).
-const { readerGrade, readerFeed, toneColorHtml, toneOfWord, _readerThaiHtml } = globalThis;
+const { readerGrade, readerFeed, toneColorHtml, toneOfWord, _readerThaiHtml,
+        thaiRoman, _glossInit, _glossReady } = globalThis;
+_glossInit(THAI_GLOSS);   // the gloss layer is what tells toneOfWord a short token is polysyllabic
 
 // ── readerGrade ──────────────────────────────────────────────────────────────
 describe("readerGrade", () => {
@@ -102,6 +104,19 @@ describe("tone colouring", () => {
   test("a multi-syllable word (hyphen/space in the romanisation) is not coloured", () => {
     // อร่อย = à-ròi — two syllables; must not be painted one colour
     assert.equal(toneOfWord("อร่อย"), null);
+  });
+
+  // Found by the 2026-08-30 fluent-Thai-reader persona round. The old guard
+  // only declined tokens LONGER than 3 characters, but a three-character Thai
+  // string is very often two syllables — 35 short non-curriculum words were
+  // painted a single tone colour that contradicted even their own first
+  // syllable, right beside a correct two-syllable romanisation on the card.
+  test("declines a short token whose derived romanisation is polysyllabic", () => {
+    if (typeof thaiRoman !== "function" || !_glossReady()) return; // gloss layer absent
+    for (const w of ["คณะ", "ขยะ", "คดี", "ชรา"]) {
+      assert.ok(/[- ]/.test(thaiRoman(w) || ""), `${w} should have a polysyllabic romanisation`);
+      assert.equal(toneOfWord(w), null, `${w} is two syllables — must not be painted one colour`);
+    }
   });
   test("toneColorHtml wraps only the coloured tokens", () => {
     const html = toneColorHtml("ผม");

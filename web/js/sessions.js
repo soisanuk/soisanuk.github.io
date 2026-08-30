@@ -492,6 +492,22 @@ function srsReveal() {
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Tone Listening Drill
+// The tone a romanisation CLAIMS, read off its diacritic — the app's house
+// scheme marks à low, â falling, á high, ǎ rising, and leaves mid unmarked.
+// Used to cross-check the tone engine against data.js's own hand-written
+// answer before a word is allowed into the drill.
+const _RTGS_TONE = { "\u0300": "low", "\u0302": "falling", "\u0301": "high", "\u030c": "rising" };
+function _rtgsTone(rtgs) {
+  const s = String(rtgs).trim();
+  // A multi-syllable romanisation makes no single claim, even when only one of
+  // its syllables carries a mark (tam-rùat has exactly one). Same hyphen/space
+  // test toneOfWord uses, so the two agree on what "one syllable" means.
+  if (/[-\s]/.test(s)) return null;
+  const marks = [...s.normalize("NFD")].filter(c => _RTGS_TONE[c]);
+  if (marks.length > 1) return null;
+  return marks.length ? _RTGS_TONE[marks[0]] : "mid";
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // Pre-compute a pool of words that have a detectable tone mark or known tone
 function _toneDrillPool() {
@@ -504,7 +520,16 @@ function _toneDrillPool() {
     if (thai.length > 5) continue;
     // Only words the tone engine can actually grade (single, readable
     // syllables) — so the answer key is always right, never a guess.
-    if (typeof toneOfWord === "function" && !toneOfWord(thai)) continue;
+    const tone = (typeof toneOfWord === "function") ? toneOfWord(thai) : null;
+    if (!tone) continue;
+    // …and only words where the engine AGREES with the romanisation printed on
+    // the reveal card. Where they disagree the drill was scoring one and
+    // showing the other: it played a falling ก็ (kôo), marked "falling" wrong,
+    // and printed "mid class + no mark → LOW tone" beside the card reading kôo.
+    // Either side can be the wrong one — ก็ is an irregular spelling the engine
+    // shouldn't read, แอป/เชฟ are loanwords whose speech departs from spelling —
+    // so when the two sources disagree we simply don't know, and don't drill it.
+    if (_rtgsTone(w[1]) !== tone) continue;
     pool.push(w);
   }
   return shuffle(pool).slice(0, 100); // cap at 100 for a session

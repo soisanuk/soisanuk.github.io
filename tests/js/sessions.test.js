@@ -85,6 +85,33 @@ test("_toneRuleLine explains a clustered syllable", () => {
 // Skips words longer than 5 UTF-16 units and caps the session at 100. shuffle
 // lives in the DOM-heavy app.js, so stub it deterministically.
 
+// Found by the 2026-08-30 fluent-Thai-reader persona round. The pool admitted
+// any word toneOfWord could grade, and _detectWordTone took the engine's answer
+// as the key — but for five words the engine disagreed with the romanisation
+// printed on the reveal card. ก็ is the clearest: the engine reads it "low"
+// from the spelling, data.js says kôo (falling), and TTS plays falling. The
+// drill played a falling tone, marked "falling" WRONG, and printed
+// "mid class + no mark → LOW tone" next to a card reading kôo.
+// Either side can be the wrong one (ก็ is an irregular spelling; แอป/เชฟ are
+// loanwords), so disagreement means "we don't know" — don't drill it.
+test("_toneDrillPool drops words where the engine contradicts the printed card", () => {
+  globalThis.shuffle = arr => arr;
+  const pool = _toneDrillPool();
+  for (const w of pool) {
+    assert.equal(_rtgsTone(w[1]), toneOfWord(w[0]),
+      `${w[0]} (${w[1]}) would be drilled with an answer key its own card contradicts`);
+  }
+});
+
+test("_rtgsTone reads the tone a romanisation claims", () => {
+  assert.equal(_rtgsTone("maa"), "mid");
+  assert.equal(_rtgsTone("mài"), "low");
+  assert.equal(_rtgsTone("mâi"), "falling");
+  assert.equal(_rtgsTone("mái"), "high");
+  assert.equal(_rtgsTone("mǎi"), "rising");
+  assert.equal(_rtgsTone("tam-rùat"), null, "multi-syllable is not comparable");
+});
+
 test("_toneDrillPool caps at 100, drops long words, keeps only gradable ones", () => {
   globalThis.shuffle = arr => arr; // identity: deterministic, order-independent asserts
   const pool = _toneDrillPool();
