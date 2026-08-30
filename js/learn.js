@@ -69,7 +69,19 @@ function startLearn() {
 // ── The unit runner ─────────────────────────────────────────────────────────
 let _lu = null; // { idx, unit, queue:[items], at, results:[{key,q,first,ms}], t0 }
 
-function _unitQueue(unit, dueWords) {
+// `audio` false drops the cards that can only be answered by EAR. Every other
+// audio feature in the app already refuses to run without a Thai voice
+// (startToneDrill alerts and returns; clock.js, baht-bus.js, connect4.js and
+// wordcard.js all branch on _tts.available) — the course was the one mode that
+// didn't check, and it is the one mode that gates progress.
+//
+// The tone unit is the sharp case: 8 graded cards, 4 of them toneear ("which
+// one did you hear?", five syllables differing only by tone mark, no text
+// shown). Blind-guessing four 5-way choices averages 3.2 misses against a
+// budget of 1, so on a browser with no Thai voice the unit was unpassable —
+// and every later unit is locked behind it. Found by the 2026-08-30
+// first-timer round.
+function _unitQueue(unit, dueWords, audio = true) {
   const queue = [];
   for (const w of dueWords || []) queue.push({ kind: "mc", word: w, tag: "review" });
   if (unit.kind === "letters") {
@@ -99,8 +111,10 @@ function _unitQueue(unit, dueWords) {
     // a match round as the mid-unit breather: five Thai ↔ five meanings
     if (pool.length >= 5) queue.push({ kind: "match", pairs: _shuffle(pool.slice()).slice(0, 5) });
     // listening: hear it — pick the script, or (every other card) the meaning
-    const listen = _shuffle(pool.slice()).slice(0, Math.min(5, pool.length));
-    listen.forEach((w, i) => queue.push({ kind: "listen", word: w, pool, mode: i % 2 ? "en" : "th" }));
+    if (audio) {
+      const listen = _shuffle(pool.slice()).slice(0, Math.min(5, pool.length));
+      listen.forEach((w, i) => queue.push({ kind: "listen", word: w, pool, mode: i % 2 ? "en" : "th" }));
+    }
   } else if (unit.kind === "tone") {
     // the tone unit: teach the rule (intro + interactive calculator), then
     // drill it — hear a tone and pick the script (ear), read a real word and
@@ -120,7 +134,7 @@ function _unitQueue(unit, dueWords) {
     // not a shared probe on a fixed consonant: if the set's length were ever
     // host-dependent, a shared probe could silently disagree with what a
     // given card actually renders, and reintroduce an out-of-range pick.
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; audio && i < 4; i++) {
       const cons = hosts[i % hosts.length] || "ก";
       const vowel = "า";
       const setLen = toneMinimalSet(cons, vowel).length;
@@ -150,7 +164,11 @@ function _unitStart(idx) {
   const prog = loadProgress();
   const due = dueCards(prog, WORDS.map(w => w[0])).slice(0, 4)
     .map(th => WORDS.find(x => x[0] === th)).filter(Boolean);
-  _lu = { idx, unit, queue: _unitQueue(unit, due), at: 0, results: [] };
+  // Ask TTS at unit-build time, not at card-render time: a unit whose queue
+  // contains cards the learner cannot possibly answer is already unfair by the
+  // time one is shown.
+  const audio = !(typeof _tts === "object" && _tts && typeof _tts.available === "function") || _tts.available();
+  _lu = { idx, unit, queue: _unitQueue(unit, due, audio), at: 0, results: [] };
   _learnStep();
 }
 
@@ -284,7 +302,15 @@ function _unitFinish() {
   const acc = scored.length ? firstTry / scored.length : 1;
   const speedMs = _lu.results.filter(r => r.ms > 0).map(r => r.ms);
   const msAvg = speedMs.length ? Math.round(speedMs.reduce((a, b) => a + b, 0) / speedMs.length) : null;
-  const passed = acc >= COURSE_PASS;
+  // 80% of a FOUR-card sample is 4/4 — a flawless run, not a mastery bar. Every
+  // one of the eight chunk units grades 2-4 cards, so all eight demanded
+  // perfection: a learner who genuinely knows 85% of "Speak: ordering food"
+  // failed it about half the time and could not advance, since units are
+  // strictly gated. Short units therefore always allow one miss; the letters
+  // units (26-28 graded) are unaffected and keep their 5-miss budget.
+  // Found by the 2026-08-30 first-timer round, which measured the pass rates.
+  const passed = acc >= COURSE_PASS ||
+    (scored.length < COURSE_PASS_MIN_SAMPLE && scored.length - firstTry <= 1);
   const path = _bestUpdate(_pathLoad(), _lu.results);
   if (_lu.idx === -2) { _placementFinish(); return; }
   if (_lu.idx < 0) { // Continue sessions: record bests, no unit bookkeeping
@@ -421,9 +447,16 @@ function _wMCTH(item, body) {
 // lenient English answer matching: "to have/there is" accepts "have",
 // "there is", "to have" — parentheticals dropped, variants split on / and ,
 function _enVariants(gloss) {
+  const norm = s => s.toLowerCase().replace(/\s+/g, " ").trim();
   const base = gloss.toLowerCase().replace(/\([^)]*\)/g, " ");
   const parts = base.split(/[\/,;]/).map(p => p.trim()).filter(Boolean);
-  const out = new Set();
+  // The WHOLE gloss, both as printed and with its parenthetical stripped.
+  // Without these, splitting on /,; meant the exact string the app had just
+  // shown the learner was rejected: the wordintro card teaches มี as
+  // "to have/there is", and typing that back scored a 1 and knocked the card's
+  // ease factor from 2.5 to 1.96. It affected 372 of 950 words — every gloss
+  // with a slash, comma or semicolon. Found by the 2026-08-30 first-timer round.
+  const out = new Set([norm(gloss), norm(base)]);
   for (const p of parts) {
     out.add(p);
     if (p.startsWith("to ")) out.add(p.slice(3));
