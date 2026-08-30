@@ -247,6 +247,17 @@ function toneOfWord(text) {
   if (typeof syllableTone !== "function") return null;
   const rtgs = _wordRtgs(text);
   if (rtgs && /[-\s]/.test(rtgs.trim())) return null;   // multi-syllable romanisation
+  // The >3-character guard alone is far too weak: a THREE-character Thai string
+  // is very often two syllables (คณะ khá-ná, ขยะ khà-yà), and those were being
+  // painted one colour that contradicted even their first syllable. The gloss
+  // layer now knows a romanisation for ~7,700 more words, so ask it — it is the
+  // same "does the romanisation have a hyphen" test, just with better data.
+  // Guarded because gloss.js loads after this file and its data is lazy: when
+  // it has nothing, behaviour falls back to exactly what it was before.
+  if (!rtgs && typeof thaiRoman === "function") {
+    const derived = thaiRoman(text);
+    if (derived && /[-\s]/.test(derived.trim())) return null;
+  }
   if (!rtgs && [...String(text)].length > 3) return null; // unknown longish token: don't guess a tone
   return syllableTone(text);
 }
