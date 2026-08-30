@@ -13,6 +13,13 @@ const _BB_DIG_R = ["", "nùeng", "sǒong", "sǎam", "sìi", "hâa", "hòk", "jè
 
 // Composed Thai reading: 11 → สิบเอ็ด, 20 → ยี่สิบ, 145 → หนึ่งร้อยสี่สิบห้า
 function _bbThaiNum(n) {
+  // _BB_DIG has ten entries, so anything from 1000 up composes an "undefined"
+  // prefix: _bbThaiNum(1000) → "undefinedร้อย". Unreachable today (the largest
+  // amount the game can produce is ฿600) but it would break the moment a
+  // pricier destination or a bigger delta is added. Clamp rather than corrupt.
+  n = Math.trunc(Number(n));
+  if (!Number.isFinite(n) || n < 1) return "";
+  if (n > 999) return _bbThaiNum(999);
   const h = Math.floor(n / 100), t = Math.floor((n % 100) / 10), u = n % 10;
   let out = "";
   if (h) out += _BB_DIG[h] + "ร้อย";
@@ -49,7 +56,15 @@ function _bbMakeFareStop(stop) {
   const riders = 1 + Math.floor(Math.random() * maxR);
   const fare   = riders * _BB_FARE;
   let paid;
-  if (Math.random() < 0.2) {
+  // At ฿60 only the ฿100 note covers the fare, so the round has just two
+  // possible answers and a player who ignores the audio entirely and always
+  // assumes ฿100 was right 80% of the time. Nothing bigger belongs in the tray
+  // — a ฿500 note would push change from ฿85 to ฿485 and turn a counting
+  // exercise into an ordeal — so even the odds instead: when one note is the
+  // only thing that covers the fare, hand exact change half the time.
+  // Found by the 2026-08-30 Baht Bus round.
+  const covering = [20, 50, 100].filter(n => n >= fare).length;
+  if (Math.random() < (covering <= 1 ? 0.5 : 0.2)) {
     paid = fare; // exact change — the right move is to give nothing back
   } else {
     const notes = [20, 50, 100].filter(n => n >= fare);
@@ -161,9 +176,19 @@ function _bbSpeakBaht(n, suffix) {
 // Reference chart of the number building blocks, docked under the game.
 // Lives outside #bb-body so phase changes never wipe it; tap a cell to hear it.
 function _bbBuildChart() {
-  const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 100];
+  // 11 and 21 earn their place: เอ็ด replaces หนึ่ง in any trailing ones place
+  // above ten, and ยี่ replaces สอง in the twenties. data.js teaches เอ็ด
+  // explicitly, and this game is where a learner would expect to meet it — but
+  // the prices can't: every amount the game speaks is a multiple of 10 except
+  // ฿15 and ฿45, so of 55 reachable values NONE contains เอ็ด. Real fares and
+  // charter prices are round, and faking a ฿21 fare to teach the morpheme
+  // would buy coverage with authenticity. The chart is the honest place for it.
+  // Found by the 2026-08-30 Baht Bus round.
+  const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 20, 21, 100];
   // 100 shows as the bare building block ร้อย (like สิบ), not หนึ่งร้อย —
-  // it's also the only label wide enough to wrap the mobile grid.
+  // it's also the only label wide enough to wrap the mobile grid. _bbSpeakBaht
+  // says หนึ่งร้อยบาท, which is equally correct; the chart cell speaks its own
+  // label so what you tap is what you hear.
   const label = n => (n === 100 ? "ร้อย" : _bbThaiNum(n));
   const el = document.getElementById("bb-chart");
   el.innerHTML = `
