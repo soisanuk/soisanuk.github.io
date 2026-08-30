@@ -23,8 +23,15 @@ const _CK_POOL = [1,2,3,4,5, 6,7,8,9,10,11, 12, 13,14,15, 16,17,18, 19,20,21,22,
 // 24h → the Thai reading. m is minutes: 0, 30 (ครึ่ง), or anything else,
 // which falls back to the plain "…N นาที" form.
 function thaiTime(h, m) {
-  h = ((Math.trunc(h) % 24) + 24) % 24;
-  m = Math.trunc(m || 0);
+  // Hours were normalised but minutes were not, and NaN failed every
+  // comparison below and fell through to the ทุ่ม branch — so thaiTime(NaN, 0)
+  // returned a bare, plausible-looking "ทุ่ม" for a time that does not exist,
+  // and thaiTime(0, -5) produced "เที่ยงคืนundefinedร้อยundefinedสิบundefinedนาที".
+  // Not reachable from _ckPlan, which only emits m ∈ {0, 30} — but thaiTime is
+  // a global that other screens call, so it should not corrupt on bad input.
+  // Found by the 2026-08-30 Last Bus round.
+  h = Number.isFinite(+h) ? ((Math.trunc(+h) % 24) + 24) % 24 : 0;
+  m = Number.isFinite(+m) ? ((Math.trunc(+m) % 60) + 60) % 60 : 0;
   let th, rom, cycle;
   if (h === 0)       { th = "เที่ยงคืน";                          rom = "thîang khuuen";                        cycle = "midnight"; }
   else if (h < 6)    { th = "ตี" + _bbThaiNum(h);                  rom = "tii " + _bbRomanNum(h);                cycle = "tii"; }
@@ -61,8 +68,15 @@ const _CK_ALTS = {
 
 // Alternate readings of h:m, suffixed exactly as thaiTime() suffixes.
 function thaiTimeAlts(h, m) {
-  h = ((Math.trunc(h) % 24) + 24) % 24;
-  m = Math.trunc(m || 0);
+  // Hours were normalised but minutes were not, and NaN failed every
+  // comparison below and fell through to the ทุ่ม branch — so thaiTime(NaN, 0)
+  // returned a bare, plausible-looking "ทุ่ม" for a time that does not exist,
+  // and thaiTime(0, -5) produced "เที่ยงคืนundefinedร้อยundefinedสิบundefinedนาที".
+  // Not reachable from _ckPlan, which only emits m ∈ {0, 30} — but thaiTime is
+  // a global that other screens call, so it should not corrupt on bad input.
+  // Found by the 2026-08-30 Last Bus round.
+  h = Number.isFinite(+h) ? ((Math.trunc(+h) % 24) + 24) % 24 : 0;
+  m = Number.isFinite(+m) ? ((Math.trunc(+m) % 60) + 60) % 60 : 0;
   return (_CK_ALTS[h] || []).filter(a => !(a.hourOnly && m)).map(a => {
     let th = a.th, rom = a.rom;
     if (m === 30)   { th += "ครึ่ง";                rom += " khrûeng"; }
@@ -102,10 +116,23 @@ function _ckShuffle(arr, r) {
 
 // Three wrong hours for a multiple choice. Same-number twins first — they're
 // the mistake worth making — then top up, because เจ็ดโมงเช้า has no twin.
+//
+// The twelve-hour partner is topped up FIRST and unconditionally, not shuffled
+// in as a peer of ±1/±2. Hours 7-11 have no same-number twin (_ckSpokenNum is
+// injective there), so they fell through to the fallback list, where
+// (h+12)%24 was one of five candidates and lost the draw about two times in
+// five. The result: 4.55% of reading rounds — roughly one every four games —
+// offered four options all on the same side of noon, e.g.
+//   09:00 → เก้าโมงเช้า / สิบโมงเช้า / เจ็ดโมงเช้า / สิบเอ็ดโมงเช้า
+// which anyone who knows เก้า = 9 answers without knowing a cycle exists. The
+// AM/PM distinction is the whole reason this game is here.
+// Found by the 2026-08-30 Last Bus round; affected hours were exactly 7-10.
 function _ckDistractorHours(h, rand) {
   const r = rand || Math.random;
   const out = _ckShuffle(_ckConfusable(h), r).slice(0, 3);
-  const fallback = _ckShuffle([(h + 12) % 24, (h + 1) % 24, (h + 23) % 24, (h + 2) % 24, (h + 22) % 24], r);
+  const twelve = (h + 12) % 24;
+  if (out.length < 3 && twelve !== h && !out.includes(twelve)) out.push(twelve);
+  const fallback = _ckShuffle([(h + 1) % 24, (h + 23) % 24, (h + 2) % 24, (h + 22) % 24], r);
   for (const c of fallback) {
     if (out.length >= 3) break;
     if (c !== h && !out.includes(c)) out.push(c);

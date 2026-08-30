@@ -126,3 +126,57 @@ describe("charters", () => {
     }
   });
 });
+
+// ── findings from the 2026-08-30 Baht Bus persona round ─────────────────────
+
+test("_bbThaiNum clamps instead of composing 'undefined'", () => {
+  // _BB_DIG has ten entries, so _bbThaiNum(1000) returned "undefinedร้อย".
+  // Unreachable today (the largest amount the game produces is ฿600) but it
+  // would break the moment a pricier destination or bigger delta was added.
+  assert.ok(!/undefined/.test(_bbThaiNum(1000)));
+  assert.equal(_bbThaiNum(0), "");
+  assert.equal(_bbThaiNum(NaN), "");
+  assert.equal(_bbThaiNum(-5), "");
+  for (let n = 1; n <= 999; n++) assert.ok(!/undefined/.test(_bbThaiNum(n)), `n=${n}`);
+});
+
+test("the number chart teaches เอ็ด, which the prices never can", () => {
+  // Every amount the game speaks is a multiple of 10 except ฿15 and ฿45, so of
+  // 55 reachable values NONE contains เอ็ด — the morpheme data.js teaches
+  // explicitly. Real fares and charter prices are round; faking a ฿21 fare
+  // would buy coverage with authenticity, so the chart carries it instead.
+  const src = readFileSync(new URL("../../web/js/baht-bus.js", import.meta.url), "utf8");
+  const nums = src.match(/const nums = \[([^\]]+)\]/);
+  assert.ok(nums, "chart number list not found");
+  const list = nums[1].split(",").map(n => +n.trim());
+  const shown = list.map(n => (n === 100 ? "ร้อย" : _bbThaiNum(n)));
+  assert.ok(shown.some(t => t.includes("เอ็ด")), `chart teaches no เอ็ด: ${shown.join(" ")}`);
+  assert.ok(shown.some(t => t.includes("ยี่")), `chart teaches no ยี่: ${shown.join(" ")}`);
+});
+
+test("no fare round can be won 80% of the time by ignoring the audio", () => {
+  // At ฿60 only the ฿100 note covers the fare, so the round has two possible
+  // answers; the 20% exact-change rate made ฿100 right 80% of the time. A
+  // two-option round can be no fairer than a coin, but it should be one.
+  const seen = {};
+  for (const stop of [1, 2, 4, 5, 7, 8, 10]) {
+    for (let i = 0; i < 20000; i++) {
+      const c = _bbMakeFareStop(stop);
+      ((seen[c.fare] = seen[c.fare] || {})[c.paid] ||= 0), seen[c.fare][c.paid]++;
+    }
+  }
+  for (const [fare, dist] of Object.entries(seen)) {
+    const n = Object.values(dist).reduce((a, b) => a + b, 0);
+    const best = Math.max(...Object.values(dist)) / n;
+    assert.ok(best <= 0.55, `฿${fare}: always guessing the commonest payment wins ${(100*best).toFixed(0)}%`);
+  }
+});
+
+test("change stays small enough to count out by hand", () => {
+  // guards the fix above: raising the exact-change rate must not be "solved"
+  // later by adding a bigger note — a ฿500 would push change from ฿85 to ฿485
+  let max = 0;
+  for (const stop of [1, 2, 4, 5, 7, 8, 10])
+    for (let i = 0; i < 20000; i++) max = Math.max(max, _bbMakeFareStop(stop).change);
+  assert.ok(max <= 100, `max change ฿${max} — too many notes to hand back`);
+});

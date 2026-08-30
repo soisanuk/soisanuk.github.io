@@ -245,3 +245,53 @@ test("the reference chart's examples land in the cycle they illustrate", () => {
       `chart row ${cell.label} illustrates the wrong cycle`);
   }
 });
+
+// ── findings from the 2026-08-30 Last Bus persona round ─────────────────────
+
+test("a reading round always offers options on both sides of noon", () => {
+  // Hours 7-11 have no same-number twin, so their distractors came from a
+  // fallback where (h+12)%24 was one of five candidates and lost the draw about
+  // two times in five. 4.55% of reading rounds — one every four games — showed
+  // four options all before noon, e.g. 09:00 against สิบโมงเช้า / เจ็ดโมงเช้า /
+  // สิบเอ็ดโมงเช้า, which anyone who knows เก้า = 9 answers without knowing a
+  // cycle exists. Telling AM from PM is the whole point of this game.
+  for (let h = 0; h < 24; h++) {
+    for (let i = 0; i < 200; i++) {
+      const all = [h, ..._ckDistractorHours(h, Math.random)];
+      assert.ok(all.some(x => x < 12) && all.some(x => x >= 12),
+        `hour ${h}: every option is the same side of noon — [${all}]`);
+    }
+  }
+});
+
+test("distractors stay distinct and never include the answer", () => {
+  // the cross-cycle guarantee above must not cost the older invariants
+  for (let h = 0; h < 24; h++) {
+    for (let i = 0; i < 200; i++) {
+      const d = _ckDistractorHours(h, Math.random);
+      assert.equal(d.length, 3, `hour ${h}`);
+      assert.equal(new Set(d).size, 3, `hour ${h} repeated a distractor`);
+      assert.ok(!d.includes(h), `hour ${h} is among its own distractors`);
+    }
+  }
+});
+
+test("thaiTime never emits 'undefined', at any minute of any day", () => {
+  // minutes were not normalised and NaN fell through every branch to ทุ่ม, so
+  // thaiTime(0,-5) read "เที่ยงคืนundefinedร้อยundefinedสิบundefinedนาที" and
+  // thaiTime(NaN,0) returned a bare, plausible "ทุ่ม" for a nonexistent time
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m++) {
+      const t = thaiTime(h, m);
+      assert.ok(!/undefined/.test(t.th + t.rom), `${h}:${m} → ${t.th}`);
+    }
+  }
+});
+
+test("thaiTime normalises malformed input instead of corrupting", () => {
+  assert.equal(thaiTime(NaN, 0).th, "เที่ยงคืน");
+  assert.equal(thaiTime(undefined, 0).th, "เที่ยงคืน");
+  assert.equal(thaiTime(0, -5).h24, "00:55", "minutes wrap like hours do");
+  assert.equal(thaiTime(9, 60).h24, "09:00");
+  assert.equal(thaiTime(9, 30).th, "เก้าโมงเช้าครึ่ง", "ordinary input is untouched");
+});
