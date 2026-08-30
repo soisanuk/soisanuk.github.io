@@ -204,6 +204,11 @@ body {
   border:1px solid rgba(255,212,71,0.28); resize:vertical; }
 .paste-input:focus { outline:none; border-color:var(--gold,#ffd447); }
 .paste-controls { justify-content:center; margin:0.6rem 0 0.2rem; }
+/* 44px is the floor for a touch target. Measured under it on iPhone 13: Soi
+   Buakhao's PRIMARY call to action at 39.6px tall, and the Numbers speak button
+   at 34.8x23.8. Found by the 2026-08-30 games look-and-feel round. */
+body.mobile .btn, body.mobile .btn-small, body.mobile .sb-btn,
+body.mobile .example-speak, body.mobile .rating-btn { min-height:44px; }
 .paste-topline { display:flex; justify-content:space-between; align-items:center;
   max-width:640px; margin:0.6rem auto 0.2rem; padding:0 0.3rem; }
 .paste-count { opacity:0.7; font-size:0.9em; }
@@ -222,6 +227,11 @@ body {
    it otherwise nearly matches against the page background */
 .paste-text .w-token[data-notone] { border-bottom-style:dotted; opacity:0.68; }
 .paste-notone-key { opacity:0.6; }
+/* ฿ overhangs its own advance width in this font stack, so it collides with the
+   digit after it — "฿0" reads as one mangled ligature. A plain space does not
+   fix it (baht-bus.js already wrote "฿ " and it still touched), so nudge the
+   glyph itself. Found by the 2026-08-30 games look-and-feel round. */
+.baht { margin-right:.14em; }
 .paste-credit { max-width:640px; margin:0.8rem auto 0.2rem; font-size:0.78em; opacity:0.55;
   text-align:center; line-height:1.5; }
 .paste-credit a { color:inherit; }
@@ -481,6 +491,12 @@ body {
   #sidebar { display: none; }
   .screen { padding: 0 0 2rem; }
   .thai-big { font-size: 7.5rem; min-height: 10rem; margin: 0.75rem 0.75rem 0.5rem; }
+  /* The Numbers answer is revealed into an already-full card, and .thai-big's
+     10rem floor reserved 160px whatever the answer was — enough on its own to
+     push "← Menu" off a 664px screen. numbers.js scales the font to the answer
+     length; the box should follow it rather than hold a fixed floor.
+     Found by the 2026-08-30 games look-and-feel round. */
+  #nf-thai { min-height: 0; margin-top: 0.35rem; }
 }
 
 /* ── Wide/desktop: sidebar is the nav — hide duplicate menu-screen nav ───── */
@@ -1432,6 +1448,11 @@ kbd.tut-key {
   position:relative; transition:box-shadow .1s, border-color .1s, background .1s; overflow:hidden;
 }
 .tkey-lat { font:.48rem monospace; color:#bf5fff40; position:absolute; top:2px; left:3px; line-height:1; }
+/* These hint at the PHYSICAL keys a desktop player presses. On a phone there is
+   no physical keyboard to hint at, and at 1.39:1 they are barely perceptible
+   anyway — so they are noise on the one device where they mean nothing.
+   Found by the 2026-08-30 games look-and-feel round. */
+body.mobile .tkey-lat { display:none; }
 .tkey-th  { font:.95rem 'Noto Sans Thai',sans-serif; color:#cf9fff; line-height:1; }
 .tkey.dim .tkey-th  { color:#ffffff12; }
 .tkey.dim .tkey-lat { color:#ffffff08; }
@@ -1909,7 +1930,11 @@ body.mobile .ck-chart-title { cursor:pointer; user-select:none; -webkit-user-sel
 .c4-girl-lv   { color:#ffe600; font-size:.75rem; letter-spacing:.05em; text-transform:uppercase; }
 .c4-girl-blurb{ color:#c090b0; font-size:.8rem; font-style:italic; }
 .c4-stakes {
-  color:#bf5fff90; font-size:.8rem; text-align:center; max-width:400px; line-height:1.6;
+  /* was #bf5fff90 — 2.63:1 on #0d0015, well under the 4.5:1 body-text
+     requirement, and it is the house rules: the one paragraph explaining what
+     the game costs you. 0xd9 alpha measures 4.66:1.
+     Found by the 2026-08-30 games look-and-feel round. */
+  color:#bf5fffd9; font-size:.8rem; text-align:center; max-width:400px; line-height:1.6;
   border-top:1px solid #ff006620; padding-top:.7rem;
 }
 /* quiz */

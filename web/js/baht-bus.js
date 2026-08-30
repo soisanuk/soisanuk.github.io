@@ -164,7 +164,7 @@ function _bbEsc(s) {
 function _bbHUD() {
   document.getElementById("bb-hud").innerHTML =
     `<span>🚏 Stop <strong>${Math.min(_bbStop, _BB_STOPS)}</strong>/${_BB_STOPS}</span>` +
-    `<span>฿ <strong>${_bbEarn}</strong></span>` +
+    `<span><span class="baht">฿</span><strong>${_bbEarn}</strong></span>` +
     `<span>⭐ <strong>${_bbPerfect}</strong></span>`;
 }
 
@@ -228,7 +228,7 @@ function startBahtBus() {
   _bbBuildChart();
   document.getElementById("bb-body").innerHTML = `
     <div class="bb-caption">🌅 Evening shift on the Beach Road loop.
-    ฿${_BB_FARE} a head — charters pay what you can talk them into.</div>`;
+    <span class="baht">฿</span>${_BB_FARE} a head — charters pay what you can talk them into.</div>`;
   _bbLater(900, _bbNextStop);
 }
 

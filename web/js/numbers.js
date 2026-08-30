@@ -65,7 +65,17 @@ function _nfShow() {
   } else {
     digEl.style.display = "none";
   }
-  document.getElementById("nf-thai").textContent = card.th;
+  const thEl = document.getElementById("nf-thai");
+  thEl.textContent = card.th;
+  // Shrink long answers. .thai-big is 7.5rem on mobile, which is right for สิบ
+  // and catastrophic for เก้าร้อยเก้าสิบเก้า: at 120px on a 390px phone that
+  // wrapped to FOUR lines and pushed the footer 533px below the fold, so
+  // "← Menu" was unreachable without scrolling half a screen. CSS cannot size
+  // by content length, but this is the code that knows the content.
+  // Measured on iPhone 13; the size only shrinks, never grows past the
+  // stylesheet's own value. Found by the 2026-08-30 look-and-feel round.
+  const glyphs = [...card.th].length;
+  thEl.style.fontSize = glyphs > 12 ? "3.2rem" : glyphs > 8 ? "4.0rem" : glyphs > 3 ? "5.0rem" : "";
   document.getElementById("nf-rom").textContent = card.rom;
   document.getElementById("nf-answer-area").style.display = "none";
   document.getElementById("nf-reveal-area").style.display = "";
