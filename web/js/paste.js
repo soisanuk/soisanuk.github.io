@@ -11,6 +11,10 @@
 //   • anything else                   → the card with no gloss at all: character
 //     decomposition and per-syllable tone reasoning, which the script engine
 //     derives from spelling alone and so works on vocabulary we've never seen
+//   • a FRAGMENT (segment.js flags these) → letters only, never a meaning. A
+//     lexicon word wedged against unmatched Thai is usually a piece of a longer
+//     word the list doesn't have: เซเว่น yields เซ, which really does mean
+//     "to stagger", and saying so is worse than saying nothing
 //   • tone colour                    → only where toneOfWord will vouch for it
 //
 // The lexicon is ~240KB and loads on first use, so this file never touches it
@@ -96,10 +100,11 @@ function _pasteRender(text, out) {
       if (!t.known) return _wcEsc(t.text);
       total++;
       if (typeof WORD_MAP !== "undefined" && WORD_MAP[t.text]) known++;
-      if (thaiGloss(t.text)) glossed++;
+      if (!t.fragment && thaiGloss(t.text)) glossed++;
       const tone = (typeof toneOfWord === "function") ? toneOfWord(t.text) : null;
       const style = (colorOn && tone) ? ` style="color:${TONE_COLORS[tone]}"` : "";
-      return `<span class="w-token" data-w="${_wcEsc(t.text)}">${
+      const frag = t.fragment ? ` data-frag="1" title="Part of a longer word — meaning not shown"` : "";
+      return `<span class="w-token"${frag} data-w="${_wcEsc(t.text)}">${
         `<span${style}>${_wcEsc(t.text)}</span>`}</span>`;
     }).join("");
     return `<div class="paste-line" lang="th">${html}</div>`;
@@ -138,8 +143,13 @@ function _pasteToggleColor() {
 function _pasteWireTokens(container) {
   container.querySelectorAll(".w-token").forEach(span => {
     const thai = span.dataset.w;
-    const w = (typeof _wcMap === "function") ? _wcMap()[thai] : null;
-    const entry = w || [thai, thaiRoman(thai) || "", thaiGloss(thai) || ""];
+    // A fragment gets NO gloss and NO romanisation, whatever the dictionary
+    // says about it in isolation — the letters and the tone rule still hold,
+    // because those come from the spelling, and they are the useful half.
+    const frag = span.dataset.frag === "1";
+    const w = frag ? null : ((typeof _wcMap === "function") ? _wcMap()[thai] : null);
+    const entry = frag ? [thai, "", ""]
+                       : (w || [thai, thaiRoman(thai) || "", thaiGloss(thai) || ""]);
     span.style.cursor = "pointer";
     // Reachable without a pointer: every token is a real control, not decoration.
     span.tabIndex = 0;
