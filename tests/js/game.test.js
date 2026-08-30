@@ -95,7 +95,12 @@ describe("street sprites", () => {
 test("_gResize multiplies by devicePixelRatio and keeps the canvas's own aspect", () => {
   const src = readFileSync(new URL("../../web/js/game.js", import.meta.url), "utf8");
   const fn = src.slice(src.indexOf("function _gResize"), src.indexOf("}", src.indexOf("function _gResize")) + 1);
+  // Assert the MULTIPLY, not just the mention: an earlier version of this test
+  // checked only that the function named devicePixelRatio, and a mutation that
+  // kept `const dpr = ...` while dropping `* dpr` from the assignment passed
+  // clean — i.e. it would have let the original bug straight back in.
   assert.match(fn, /devicePixelRatio/, "_gResize ignores devicePixelRatio");
+  assert.match(fn, /\*\s*dpr/, "_gResize computes dpr but never multiplies by it");
   assert.doesNotMatch(fn, /wrap\.client/, "_gResize sizes from the wrapper, not the canvas");
   // the renderer uses absolute sizes (lineWidth 7, "bold 28px"), so the drawing
   // space must stay in CSS pixels via setTransform rather than scaling coords

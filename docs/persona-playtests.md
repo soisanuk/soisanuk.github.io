@@ -320,3 +320,24 @@ Also: the screen id is `lesson-screen`, not `learn-screen`; a missed answer
 shows both a "🔍 word card" button and a "Next →" button, and clicking the
 first goes nowhere; and the 5-pair match card pairs by index with the English
 chip cut at `" — "` then `"/"`, so clicking tiles blindly never completes it.
+
+
+## Verify the tests, not just the findings
+
+Step 5 says "fix, then pin". A pin that cannot fail is not a pin. Several
+findings from these rounds are in DOM-bound code that cannot run under
+`node --test`, so their regression tests assert the SHAPE OF THE SOURCE — that
+`_gResize` multiplies by `devicePixelRatio`, that the clock HUD wraps its
+counter in a span. Those are legitimate when behaviour is unreachable, and they
+are also easy to write badly.
+
+**Mutation-test every source-shape assertion**: reintroduce the original bug,
+run the test, confirm it fails. Doing this across the game round's four new
+tests found one that did not. It asserted `_gResize` *mentioned*
+`devicePixelRatio`; a mutation that kept `const dpr = …` and dropped `* dpr`
+from the assignment passed clean, so the test would have let the primary bug
+back in. Two of the other three mutations were caught, and the fourth was
+caught only because it removed the string the test named.
+
+Rule of thumb: assert the operation, not the vocabulary. `/\*\s*dpr/` catches
+what `/devicePixelRatio/` does not.
