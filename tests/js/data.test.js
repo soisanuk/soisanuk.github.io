@@ -9,7 +9,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-for (const f of ["data.js", "examples.js", "tokeniser.js"]) {
+for (const f of ["data.js", "examples.js", "tokeniser.js", "thai-script.js"]) {
   vm.runInThisContext(
     readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"),
     { filename: f }
@@ -112,4 +112,36 @@ test("romanisations follow the house scheme, not raw Paiboon", () => {
   for (const w of WORDS) check("WORDS", w[0], w[1]);
   for (const k of Object.keys(EXAMPLES)) check("EXAMPLES", k, EXAMPLES[k][1]);
   assert.deepEqual(bad, [], `${bad.length} romanisation(s) off-scheme`);
+});
+
+// ── romanisation vs the tone engine ─────────────────────────────────────────
+// Found by the 2026-08-30 fluent-Thai-reader persona round: 23 curriculum
+// romanisations carried a tone the app's own engine contradicts — ศาสนา was
+// sǎat- for sàat-, ทิ้ง was thîng for thíng, ปริมาณ was prì-maan for a word
+// that is actually three syllables. They surface everywhere (flashcards, SRS,
+// reader, tone drill), so this is the highest-reach data invariant here.
+//
+// Stated as an invariant rather than 23 assertions so it also catches the next
+// one. The two exceptions are real and are NOT to be "fixed": in both the data
+// is right and the engine is wrong, because the spelling rule does not predict
+// the pronunciation.
+test("no monosyllabic word's romanisation contradicts the tone engine", () => {
+  const MARK = { "̀": "low", "̂": "falling", "́": "high", "̌": "rising" };
+  const claimed = r => {
+    const marks = [...String(r).normalize("NFD")].filter(c => MARK[c]);
+    return marks.length ? MARK[marks[0]] : "mid";
+  };
+  // แอป "app" and ก็ are genuine exceptions — a loanword whose speech departs
+  // from the spelling, and one of Thai's handful of irregular spellings
+  // (ไม้ไต่คู้ over an unwritten ออ). _toneDrillPool skips both for this reason.
+  const EXCEPTIONS = new Set(["แอป", "ก็"]);
+  const bad = [];
+  for (const w of WORDS) {
+    if (/[-\s]/.test(w[1].trim())) continue;        // multi-syllable: not comparable
+    if (EXCEPTIONS.has(w[0])) continue;
+    const tone = syllableTone(w[0]);
+    if (!tone) continue;                             // engine declines: nothing to check
+    if (tone !== claimed(w[1])) bad.push(`${w[0]} "${w[1]}" claims ${claimed(w[1])}, engine reads ${tone}`);
+  }
+  assert.deepEqual(bad, [], `${bad.length} romanisation(s) contradict the tone engine`);
 });
