@@ -295,3 +295,13 @@ test("thaiTime normalises malformed input instead of corrupting", () => {
   assert.equal(thaiTime(9, 60).h24, "09:00");
   assert.equal(thaiTime(9, 30).th, "เก้าโมงเช้าครึ่ง", "ordinary input is untouched");
 });
+
+// Found by the 2026-08-30 games look-and-feel round: #ck-hud is display:flex
+// with a 1.8rem gap, so the bare text nodes in `Stop <strong>1</strong>/10`
+// became three separate flex items and it read "Stop 1 /10" with the
+// denominator pushed 28.8px away. baht-bus.js wraps the identical string.
+test("the HUD round counter is a single flex item", () => {
+  const src = readFileSync(new URL("../../web/js/clock.js", import.meta.url), "utf8");
+  assert.match(src, /<span>Stop <strong>/,
+    "Stop N/10 must be wrapped, or the flex gap splits it into three items");
+});
