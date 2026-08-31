@@ -1,0 +1,54 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Hostile markup for the Thai DOM walker</title>
+<style>body { font: 16px system-ui; } .box { border: 1px solid #ccc; margin: 6px; padding: 6px; }</style>
+
+<!-- 1. plain prose: the easy case, and the baseline -->
+<p class="box" id="plain">สวัสดีครับ ผมชื่อมาริโอ วันนี้อากาศดีมาก</p>
+
+<!-- 2. a word split across an inline tag. สวัสดี becomes ส + วัสดี -->
+<p class="box" id="split"><b>ส</b>วัสดีครับ</p>
+
+<!-- 3. a COMBINING MARK stranded in its own node: ก + ิ + น -->
+<p class="box" id="combining">ก<span>ิ</span>น</p>
+
+<!-- 4. Thai inside a link — clicking must not navigate -->
+<p class="box" id="link"><a href="https://example.com/should-not-navigate" id="thelink">ไปกินข้าว</a></p>
+
+<!-- 5. Thai inside an element that already has a click handler -->
+<p class="box" id="handler"><span id="clicky">น้ำเปล่า</span></p>
+
+<!-- 6. user input: must never be rewritten -->
+<div class="box"><div id="editable" contenteditable="true">แก้ไขข้อความนี้ได้</div></div>
+<div class="box"><textarea id="ta">ข้อความในกล่อง</textarea></div>
+<div class="box"><input id="inp" value="ค่าในช่อง"></div>
+
+<!-- 7. code that merely mentions Thai -->
+<script id="scr" type="application/json">{"thai":"ไม่ควรแตะ"}</script>
+
+<!-- 8. block boundary — NOT a split word, must not be counted as one -->
+<div class="box" id="blocks"><p>กิน</p><p>นอน</p></div>
+
+<!-- 9. mixed scripts and punctuation: spacing must survive byte-for-byte -->
+<p class="box" id="mixed">Mario said "สวัสดี" (hello), then ไป — 100%.</p>
+
+<!-- 10. shadow DOM -->
+<div class="box" id="shadowhost"></div>
+
+<!-- 11. a region that re-renders under us, like React -->
+<div class="box" id="rerender">เมืองไทย</div>
+
+<script>
+  document.getElementById("clicky").addEventListener("click", () => {
+    window.__handlerFired = (window.__handlerFired || 0) + 1;
+  });
+  document.getElementById("thelink").addEventListener("click", () => {
+    window.__linkClicked = (window.__linkClicked || 0) + 1;
+  });
+  const host = document.getElementById("shadowhost");
+  const root = host.attachShadow({ mode: "open" });
+  root.innerHTML = '<p id="inshadow">ในเงามืด</p>';
+  window.__rerender = () => {
+    document.getElementById("rerender").innerHTML = "เมืองไทย";
+  };
+</script>
