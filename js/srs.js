@@ -29,6 +29,21 @@ function peekCard(p, key) {
   return p[key] || defaultCard();
 }
 
+// Bounds on SM-2's two compounding values. The ease factor already had a
+// floor (1.3, the standard) but no ceiling, and it rises +0.1 on every perfect
+// answer without limit — so a card you always ace multiplies its interval by an
+// ever-larger factor. 40 consecutive "Perfect" reviews reached ease 6.50 and an
+// interval of 1.9e25 days: the card leaves the deck for longer than the age of
+// the universe, which is not a schedule, it is a leak.
+//
+// Not reachable in ordinary use — a realistic 1-lapse-in-7 pattern settles
+// around 10 days — but nothing stopped it, and a genuinely well-known card in a
+// long-lived store is exactly the case that gets there. SM_MAX_INTERVAL matches
+// Anki's default ceiling; SM_MAX_EASE is the same distance above the default
+// 2.5 as the 1.3 floor is below it.
+const SM_MAX_INTERVAL = 36500;   // days — a century
+const SM_MAX_EASE = 3.7;
+
 // quality: 0=blackout 1=wrong 2=hard 3=ok 4=good 5=perfect
 function reviewCard(card, quality) {
   const now = Date.now() / 1000;
@@ -36,7 +51,7 @@ function reviewCard(card, quality) {
   if (quality >= 3) {
     if (card.repetitions === 0) card.interval = 1;
     else if (card.repetitions === 1) card.interval = 6;
-    else card.interval = Math.round(card.interval * card.easeFactor);
+    else card.interval = Math.min(SM_MAX_INTERVAL, Math.round(card.interval * card.easeFactor));
     card.repetitions++;
     card.correctStreak++;
   } else {
@@ -44,8 +59,8 @@ function reviewCard(card, quality) {
     card.interval = 1;
     card.correctStreak = 0;
   }
-  card.easeFactor = Math.max(1.3,
-    card.easeFactor + 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+  card.easeFactor = Math.min(SM_MAX_EASE, Math.max(1.3,
+    card.easeFactor + 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)));
   card.due = now + card.interval * 86400;
 }
 
