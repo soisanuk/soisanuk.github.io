@@ -158,6 +158,9 @@ Rough shape:
 2. ~~**Cluster support** in `_analyseSyllable`.~~ **Done** — see §2.
 3. **Content script** that finds Thai runs in the DOM, segments, wraps as `.w-token`
    spans, and calls the existing `_wcWireTokens`.
+   **SPIKED — see §10.** Both halves of this sentence turned out wrong: wrapping
+   reflows the page, and `_wcWireTokens` skips non-curriculum words. Build
+   `tdWordAt`-style pointer lookup instead.
 4. **Bundle the mounts and CSS** currently supplied by `web/index.html` into the
    extension's own shell.
 5. **Gloss source.** The 950-word curriculum map will not cover arbitrary text. Either
@@ -418,3 +421,87 @@ trades one error class for another at roughly 1:1.
 glosses and merely misses a compound sense, where a wrong merge asserts
 "address" in a sentence that does not mean that. Doing this properly needs a
 bigram or context model. Don't re-attempt it with a constant.
+
+---
+
+## 10. Step 3 spiked — and it changed the design (2026-09-01)
+
+`spike/thai-dom.js` + `spike/fixtures/hostile.html` + `spike/run.mjs`.
+Run it with `node spike/run.mjs` — 24 checks, all passing.
+
+**Verdict: step 3 is tractable, but not the way §4 describes it.** Two of that
+section's assumptions are wrong, and one of them only shows up on a real page.
+
+### The approach §4 assumed — wrap every word — reflows the page
+
+The obvious content script finds Thai text nodes, segments them, and replaces
+each with `<span class="w-token">` wrappers. Built, and it survives everything
+a hostile page can do: `contenteditable`, `textarea`, `input`, `<script>`,
+shadow roots (reached via the TreeWalker), re-scans without double-wrapping,
+React-style re-renders, block boundaries not mistaken for split words, and
+punctuation/Latin/spacing preserved byte-for-byte. 21 checks.
+
+Then it was pointed at th.wikipedia.org, and:
+
+- `textContent` — **byte-identical**, 47,586 characters. Nothing lost.
+- `innerText` — **7 characters different**. `เมนูหลัก` rendered as `เมนู` /
+  `หลัก` across two lines.
+
+Thai is unspaced, so a run the browser could not break mid-word becomes a row
+of inline boxes it *can* break between. The content is perfect and the layout
+moved. On somebody else's page that is its own kind of damage, and no amount of
+CSS on our spans reliably prevents it.
+
+### What to build instead: find the word under the pointer
+
+`tdWordAt(x, y)` uses `caretPositionFromPoint` to get the text node and offset,
+walks out to the Thai run, segments **that run only**, and returns the token
+containing the offset plus a `Range` rectangle for drawing a highlight as an
+overlay. Measured on the same page:
+
+| | wrap every word | word under pointer |
+|---|---|---|
+| `innerText` | changed | unchanged |
+| `innerHTML` | rewritten | byte-identical (310,005 → 310,005) |
+| cost | 33–159 ms per full scan | **0.015 ms** per lookup |
+| `contenteditable` | must be skipped | readable, since nothing is written |
+| survives a re-render | needs re-scanning | nothing to survive |
+
+591 of 1,508 probe points across the article landed on a real word — อาหาร,
+บทความ, อภิปราย, แก้ไข, หน้าตา — with no DOM mutation at all.
+
+### Split words: 36.7% of nodes, but 5.2% of what a reader points at
+
+A word split across an inline tag (`<b>ส</b>วัสดี`, or a stranded combining
+mark) cannot be segmented from one text node. Detection is exact — on the
+fixture it flags precisely the five nodes belonging to the two split words, and
+does not flag the block boundary, the link, the mixed-script line, the shadow
+root or the re-render.
+
+On Wikipedia **36.7% of Thai text nodes** are at a boundary (it links heavily,
+mid-sentence). But that is the wrong denominator for the pointer design: only
+**5.2% of actual word hits** sat on a boundary. Joining adjacent inline text
+nodes before segmenting would close most of that, and is the obvious next step.
+
+### Two smaller things the spike settled
+
+- **`_wcWireTokens` is the wrong function to reuse**, though §4 names it. It
+  looks each word up in `_wcMap()` and returns if it is missing — on open text
+  almost every word is missing, so almost every token would be inert.
+  `paste.js` already hit this and grew `_pasteWireTokens`; the extension needs
+  that shape, not wordcard's.
+- **A token inside `<a>` never receives its click.** Measured: with a plain
+  listener the browser navigated first and took the handler, the page and the
+  listener with it. `preventDefault()` *and* `stopPropagation()` are both
+  required — they defend against different things (the link's own navigation,
+  and the host page's delegated handlers).
+- **`segment.js` hardcodes `el.src = "js/lexicon-th.js"`** (line ~90). That
+  relative path cannot resolve in a content script; it needs
+  `chrome.runtime.getURL`, which is the first real fork between the app build
+  and an extension build.
+
+### Still not answered
+
+Whether to build it (§5). The spike says the hard part is cheap and the design
+is clear; it says nothing about the ~1,000-user market or the CC BY-SA
+obligation `gloss-th.js` carries into a distributed extension (§8).
