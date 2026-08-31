@@ -98,3 +98,26 @@ test("a graded card survives the write-back that endSession performs", () => {
   saveProgress(progress);            // what saveAndRefresh() does
   assert.ok(loadProgress()["ไป"], "the grade must still be there after write-back");
 });
+
+// ── Placement places; it does not schedule ──────────────────────────────────
+// Placement showed 16 words and wrote a real SRS record for each, so a test
+// taken to avoid redoing work quietly enrolled you in 16 new cards — and,
+// since a wrong answer resets repetitions, knocked a fumbled mature word's
+// interval back to a day. Found by the 2026-09-01 returner round.
+test("placement leaves the review store untouched", () => {
+  progress = { "ไป": { interval: 40, repetitions: 6, easeFactor: 2.5, due: 9e9, totalReviews: 9, correctStreak: 6 } };
+  const before = JSON.stringify(progress["ไป"]);
+  _lu = { idx: -2, results: [] };          // -2 marks placement
+  _learnRecord("ไป", 1, 400);              // fumble a mature card
+  assert.equal(JSON.stringify(progress["ไป"]), before, "a mature card must not be reset by placement");
+  _learnRecord("นอน", 5, 400);             // and an unseen one
+  assert.equal(progress["นอน"], undefined, "placement must not enrol new cards");
+  assert.equal(_lu.results.length, 2, "but it still records what you answered");
+});
+
+test("an ordinary lesson still grades normally", () => {
+  progress = {};
+  _lu = { idx: 0, results: [] };
+  _learnRecord("นอน", 5, 400);
+  assert.ok(progress["นอน"], "non-placement lessons must still write");
+});

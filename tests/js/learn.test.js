@@ -2,7 +2,7 @@
 // wordcard.js + app.js load first: learn.js's widget renderers call _esc
 // (app.js), which delegates to _wcEsc (wordcard.js) — the single escaping
 // implementation.
-import { test } from "node:test";
+import { test, describe } from "node:test";
 import assert from "node:assert";
 import fs from "node:fs";
 import path from "node:path";
@@ -574,4 +574,41 @@ test("the level ladder is ordered and starts at zero", () => {
   for (let i = 1; i < LEVELS.length; i++) {
     assert.ok(LEVELS[i][0] > LEVELS[i - 1][0], `LEVELS[${i}] does not increase`);
   }
+});
+
+// ── The ▶ Continue row annotation ───────────────────────────────────────────
+// The desktop home card announces what Continue will do, but #menu-welcome is
+// desktop-only — so on phones the row's only annotation was the streak. A
+// six-week returner with 25 overdue cards read "streak ended · best 12 days":
+// true, backward-looking, and silent about the one reason to tap the button.
+describe("_contText", () => {
+  const dead = { ended: true, maxDays: 12, days: 0 };
+  const live = { ended: false, days: 4 };
+
+  test("leads with pending reviews, not the broken streak", () => {
+    const s = _contText({ kind: "review", due: new Array(25) }, dead, {});
+    assert.match(s, /^25 reviews due$/);
+    assert.doesNotMatch(s, /best|ended/, "a lapsed learner needs the way back, not the eulogy");
+  });
+
+  test("names the deck when it is script or sentence work", () => {
+    assert.match(_contText({ kind: "script", n: 30 }, dead, {}), /^30 script reviews due$/);
+    assert.match(_contText({ kind: "sentence", n: 4 }, dead, {}), /^4 sentence reviews due$/);
+  });
+
+  test("keeps a live streak as a tail, since that is the nudge", () => {
+    assert.equal(_contText({ kind: "review", due: [1, 2, 3] }, live, {}), "3 reviews due · 🔥 4");
+  });
+
+  test("singular is singular", () => {
+    assert.match(_contText({ kind: "script", n: 1 }, dead, {}), /^1 script review due$/);
+  });
+
+  test("falls back to the streak line when nothing is due", () => {
+    const t = { cards: 12 };
+    for (const plan of [null, { kind: "unit", unitIdx: 0 }, { kind: "speed" }]) {
+      assert.equal(_contText(plan, live, t), _streakText(live, t),
+        `${plan ? plan.kind : "no plan"} should defer to the streak line`);
+    }
+  });
 });

@@ -4,7 +4,21 @@
 import { createRequire } from "node:module";
 const require = createRequire("/Users/mario/projects/last-baht-bus/package.json");
 const { chromium, devices } = require("@playwright/test");
+
+// Resolve the app from THIS file, not an absolute path: the hardcoded
+// "/Users/mario/thaicab/..." stopped matching the checkout and every run died
+// on ERR_FILE_NOT_FOUND.
+const APP_URL = new URL("../web/index.html", import.meta.url).href;
+
 const browser = await chromium.launch();
+// A sweep that throws must not leave its headless Chrome behind.
+for (const ev of ["exit", "SIGINT", "SIGTERM", "uncaughtException", "unhandledRejection"]) {
+  process.on(ev, err => {
+    try { browser.process()?.kill("SIGKILL"); } catch (e) {}
+    if (ev === "uncaughtException" || ev === "unhandledRejection") { console.error(err); process.exit(1); }
+    if (ev !== "exit") process.exit(130);
+  });
+}
 const report = [];
 for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 } }],
     ["MOBILE", { ...devices["iPhone 13"], defaultBrowserType: undefined }]]) {
@@ -12,7 +26,7 @@ for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 
   const page = await ctx.newPage();
   const errs = [];
   page.on("pageerror", e => errs.push(e.message.slice(0, 100)));
-  await page.goto("file:///Users/mario/thaicab/web/index.html");
+  await page.goto(APP_URL);
   await page.waitForTimeout(500);
   await page.evaluate(() => { const o = document.getElementById("tutorial-overlay"); if (o) o.classList.remove("open"); localStorage.clear(); });
   const menuCount = await page.evaluate(() => document.querySelectorAll(".menu-list li").length);
@@ -29,10 +43,16 @@ for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 
     await page.waitForTimeout(120);
   }
   const navs = await page.evaluate(() =>
-    [...document.querySelectorAll(".sidebar-list li")].map(li => ({ id: li.id, txt: li.textContent.trim().slice(0, 24) })));
+    [...document.querySelectorAll(".sidebar-list li")].map((li, i) => ({ id: li.id, i, txt: li.textContent.trim().slice(0, 24) })));
   for (const nav of navs) {
     errs.length = 0;
-    await page.evaluate(id => document.getElementById(id).click(), nav.id).catch(e => errs.push("CLICK: " + e.message.slice(0, 60)));
+    // Not every menu item carries an id ("How to use" does not) — click by id
+    // when there is one, else fall back to position. getElementById("") returns
+    // null, which reported a phantom TypeError against the app on every run.
+    await page.evaluate(([id, i]) => {
+      const el = id ? document.getElementById(id) : document.querySelectorAll(".sidebar-list li")[i];
+      if (el) el.click();
+    }, [nav.id, nav.i]).catch(e => errs.push("CLICK: " + e.message.slice(0, 60)));
     await page.waitForTimeout(350);
     const m = await page.evaluate(vw => {
       const scr = [...document.querySelectorAll(".screen")].find(s => s.classList.contains("active"));

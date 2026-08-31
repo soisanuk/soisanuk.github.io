@@ -335,7 +335,17 @@ function drillShowConsonant() {
   const isRare = freq <= RARE_THRESHOLD;
 
   setProgress("drill-prog", idx, total);
-  document.getElementById("drill-section-label").textContent = "Consonant Drill";
+  // "Browse", not "Drill": this screen has a Next button and nothing to answer.
+  // It is a good reference browser — class, name, initial/final, frequency rank
+  // per glyph — but it tests nothing, while the two modes that DO test the same
+  // 60 cards are called "Cards" and "SRS". A script-purist walkthrough clicked
+  // "Drill" expecting to be quizzed and got a slideshow. The function names stay
+  // as they are; they are internal, and the keyboard shortcuts (7/8) are muscle
+  // memory worth more than the consistency. Not "Chart" either — key A is
+  // already "Reference Charts", which shows every glyph at once; this one walks
+  // them one at a time, and two things called a chart would be worse than one
+  // called a drill.
+  document.getElementById("drill-section-label").textContent = "Browse Consonants";
   document.getElementById("drill-counter").textContent = `${rank} / ${total}`;
   document.getElementById("drill-thai").textContent = thai;
   document.getElementById("drill-rtgs").textContent = `(${rtgs})`;

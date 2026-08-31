@@ -221,3 +221,12 @@ describe("continuePlan across the key namespaces", () => {
     clear();
   });
 });
+
+test("the review count is the backlog, not the ten-card batch", () => {
+  // continuePlan caps `due` at ten so nobody is handed eighty cards at once.
+  // The card must still say how many are actually waiting.
+  const plan = { kind: "review", due: new Array(10), n: 25 };
+  assert.match(homeCta(plan, {}).title, /^25 reviews ready$/);
+  // and without n (older shape) it still renders rather than throwing
+  assert.match(homeCta({ kind: "review", due: new Array(4) }, {}).title, /^4 reviews ready$/);
+});
