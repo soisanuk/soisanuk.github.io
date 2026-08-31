@@ -342,3 +342,47 @@ test("srsStats(p, keys) counts only cards the app can serve", () => {
     "srsStats and dueCards must agree about what exists");
   assert.equal(srsStats(p).totalSeen, 4, "without keys it still counts everything");
 });
+
+// ── SM-2 bounds ─────────────────────────────────────────────────────────────
+// The ease factor had the standard 1.3 floor but no ceiling, and it rises +0.1
+// on every perfect answer without limit — so a card you always ace multiplies
+// its interval by an ever-larger factor. 40 consecutive "Perfect" reviews
+// reached ease 6.50 and an interval of 1.9e25 days: the card leaves the deck
+// for longer than the age of the universe. Unreachable in ordinary use (a
+// realistic 1-lapse-in-7 pattern settles near 10 days) but nothing stopped it.
+// Surfaced while checking an external review's claim about clock drift — the
+// timestamps were fine; this was underneath.
+
+test("interval and ease are bounded above", () => {
+  const c = defaultCard();
+  for (let i = 0; i < 200; i++) reviewCard(c, 5);
+  assert.ok(Number.isFinite(c.interval), "interval must stay finite");
+  assert.ok(c.interval <= 36500, `interval ${c.interval} days exceeds the century cap`);
+  assert.ok(c.easeFactor <= 3.7, `ease ${c.easeFactor} exceeds the ceiling`);
+});
+
+test("the 1.3 ease floor still holds", () => {
+  const c = defaultCard();
+  for (let i = 0; i < 50; i++) reviewCard(c, 0);
+  assert.equal(c.easeFactor, 1.3);
+  assert.equal(c.interval, 1, "a blackout always resets to tomorrow");
+});
+
+test("the early schedule is untouched by the caps", () => {
+  // the caps must only bite in the far tail — normal progression is the
+  // behaviour every other test in this file depends on
+  const c = defaultCard();
+  const seen = [];
+  for (let i = 0; i < 6; i++) { reviewCard(c, 4); seen.push(c.interval); }
+  assert.deepEqual(seen.slice(0, 2), [1, 6], "SM-2's fixed first two steps");
+  for (let i = 1; i < seen.length; i++) assert.ok(seen[i] > seen[i - 1], "intervals grow");
+});
+
+test("a capped card still schedules a real future due date", () => {
+  // clamping the interval must not leave `due` in the past or NaN
+  const c = defaultCard();
+  for (let i = 0; i < 200; i++) reviewCard(c, 5);
+  const now = Date.now() / 1000;
+  assert.ok(c.due > now, "due must be in the future");
+  assert.ok(c.due < now + 36500 * 86400 + 60, "and no further out than the cap");
+});
