@@ -30,8 +30,14 @@ node scripts/build-lexicon.mjs <words_th.txt> <tnc_freq.txt>          # → web/
 node scripts/build-gloss.mjs <kaikki.org-dictionary-Thai.jsonl>       # → web/js/gloss-th.js    (CC BY-SA 3.0)
 
 # Structural sweep of every screen, desktop + iPhone: JS errors, overflow,
-# clipping, empty screens, tap targets under 40px.
+# clipping, empty screens, and tap targets below the threshold for that input
+# (touch vs pointer). Prints "ALL SCREENS CLEAN" when there is nothing to say.
 node tools/sweep.mjs
+
+# Browser-extension spike: can a content script tokenise Thai in someone else's
+# page without breaking it? 24 checks over a hostile fixture. Not shipped code —
+# see docs/chrome-extension-handoff.md §10 for what it settled.
+node spike/run.mjs
 ```
 
 `tools/playtest-harness.mjs` drives the app for persona playtests — see
