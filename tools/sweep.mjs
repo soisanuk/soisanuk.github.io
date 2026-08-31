@@ -54,7 +54,7 @@ for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 
       if (el) el.click();
     }, [nav.id, nav.i]).catch(e => errs.push("CLICK: " + e.message.slice(0, 60)));
     await page.waitForTimeout(350);
-    const m = await page.evaluate(vw => {
+    const m = await page.evaluate(([vw, touch]) => {
       const scr = [...document.querySelectorAll(".screen")].find(s => s.classList.contains("active"));
       const out = { screen: scr ? scr.id : "NONE", issues: [] };
       if (document.documentElement.scrollWidth > vw + 2) out.issues.push("H-OVERFLOW " + document.documentElement.scrollWidth + ">" + vw);
@@ -74,7 +74,13 @@ for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 
               h = Math.max(h, parseFloat(c.height) || 0);
             }
           }
-          if (r.width > 0 && (w < 34 || h < 30)) { out.issues.push("TINY-TAP " + (el.id || el.className.toString().slice(0,16)) + " " + Math.round(w) + "x" + Math.round(h)); break; }
+          // Thresholds follow the INPUT, not one global number. Touch wants a
+          // ~44px target (WCAG 2.5.5); a mouse pointer needs 24x24 (WCAG 2.2
+          // SC 2.5.8 AA). Judging the desktop viewport by the touch floor
+          // reported the same six "Quit (Esc)" buttons on every run — already
+          // 44px+ on mobile, and deliberately small on desktop.
+          const minW = touch ? 34 : 24, minH = touch ? 30 : 24;
+          if (r.width > 0 && (w < minW || h < minH)) { out.issues.push("TINY-TAP " + (el.id || el.className.toString().slice(0,16)) + " " + Math.round(w) + "x" + Math.round(h)); break; }
         }
         for (const el of scr.querySelectorAll("*")) {
           // scrollWidth counts absolutely-positioned pseudo-elements, so a
@@ -94,7 +100,7 @@ for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 
         }
       }
       return out;
-    }, opts.viewport ? opts.viewport.width : 390);
+    }, [opts.viewport ? opts.viewport.width : 390, label === "MOBILE"]);
     if (errs.length) m.issues.push("JS: " + errs.join(";"));
     if (m.issues.length) report.push(`${label} ${nav.id} (${nav.txt}) [${m.screen}]: ${m.issues.join(" | ")}`);
     await page.screenshot({ path: `/tmp/sw-${label}-${nav.id}.png` }).catch(() => {});

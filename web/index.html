@@ -100,6 +100,13 @@ body {
   line-height: 1.5;
 }
 
+/* The footer's "Quit (Esc)" inherits .screen-footer's 0.8rem and came out 19px
+   tall on desktop — under WCAG 2.2 SC 2.5.8's 24px pointer minimum. Mobile
+   already got a 44px floor (body.mobile .btn, 2026-08-30); this is the pointer
+   equivalent, and small enough that the button stays de-emphasised, which is
+   the point of a quit control you should not hit by accident. */
+.screen-footer .btn, .screen-footer button { min-height: 24px; }
+
 /* comfortable tap targets everywhere (sweep 2026-07-17: 44px floor) */
 #flash-speak-btn, .flash-speak-btn, .audio-mute-btn, .chart-tab, .t-mbtn, .btn-small { min-height: 40px; min-width: 40px; }
 #learn-units { list-style: none; padding: 0 1rem; margin: 0.4rem auto; max-width: 560px; }
@@ -591,9 +598,14 @@ body.mobile .example-speak, body.mobile .rating-btn { min-height:44px; }
   text-transform: uppercase; margin-bottom: .45rem;
   display: flex; align-items: center; justify-content: space-between;
 }
+/* 24x24 is WCAG 2.2 SC 2.5.8's pointer minimum; this ↻ was 19x18. Sized with
+   min-* and a centring flex so the glyph keeps its weight — the button should
+   stay quiet next to the words it reshuffles, just not be a pixel hunt. */
 .home-reshuffle {
   background: none; border: none; color: var(--dim); cursor: pointer;
   font-size: .95rem; line-height: 1; padding: .1rem .3rem; border-radius: 4px;
+  min-width: 24px; min-height: 24px;
+  display: inline-flex; align-items: center; justify-content: center;
 }
 .home-reshuffle:hover { color: var(--saffron); }
 
