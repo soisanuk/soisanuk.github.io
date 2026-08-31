@@ -2141,7 +2141,11 @@ body.mobile #app-shell {
 .idiom-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(235px, 1fr)); gap: .7rem; }
 .idiom-card { border: 1px solid var(--border); border-radius: 10px; padding: .7rem .8rem; background: rgba(127,127,127,.06); }
 .idiom-head { display: flex; align-items: center; gap: .5rem; }
-.idiom-thai { flex: 1; text-align: left; font-size: 1.55rem; line-height: 1.2; background: none; border: none; color: var(--text); cursor: pointer; padding: 0; font-family: inherit; }
+/* min-width:0 — a flex item defaults to min-width:auto, so a long enough idiom
+   cannot shrink below its own text and would push the row past the card on a
+   phone. Belt-and-braces: the 10px overflow the sweep used to report here was
+   the speaker button's projected 44px hit area, not the text. */
+.idiom-thai { flex: 1; min-width: 0; overflow-wrap: anywhere; text-align: left; font-size: 1.55rem; line-height: 1.2; background: none; border: none; color: var(--text); cursor: pointer; padding: 0; font-family: inherit; }
 .idiom-thai:hover { color: var(--jade); }
 .idiom-spk { background: none; border: none; cursor: pointer; font-size: 1.1rem; opacity: .65; padding: .1rem; }
 .idiom-spk:hover { opacity: 1; }

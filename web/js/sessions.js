@@ -694,7 +694,12 @@ function startSentSRS() {
   const wordsWith = WORDS.filter(w => EXAMPLES && EXAMPLES[w[0]]);
   const keys = wordsWith.map(w => `sent:${w[0]}`);
   const deck = buildDeck(keys, { mode: "due-first", freshCap: 15 });
-  session = { type: "sent-srs", keys, deck, idx: 0, correct: 0 };
+  // due-first falls through to fifteen NEVER-SEEN sentences when nothing is
+  // due, and the counter called them "Sentence SRS" either way — so a learner
+  // opening this to clear a backlog was handed a fifteen-card lesson wearing
+  // the word "SRS". Name which deck this is.
+  const allNew = !dueCards(progress, keys).length;
+  session = { type: "sent-srs", keys, deck, idx: 0, correct: 0, allNew };
   document.getElementById("sent-counter").textContent = "";
   if (!deck.length) { showSessionEnd(true); return; }
   sentSrsShow();
@@ -740,7 +745,8 @@ function sentSrsShow() {
 
   const sp = sessionProgress(deck, idx);
   setProgress("sent-prog", sp.done, sp.total);
-  document.getElementById("sent-counter").textContent = `Sentence SRS  ${sp.done} / ${sp.total}`;
+  document.getElementById("sent-counter").textContent =
+    `${session.allNew ? "New sentences" : "Sentence SRS"}  ${sp.done} / ${sp.total}`;
 
   // Build sentence with target word blanked. A phrase-template headword
   // ("ขอ...") appears in its example sentence as only its fixed part (ขอ),

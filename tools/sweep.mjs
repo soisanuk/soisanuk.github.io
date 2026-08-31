@@ -62,10 +62,33 @@ for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 
         if (scr.innerText.trim().length < 5) out.issues.push("EMPTY");
         for (const el of scr.querySelectorAll("button, li[onclick], .tkey, .chip")) {
           const r = el.getBoundingClientRect();
-          if (r.width > 0 && (r.width < 34 || r.height < 30)) { out.issues.push("TINY-TAP " + (el.id || el.className.toString().slice(0,16)) + " " + Math.round(r.width) + "x" + Math.round(r.height)); break; }
+          // A small glyph can carry a big hit area projected by an absolutely
+          // positioned ::before/::after — .idiom-spk is a 24x31 emoji inside a
+          // real 44x44 target, and measuring only the element's own box
+          // reported it as broken on every run. Take the largest of the three.
+          let w = r.width, h = r.height;
+          for (const pseudo of ["::after", "::before"]) {
+            const c = getComputedStyle(el, pseudo);
+            if (c.content && c.content !== "none" && c.position === "absolute") {
+              w = Math.max(w, parseFloat(c.width) || 0);
+              h = Math.max(h, parseFloat(c.height) || 0);
+            }
+          }
+          if (r.width > 0 && (w < 34 || h < 30)) { out.issues.push("TINY-TAP " + (el.id || el.className.toString().slice(0,16)) + " " + Math.round(w) + "x" + Math.round(h)); break; }
         }
         for (const el of scr.querySelectorAll("*")) {
-          if (el.scrollWidth > el.clientWidth + 8 && getComputedStyle(el).overflowX === "visible" && el.clientWidth > 0) {
+          // scrollWidth counts absolutely-positioned pseudo-elements, so a
+          // transparent 44x44 hit area projected around a small button reported
+          // its whole row as clipped — .idiom-head measured 334 vs 324, all ten
+          // pixels of it invisible. This check is about VISIBLE content
+          // spilling out of its box, so require a real child element to be
+          // outside too; pseudos have no box in getBoundingClientRect.
+          const er = el.getBoundingClientRect();
+          const realSpill = [...el.children].some(k => {
+            const kr = k.getBoundingClientRect();
+            return kr.width > 0 && (kr.right > er.right + 8 || kr.left < er.left - 8);
+          });
+          if (realSpill && el.scrollWidth > el.clientWidth + 8 && getComputedStyle(el).overflowX === "visible" && el.clientWidth > 0) {
             out.issues.push("CLIP " + (el.id || el.className.toString().slice(0, 20))); break;
           }
         }
