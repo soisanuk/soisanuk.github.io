@@ -162,7 +162,7 @@ test("no two vowels carry the same description", () => {
 test("vowel length in the description matches the romanisation", () => {
   for (const [sym, rom, desc] of VOWELS) {
     if (!/^(long|short) /.test(desc)) continue;   // ua/ia/am/ai have no length word
-    const doubled = /^(aa|ii|uu|ee|oo|uue|uuea)$/.test(rom);
+    const doubled = /^(aa|ii|uu|ee|oo|uue)$/.test(rom);
     if (doubled) {
       assert.match(desc, /^long /, `${sym} romanises "${rom}" (doubled) but reads "${desc}"`);
     }
@@ -196,13 +196,11 @@ const GLOSS_OK = new Set([
   "เขา",    // "he/she" vs "he; she; they; I; oneself"
 ]);
 
-// เ◌ือ has no settled spelling in this app yet: the vowel table calls it
-// "uea" while ◌ื (long ue) is "uue", and WORDS uses both — เมื่อ is "mûea"
-// but เมือง is "muueang", the same vowel twice. The card agrees with WORDS,
-// the dictionary says "mueang", and picking a winner means renormalising ~30
-// entries that are vendored to another app. Left as a known exception rather
-// than papered over with a third spelling; see the 2026-09-01 notes.
-const ROMAN_OK = new Set(["เมือง"]);
+// เ◌ือ is "uea" — settled 2026-09-01, and now the only spelling in the data
+// (125 lines across data.js, examples.js and soi-buakhao.js said "uuea").
+// ◌ื ALONE stays "uue": length is still marked by doubling there, so มือ is
+// "muue". Nothing is pinned here any more; the dictionary and the cards agree.
+const ROMAN_OK = new Set();
 
 test("every vowel example word exists in the shipped dictionary", () => {
   for (const [sym, , , ex] of VOWELS) {
