@@ -29,6 +29,14 @@ function homeCta(plan, streak) {
     return { title: `${n} review${n === 1 ? "" : "s"} ready`,
              sub: streak && streak.days ? "keep the streak alive" : "warm up on what you already know" };
   }
+  if (plan.kind === "script") {
+    return { title: `${plan.n} script review${plan.n === 1 ? "" : "s"} ready`,
+             sub: "letters and vowels you already met" };
+  }
+  if (plan.kind === "sentence") {
+    return { title: `${plan.n} sentence review${plan.n === 1 ? "" : "s"} ready`,
+             sub: "read them back in context" };
+  }
   if (plan.kind === "unit") {
     return { title: plan.unit.label, sub: "your next lesson" };
   }
@@ -83,7 +91,7 @@ function _homeRender() {
   if (!host || !_homeIsDesktop()) return;
 
   const prog = loadProgress();
-  const srs = srsStats(prog, WORDS.map(w => w[0]));
+  const srs = srsStats(prog, allSrsKeys());
   // _streakNow(), not _streakLoad(): the raw record is a snapshot of the last
   // day studied, so this tile showed "23 / day streak" beside a sidebar that
   // already read "streak ended · best 23 days".
@@ -93,7 +101,7 @@ function _homeRender() {
   const plan = typeof continuePlan === "function" ? continuePlan() : null;
   const cta = homeCta(plan, streak);
   const stats = homeStats(srs, streak, path, typeof COURSE !== "undefined" ? COURSE : []);
-  const bars = homeForecastBars(dueForecast(prog, HOME_FORECAST_DAYS));
+  const bars = homeForecastBars(dueForecast(prog, HOME_FORECAST_DAYS, allSrsKeys()));
   const picks = homeWordPicks(WORDS, prog);
   const level = typeof _levelName === "function"
     ? _levelName((typeof COURSE !== "undefined" ? COURSE : []).filter(u => _unitDone(path, u)).length)

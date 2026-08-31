@@ -48,7 +48,7 @@ function startLearn() {
     "🎓 " + _levelName(done) + (done ? " · " + done + "/" + COURSE.length : "");
   const pl = document.getElementById("learn-placement");
   if (pl) pl.style.display = done === 0 ? "" : "none";
-  const stats = srsStats(loadProgress(), WORDS.map(w => w[0]));
+  const stats = srsStats(loadProgress(), allSrsKeys());
   document.getElementById("learn-intro").textContent =
     stats.totalSeen === 0 ?
       "A guided road from zero: learn to READ Thai fast, pick up the street's " +
@@ -233,7 +233,14 @@ function _ensureCardEndVisible(body) {
 function _learnRecord(key, quality, ms) {
   if (_lu && _lu.review) return; // revisiting a completed card never re-grades
   if (key) {
-    const prog = loadProgress();
+    // Grade into the SHARED `progress` object when it exists, not a private
+    // loadProgress() copy. app.js loads that global once at parse time and
+    // endSession() -> saveAndRefresh() writes it straight back to localStorage,
+    // so a private copy's writes were clobbered the moment the learner tapped
+    // "Menu": a whole course unit's grading silently reverted, and ▶ Continue
+    // then re-served the identical ten cards. The fallback keeps this file
+    // loadable under node:vm, where no such global exists.
+    const prog = typeof progress === "object" && progress ? progress : loadProgress();
     reviewCard(getCard(prog, key), quality);
     saveProgress(prog);
   }
@@ -875,11 +882,22 @@ function _streakText(st, t) {
 // card can ANNOUNCE the same decision the button will act on — if the two
 // computed it separately they'd drift, and the card would promise one thing
 // and the click deliver another. Read-only: safe to call while rendering.
+// Reviews outrank new material — the rule this function already applied to
+// vocabulary, now applied to all three card types. Before, a learner with
+// thirty overdue SCRIPT cards was offered the next course lesson and told "0
+// due now", because Continue could only see vocabulary; the script-only path
+// had no way to be resumed at all. Vocabulary keeps first claim, since it is
+// what the course itself teaches.
 function continuePlan() {
   const prog = loadProgress();
-  const due = dueCards(prog, WORDS.map(w => w[0])).slice(0, 10)
+  const sets = srsKeySets();
+  const due = dueCards(prog, sets.vocab).slice(0, 10)
     .map(th => WORDS.find(x => x[0] === th)).filter(Boolean);
   if (due.length >= 3) return { kind: "review", due };
+  const scriptDue = dueCards(prog, sets.script);
+  if (scriptDue.length >= 3) return { kind: "script", n: scriptDue.length };
+  const sentDue = dueCards(prog, sets.sentence);
+  if (sentDue.length >= 3) return { kind: "sentence", n: sentDue.length };
   const path = _pathLoad();
   const next = COURSE.findIndex((u, i) => _unitUnlocked(path, i) && !_unitDone(path, u));
   if (next >= 0) return { kind: "unit", unitIdx: next, unit: COURSE[next] };
@@ -895,6 +913,10 @@ function startContinue() {
     _learnStep();
     return;
   }
+  // Script and sentence reviews are whole modes of their own, not card kinds
+  // the lesson runner can queue — hand off rather than rebuild them here.
+  if (plan.kind === "script") { startScriptSRS(); return; }
+  if (plan.kind === "sentence") { startSentSRS(); return; }
   if (plan.kind === "unit") { _unitStart(plan.unitIdx); return; }
   const pool = _shuffle(courseDecodable(LETTER_BATCHES.length - 1)).slice(0, 10);
   _lu = { idx: -1, unit: { kind: "review", label: "Speed round" },

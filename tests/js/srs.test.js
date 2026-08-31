@@ -386,3 +386,51 @@ test("a capped card still schedules a real future due date", () => {
   assert.ok(c.due > now, "due must be in the future");
   assert.ok(c.due < now + 36500 * 86400 + 60, "and no further out than the cap");
 });
+
+// ── The key registry ────────────────────────────────────────────────────────
+// These exist because the home screen once read "0 due now" directly above a
+// forecast bar reading "30 now": srsStats filtered to vocabulary while
+// dueForecast filtered by nothing. The two must agree on what exists.
+
+const _KD = {
+  words: [["กิน"], ["นอน"], ["ไป"]],
+  consonants: [["ก"], ["ข"]],
+  vowels: [["◌ะ"]],
+  examples: { "กิน": ["eat rice"], "ไป": ["go now"] },
+};
+
+test("srsKeySets separates the three namespaces by prefix", () => {
+  const s = srsKeySets(_KD);
+  assert.deepEqual(s.vocab, ["กิน", "นอน", "ไป"]);
+  assert.deepEqual(s.script, ["sc:ก", "sc:ข", "sv:◌ะ"]);
+  // sentence keys exist only for words that HAVE an example
+  assert.deepEqual(s.sentence, ["sent:กิน", "sent:ไป"]);
+});
+
+test("allSrsKeys is every servable key and nothing else", () => {
+  const all = allSrsKeys(_KD);
+  assert.equal(all.length, 3 + 3 + 2);
+  assert.ok(all.includes("sc:ก") && all.includes("sent:ไป") && all.includes("นอน"));
+  assert.equal(new Set(all).size, all.length, "no duplicates");
+});
+
+test("srsKeySets tolerates missing data tables", () => {
+  const s = srsKeySets({ words: [["ก"]] });
+  assert.deepEqual(s.script, []);
+  assert.deepEqual(s.sentence, []);
+});
+
+test("dueForecast honours the keys filter, so it agrees with srsStats", () => {
+  const now = Date.now() / 1000;
+  const p = {
+    "กิน": { interval: 3, due: now - 100 },      // servable, overdue
+    "sc:ก": { interval: 3, due: now - 100 },      // servable, overdue
+    "ghost": { interval: 3, due: now - 100 },     // key no longer in the data
+  };
+  const keys = allSrsKeys(_KD);
+  // unfiltered counts the stale key too — the old behaviour
+  assert.equal(dueForecast(p, 7)[0], 3);
+  // filtered agrees exactly with srsStats over the same key list
+  assert.equal(dueForecast(p, 7, keys)[0], 2);
+  assert.equal(srsStats(p, keys).dueNow, 2);
+});

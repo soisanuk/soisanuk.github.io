@@ -93,7 +93,7 @@ function _renderVocabList(list) {
 }
 
 function showStats() {
-  const s = srsStats(progress, WORDS.map(w => w[0]));
+  const s = srsStats(progress, allSrsKeys());
   const vocabKeys = new Set(WORDS.map(w => w[0]));
   const scriptKeys = new Set([
     ...CONSONANTS.map(c => `sc:${c[0]}`),
@@ -131,7 +131,7 @@ function showStats() {
   const sentMature = sentKeys.filter(k => progress[k] && progress[k].interval >= 21).length;
 
   // Review forecast: bar per day for the next week
-  const forecast = dueForecast(progress, 7);
+  const forecast = dueForecast(progress, 7, allSrsKeys());
   const maxDue = Math.max(...forecast, 1);
   const forecastBars = forecast.map((n, day) => {
     const h = Math.max(Math.round(n / maxDue * 56), n ? 3 : 1);

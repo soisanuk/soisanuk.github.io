@@ -145,3 +145,26 @@ test("no monosyllabic word's romanisation contradicts the tone engine", () => {
   }
   assert.deepEqual(bad, [], `${bad.length} romanisation(s) contradict the tone engine`);
 });
+
+// ◌อ shipped labelled "short o" — it is the LONG open o, and the label
+// duplicated เ◌าะ on the very next line, leaving two cards whose backs
+// differed only by romanisation. A description is the answer side of a
+// flashcard: two cards may not share one.
+test("no two vowels carry the same description", () => {
+  const seen = new Map();
+  for (const [sym, , desc] of VOWELS) {
+    assert.ok(!seen.has(desc),
+      `"${desc}" describes both ${seen.get(desc)} and ${sym}`);
+    seen.set(desc, sym);
+  }
+});
+
+test("vowel length in the description matches the romanisation", () => {
+  for (const [sym, rom, desc] of VOWELS) {
+    if (!/^(long|short) /.test(desc)) continue;   // ua/ia/am/ai have no length word
+    const doubled = /^(aa|ii|uu|ee|oo|uue|uuea)$/.test(rom);
+    if (doubled) {
+      assert.match(desc, /^long /, `${sym} romanises "${rom}" (doubled) but reads "${desc}"`);
+    }
+  }
+});

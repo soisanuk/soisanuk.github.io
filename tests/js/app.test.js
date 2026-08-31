@@ -76,3 +76,25 @@ describe("resetAllProgress", () => {
     assert.equal(localStorage.getItem("lbb_save"), '{"thaiSeen":["กิน"]}');
   });
 });
+
+// ── The shared progress store ───────────────────────────────────────────────
+// learn.js used to grade into its own loadProgress() copy while app.js held a
+// `progress` global loaded once at parse time. endSession() -> saveAndRefresh()
+// wrote that stale global straight back over localStorage, so finishing a
+// course unit and tapping "Menu" reverted every grade in it — and ▶ Continue
+// then re-served the identical ten cards. Found by the 2026-09-01 returner round.
+test("course grading lands in the SHARED progress store, not a private copy", () => {
+  progress = {};
+  _lu = { results: [] };
+  _learnRecord("ไป", 5, 120);
+  assert.ok(progress["ไป"], "grade must be visible in the global app.js saves");
+  assert.equal(progress["ไป"].totalReviews, 1);
+});
+
+test("a graded card survives the write-back that endSession performs", () => {
+  progress = {};
+  _lu = { results: [] };
+  _learnRecord("ไป", 5, 120);
+  saveProgress(progress);            // what saveAndRefresh() does
+  assert.ok(loadProgress()["ไป"], "the grade must still be there after write-back");
+});

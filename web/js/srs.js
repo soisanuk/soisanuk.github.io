@@ -91,12 +91,46 @@ function requeue(deck, idx, key, gap = 4) {
   return at;
 }
 
+// ── The key registry ────────────────────────────────────────────────────────
+// One progress store holds three kinds of card, told apart only by key prefix:
+// bare Thai word = vocabulary, "sc:"/"sv:" = script glyphs, "sent:" = example
+// sentences. Nothing named the whole set, so every counter hand-rolled its own
+// idea of what exists — `WORDS.map(w => w[0])` appears in four files, the
+// script pair in two more — while dueForecast filtered by nothing at all and
+// counted all three. That is how the home screen came to read "0 due now"
+// directly above a forecast bar reading "30 now": not one bug, but the absence
+// of a single definition to be consistent with. Add a card type here and every
+// caller picks it up.
+//
+// `d` injects the data tables for tests; in the app they are globals from
+// data.js and examples.js, which load either side of this file.
+function srsKeySets(d) {
+  const words = (d && d.words) || (typeof WORDS !== "undefined" ? WORDS : []);
+  const cons = (d && d.consonants) || (typeof CONSONANTS !== "undefined" ? CONSONANTS : []);
+  const vowels = (d && d.vowels) || (typeof VOWELS !== "undefined" ? VOWELS : []);
+  const ex = (d && d.examples) || (typeof EXAMPLES !== "undefined" ? EXAMPLES : null);
+  return {
+    vocab: words.map(w => w[0]),
+    script: [...cons.map(c => `sc:${c[0]}`), ...vowels.map(v => `sv:${v[0]}`)],
+    sentence: ex ? words.filter(w => ex[w[0]]).map(w => `sent:${w[0]}`) : [],
+  };
+}
+
+// Every key the app can actually serve, in one list.
+function allSrsKeys(d) {
+  const s = srsKeySets(d);
+  return [...s.vocab, ...s.script, ...s.sentence];
+}
+
 // Upcoming review load: counts per day for the next `days` days.
 // Index 0 = due now (incl. overdue), index n = due in n days.
-function dueForecast(p, days = 7) {
+// `keys` bounds it to servable cards, exactly as srsStats does — pass the same
+// list to both or the two disagree on screen.
+function dueForecast(p, days = 7, keys = null) {
   const now = Date.now() / 1000;
   const buckets = new Array(days + 1).fill(0);
-  for (const c of Object.values(p)) {
+  const cards = keys ? keys.filter(k => p[k]).map(k => p[k]) : Object.values(p);
+  for (const c of cards) {
     const day = c.due <= now ? 0 : Math.ceil((c.due - now) / 86400);
     if (day <= days) buckets[day]++;
   }
