@@ -52,8 +52,8 @@ function resetAllProgress() {
 }
 
 function updateMenuStats() {
-  const s = srsStats(progress, WORDS.map(w => w[0]));
-  const txt = `vocab seen: ${s.totalSeen}  ·  due: ${s.dueNow}  ·  mature: ${s.mature}`;
+  const s = srsStats(progress, allSrsKeys());
+  const txt = `cards seen: ${s.totalSeen}  ·  due: ${s.dueNow}  ·  mature: ${s.mature}`;
   document.getElementById("menu-stats").textContent = txt;
   document.getElementById("sidebar-stats").innerHTML =
     `<span style="color:var(--text)">${s.totalSeen}</span> seen &nbsp;·&nbsp; ` +

@@ -15,7 +15,9 @@ global.localStorage = (() => {
   const s = new Map();
   return { getItem: k => (s.has(k) ? s.get(k) : null), setItem: (k, v) => s.set(k, String(v)), removeItem: k => s.delete(k) };
 })();
-for (const f of ["data.js", "srs.js", "wordcard.js", "app.js", "curriculum.js", "learn.js", "home.js"]) {
+// examples.js supplies EXAMPLES, which srsKeySets() needs to build the
+// "sent:" namespace — without it the sentence branch is silently untestable.
+for (const f of ["data.js", "examples.js", "srs.js", "wordcard.js", "app.js", "curriculum.js", "learn.js", "home.js"]) {
   vm.runInThisContext(readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"), { filename: f });
 }
 
@@ -46,6 +48,14 @@ describe("homeCta", () => {
     assert.equal(homeCta({ kind: "speed" }, {}).title, "Speed round");
   });
 
+  test("script and sentence reviews get their own card, not the vocab one", () => {
+    const sc = homeCta({ kind: "script", n: 30 }, {});
+    assert.match(sc.title, /30 script reviews ready/);
+    const one = homeCta({ kind: "script", n: 1 }, {});
+    assert.match(one.title, /^1 script review ready$/, "singular, not '1 script reviews'");
+    assert.match(homeCta({ kind: "sentence", n: 4 }, {}).title, /4 sentence reviews ready/);
+  });
+
   test("a missing plan still yields a usable card, never blank", () => {
     const c = homeCta(null, {});
     assert.ok(c.title.length > 0 && c.sub.length > 0);
@@ -54,11 +64,36 @@ describe("homeCta", () => {
 
 // continuePlan is the shared decision — if the card and the button ever
 // computed it separately they would drift, so pin that they agree in shape.
+const PLAN_KINDS = ["review", "script", "sentence", "unit", "speed"];
+
 test("continuePlan returns a kind the CTA knows how to render", () => {
   const plan = continuePlan();
-  assert.ok(["review", "unit", "speed"].includes(plan.kind));
+  assert.ok(PLAN_KINDS.includes(plan.kind));
   const c = homeCta(plan, {});
   assert.ok(c.title && c.sub, "every plan kind renders a title and subtitle");
+});
+
+// The list above is only worth anything if EVERY kind is actually rendered —
+// a new kind that homeCta forgot would otherwise fall through to the "Speed
+// round" default and quietly mislabel the button.
+test("every plan kind renders a distinct, non-default card", () => {
+  const sample = {
+    review: { kind: "review", due: [1, 2, 3] },
+    script: { kind: "script", n: 5 },
+    sentence: { kind: "sentence", n: 5 },
+    unit: { kind: "unit", unitIdx: 0, unit: { label: "Read: the first six letters" } },
+    speed: { kind: "speed" },
+  };
+  const titles = new Set();
+  for (const k of PLAN_KINDS) {
+    const c = homeCta(sample[k], {});
+    assert.ok(c.title && c.sub, `${k} renders`);
+    if (k !== "speed") {
+      assert.notEqual(c.title, "Speed round", `${k} fell through to the default card`);
+    }
+    titles.add(c.title);
+  }
+  assert.equal(titles.size, PLAN_KINDS.length, "each kind gets its own title");
 });
 
 // ── homeStats ──────────────────────────────────────────────────────────────
@@ -136,5 +171,53 @@ describe("homeWordPicks", () => {
     for (const w of homeWordPicks(WORDS, {}, 8, seq())) {
       assert.ok(WORD_MAP[w[0]], `${w[0]} resolves in WORD_MAP`);
     }
+  });
+});
+
+// ── continuePlan: reviews outrank new material, for all three card types ────
+// The script-only learner was the case that exposed this: thirty overdue
+// script cards, and Continue offered the next course lesson while every
+// counter read "0 due now". Seed the store and walk each branch.
+
+describe("continuePlan across the key namespaces", () => {
+  const overdue = () => ({ interval: 5, repetitions: 2, easeFactor: 2.5,
+    due: Date.now() / 1000 - 86400, totalReviews: 3, correctStreak: 1 });
+
+  const seed = obj => localStorage.setItem("soisanuk_progress", JSON.stringify(obj));
+  const clear = () => { localStorage.removeItem("soisanuk_progress"); localStorage.removeItem("soisanuk_path"); };
+
+  test("overdue SCRIPT cards beat the next course unit", () => {
+    clear();
+    const keys = srsKeySets().script.slice(0, 6);
+    seed(Object.fromEntries(keys.map(k => [k, overdue()])));
+    const plan = continuePlan();
+    assert.equal(plan.kind, "script", "script reviews must outrank a pending unit");
+    assert.equal(plan.n, 6);
+    clear();
+  });
+
+  test("overdue SENTENCE cards are offered too", () => {
+    clear();
+    const keys = srsKeySets().sentence.slice(0, 4);
+    assert.ok(keys.length >= 4, "fixture needs example sentences");
+    seed(Object.fromEntries(keys.map(k => [k, overdue()])));
+    assert.equal(continuePlan().kind, "sentence");
+    clear();
+  });
+
+  test("vocabulary keeps first claim over script", () => {
+    clear();
+    const vocab = srsKeySets().vocab.slice(0, 5);
+    const script = srsKeySets().script.slice(0, 5);
+    seed(Object.fromEntries([...vocab, ...script].map(k => [k, overdue()])));
+    assert.equal(continuePlan().kind, "review");
+    clear();
+  });
+
+  test("fewer than three due falls through to the course, not a stub session", () => {
+    clear();
+    seed(Object.fromEntries(srsKeySets().script.slice(0, 2).map(k => [k, overdue()])));
+    assert.equal(continuePlan().kind, "unit");
+    clear();
   });
 });

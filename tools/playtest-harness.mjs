@@ -54,8 +54,38 @@ const APP_URL = `file://${REPO}/web/index.html`;
 const TEACH_STEPS = new Set(["glyph", "wordintro", "toneIntro", "tonecalc", "chunkIntro", "chunk"]);
 const CHOICE_STEPS = new Set(["mc", "mc2", "speed", "listen", "mcth", "clozex", "cloze", "toneear", "toneread"]);
 
+// Every browser this module launches, so the process cannot exit while one is
+// still alive. A round that throws (or is killed) never reaches its
+// `await app.close()`, and the headless Chrome it started outlives the node
+// process as an orphan — dozens accumulated that way before anyone noticed.
+// close() de-registers; the handlers below are the net for every other path.
+const _live = new Set();
+let _cleanupArmed = false;
+
+function _armCleanup() {
+  if (_cleanupArmed) return;
+  _cleanupArmed = true;
+  // 'exit' cannot await, so kill the child process group synchronously.
+  process.on("exit", () => {
+    for (const b of _live) { try { b.process()?.kill("SIGKILL"); } catch {} }
+  });
+  for (const sig of ["SIGINT", "SIGTERM", "SIGHUP"]) {
+    process.on(sig, () => { process.exit(sig === "SIGINT" ? 130 : 143); });
+  }
+  for (const ev of ["uncaughtException", "unhandledRejection"]) {
+    process.on(ev, err => {
+      for (const b of _live) { try { b.process()?.kill("SIGKILL"); } catch {} }
+      console.error(`playtest-harness: ${ev} — browsers killed`);
+      console.error(err);
+      process.exit(1);
+    });
+  }
+}
+
 export async function openApp(opts = {}) {
+  _armCleanup();
   const browser = await chromium.launch();
+  _live.add(browser);
   const ctx = await browser.newContext(opts.mobile
     ? { ...devices["iPhone 13"], defaultBrowserType: undefined }
     : { viewport: { width: 1280, height: 850 } });
@@ -187,13 +217,57 @@ export async function openApp(opts = {}) {
       const reveal = [...document.querySelectorAll(".screen.active button")]
         .find(b => /show|reveal|answer/i.test(b.textContent));
       if (reveal) reveal.click();
-      const row = document.querySelector(".rating-row, #srs-rating, .btn-row");
+      // MUST be scoped to the active screen. index.html has THREE .rating-row
+      // divs (#flash-rating-row, #srs-rating-row, #sent-rating-row) and a
+      // document-wide querySelector always returns the first in document
+      // order — the flash one — whatever screen you are on. That row is empty
+      // until a flashcard session fills it, so this failed loudly (null) in
+      // rounds that skipped flashcards and failed SILENTLY, clicking stale
+      // buttons bound to a finished session, in rounds that ran flashcards
+      // first. Found by the 2026-09-01 script-purist round.
+      const sc = document.querySelector(".screen.active");
+      const row = sc && sc.querySelector(".rating-row, #srs-rating, .btn-row");
       const btns = row ? [...row.querySelectorAll("button")] : [];
-      const btn = btns[Math.min(quality, btns.length - 1)];
+      // buttons are q = 1..5 (Forgot, Hard, OK, Good, Perfect), so index = q-1.
+      // Indexing by q directly made rateCard(4) click "Perfect" — a silent
+      // one-grade overstatement in every SRS-driving round.
+      const btn = btns[Math.min(Math.max(quality, 1) - 1, btns.length - 1)];
       if (!btn) return null;
       btn.click();
       return btn.textContent.trim();
     }, q),
+
+    /**
+     * Click an option on the ACTIVE screen — the Tone Drill and the quiz use a
+     * `.quiz-choices li` list outside the lesson runner, so driveLessonStep
+     * does not reach them. Pass exact text, a substring, or an index.
+     */
+    choose: want => app.safe("choose", w => {
+      const sc = document.querySelector(".screen.active");
+      const opts = [...sc.querySelectorAll(
+        ".quiz-choices li, #tone-choices li, #learn-choices li, .drill-opt, #cat-list li.selectable")];
+      if (!opts.length) return null;
+      const el = typeof w === "number" ? opts[w]
+        : opts.find(o => o.textContent.trim() === String(w))
+          || opts.find(o => o.textContent.includes(String(w)));
+      if (!el) return { missed: String(w), available: opts.map(o => o.textContent.trim().slice(0, 20)) };
+      el.click();
+      return el.textContent.trim();
+    }, want),
+
+    /**
+     * Advance the ACTIVE screen by its primary control. The consonant and vowel
+     * "drills" are reference browsers — a single "Next →" and nothing to answer
+     * — so paging is the only interaction they have.
+     */
+    next: () => app.safe("next", () => {
+      const sc = document.querySelector(".screen.active");
+      const b = [...sc.querySelectorAll("button")]
+        .find(x => /next|got it|continue|reveal|→/i.test(x.textContent) && !/menu|quit/i.test(x.textContent));
+      if (!b) return null;
+      b.click();
+      return b.textContent.trim();
+    }),
 
     /** Open the word card for a token and read it back. */
     tapWord: thai => app.safe("tapWord", w => {
@@ -407,7 +481,13 @@ export async function openApp(opts = {}) {
       return { actions: events.length, problems: problems.length, byStepKind: kinds, problemList: problems.slice(0, 20) };
     },
 
-    async close() { try { await browser.close(); } catch (e) {} },
+    async close() {
+      _live.delete(browser);
+      try { await browser.close(); } catch (e) {}
+      // browser.close() can leave the child alive if the connection is already
+      // broken; make sure nothing survives this call.
+      try { browser.process()?.kill("SIGKILL"); } catch (e) {}
+    },
   };
 
   if (opts.noAudio) {
