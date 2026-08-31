@@ -232,7 +232,14 @@ function _ensureCardEndVisible(body) {
 
 function _learnRecord(key, quality, ms) {
   if (_lu && _lu.review) return; // revisiting a completed card never re-grades
-  if (key) {
+  // Placement (idx -2) measures where you should START; it must not schedule
+  // reviews as a side effect. It showed sixteen words nobody asked to study and
+  // wrote a real SRS record for each — and because a wrong answer resets
+  // repetitions, a returner who fumbled one mature word had that word's
+  // interval knocked back to a day by a test they took to AVOID redoing work.
+  // The streak still counts: the cards were genuinely answered.
+  const placing = !!(_lu && _lu.idx === -2);
+  if (key && !placing) {
     // Grade into the SHARED `progress` object when it exists, not a private
     // loadProgress() copy. app.js loads that global once at parse time and
     // endSession() -> saveAndRefresh() writes it straight back to localStorage,
@@ -863,10 +870,30 @@ function _streakNow() {
 function _streakRender() {
   const st = _streakNow();
   const t = st.today || {};
+  // The desktop home card announces what ▶ Continue will do; the mobile menu
+  // never renders that card (#menu-welcome is desktop-only), so on phones the
+  // only annotation on the Continue row was the streak — backward-looking, and
+  // silent about the reviews waiting behind the button. Say the work first.
+  let plan = null;
+  try { if (typeof COURSE !== "undefined") plan = continuePlan(); } catch (e) {}
+  const txt = _contText(plan, st, t);
   for (const id of ["nav-cont-stats", "nav-cont-stats2"]) {
     const el = document.getElementById(id);
-    if (el) el.textContent = _streakText(st, t);
+    if (el) el.textContent = txt;
   }
+}
+
+// What the ▶ Continue row says. Pending reviews outrank the streak: they are
+// the reason to tap, and a lapsed learner reading "streak ended · best 12
+// days" was told only what they had lost. The streak survives as a tail when
+// it is alive, because that IS the nudge once nothing is due.
+function _contText(plan, st, t) {
+  const kinds = { review: "review", script: "script review", sentence: "sentence review" };
+  const what = plan && kinds[plan.kind];
+  const n = !what ? 0 : plan.n != null ? plan.n : plan.due.length;
+  if (!n) return _streakText(st, t);
+  const head = `${n} ${what}${n === 1 ? "" : "s"} due`;
+  return st.ended || !st.days ? head : `${head} · 🔥 ${st.days}`;
 }
 function _streakText(st, t) {
   // A broken streak is named rather than silently zeroed — the best is the
@@ -891,9 +918,14 @@ function _streakText(st, t) {
 function continuePlan() {
   const prog = loadProgress();
   const sets = srsKeySets();
-  const due = dueCards(prog, sets.vocab).slice(0, 10)
+  // `due` is the BATCH (ten at a time — a backlog of eighty should not be
+  // dumped on someone in one sitting); `n` is the true backlog, which is what
+  // the row and the home card report. Reporting the batch size made a learner
+  // with twenty-five overdue cards read "10 reviews due".
+  const dueAll = dueCards(prog, sets.vocab);
+  const due = dueAll.slice(0, 10)
     .map(th => WORDS.find(x => x[0] === th)).filter(Boolean);
-  if (due.length >= 3) return { kind: "review", due };
+  if (due.length >= 3) return { kind: "review", due, n: dueAll.length };
   const scriptDue = dueCards(prog, sets.script);
   if (scriptDue.length >= 3) return { kind: "script", n: scriptDue.length };
   const sentDue = dueCards(prog, sets.sentence);

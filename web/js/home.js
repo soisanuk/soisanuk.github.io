@@ -25,7 +25,8 @@ const HOME_FORECAST_DAYS = 7;
 function homeCta(plan, streak) {
   if (!plan) return { title: "Start today", sub: "your first lesson is waiting" };
   if (plan.kind === "review") {
-    const n = plan.due.length;
+    // plan.n is the real backlog; plan.due is only the batch Continue serves.
+    const n = plan.n != null ? plan.n : plan.due.length;
     return { title: `${n} review${n === 1 ? "" : "s"} ready`,
              sub: streak && streak.days ? "keep the streak alive" : "warm up on what you already know" };
   }
