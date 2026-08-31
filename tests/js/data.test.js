@@ -168,3 +168,76 @@ test("vowel length in the description matches the romanisation", () => {
     }
   }
 });
+
+// ── Example words vs the dictionary we already ship ─────────────────────────
+// Three vowel cards shipped with wrong example glosses: เก "old" (it is
+// naughty/crooked), กอ "embrace" (that is กอด — กอ is a clump of plants), and
+// กัว "to confuse", which is not a Thai word at all. Nobody had to be fluent to
+// catch these: gloss-th.js, generated from Wiktionary for Paste Text, is right
+// there in the repo. Cross-check against it so the next one cannot ship.
+const _GLOSS = (() => {
+  vm.runInThisContext(
+    readFileSync(new URL("../../web/js/gloss-th.js", import.meta.url), "utf8"),
+    { filename: "gloss-th.js" });
+  const src = Object.values(globalThis).find(v => typeof v === "string" && v.length > 10000);
+  const m = new Map();
+  for (const row of (src || "").split("\n")) {
+    const [w, g, r] = row.split("\t");
+    if (w) m.set(w, { gloss: g || "", roman: r || "" });
+  }
+  return m;
+})();
+
+// Wordings the dictionary states differently but not wrongly — a plain
+// substring test cannot see that "island" and "tract of land surrounded by
+// water" are the same thing. Each entry is a decision, not a mute button.
+const GLOSS_OK = new Set([
+  "เกาะ",   // "island" vs "tract of land surrounded by water"
+  "เขา",    // "he/she" vs "he; she; they; I; oneself"
+]);
+
+// เ◌ือ has no settled spelling in this app yet: the vowel table calls it
+// "uea" while ◌ื (long ue) is "uue", and WORDS uses both — เมื่อ is "mûea"
+// but เมือง is "muueang", the same vowel twice. The card agrees with WORDS,
+// the dictionary says "mueang", and picking a winner means renormalising ~30
+// entries that are vendored to another app. Left as a known exception rather
+// than papered over with a third spelling; see the 2026-09-01 notes.
+const ROMAN_OK = new Set(["เมือง"]);
+
+test("every vowel example word exists in the shipped dictionary", () => {
+  for (const [sym, , , ex] of VOWELS) {
+    const m = /^(\S+)\s*\(([^)]+)\)\s*=\s*(.+)$/.exec(ex || "");
+    if (!m) continue;
+    assert.ok(_GLOSS.has(m[1]),
+      `${sym}: example word ${m[1]} is not a dictionary word — is it a typo?`);
+  }
+});
+
+test("every vowel example gloss agrees with the dictionary", () => {
+  for (const [sym, , , ex] of VOWELS) {
+    const m = /^(\S+)\s*\(([^)]+)\)\s*=\s*(.+)$/.exec(ex || "");
+    if (!m) continue;
+    const [, th, , en] = m;
+    if (GLOSS_OK.has(th)) continue;
+    const entry = _GLOSS.get(th);
+    if (!entry) continue;                       // covered by the test above
+    const dict = entry.gloss.toLowerCase();
+    const claim = en.toLowerCase().replace(/^to /, "").split(/[;,(]/)[0].trim();
+    const agrees = dict.includes(claim) ||
+      claim.split(/\s+/).some(w => w.length > 3 && dict.includes(w));
+    assert.ok(agrees,
+      `${sym}: card says ${th} = "${en}", dictionary says "${entry.gloss}"`);
+  }
+});
+
+test("every vowel example romanisation matches the dictionary's", () => {
+  const strip = r => r.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  for (const [sym, , , ex] of VOWELS) {
+    const m = /^(\S+)\s*\(([^)]+)\)\s*=\s*(.+)$/.exec(ex || "");
+    if (!m) continue;
+    const entry = _GLOSS.get(m[1]);
+    if (!entry || !entry.roman || ROMAN_OK.has(m[1])) continue;
+    assert.equal(strip(m[2]), strip(entry.roman),
+      `${sym}: card romanises ${m[1]} as "${m[2]}", dictionary says "${entry.roman}"`);
+  }
+});
