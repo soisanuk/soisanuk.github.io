@@ -18,8 +18,21 @@ vm.runInThisContext(
 // ── TUTOR_ALL data integrity ──────────────────────────────────────────────────
 
 describe("TUTOR_ALL", () => {
-  test("covers all 29 tutor keys", () => {
-    assert.equal(TUTOR_ALL.length, 29);
+  test("covers every unshifted letter on the three QWERTY rows", () => {
+    assert.equal(TUTOR_ALL.length, 33);
+  });
+
+  // The pool shipped without บ ล ง ฝ — the [ ] ' / keys — so a learner who
+  // finished "All Keys" still could not type บ้าน, เงิน or เล่น. Found by the
+  // 2026-09-01 typist round, which noticed that pressing [ was silently
+  // ignored. These four are the difference between a keyboard trainer and a
+  // trainer for part of one.
+  test("the common consonants on the outer keys are present", () => {
+    for (const [key, thai] of [["[", "บ"], ["]", "ล"], ["'", "ง"], ["/", "ฝ"]]) {
+      const e = TUTOR_ALL.find(x => x.key === key);
+      assert.ok(e, `key ${key} missing from TUTOR_ALL`);
+      assert.equal(e.thai, thai, `key ${key} should type ${thai}`);
+    }
   });
 
   test("keys are unique", () => {
@@ -56,8 +69,12 @@ describe("_T_ROWS", () => {
     assert.deepEqual(rowKeys, allKeys);
   });
 
+  // 12/11/10 IS the physical letter block — q..p plus [ ], a..; plus ', z../.
+  // This asserted [10, 10, 9] and called it "the physical qwerty layout": it
+  // was pinning the subset that had been implemented, under a name that
+  // claimed more. A test may not describe the keyboard it wishes existed.
   test("rows follow the physical qwerty layout widths", () => {
-    assert.deepEqual(_T_ROWS.map(r => r.length), [10, 10, 9]);
+    assert.deepEqual(_T_ROWS.map(r => r.length), [12, 11, 10]);
   });
 });
 

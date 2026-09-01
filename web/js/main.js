@@ -150,6 +150,8 @@ document.addEventListener("keydown", e => {
       if (document.getElementById("nf-reveal-area").style.display !== "none") nfReveal();
       else nfNext();
     }
+    // The footer has always advertised "N next" and nothing listened for it.
+    if (key === "n" || key === "N") nfNext();
     if (key === "Escape") endSession();
   }
   if (active === "charts-screen") {
