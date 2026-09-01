@@ -119,6 +119,36 @@ function _tNormKey(eKey) {
   return { key: eKey, shift: false };
 }
 
+// KeyboardEvent.code -> the base key, by PHYSICAL POSITION. This table is what
+// the layout actually means: "Shift+h types ็" is a claim about the key where
+// h sits on a US board, not about the letter h.
+//
+// It matters because event.key reports the character the CURRENT input source
+// produces. A learner who has installed the Thai input source — the one
+// furthest along — presses that key and the browser says "็", not "H". Reading
+// only event.key dropped their every keystroke in silence. Reading `code`
+// works whatever input source is active, which is the whole point.
+const _T_CODE = (() => {
+  const m = {};
+  'abcdefghijklmnopqrstuvwxyz'.split('').forEach(c => { m['Key' + c.toUpperCase()] = c; });
+  '1234567890'.split('').forEach(d => { m['Digit' + d] = d; });
+  Object.assign(m, { Minus:'-', Equal:'=', BracketLeft:'[', BracketRight:']',
+    Semicolon:';', Quote:"'", Comma:',', Period:'.', Slash:'/', Backquote:'`' });
+  return m;
+})();
+
+// Decode a real key event. Position first; the character it produced is the
+// fallback, which also lets someone typing on a genuine Thai layout answer
+// with the Thai character itself.
+function _tNormEvent(e) {
+  if (!e) return null;
+  const base = e.code && _T_CODE[e.code];
+  if (base) return { key: base, shift: !!e.shiftKey };
+  const byChar = TUTOR_ALL.find(t => t.thai === e.key);
+  if (byChar) return { key: byChar.key, shift: !!byChar.shift };
+  return _tNormKey(e.key);
+}
+
 // The entry a (key, shift) pair produces, or null.
 function _tEntry(key, shift) {
   return TUTOR_ALL.find(e => e.key === key && !!e.shift === !!shift) || null;
@@ -322,7 +352,9 @@ function _tType(eKey, shiftOverride) {
   // A tapped key already knows whether shift was held; a physical event has
   // to be decoded, because the browser hands over "C" or "^" rather than the
   // base key and a flag.
-  const n = shiftOverride === undefined ? _tNormKey(eKey) : { key: eKey, shift: !!shiftOverride };
+  const n = shiftOverride !== undefined ? { key: eKey, shift: !!shiftOverride }
+          : (eKey && typeof eKey === 'object') ? _tNormEvent(eKey)
+          : _tNormKey(eKey);
   if (!n || !_tEntry(n.key, n.shift)) return false;
   const k = n.key;
   const right = k === _tCurrent.key && n.shift === !!_tCurrent.shift;

@@ -209,3 +209,42 @@ describe("_tPick", () => {
     assert.equal(_tPick([], { keys: {} }, null, () => 0.5), null);
   });
 });
+
+// ── Decoding real key events ────────────────────────────────────────────────
+// The mapping is about physical key POSITIONS. event.key reports the character
+// the active input source produced, so a learner with the Thai input source
+// installed sends "็" where a US layout sends "H" — reading only event.key
+// dropped every keystroke from the most committed user in silence.
+describe("_tNormEvent", () => {
+  test("decodes by physical position, whatever the layout produced", () => {
+    // US layout: Shift+h reports "H"
+    assert.deepEqual(_tNormEvent({ code: "KeyH", key: "H", shiftKey: true }), { key: "h", shift: true });
+    // Thai input source: the SAME physical key reports the Thai character
+    assert.deepEqual(_tNormEvent({ code: "KeyH", key: "็", shiftKey: true }), { key: "h", shift: true });
+    // and unshifted on both
+    assert.deepEqual(_tNormEvent({ code: "KeyH", key: "h", shiftKey: false }), { key: "h", shift: false });
+    assert.deepEqual(_tNormEvent({ code: "KeyH", key: "้", shiftKey: false }), { key: "h", shift: false });
+  });
+
+  test("covers the four glyphs this layer exists for", () => {
+    for (const [code, shift, thai] of [
+      ["Digit6", true, "ู"], ["KeyH", true, "็"], ["Semicolon", true, "ซ"], ["KeyP", true, "ญ"],
+    ]) {
+      const n = _tNormEvent({ code, key: "x", shiftKey: shift });
+      assert.equal(_tEntry(n.key, n.shift).thai, thai, `${code}+shift should be ${thai}`);
+    }
+  });
+
+  test("falls back to the Thai character when there is no usable code", () => {
+    // some environments report no code; the character itself still identifies
+    // the key, which is exactly what a real Thai keyboard sends
+    assert.deepEqual(_tNormEvent({ key: "ซ" }), { key: ";", shift: true });
+    assert.deepEqual(_tNormEvent({ key: "ก" }), { key: "d", shift: false });
+  });
+
+  test("modifier-only and unmapped events yield nothing", () => {
+    assert.equal(_tNormEvent({ code: "ShiftLeft", key: "Shift", shiftKey: true }), null);
+    assert.equal(_tNormEvent({ code: "F5", key: "F5" }), null);
+    assert.equal(_tNormEvent(null), null);
+  });
+});
