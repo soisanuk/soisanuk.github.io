@@ -41,7 +41,10 @@ node spike/run.mjs
 
 # The extension's shadow-root shell: 9 checks that the card and the host page
 # cannot reach each other's CSS, in either direction.
-node spike/shell-test.mjs
+# NOT named *-test.mjs on purpose — `node --test` auto-discovers that pattern
+# as well as *.test.js, so it ran this browser tool as a unit test and broke
+# CI, which has no Playwright.
+node spike/shell-check.mjs
 
 # extension/shell.css is GENERATED from the card styles in web/index.html.
 # Re-run after editing any .wc-/.decomp-/.example-/tooltip rule there.
