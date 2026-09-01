@@ -18,8 +18,8 @@ vm.runInThisContext(
 // ── TUTOR_ALL data integrity ──────────────────────────────────────────────────
 
 describe("TUTOR_ALL", () => {
-  test("covers every unshifted letter on the three QWERTY rows", () => {
-    assert.equal(TUTOR_ALL.length, 33);
+  test("covers every unshifted Thai key on the Kedmanee board", () => {
+    assert.equal(TUTOR_ALL.length, 43);
   });
 
   // The pool shipped without บ ล ง ฝ — the [ ] ' / keys — so a learner who
@@ -63,10 +63,32 @@ describe("TUTOR_ALL", () => {
 // ── keyboard layout rows ──────────────────────────────────────────────────────
 
 describe("_T_ROWS", () => {
-  test("rows contain exactly the TUTOR_ALL keys", () => {
-    const rowKeys = _T_ROWS.flat().sort();
-    const allKeys = TUTOR_ALL.map(e => e.key).sort();
-    assert.deepEqual(rowKeys, allKeys);
+  test("the full layout renders every key TUTOR_ALL defines", () => {
+    const rendered = new Set(_T_ROWS_FULL.flat());
+    for (const e of TUTOR_ALL) {
+      assert.ok(rendered.has(e.key), `${e.thai} is on key ${e.key}, which no row renders`);
+    }
+    // 2 and 3 carry / and _ on a real board — rendered, deliberately not Thai
+    const extra = _T_ROWS_FULL.flat().filter(k => !TUTOR_ALL.some(e => e.key === k));
+    assert.deepEqual(extra.sort(), ["2", "3"]);
+  });
+
+  test("the three-row layout is a strict subset of the full one", () => {
+    const full = new Set(_T_ROWS_FULL.flat());
+    for (const k of _T_ROWS.flat()) assert.ok(full.has(k), `${k} not in the full layout`);
+    assert.ok(_T_ROWS.flat().length < _T_ROWS_FULL.flat().length);
+  });
+
+  // The course asks the learner to TYPE a word on a keyboard it renders
+  // itself — without the number row. It must therefore only ever choose
+  // words that keyboard can spell; 38% of its candidates could not be typed.
+  test("_tTypeable reports what a given layout can actually spell", () => {
+    const three = _tTypeable(_T_ROWS);
+    const four = _tTypeable(_T_ROWS_FULL);
+    assert.ok(three.has("ก") && three.has("ง"), "three rows spell the letter keys");
+    assert.ok(!three.has("ค"), "ค is on the number row, which three rows omit");
+    assert.ok(four.has("ค") && four.has("ต") && four.has("ุ"), "four rows reach the number row");
+    for (const c of three) assert.ok(four.has(c), `${c} lost when the number row was added`);
   });
 
   // 12/11/10 IS the physical letter block — q..p plus [ ], a..; plus ', z../.
@@ -93,5 +115,66 @@ describe("_tDisp", () => {
     assert.equal(_tDisp("เ"), "เ"); // leading vowel, renders on its own
     assert.equal(_tDisp("ๆ"), "ๆ"); // mai yamok
     assert.equal(_tDisp("ไ"), "ไ");
+  });
+});
+
+// ── Adaptivity ──────────────────────────────────────────────────────────────
+// The tutor drew uniformly at random: a key missed eight times in a row came
+// back 4 times in the next 45 draws, indistinguishable from chance. For a
+// persona whose whole goal is getting better at typing, "practise what you
+// keep getting wrong" is the feature, so the weighting is pinned here rather
+// than left to be eyeballed.
+
+describe("_tWeight", () => {
+  test("a key never practised outranks one answered correctly", () => {
+    assert.ok(_tWeight({ seen: 0, wrong: 0 }) > _tWeight({ seen: 10, wrong: 0 }));
+  });
+
+  test("weight rises with the miss rate", () => {
+    const perfect = _tWeight({ seen: 10, wrong: 0 });
+    const half = _tWeight({ seen: 10, wrong: 5 });
+    const awful = _tWeight({ seen: 10, wrong: 10 });
+    assert.ok(perfect < half && half < awful, `${perfect} < ${half} < ${awful}`);
+    assert.equal(perfect, 1, "a key you never miss carries the base weight");
+  });
+
+  test("a missed key is worth several correct ones", () => {
+    assert.ok(_tWeight({ seen: 4, wrong: 4 }) >= 6 * _tWeight({ seen: 4, wrong: 0 }));
+  });
+});
+
+describe("_tPick", () => {
+  const pool = [{ key: "a" }, { key: "b" }, { key: "c" }];
+  // deterministic stand-in for Math.random
+  const seq = xs => { let i = 0; return () => xs[i++ % xs.length]; };
+
+  test("never repeats the previous key while alternatives exist", () => {
+    for (const r of [0, 0.25, 0.5, 0.75, 0.999]) {
+      assert.notEqual(_tPick(pool, { keys: {} }, pool[0], () => r).key, "a");
+    }
+  });
+
+  test("a single-key pool still returns that key", () => {
+    const one = [{ key: "z" }];
+    assert.equal(_tPick(one, { keys: {} }, one[0], () => 0.5).key, "z");
+  });
+
+  test("the weighting actually biases the draw toward missed keys", () => {
+    // b is missed every time; a and c are always right
+    const store = { keys: { a: { seen: 20, wrong: 0 }, b: { seen: 20, wrong: 20 }, c: { seen: 20, wrong: 0 } } };
+    let bs = 0;
+    const N = 900;
+    // sweep the whole [0,1) range so this samples the distribution exactly
+    for (let i = 0; i < N; i++) {
+      const r = (i + 0.5) / N;
+      if (_tPick(pool, store, null, () => r).key === "b") bs++;
+    }
+    const share = bs / N;
+    // weights: a=1, b=7, c=1 → b should take 7/9 of the draws
+    assert.ok(share > 0.7 && share < 0.85, `b took ${(share * 100).toFixed(0)}% of draws, expected ~78%`);
+  });
+
+  test("an empty pool yields null rather than throwing", () => {
+    assert.equal(_tPick([], { keys: {} }, null, () => 0.5), null);
   });
 });

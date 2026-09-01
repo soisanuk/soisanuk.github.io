@@ -10,7 +10,9 @@ import vm from "node:vm";
 import { fileURLToPath } from "node:url";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-for (const f of ["data.js", "examples.js", "thai-script.js", "srs.js", "wordcard.js", "app.js", "curriculum.js", "learn.js", "backup.js"]) {
+// tutor.js supplies _tTypeable/_T_ROWS — _unitQueue uses them to avoid
+// choosing a typed-Thai target the on-screen keyboard cannot spell.
+for (const f of ["data.js", "examples.js", "thai-script.js", "srs.js", "wordcard.js", "app.js", "curriculum.js", "tutor.js", "learn.js", "backup.js"]) {
   vm.runInThisContext(fs.readFileSync(path.join(root, "web", "js", f), "utf8"), { filename: f });
 }
 
@@ -611,4 +613,31 @@ describe("_contText", () => {
         `${plan ? plan.kind : "no plan"} should defer to the streak line`);
     }
   });
+});
+
+// ── Typed-Thai targets must be typeable ─────────────────────────────────────
+// The course renders the three letter rows and then asked the learner to type
+// words needing the number row or a shifted glyph: ดู, อยู่, ตื่น, รู้ — 138 of
+// 367 candidates, 38%, with no key that could produce them. The card cannot
+// be completed, so the learner's only move is to skip a question the app
+// insisted they answer. Found by the 2026-09-01 typist round.
+test("every typed-Thai target can be spelled on the keyboard the course shows", () => {
+  const canType = _tTypeable(_T_ROWS);
+  let checked = 0;
+  for (const unit of COURSE) {
+    if (unit.batch === undefined || unit.batch < 1) continue;
+    // build the unit many times over: the targets are shuffled, so one pass
+    // proves very little
+    for (let i = 0; i < 12; i++) {
+      for (const item of _unitQueue(unit, [], true)) {
+        if (item.kind !== "typeth") continue;
+        checked++;
+        for (const ch of item.word[0]) {
+          assert.ok(canType.has(ch),
+            `unit "${unit.label}" asks the learner to type ${item.word[0]}, but ${ch} is on no rendered key`);
+        }
+      }
+    }
+  }
+  assert.ok(checked > 20, `expected plenty of typed-Thai cards, saw ${checked}`);
 });
