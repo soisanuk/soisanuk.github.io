@@ -269,6 +269,46 @@ export async function openApp(opts = {}) {
       return b.textContent.trim();
     }),
 
+    /**
+     * Press a real physical key. The Kedmanee tutor and several games listen
+     * on document keydown rather than an input, so a synthetic click cannot
+     * reach them.
+     */
+    press: async key => { await page.keyboard.press(key); await page.waitForTimeout(60); },
+
+    /**
+     * Answer the keyboard tutor's current prompt by TAPPING the on-screen key
+     * — `correct` picks the right one, false picks a deliberate miss. The
+     * tutor locks input for 700ms after each answer to flash the result
+     * (_tFlashId), so this waits that out; driving it faster silently drops
+     * answers and every count comes back wrong.
+     */
+    tutorAnswer: async (correct = true) => {
+      const r = await app.safe("tutorAnswer", ok => {
+        if (typeof _tCurrent === "undefined" || !_tCurrent) return null;
+        const want = _tCurrent.key;
+        const keys = [...document.querySelectorAll("#tutor-screen .tkey")];
+        const el = ok ? keys.find(k => k.dataset.key === want)
+                      : keys.find(k => k.dataset.key !== want && k.querySelector(".tkey-th").textContent.trim());
+        if (!el) return null;
+        el.click();
+        return { pressed: el.dataset.key, wanted: want, correct: ok };
+      }, correct);
+      await page.waitForTimeout(760);          // outlast the 700ms flash
+      return r;
+    },
+
+    /** The tutor's live scoreboard, straight from its own globals. */
+    tutorState: () => app.safe("tutorState", () => ({
+      mode: typeof _tMode !== "undefined" ? _tMode : null,
+      target: typeof _tCurrent !== "undefined" && _tCurrent ? _tCurrent.thai : null,
+      targetKey: typeof _tCurrent !== "undefined" && _tCurrent ? _tCurrent.key : null,
+      correct: typeof _tCorrect !== "undefined" ? _tCorrect : null,
+      total: typeof _tTotal !== "undefined" ? _tTotal : null,
+      streak: typeof _tStreak !== "undefined" ? _tStreak : null,
+      active: typeof _tActive !== "undefined" ? _tActive : null,
+    })),
+
     /** Open the word card for a token and read it back. */
     tapWord: thai => app.safe("tapWord", w => {
       const el = document.querySelector(`.w-token[data-w="${CSS.escape(w)}"]`);
