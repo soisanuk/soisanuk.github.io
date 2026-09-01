@@ -49,7 +49,6 @@ document.addEventListener("keydown", e => {
     // that matter most, Continue and the Guided Course. Each key matches its
     // sidebar nav id, the convention every other entry already follows.
     else if (key === "q" || key === "Q") startLearn();
-    else if (key === "u" || key === "U") startBusWords();
     else if (key === "y" || key === "Y") showRecords();
     else if (key === "x" || key === "X") showScreen("backup-screen", "X");
     else if (key === "i" || key === "I") showIdioms();
