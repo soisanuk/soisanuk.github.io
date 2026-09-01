@@ -853,7 +853,9 @@ function _gStyleKbd() {
 }
 
 function _gKbdPress(key) {
-  const entry = TUTOR_ALL.find(e => e.key === key);
+  // unshifted only: this keyboard renders no Shift key, so a shifted entry
+  // sharing the base key must not be what a tap resolves to.
+  const entry = TUTOR_ALL.find(e => e.key === key && !e.shift);
   if (entry) _tts.speak(letterSpeechParts(entry.thai));
   const idx = _GAME_ALL.findIndex((l, i) => i < _gPool && l.key === key);
   if (idx === -1) return; // locked/unused key: pronunciation only
