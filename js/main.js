@@ -79,7 +79,9 @@ document.addEventListener("keydown", e => {
     return;
   }
   if (active === "tutor-screen") {
-    if (_tType(key)) return;
+    // pass the EVENT, not e.key: the tutor decodes by physical position so it
+    // still works when the Thai input source is active (see _tNormEvent).
+    if (_tType(e)) return;
     if (key === "Escape") endSession();
     return;
   }
