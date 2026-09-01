@@ -79,7 +79,14 @@ for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 
           // SC 2.5.8 AA). Judging the desktop viewport by the touch floor
           // reported the same six "Quit (Esc)" buttons on every run — already
           // 44px+ on mobile, and deliberately small on desktop.
-          const minW = touch ? 34 : 24, minH = touch ? 30 : 24;
+          // A dense keyboard is the documented exception to a touch floor
+          // (WCAG 2.5.5 "essential"): twelve Kedmanee columns in a 390px
+          // screen is 32px per key at the absolute maximum, and every real
+          // phone keyboard — iOS Thai included — is denser than the isolated
+          // -control minimum. Height still has to hold up, and so does the
+          // no-overflow check that actually caught the last regression here.
+          const dense = el.classList && el.classList.contains("tkey");
+          const minW = dense ? 24 : touch ? 34 : 24, minH = touch ? 30 : 24;
           if (r.width > 0 && (w < minW || h < minH)) { out.issues.push("TINY-TAP " + (el.id || el.className.toString().slice(0,16)) + " " + Math.round(w) + "x" + Math.round(h)); break; }
         }
         for (const el of scr.querySelectorAll("*")) {
