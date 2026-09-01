@@ -38,6 +38,15 @@ node tools/sweep.mjs
 # page without breaking it? 24 checks over a hostile fixture. Not shipped code —
 # see docs/chrome-extension-handoff.md §10 for what it settled.
 node spike/run.mjs
+
+# The extension's shadow-root shell: 9 checks that the card and the host page
+# cannot reach each other's CSS, in either direction.
+node spike/shell-test.mjs
+
+# extension/shell.css is GENERATED from the card styles in web/index.html.
+# Re-run after editing any .wc-/.decomp-/.example-/tooltip rule there.
+node scripts/build-extension-css.mjs           # write
+node scripts/build-extension-css.mjs --check   # verify; exit 1 on drift
 ```
 
 `tools/playtest-harness.mjs` drives the app for persona playtests — see
