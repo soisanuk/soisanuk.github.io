@@ -1,5 +1,5 @@
 // Does the shadow-root shell keep the card and the host page out of each
-// other's way? Run: node spike/shell-test.mjs
+// other's way? Run: node spike/shell-check.mjs
 import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
 const require = createRequire("/Users/mario/projects/last-baht-bus/package.json");
