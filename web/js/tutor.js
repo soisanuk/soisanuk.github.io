@@ -49,7 +49,80 @@ const TUTOR_ALL = [
   { key:'0', thai:'จ', name:'Cho Chan',       cat:'consonant' },
   { key:'-', thai:'ข', name:'Kho Khai',       cat:'consonant' },
   { key:'=', thai:'ช', name:'Cho Chang',      cat:'consonant' },
+
+  // ── The shifted layer (TIS 820-2538) ────────────────────────────────────
+  // `shift: true` with the BASE key, not the character Shift produces: a
+  // physical event gives "C" or "^", which is a US-QWERTY fact, not a Thai
+  // one — _tNormKey turns those back into {key, shift} so the mapping stays
+  // about the Thai layout.
+  //
+  // Why this exists at all: ็ and ู are on this layer, and they sit in เป็น
+  // and อยู่ — the two commonest verbs in the language. A course that cannot
+  // ask you to type "to be" is not finished. Putting them on some spare
+  // unshifted key instead would teach a finger position that does not exist,
+  // which for a typing tutor is worse than omitting them.
+  //
+  // ASCII that Shift produces (+ " , . ( ) ? _ %) is deliberately absent —
+  // this table is the Thai layer only.
+  { key:'2', thai:'๑', name:'Thai digit one',   cat:'other', shift:true },
+  { key:'3', thai:'๒', name:'Thai digit two',   cat:'other', shift:true },
+  { key:'4', thai:'๓', name:'Thai digit three', cat:'other', shift:true },
+  { key:'5', thai:'๔', name:'Thai digit four',  cat:'other', shift:true },
+  { key:'6', thai:'ู', name:'sara uu',          cat:'vowel', shift:true },
+  { key:'7', thai:'฿', name:'baht sign',        cat:'other', shift:true },
+  { key:'8', thai:'๕', name:'Thai digit five',  cat:'other', shift:true },
+  { key:'9', thai:'๖', name:'Thai digit six',   cat:'other', shift:true },
+  { key:'0', thai:'๗', name:'Thai digit seven', cat:'other', shift:true },
+  { key:'-', thai:'๘', name:'Thai digit eight', cat:'other', shift:true },
+  { key:'=', thai:'๙', name:'Thai digit nine',  cat:'other', shift:true },
+  { key:'q', thai:'๐', name:'Thai digit zero',  cat:'other', shift:true },
+  { key:'e', thai:'ฎ', name:'Do Chada',      cat:'consonant', shift:true },
+  { key:'r', thai:'ฑ', name:'Tho Nangmontho',cat:'consonant', shift:true },
+  { key:'t', thai:'ธ', name:'Tho Thong',     cat:'consonant', shift:true },
+  { key:'y', thai:'ํ', name:'nikhahit',      cat:'tone',      shift:true },
+  { key:'u', thai:'๊', name:'mai tri',       cat:'tone',      shift:true },
+  { key:'i', thai:'ณ', name:'No Nen',        cat:'consonant', shift:true },
+  { key:'o', thai:'ฯ', name:'paiyannoi',     cat:'other',     shift:true },
+  { key:'p', thai:'ญ', name:'Yo Ying',       cat:'consonant', shift:true },
+  { key:'[', thai:'ฐ', name:'Tho Than',      cat:'consonant', shift:true },
+  { key:'a', thai:'ฤ', name:'Ru',            cat:'vowel',     shift:true },
+  { key:'s', thai:'ฆ', name:'Kho Rakhang',   cat:'consonant', shift:true },
+  { key:'d', thai:'ฏ', name:'To Patak',      cat:'consonant', shift:true },
+  { key:'f', thai:'โ', name:'sara o',        cat:'vowel',     shift:true },
+  { key:'g', thai:'ฌ', name:'Cho Choe',      cat:'consonant', shift:true },
+  { key:'h', thai:'็', name:'mai taikhu',    cat:'tone',      shift:true },
+  { key:'j', thai:'๋', name:'mai chattawa',  cat:'tone',      shift:true },
+  { key:'k', thai:'ษ', name:'So Rusi',       cat:'consonant', shift:true },
+  { key:'l', thai:'ศ', name:'So Sala',       cat:'consonant', shift:true },
+  { key:';', thai:'ซ', name:'So So',         cat:'consonant', shift:true },
+  { key:'c', thai:'ฉ', name:'Cho Ching',     cat:'consonant', shift:true },
+  { key:'v', thai:'ฮ', name:'Ho Nokhuk',     cat:'consonant', shift:true },
+  { key:'b', thai:'ฺ', name:'phinthu',       cat:'tone',      shift:true },
+  { key:'n', thai:'์', name:'thanthakhat',   cat:'tone',      shift:true },
+  { key:',', thai:'ฒ', name:'Tho Phuthao',   cat:'consonant', shift:true },
+  { key:'.', thai:'ฬ', name:'Lo Chula',      cat:'consonant', shift:true },
+  { key:'/', thai:'ฦ', name:'Lu',            cat:'vowel',     shift:true },
 ];
+
+// What a physical key event means on this layout. Shift+c arrives as "C" and
+// Shift+6 as "^" — both US-QWERTY facts about the machine, not about Thai —
+// so they are folded back to the base key plus a shift flag. The old code
+// lowercased A-Z outright, which made Shift+p indistinguishable from p.
+const _T_SHIFTED_ASCII = {
+  '!':'1','@':'2','#':'3','$':'4','%':'5','^':'6','&':'7','*':'8','(':'9',')':'0',
+  '_':'-','+':'=','{':'[','}':']',':':';','"':"'",'<':',','>':'.','?':'/','~':'`',
+};
+function _tNormKey(eKey) {
+  if (typeof eKey !== 'string' || eKey.length !== 1) return null;
+  if (eKey >= 'A' && eKey <= 'Z') return { key: eKey.toLowerCase(), shift: true };
+  if (_T_SHIFTED_ASCII[eKey]) return { key: _T_SHIFTED_ASCII[eKey], shift: true };
+  return { key: eKey, shift: false };
+}
+
+// The entry a (key, shift) pair produces, or null.
+function _tEntry(key, shift) {
+  return TUTOR_ALL.find(e => e.key === key && !!e.shift === !!shift) || null;
+}
 
 // Combining marks (diacritics) need a host consonant to display.
 // Leading vowels (เแโใไ, U+0E40–0E44) render standalone and are excluded —
@@ -110,7 +183,7 @@ function _tWeight(stat) {
 function _tPick(pool, store, prev, rnd) {
   if (!pool.length) return null;
   const cand = pool.length > 1 ? pool.filter(k => k !== prev) : pool;
-  const ws = cand.map(k => _tWeight(_tKeyStat(store, k.key)));
+  const ws = cand.map(k => _tWeight(_tKeyStat(store, _tKeyId(k))));
   const total = ws.reduce((a, b) => a + b, 0);
   let r = (rnd || Math.random)() * total;
   for (let i = 0; i < cand.length; i++) { r -= ws[i]; if (r <= 0) return cand[i]; }
@@ -191,8 +264,13 @@ function _tRender() {
   document.querySelectorAll('.tkey').forEach(el =>
     el.classList.remove('t-target','t-ok','t-wrong','t-hint')
   );
+  _tRenderFaces(document.getElementById('t-kbd'));
   if (!_tStore || _tStore.hint !== false) {
-    document.querySelector(`.tkey[data-key="${_tCurrent.key}"]`)?.classList.add('t-target');
+    // On the wrong layer the key is not showing, so highlighting it would
+    // point at whatever else happens to be there. Point at Shift instead —
+    // which is the actual next thing to press.
+    if (!!_tCurrent.shift === _tShift) _tKeyEl(_tCurrent.key)?.classList.add('t-target');
+    else document.querySelector('#t-kbd .tkey-shift')?.classList.add('t-target');
   }
   _tUpdateStats();
 }
@@ -201,6 +279,15 @@ function _tRender() {
 // happened: every other mode feeds the day-streak through _streakRecord, and
 // the tutor being the exception is why Records read "Biggest day: —" after a
 // hundred answers.
+// A key's identity for the store: "h" and "H" are different things to learn.
+function _tKeyId(entry) { return (entry.shift ? 'S+' : '') + entry.key; }
+
+// The element for a base key, whichever layer is showing.
+function _tKeyEl(key) {
+  return document.querySelector(`#tutor-screen .tkey[data-key="${CSS.escape(key)}"]`)
+      || document.querySelector(`.tkey[data-key="${CSS.escape(key)}"]`);
+}
+
 function _tRecordKey(key, ok) {
   _tStore = _tStore || _tLoadStore();
   const st = _tStore.keys[key] || (_tStore.keys[key] = { seen: 0, wrong: 0 });
@@ -230,30 +317,32 @@ function _tUpdateStats() {
 
 // ── Input handler (called from main.js keydown) ────────────────────────────
 
-function _tType(eKey) {
+function _tType(eKey, shiftOverride) {
   if (!_tActive || !_tCurrent || _tFlashId) return false;
-  // Normalise: A-Z → a-z; punctuation kept as-is
-  const k = eKey.length === 1 && eKey >= 'A' && eKey <= 'Z' ? eKey.toLowerCase() : eKey;
-  if (!TUTOR_ALL.some(e => e.key === k)) return false;
+  // A tapped key already knows whether shift was held; a physical event has
+  // to be decoded, because the browser hands over "C" or "^" rather than the
+  // base key and a flag.
+  const n = shiftOverride === undefined ? _tNormKey(eKey) : { key: eKey, shift: !!shiftOverride };
+  if (!n || !_tEntry(n.key, n.shift)) return false;
+  const k = n.key;
+  const right = k === _tCurrent.key && n.shift === !!_tCurrent.shift;
 
   _tTotal++;
-  _tRecordKey(_tCurrent.key, k === _tCurrent.key);
-  if (k === _tCurrent.key) {
+  _tRecordKey(_tKeyId(_tCurrent), right);
+  if (right) {
     _tCorrect++;
     _tStreak++;
     // by data-key, not by .t-target: with the hint off nothing is marked
     // before the answer, so there is no t-target to promote.
-    document.querySelector(`.tkey[data-key="${_tCurrent.key}"]`)
-      ?.classList.remove('t-target');
-    document.querySelector(`.tkey[data-key="${_tCurrent.key}"]`)
-      ?.classList.add('t-ok');
+    _tKeyEl(_tCurrent.key)?.classList.remove('t-target');
+    _tKeyEl(_tCurrent.key)?.classList.add('t-ok');
     _tUpdateStats();
     _tFlashId = setTimeout(_tNext, 700);
   } else {
     _tStreak = 0;
     _tUpdateStats();
-    const wrongEl   = document.querySelector(`.tkey[data-key="${k}"]`);
-    const correctEl = document.querySelector(`.tkey[data-key="${_tCurrent.key}"]`);
+    const wrongEl   = _tKeyEl(k);
+    const correctEl = _tKeyEl(_tCurrent.key);
     wrongEl?.classList.add('t-wrong');
     correctEl?.classList.remove('t-target');
     correctEl?.classList.add('t-hint');
@@ -289,21 +378,41 @@ const _T_ROWS_FULL = [
 // cannot spell: 138 of its 367 candidate targets (38%) needed a glyph on no
 // rendered key — ดู, อยู่, ตื่น, รู้ — and the card simply could not be
 // completed. Found by the 2026-09-01 typist round.
-function _tTypeable(rows) {
+function _tTypeable(rows, withShift) {
   const on = new Set(rows.flat());
-  return new Set(TUTOR_ALL.filter(k => on.has(k.key)).map(k => k.thai));
+  return new Set(TUTOR_ALL
+    .filter(k => on.has(k.key) && (withShift || !k.shift))
+    .map(k => k.thai));
 }
+
+// Shift is a property of a built keyboard, not a global: the tutor and the
+// course's typed-Thai card render it, Walking Street does not (its targets
+// are single unshifted letters and its keyboard sits under a game canvas).
+let _tShift = false;
 
 // Generic Kedmanee keyboard builder — also used by the Walking Street game
 // on mobile. onKey receives the Latin key of the tapped .tkey.
-function _tBuildKbdInto(container, onKey, rows) {
+function _tBuildKbdInto(container, onKey, rows, withShift) {
   if (container.childElementCount > 0) return; // already built
-  const byKey = Object.fromEntries(TUTOR_ALL.map(k => [k.key, k]));
-  for (const row of (rows || _T_ROWS)) {
+  container.dataset.shiftable = withShift ? '1' : '';
+  const rowList = rows || _T_ROWS;
+  for (const row of rowList) {
     const rowEl = document.createElement('div');
     rowEl.className = 't-row';
+    // Shift sits where it sits on a real board: left of the bottom letter row.
+    if (withShift && row === rowList[rowList.length - 1]) {
+      const sh = document.createElement('div');
+      sh.className = 'tkey tkey-shift';
+      sh.dataset.shiftkey = '1';
+      sh.setAttribute('role', 'button');
+      sh.setAttribute('aria-pressed', 'false');
+      sh.setAttribute('aria-label', 'Shift');
+      sh.innerHTML = '<span class="tkey-th">⇧</span>';
+      sh.addEventListener('click', () => { _tShift = !_tShift; _tRenderFaces(container); });
+      rowEl.appendChild(sh);
+    }
     for (const k of row) {
-      const entry = byKey[k];
+      const entry = _tEntry(k, false);
       const el = document.createElement('div');
       el.className = 'tkey';
       el.dataset.key = k;
@@ -319,21 +428,37 @@ function _tBuildKbdInto(container, onKey, rows) {
       }
       el.innerHTML =
         `<span class="tkey-lat">${k}</span>` +
-        `<span class="tkey-th" lang="th">${entry ? entry.thai : ''}</span>`;
-      el.addEventListener('click', () => onKey(k));
+        `<span class="tkey-th" lang="th">${entry ? _tDisp(entry.thai) : ''}</span>`;
+      el.addEventListener('click', () => onKey(k, _tShift));
       rowEl.appendChild(el);
     }
     container.appendChild(rowEl);
   }
+  if (withShift) _tRenderFaces(container);
+}
+
+// Swap every key face between the two layers. The faces carry _tDisp output,
+// so a combining mark shows on its ก host instead of as tofu.
+function _tRenderFaces(container) {
+  if (!container || !container.dataset.shiftable) return;
+  const sh = container.querySelector('.tkey-shift');
+  if (sh) { sh.classList.toggle('active', _tShift); sh.setAttribute('aria-pressed', String(_tShift)); }
+  container.querySelectorAll('.tkey[data-key]').forEach(el => {
+    const entry = _tEntry(el.dataset.key, _tShift);
+    const face = el.querySelector('.tkey-th');
+    if (face) face.textContent = entry ? _tDisp(entry.thai) : '';
+    el.classList.toggle('t-blank', !entry);
+    if (entry) el.setAttribute('aria-label', `${entry.name} — ${_tShift ? 'Shift+' : ''}${el.dataset.key}`);
+  });
 }
 
 function _tBuildKbd() {
-  _tBuildKbdInto(document.getElementById('t-kbd'), _tType, _T_ROWS_FULL);
+  _tBuildKbdInto(document.getElementById('t-kbd'), _tType, _T_ROWS_FULL, true);
 }
 
 function _tApplyDim() {
-  const active = new Set(_tPool().map(k => k.key));
-  document.querySelectorAll('.tkey').forEach(el =>
+  const active = new Set(_tPool().filter(k => !!k.shift === _tShift).map(k => k.key));
+  document.querySelectorAll('#t-kbd .tkey[data-key]').forEach(el =>
     el.classList.toggle('dim', !active.has(el.dataset.key))
   );
 }

@@ -614,8 +614,10 @@ describe("_contText", () => {
 // be completed, so the learner's only move is to skip a question the app
 // insisted they answer. Found by the 2026-09-01 typist round.
 test("every typed-Thai target can be spelled on the keyboard the course shows", () => {
-  // the card renders the FULL layout, so that is the set it may draw from
-  const canType = _tTypeable(_T_ROWS_FULL);
+  // the card renders the FULL layout WITH a shift key, so that is the set it
+  // may draw from — the two must be passed the same arguments or the filter
+  // and the keyboard disagree, which is the whole bug this test exists for.
+  const canType = _tTypeable(_T_ROWS_FULL, true);
   let checked = 0;
   for (const unit of COURSE) {
     if (unit.batch === undefined || unit.batch < 1) continue;
