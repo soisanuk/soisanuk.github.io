@@ -108,7 +108,7 @@ function _unitQueue(unit, dueWords, audio = true) {
       // glyph. "Type ดู" with ู on no key is not a hard question, it is an
       // impossible one, and the card cannot be completed. The guard is
       // typeof-ed because _unitQueue is vm-tested without tutor.js loaded.
-      const canType = typeof _tTypeable === "function" ? _tTypeable(_T_ROWS) : null;
+      const canType = typeof _tTypeable === "function" ? _tTypeable(_T_ROWS_FULL) : null;
       const spellable = pool.filter(w =>
         [...w[0]].length <= 4 && (!canType || [...w[0]].every(c => canType.has(c))));
       for (const w of _shuffle(spellable).slice(0, 2)) queue.push({ kind: "typeth", word: w });
@@ -556,6 +556,10 @@ function _wTypeTH(item, body) {
   let buf = [], misses = 0;
   const bufEl = document.getElementById("learn-th-buf");
   const fb = document.getElementById("learn-th-fb");
+  // The full four-row layout, number row included. The lesson card has room —
+  // 120px of slack below the keyboard on an iPhone 13, and a row costs 51 —
+  // and without it ค ต จ ข ช ภ ถ ุ ึ are on no key, which put 96 of the 367
+  // candidate targets out of reach for want of a row that fits.
   _tBuildKbdInto(document.getElementById("learn-kbd"), latin => {
     const entry = byKey[latin];
     if (!entry) return;
@@ -576,7 +580,7 @@ function _wTypeTH(item, body) {
       setTimeout(() => bufEl.classList.remove("learn-buf-wrong"), 250);
       if (misses === 2) fb.innerHTML = "It looks like: <b>" + _esc(w[0]) + "</b>";
     }
-  });
+  }, typeof _T_ROWS_FULL !== "undefined" ? _T_ROWS_FULL : undefined);
 }
 
 // hear it first, pick the SCRIPT you heard — listening that trains reading
