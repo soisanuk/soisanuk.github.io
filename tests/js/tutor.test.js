@@ -18,8 +18,9 @@ vm.runInThisContext(
 // ── TUTOR_ALL data integrity ──────────────────────────────────────────────────
 
 describe("TUTOR_ALL", () => {
-  test("covers every unshifted Thai key on the Kedmanee board", () => {
-    assert.equal(TUTOR_ALL.length, 43);
+  test("covers both layers of the Kedmanee board", () => {
+    assert.equal(TUTOR_ALL.filter(e => !e.shift).length, 43, "unshifted");
+    assert.equal(TUTOR_ALL.filter(e => e.shift).length, 38, "shifted");
   });
 
   // The pool shipped without บ ล ง ฝ — the [ ] ' / keys — so a learner who
@@ -35,9 +36,11 @@ describe("TUTOR_ALL", () => {
     }
   });
 
-  test("keys are unique", () => {
-    const keys = TUTOR_ALL.map(e => e.key);
-    assert.equal(new Set(keys).size, keys.length);
+  test("keys are unique WITHIN a layer", () => {
+    // the same base key legitimately appears twice — h is ้ and Shift+h is ็ —
+    // so identity is (key, shift), which is what _tKeyId encodes.
+    const ids = TUTOR_ALL.map(e => (e.shift ? "S+" : "") + e.key);
+    assert.equal(new Set(ids).size, ids.length);
   });
 
   test("thai characters are unique", () => {
@@ -66,11 +69,39 @@ describe("_T_ROWS", () => {
   test("the full layout renders every key TUTOR_ALL defines", () => {
     const rendered = new Set(_T_ROWS_FULL.flat());
     for (const e of TUTOR_ALL) {
-      assert.ok(rendered.has(e.key), `${e.thai} is on key ${e.key}, which no row renders`);
+      assert.ok(rendered.has(e.key),
+        `${e.thai} is on ${e.shift ? "Shift+" : ""}${e.key}, which no row renders`);
     }
-    // 2 and 3 carry / and _ on a real board — rendered, deliberately not Thai
-    const extra = _T_ROWS_FULL.flat().filter(k => !TUTOR_ALL.some(e => e.key === k));
-    assert.deepEqual(extra.sort(), ["2", "3"]);
+  });
+
+  // Every combining mark must survive _tDisp, or it renders as tofu on the
+  // key face and in the prompt. The shifted layer is mostly marks.
+  test("every combining mark gets a host consonant for display", () => {
+    for (const e of TUTOR_ALL) {
+      const disp = _tDisp(e.thai);
+      const c = e.thai.charCodeAt(0);
+      const combining = c === 0x0E31 || (c >= 0x0E33 && c <= 0x0E3A) || (c >= 0x0E47 && c <= 0x0E4E);
+      assert.equal(disp.length, combining ? 2 : 1, `${e.thai} (${e.name}) displays as "${disp}"`);
+    }
+  });
+
+  test("_tNormKey turns a browser key event back into (key, shift)", () => {
+    assert.deepEqual(_tNormKey("C"), { key: "c", shift: true });
+    assert.deepEqual(_tNormKey("c"), { key: "c", shift: false });
+    assert.deepEqual(_tNormKey("^"), { key: "6", shift: true });
+    assert.deepEqual(_tNormKey(":"), { key: ";", shift: true });
+    assert.equal(_tNormKey("Shift"), null, "modifiers alone are not characters");
+    assert.equal(_tNormKey("Enter"), null);
+  });
+
+  // The four glyphs this layer exists for. เป็น and อยู่ are the two commonest
+  // verbs in Thai and both were untypable.
+  test("the glyphs the course was blocked on are reachable", () => {
+    for (const [key, thai] of [["6", "ู"], ["h", "็"], [";", "ซ"], ["p", "ญ"]]) {
+      const e = _tEntry(key, true);
+      assert.ok(e, `Shift+${key} maps to nothing`);
+      assert.equal(e.thai, thai, `Shift+${key} should type ${thai}`);
+    }
   });
 
   test("the three-row layout is a strict subset of the full one", () => {
