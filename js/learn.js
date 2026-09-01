@@ -102,8 +102,16 @@ function _unitQueue(unit, dueWords, audio = true) {
     // …and from batch 2 on, TYPE THE THAI on the Kedmanee keyboard —
     // decodable words only need taught letters, so review teaches typing
     if (unit.batch >= 1) {
-      const short = _shuffle(pool.filter(w => [...w[0]].length <= 4)).slice(0, 2);
-      for (const w of short) queue.push({ kind: "typeth", word: w });
+      // Only words this screen's keyboard can actually spell. It renders the
+      // three letter rows, not the number row, so ค ต จ ข ช ุ ึ are absent —
+      // and 138 of the 367 candidate targets needed one of those or a shifted
+      // glyph. "Type ดู" with ู on no key is not a hard question, it is an
+      // impossible one, and the card cannot be completed. The guard is
+      // typeof-ed because _unitQueue is vm-tested without tutor.js loaded.
+      const canType = typeof _tTypeable === "function" ? _tTypeable(_T_ROWS) : null;
+      const spellable = pool.filter(w =>
+        [...w[0]].length <= 4 && (!canType || [...w[0]].every(c => canType.has(c))));
+      for (const w of _shuffle(spellable).slice(0, 2)) queue.push({ kind: "typeth", word: w });
     }
     // cloze from the real corpus: the word's own example sentence, blanked
     const withEx = fresh.filter(w => typeof EXAMPLES === "object" && EXAMPLES[w[0]]);

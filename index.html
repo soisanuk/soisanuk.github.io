@@ -1451,6 +1451,7 @@ kbd.tut-key {
   line-height:1.15; min-height:96px; display:flex; align-items:center; justify-content:center;
 }
 #t-name { color:#a487b8; font:.78rem sans-serif; margin-top:.1rem; letter-spacing:.04em; }
+#t-life { color:#a487b8; font:.72rem sans-serif; text-align:center; min-height:1em; opacity:.8; }
 #t-kbd  { display:flex; flex-direction:column; gap:3px; width:100%; max-width:470px; }
 /* width:100% is load-bearing: .tkey uses flex:1 1 0, which needs a definite
    row width to divide. #game-kbd centres its rows (align-items:center), so
@@ -2684,7 +2685,13 @@ body.mobile #app-shell {
     <div id="tutor-modes">
       <button class="t-mbtn active" id="t-mbtn-con" onclick="_tSetMode('consonants')">Consonants</button>
       <button class="t-mbtn" id="t-mbtn-all" onclick="_tSetMode('all')">All Keys</button>
+      <button class="t-mbtn active" id="t-hint-btn" aria-pressed="true"
+              onclick="_tToggleHint()" title="Show the key before you answer">Hint: on</button>
     </div>
+    <!-- NOT .kb-hint: that class is for keyboard-shortcut text and is
+         display:none on touch, which hid the lifetime score on exactly the
+         devices someone practises on. -->
+    <div id="t-life"></div>
     <div id="tutor-prompt">
       <!-- lang so a screen reader pronounces the glyph as Thai, aria-live so a
            new target is announced at all: this screen never changes route, it
