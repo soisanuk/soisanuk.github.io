@@ -1451,10 +1451,13 @@ kbd.tut-key {
   line-height:1.15; min-height:96px; display:flex; align-items:center; justify-content:center;
 }
 #t-name { color:#a487b8; font:.78rem sans-serif; margin-top:.1rem; letter-spacing:.04em; }
-#t-kbd  { display:flex; flex-direction:column; gap:3px; width:100%; max-width:400px; }
-.t-row  { display:flex; justify-content:center; gap:3px; }
+#t-kbd  { display:flex; flex-direction:column; gap:3px; width:100%; max-width:470px; }
+/* width:100% is load-bearing: .tkey uses flex:1 1 0, which needs a definite
+   row width to divide. #game-kbd centres its rows (align-items:center), so
+   without this they shrink-to-fit and every key collapsed to 12px. */
+.t-row  { display:flex; justify-content:center; gap:3px; width:100%; }
 .tkey   {
-  flex:0 0 auto; width:36px; height:40px;
+  flex:1 1 0; min-width:0; width:auto; max-width:40px; height:40px;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   background:#12021f; border:1px solid #bf5fff22; border-radius:5px;
   position:relative; transition:box-shadow .1s, border-color .1s, background .1s; overflow:hidden;
@@ -2128,8 +2131,15 @@ body.mobile #tutor-prompt {
 }
 body.mobile #tutor-body { padding-bottom: .4rem; }
 
-/* Keyboard tutor: fill the phone width with finger-sized tappable keys */
-body.mobile .tkey    { width: calc((100vw - 44px) / 10); max-width: 40px; height: 48px; }
+/* Keyboard tutor: fill the phone width with finger-sized tappable keys.
+   Keys FLEX to fill their row rather than being sized by arithmetic. The old
+   rule was width: calc((100vw - 44px) / 10) — a divisor hardcoded to ten keys
+   per row. Adding บ ล ง ฝ made the top row twelve, and the outer keys landed at
+   x=-29 and x=419 on a 390px screen: off both edges and untappable. A
+   container-vs-viewport check missed it entirely, because #t-kbd stayed inside
+   the viewport while its children did not; the structural sweep caught it.
+   Flexing means the next key added cannot reintroduce the same bug. */
+body.mobile .tkey    { height: 48px; }
 body.mobile .tkey-th { font-size: 1.1rem; }
 body.mobile #t-char  { font-size: 60px; min-height: 76px; }
 
