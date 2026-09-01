@@ -614,7 +614,8 @@ describe("_contText", () => {
 // be completed, so the learner's only move is to skip a question the app
 // insisted they answer. Found by the 2026-09-01 typist round.
 test("every typed-Thai target can be spelled on the keyboard the course shows", () => {
-  const canType = _tTypeable(_T_ROWS);
+  // the card renders the FULL layout, so that is the set it may draw from
+  const canType = _tTypeable(_T_ROWS_FULL);
   let checked = 0;
   for (const unit of COURSE) {
     if (unit.batch === undefined || unit.batch < 1) continue;
