@@ -28,7 +28,7 @@ function _wcMap() {
 // ── script tooltip ────────────────────────────────────────────────────────
 const _stt = {
   el: null,
-  _get() { if (!this.el) this.el = document.getElementById("script-tooltip"); return this.el; },
+  _get() { if (!this.el) this.el = _wcRoot().getElementById("script-tooltip"); return this.el; },
   show(html, x, y) {
     const el = this._get();
     el.innerHTML = html;
@@ -115,7 +115,18 @@ function renderDecomposition(container, word) {
 }
 
 // ── word card stack ───────────────────────────────────────────────────────
-const _wcOverlay = () => document.getElementById("wc-overlay");
+// ── Where the mounts live ──────────────────────────────────────────────────
+// The card looks its mounts up by id, and document.getElementById does not
+// pierce a shadow root. A browser extension has to render inside one — a
+// content script that puts its styles in the host page leaks into their CSS
+// and inherits theirs — so the lookup root is injectable. Defaults to
+// `document`, which is exactly what the two host apps pass implicitly, so
+// nothing changes for them.
+let _wcRootNode = null;
+function _wcSetRoot(node) { _wcRootNode = node || null; }
+function _wcRoot() { return _wcRootNode || document; }
+
+const _wcOverlay = () => _wcRoot().getElementById("wc-overlay");
 
 function openWordModal(word) {
   const overlay = _wcOverlay();
@@ -208,10 +219,10 @@ function closeWordModal() {
 const _tt = {
   el: null,
   show(thai, rtgs, en, x, y) {
-    if (!this.el) this.el = document.getElementById("word-tooltip");
-    document.getElementById("tt-thai").textContent = thai;
-    document.getElementById("tt-rtgs").textContent = rtgs;
-    document.getElementById("tt-en").textContent   = en;
+    if (!this.el) this.el = _wcRoot().getElementById("word-tooltip");
+    _wcRoot().getElementById("tt-thai").textContent = thai;
+    _wcRoot().getElementById("tt-rtgs").textContent = rtgs;
+    _wcRoot().getElementById("tt-en").textContent   = en;
     this.el.style.display = "block";
     this._move(x, y);
   },
@@ -234,7 +245,7 @@ if (typeof document !== "undefined") {
 
 // ─── example sentence display ─────────────────────────────────────────────────
 function showExample(containerId, vocabWord) {
-  const el = document.getElementById(containerId);
+  const el = _wcRoot().getElementById(containerId);
   if (!el) return;
   const ex = (typeof EXAMPLES !== "undefined") && EXAMPLES[vocabWord];
   if (!ex) { el.style.display = "none"; return; }
