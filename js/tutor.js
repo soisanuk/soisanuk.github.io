@@ -31,6 +31,10 @@ const TUTOR_ALL = [
   { key:'m', thai:'ท', name:'Tho Thahan',     cat:'consonant' },
   { key:',', thai:'ม', name:'Mo Ma',          cat:'consonant' },
   { key:'.', thai:'ใ', name:'mai noi',        cat:'vowel'     },
+  { key:'[', thai:'บ', name:'Bo Baimai',      cat:'consonant' },
+  { key:']', thai:'ล', name:'Lo Ling',        cat:'consonant' },
+  { key:"'", thai:'ง', name:'Ngo Ngu',        cat:'consonant' },
+  { key:'/', thai:'ฝ', name:'Fo Fa',          cat:'consonant' },
 ];
 
 // Combining marks (diacritics) need a host consonant to display.
@@ -153,9 +157,9 @@ function _tType(eKey) {
 // ── Keyboard builder ───────────────────────────────────────────────────────
 
 const _T_ROWS = [
-  ['q','w','e','r','t','y','u','i','o','p'],
-  ['a','s','d','f','g','h','j','k','l',';'],
-  ['z','x','c','v','b','n','m',',','.'],
+  ['q','w','e','r','t','y','u','i','o','p','[',']'],
+  ['a','s','d','f','g','h','j','k','l',';',"'"],
+  ['z','x','c','v','b','n','m',',','.','/'],
 ];
 
 // Generic Kedmanee keyboard builder — also used by the Walking Street game
@@ -171,9 +175,19 @@ function _tBuildKbdInto(container, onKey) {
       const el = document.createElement('div');
       el.className = 'tkey';
       el.dataset.key = k;
+      // Tappable divs are invisible to assistive tech without this. Deliberately
+      // NOT tabbable: physical typing is this screen's primary input, and 29
+      // extra tab stops between the mode buttons and Quit would be a worse
+      // keyboard experience than none.
+      if (entry) {
+        el.setAttribute('role', 'button');
+        el.setAttribute('aria-label', `${entry.name} — key ${k}`);
+      } else {
+        el.setAttribute('aria-hidden', 'true');
+      }
       el.innerHTML =
         `<span class="tkey-lat">${k}</span>` +
-        `<span class="tkey-th">${entry ? entry.thai : ''}</span>`;
+        `<span class="tkey-th" lang="th">${entry ? entry.thai : ''}</span>`;
       el.addEventListener('click', () => onKey(k));
       rowEl.appendChild(el);
     }

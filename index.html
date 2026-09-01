@@ -2676,8 +2676,11 @@ body.mobile #app-shell {
       <button class="t-mbtn" id="t-mbtn-all" onclick="_tSetMode('all')">All Keys</button>
     </div>
     <div id="tutor-prompt">
-      <div id="t-char"></div>
-      <div id="t-name"></div>
+      <!-- lang so a screen reader pronounces the glyph as Thai, aria-live so a
+           new target is announced at all: this screen never changes route, it
+           just swaps one character, which is silent to assistive tech. -->
+      <div id="t-char" lang="th" aria-live="polite" aria-atomic="true"></div>
+      <div id="t-name" aria-live="polite"></div>
     </div>
     <div id="t-kbd"></div>
     <div id="tutor-stats">
