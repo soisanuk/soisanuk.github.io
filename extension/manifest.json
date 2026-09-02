@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Soi Sanuk Thai Reader",
+  "version": "0.1.0",
+  "description": "Hold Alt and point at any Thai on any page: word boundaries, meaning, romanisation, and why each syllable takes the tone it does.",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "run_at": "document_idle",
+      "all_frames": false,
+      "js": [
+        "vendor/data.js",
+        "vendor/examples.js",
+        "vendor/thai-script.js",
+        "vendor/tokeniser.js",
+        "vendor/wordcard.js",
+        "vendor/lexicon-th.js",
+        "vendor/segment.js",
+        "vendor/gloss-th.js",
+        "vendor/gloss.js",
+        "vendor/thai-dom.js",
+        "tts.js",
+        "shell-css.js",
+        "shell.js",
+        "content.js"
+      ]
+    }
+  ]
+}
