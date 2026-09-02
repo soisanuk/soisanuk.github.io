@@ -46,11 +46,21 @@ node spike/run.mjs
 # CI, which has no Playwright.
 node spike/shell-check.mjs
 
-# extension/shell.css is GENERATED from the card styles in web/index.html.
-# Re-run after editing any .wc-/.decomp-/.example-/tooltip rule there.
-node scripts/build-extension-css.mjs           # write
-node scripts/build-extension-css.mjs --check   # verify; exit 1 on drift
+# The browser extension is PACKAGED from the app, not authored separately:
+# extension/vendor/*.js are copies of web/js sources and extension/shell.css is
+# extracted from the card styles in web/index.html. Re-run after touching
+# either, and --check fails on drift (CI runs it).
+node scripts/build-extension.mjs           # write
+node scripts/build-extension.mjs --check   # verify; exit 1 on drift
+
+# Drive the real unpacked extension in Chrome: 10 checks that it looks words up
+# on Alt, leaves the host page's markup and links alone, and can be dismissed.
+node spike/ext-check.mjs
 ```
+
+To load it: `chrome://extensions` → Developer mode → Load unpacked → select
+`extension/`. Hold **Alt** and point at Thai text; Alt-click opens the card,
+Escape closes it. Without Alt held the extension does nothing at all.
 
 `tools/playtest-harness.mjs` drives the app for persona playtests — see
 [docs/persona-playtests.md](docs/persona-playtests.md). Both tools borrow

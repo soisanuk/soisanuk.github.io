@@ -505,3 +505,62 @@ nodes before segmenting would close most of that, and is the obvious next step.
 Whether to build it (§5). The spike says the hard part is cheap and the design
 is clear; it says nothing about the ~1,000-user market or the CC BY-SA
 obligation `gloss-th.js` carries into a distributed extension (§8).
+
+---
+
+## 11. Built (2026-09-02)
+
+`extension/` loads. `chrome://extensions` → Developer mode → Load unpacked →
+select `extension/`. Hold **Alt** and point at Thai; Alt-click opens the card,
+Escape closes it. Without Alt held it does nothing whatsoever.
+
+Verified by driving the real unpacked extension in Chrome —
+`node spike/ext-check.mjs`, 10 checks, plus `node spike/shell-check.mjs` for
+the shadow-root isolation.
+
+### It is packaged from the app, not written twice
+
+`extension/vendor/*.js` are copies of `web/js` sources and `extension/shell.css`
+is extracted from `web/index.html`, both by `scripts/build-extension.mjs`, with
+`--check` failing on drift. An extension that keeps its own copy of the tone
+engine is one that quietly stops matching the app it came from.
+
+Bundle: data.js, examples.js, thai-script.js, tokeniser.js, wordcard.js,
+lexicon-th.js, segment.js, gloss-th.js, gloss.js, thai-dom.js — about 1MB, no
+network at runtime.
+
+### The three things that made it work
+
+- **Nothing is written to the page.** `tdWordAt` finds the word under the
+  pointer and a `Range` gives its rectangle, which is drawn over as an overlay.
+  §10 measured why: wrapping words in spans reflows unspaced Thai.
+- **The card lives in a shadow root**, so its CSS and the page's cannot reach
+  each other. The host element carries `all: initial !important` — a shadow
+  root blocks selectors, not inheritance, and an ordinary inline declaration
+  loses to a page's `!important`.
+- **Alt is the entire activation surface.** No modifier, no behaviour: no
+  lookup, no highlight, and clicks reach the page untouched. An extension that
+  pops a dictionary on every hover makes the web worse everywhere it is
+  installed.
+
+### Notes for whoever touches it next
+
+- `app.js` is deliberately absent: `_wcMap()` falls back to building from
+  `WORDS`, so `WORD_MAP` is not needed. `EXAMPLES` is guarded too — but
+  examples.js is bundled anyway, because the example sentence is most of why
+  the card is worth opening.
+- `_tts` is NOT guarded in wordcard.js, so `extension/tts.js` is required
+  rather than optional; it is a small Web Speech implementation, since the
+  app's tts.js touches the DOM at load and is wired to a mute button that does
+  not exist here.
+- `segment.js` hardcodes `el.src = "js/lexicon-th.js"`. Declaring the lexicon
+  as a content script means `THAI_LEXICON` already exists and `_segLoad`
+  short-circuits, so that path is never taken. If the lexicon is ever loaded
+  lazily here it will need `chrome.runtime.getURL`.
+
+### Still not done
+
+`<all_urls>` with no options page, no per-site toggle, and no icons. Fine for
+loading unpacked; all three would be needed before anyone else installs it —
+along with the CC BY-SA attribution `gloss-th.js` carries (§8), which applies
+on distribution and not to a local unpacked load.
