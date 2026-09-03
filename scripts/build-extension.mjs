@@ -45,7 +45,16 @@ const BANNER = f => `// COPIED from ${f} by scripts/build-extension.mjs — do n
 
 function buildCss() {
   const html = readFileSync(ROOT + "web/index.html", "utf8");
-  const style = html.slice(html.indexOf("<style>") + 7, html.indexOf("</style>"));
+  // Comments MUST go before the rule scan. The regex below treats everything
+  // between one `}` and the next `{` as the selector, so a rule preceded by a
+  // comment carries that comment in its selector text and fails the prefix
+  // test. That silently dropped #wc-overlay, .wc-layer and #word-tooltip —
+  // every rule that happened to follow a comment — which is why the card
+  // rendered with no backgrounds and black text while its children looked
+  // fine. The rules it kept were exactly the ones sitting directly after
+  // another rule's closing brace.
+  const style = html.slice(html.indexOf("<style>") + 7, html.indexOf("</style>"))
+    .replace(/\/\*[\s\S]*?\*\//g, "");
   const rootBlock = style.match(/:root\s*\{[^}]*\}/);
   const rules = [];
   const re = /([^{}]+)\{([^{}]*)\}/g;
@@ -66,6 +75,19 @@ function buildCss() {
 ${rootBlock ? rootBlock[0].replace(":root", ":host") : ":host { }"}
 
 :host { all: initial; font-family: system-ui, -apple-system, sans-serif; }
+
+/* The base text colour has to go on the MOUNTS, not on :host.
+   shell.js gives the host an inline "all:initial!important" so the page's own
+   rules cannot inherit into the card — and an inline !important beats any
+   :host rule we write, including a colour. So a :host colour is silently
+   overridden and every element that does not name its own colour renders
+   black on the dark panel. Setting it on the mounts puts it inside the
+   boundary, where the host's inline style cannot reach. */
+#wc-overlay, #script-tooltip, #word-tooltip, #td-credit {
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+  line-height: 1.4;
+}
 
 ${rules.join("\n")}
 `;
