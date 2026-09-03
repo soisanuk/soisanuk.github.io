@@ -162,6 +162,46 @@ try {
   await page.mouse.click(box.x + 32, box.y + 12);
   await page.waitForTimeout(400);
 
+  // Reported from real use: hover a word with no gloss and nothing appeared;
+  // hover a glossed word and its tooltip appeared; go BACK to the first word
+  // and it still showed the SECOND word's tooltip. The tooltip was only ever
+  // shown, never hidden or updated, when a word had no gloss — so it kept
+  // whatever it last said while the pointer sat on something else entirely.
+  // Worse than showing nothing: it attributed one word's meaning to another.
+  await page.keyboard.up("Alt");
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(200);
+  const stale = await page.locator("#stale").boundingBox();
+  const readTip = () => page.evaluate(() => {
+    const sh = document.getElementById("soisanuk-reader-root").shadowRoot;
+    return { shown: getComputedStyle(sh.getElementById("word-tooltip")).display,
+             thai: sh.getElementById("tt-thai").textContent };
+  });
+  await page.keyboard.down("Alt");
+  const seq = [];
+  for (const dx of [10, 70, 10]) {                 // unglossed, glossed, back
+    await page.mouse.move(stale.x + dx, stale.y + stale.height / 2);
+    await page.waitForTimeout(200);
+    seq.push(await readTip());
+  }
+  await page.keyboard.up("Alt");
+  check("the tooltip names the word under the cursor, not the last one",
+    seq[0].thai === "สงค์" && seq[1].thai === "อากาศ" && seq[2].thai === "สงค์",
+    seq.map(s => s.thai || "(blank)").join(" -> "));
+  check("returning to a gloss-less word shows its own tooltip again",
+    seq[2].shown === "block" && seq[2].thai === seq[0].thai,
+    `${seq[2].shown} "${seq[2].thai}"`);
+
+  // Put back what this block consumed. The suite is one long session, so a
+  // check that closes the card owes the next one an open card — this is the
+  // third block to trip over that, and each time it fails the FOLLOWING
+  // checks, which reads as an unrelated regression.
+  await page.keyboard.down("Alt");
+  await page.mouse.move(box.x + 32, box.y + 12);
+  await page.waitForTimeout(200);
+  await page.mouse.click(box.x + 32, box.y + 12);
+  await page.waitForTimeout(400);
+
   // The card must actually be READABLE. The CSS extractor once dropped every
   // rule that happened to follow a comment — including #wc-overlay, .wc-layer
   // and #word-tooltip — so the card rendered with transparent backgrounds and
