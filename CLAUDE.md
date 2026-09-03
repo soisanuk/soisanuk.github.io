@@ -28,6 +28,7 @@ node scripts/sync-vendored.mjs --check  # verify sync; exit 1 on drift
 # the corpora change; the generated files ARE checked in.
 node scripts/build-lexicon.mjs <words_th.txt> <tnc_freq.txt>          # → web/js/lexicon-th.js  (CC0)
 node scripts/build-gloss.mjs <kaikki.org-dictionary-Thai.jsonl>       # → web/js/gloss-th.js    (CC BY-SA 3.0)
+node scripts/build-gloss.mjs --migrate       # vowel-length rules only, no dump needed
 node scripts/build-gloss-volubilis.mjs <VOLUBILIS Duo Max ENG.xlsx>  # → web/js/gloss-vol.js   (CC BY-SA 4.0)
 
 # Structural sweep of every screen, desktop + iPhone: JS errors, overflow,
