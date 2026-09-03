@@ -4,7 +4,7 @@
 // have caught it before commit.
 // Run with: node --test tests/js/
 
-import { test } from "node:test";
+import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
@@ -238,4 +238,57 @@ test("every vowel example romanisation matches the dictionary's", () => {
     assert.equal(strip(m[2]), strip(entry.roman),
       `${sym}: card romanises ${m[1]} as "${m[2]}", dictionary says "${entry.roman}"`);
   }
+});
+
+// ── Romanisation scheme: settled vowel forms ────────────────────────────────
+// A Thai-teacher review found the "long vowels doubled" rule applied
+// inconsistently: นอน noon but ทอง thong, เดิน dooen but เงิน ngoen, ร้อย rói
+// but น้อย nóoi, and สวย sǔay against a scheme that writes final ย as -i
+// everywhere else (◌าย 118:4, ◌อย 93:0, เ◌ย 43:0). Settled 2026-09-03 by the
+// documented table where it speaks and the majority where it does not, then
+// normalised in one mechanical pass proved from the Thai spelling. These pin
+// the decisions so the next hand-written row cannot quietly reopen them.
+describe("romanisation scheme", () => {
+  const strip = r => r.normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const rows = [
+    ...WORDS.map(w => ({ th: w[0], ro: w[1], where: "WORDS" })),
+    ...Object.entries(EXAMPLES).map(([k, v]) => ({ th: v[0], ro: v[1], where: "EXAMPLES " + k })),
+  ];
+
+  test("final ย is written -i, never -y (◌วย uai, ◌าย aai)", () => {
+    for (const r of rows) {
+      const p = strip(r.ro);
+      assert.doesNotMatch(p, /u?uay|aay/, `${r.where}: ${r.th} "${r.ro}"`);
+    }
+  });
+
+  test("เ◌ีย is ia, not iia", () => {
+    for (const r of rows) assert.doesNotMatch(strip(r.ro), /iia/, `${r.where}: ${r.th} "${r.ro}"`);
+  });
+
+  test("◌วย is uai, not uuai (◌ัว is ua; the long form is not doubled)", () => {
+    for (const r of rows) if (/วย/.test(r.th)) assert.doesNotMatch(strip(r.ro), /uuai/, `${r.where}: ${r.th} "${r.ro}"`);
+  });
+
+  test("◌อย is ooi — the long open o, doubled like every other long vowel", () => {
+    for (const r of rows) {
+      if (!/อย/.test(r.th)) continue;
+      // a single "oi" before a word boundary is the drifted form; "ooi" is right
+      assert.doesNotMatch(strip(r.ro), /(?<!o)oi(?![a-z])/, `${r.where}: ${r.th} "${r.ro}"`);
+    }
+  });
+
+  test("เ◌ิ + final is ooe (เงิน ngooen), open เ◌อ stays oe (เธอ thoe)", () => {
+    // Thai is unspaced, so "open เ◌อ" cannot be told from "เ◌อ + final" by
+    // regex in running text: เธอขึ้น reads as เ-ธ-อ-ข. A row is only judged
+    // when it carries ONE of the two spellings and none of the other anywhere,
+    // which keeps the assertion honest at the cost of skipping mixed rows.
+    const C = "[ก-ฮ]";
+    for (const r of rows) {
+      const hasClosed = new RegExp(`เ${C}ิ${C}`).test(r.th), hasAnyOpen = new RegExp(`เ${C}อ`).test(r.th);
+      // (?!i): เ◌ย is "oei" — เลย loei, เคย khoei — and contains "oe" by accident of spelling
+      if (hasClosed && !hasAnyOpen) assert.doesNotMatch(strip(r.ro), /(?<!o)oe(?!i)/, `${r.where}: ${r.th} "${r.ro}" — เ◌ิ+final wants ooe`);
+      if (hasAnyOpen && !hasClosed && r.where === "WORDS") assert.doesNotMatch(strip(r.ro), /ooe/, `${r.where}: ${r.th} "${r.ro}" — open เ◌อ wants oe`);
+    }
+  });
 });
