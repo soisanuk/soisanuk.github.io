@@ -37,6 +37,14 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import vm from "node:vm";
 
+// `--migrate` applies ONLY lengthenFromSpelling to the existing generated
+// gloss-th.js, without the 45MB dump. It exists because the length rules were
+// added after the file was last generated, and the dump is a download nobody
+// may have to hand — this reproduces exactly what a full regeneration would
+// write for those fields, using the same function, so it is a mechanical
+// migration rather than a hand edit of generated output.
+const MIGRATE = process.argv.includes("--migrate");
+
 // the tone engine + its data, for the cross-check below
 for (const f of ["data.js", "thai-script.js"])
   vm.runInThisContext(readFileSync(new URL(`../web/js/${f}`, import.meta.url), "utf8"), { filename: f });
@@ -84,6 +92,61 @@ function convertSyllable(part) {
 }
 const convertRoman = p => p.split(/([ -])/)
   .map(x => (x === " " || x === "-") ? x : convertSyllable(x)).join("");
+
+// ── Vowel length from the SPELLING, not from the input ─────────────────────
+// The VOWELS table above is length-aware (ɔɔ → oo, ɔ → o), but it can only be
+// as right as Wiktionary's Paiboon, and that is split: it gives หอย "hǒi" and
+// เงิน "ngoen" where the Thai spelling plainly shows a long vowel. We have the
+// Thai word, so the spelling overrules the input.
+//
+// This mirrors the 2026-09-03 normalisation of data.js/examples.js. Without it
+// a regeneration reintroduces exactly the drift that pass removed — and the
+// trap is that gloss-th.js is generated, so nobody would think to look at it.
+//
+// The guard is that pass's: only rewrite when the count of Thai vowel
+// occurrences equals the count of drifted romanisation forms. Thai is unspaced
+// and a romanisation cannot be aligned to it syllable by syllable, so a
+// mismatch means we cannot tell which occurrence is which — and a wrong "fix"
+// is worse than the drift. 110 entries corrected on the current dump, 4 skipped.
+const TH_C = "[\u0E01-\u0E2E]";
+const LENGTH_RULES = [
+  { thai: new RegExp("อย", "g"),                                bad: /(?<!o)o(?=i(?![a-z]))/g },
+  { thai: new RegExp("\u0E40" + TH_C + "\u0E34" + TH_C, "g"), bad: /(?<!o)o(?=e(?!i))/g },
+  // ◌อ+final is MONOSYLLABIC ONLY, and this is the interesting one.
+  // A syllable with no written vowel also romanises as a short o before its
+  // final — ปก pòk, ทด thót, พล phon — which is character-for-character what
+  // this rule's `bad` pattern looks for. In ปกครอง the Thai has one ◌อ (in
+  // ครอง, already "oo") and the romanisation has one bare o (in pòk), so the
+  // counts match and the guard waves through "pòok-khroong". Wrong syllable.
+  // Counting is not aligning. Restricted to one-syllable romanisations, where
+  // there is only one syllable it could possibly mean.
+  { thai: new RegExp(TH_C + "อ" + TH_C, "g"), bad: /(?<!o)o(?=(?:[bdgkmnptwjlr]|ng)(?!o))/g, monoOnly: true },
+];
+
+// Double the matched "o", keeping any tone mark on the first of the pair —
+// which is where the course writes it (nóoi, ngooen). Matching happens on a
+// mark-stripped view so a lookbehind cannot read a combining mark as a letter.
+function lengthenFromSpelling(thai, roman) {
+  let out = roman;
+  for (const R of LENGTH_RULES) {
+    if (R.monoOnly && /[- ]/.test(out)) continue;
+    const want = (thai.match(R.thai) || []).length;
+    if (!want) continue;
+    const units = [];                       // [base, marks] in order
+    for (const ch of out.normalize("NFD")) {
+      if (/[\u0300-\u036F]/.test(ch) && units.length) units[units.length - 1][1] += ch;
+      else units.push([ch, ""]);
+    }
+    const plain = units.map(u => u[0]).join("");
+    const at = [...plain.matchAll(R.bad)].map(m => m.index);
+    if (!at.length || at.length !== want) continue;   // cannot tell which is which
+    // append to the MARKS, not the base: joined as base+marks that puts the
+    // second o after the tone mark, giving nóoi rather than noói.
+    for (const i of at) units[i][1] += "o";
+    out = units.map(u => u[0] + u[1]).join("").normalize("NFC");
+  }
+  return out;
+}
 
 // tone name (thai-script.js vocabulary) → the diacritic the course writes
 const TONE_DIACRITIC = { mid: "", low: "\u0300", falling: "\u0302", high: "\u0301", rising: "\u030c" };
@@ -139,9 +202,31 @@ const OVERRIDES = {
   "กู": "(vulgar) I, me", "มึง": "(vulgar) you",
 };
 
+// ── --migrate: length rules only, over the existing generated file ─────────
+if (MIGRATE) {
+  const GEN = new URL("../web/js/gloss-th.js", import.meta.url);
+  const file = readFileSync(GEN, "utf8");
+  vm.runInThisContext(file);
+  let changed = 0;
+  const rows = THAI_GLOSS.split("\n").map(row => {
+    const [w, en, roman] = row.split("\t");
+    if (!roman) return row;
+    const fixed = lengthenFromSpelling(w, roman);
+    if (fixed !== roman) changed++;
+    return [w, en, fixed].join("\t");
+  });
+  // Rewrite only the data literal, leaving the header and its licence notice.
+  const out = file.replace(/var THAI_GLOSS = [\s\S]*?;\n$/, `var THAI_GLOSS = ${JSON.stringify(rows.join("\n"))};\n`);
+  if (out === file && changed) { console.error("could not locate the THAI_GLOSS literal"); process.exit(1); }
+  writeFileSync(GEN, out);
+  console.log(`migrated web/js/gloss-th.js — ${changed} romanisations lengthened from the Thai spelling`);
+  process.exit(0);
+}
+
 const [, , jsonlPath] = process.argv;
 if (!jsonlPath) {
   console.error("usage: node scripts/build-gloss.mjs <kaikki.org-dictionary-Thai.jsonl>");
+  console.error("       node scripts/build-gloss.mjs --migrate   (length rules only, no dump needed)");
   console.error("download it from https://kaikki.org/dictionary/Thai/ — see this file's header");
   process.exit(2);
 }
@@ -232,7 +317,10 @@ function romanFor(word) {
     for (const s of e.sounds || []) {
       if (!(s.raw_tags || []).includes("Paiboon")) continue;
       if (!s.roman || s.roman.endsWith("-")) continue;  // bound forms
-      const r = legaliseFinals(convertRoman(s.roman));
+      // Length from the spelling BEFORE the tone check: lengthening moves no
+      // tone mark, so the check sees the same tone either way — but running it
+      // after would mean a dropped entry never got corrected at all.
+      const r = lengthenFromSpelling(word, legaliseFinals(convertRoman(s.roman)));
       if (!r || /[^a-zA-Z\u0300-\u036f' -]/.test(r.normalize("NFD"))) return null; // unconverted IPA left over
       if (!toneAgrees(word, r)) { dropped++; return null; }
       return r;

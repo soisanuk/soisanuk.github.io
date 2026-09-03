@@ -284,3 +284,42 @@ describe("GLOSS_VOL", () => {
     assert.equal(thaiRoman("ความรู้สึก"), null, "romanisation must not come from this layer");
   });
 });
+
+// ── Generated romanisations follow the settled vowel scheme ─────────────────
+// build-gloss.mjs converts Wiktionary's Paiboon, and that input is split on
+// vowel length: it gave หอย "hǒi" and เงิน "ngoen" where the Thai spelling
+// plainly shows a long vowel. lengthenFromSpelling() now overrules the input
+// from the spelling, so a regeneration cannot reintroduce the drift the
+// 2026-09-03 pass removed from data.js and examples.js. These assert the
+// OUTPUT, so they hold whether the file was regenerated or migrated.
+describe("gloss-th.js vowel lengths", () => {
+  const rows = () => THAI_GLOSS.split("\n").map(r => r.split("\t")).filter(r => r[2]);
+  const strip = r => r.normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+  test("◌อย is romanised ooi, never a bare oi", () => {
+    for (const [w, , r] of rows()) {
+      if (!/อย/.test(w)) continue;
+      assert.doesNotMatch(strip(r), /(?<!o)oi(?![a-z])/, `${w} = "${r}"`);
+    }
+  });
+
+  test("เ◌ิ + final is romanised ooe", () => {
+    for (const [w, , r] of rows()) {
+      if (!/เ[ก-ฮ]ิ[ก-ฮ]/.test(w)) continue;
+      assert.doesNotMatch(strip(r), /(?<!o)oe(?!i)/, `${w} = "${r}"`);
+    }
+  });
+
+  // The guard that matters: a syllable with no written vowel romanises as a
+  // short o before its final, character-for-character like the ◌อ+final rule's
+  // target. Applying that rule across syllables turned ปกครอง into
+  // "pòok-khroong" — the wrong syllable, because counting is not aligning.
+  test("implicit-vowel syllables are left short", () => {
+    for (const [w, expect] of [["ปกครอง", "pòk-khroong"], ["ทดสอบ", "thót-sòop"],
+                               ["ส่งออก", "sòng-òok"], ["จอมพล", "joom-phon"]]) {
+      const row = rows().find(r => r[0] === w);
+      if (!row) continue;
+      assert.equal(row[2], expect, `${w} must not have its short syllable lengthened`);
+    }
+  });
+});
