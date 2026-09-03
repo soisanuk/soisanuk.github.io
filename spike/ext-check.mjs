@@ -114,6 +114,49 @@ try {
   });
   check("Alt+click opens the word card", card.open, card.text);
 
+  // A word the lexicon knows but the dictionary does not. บทสนทนา segments as
+  // one token and has no Wiktionary gloss; it used to get a highlight and no
+  // tooltip, which a reader cannot tell apart from "did not parse".
+  // The card from the previous check is still open and its overlay covers
+  // the page — close it, or the pointer lands on the overlay and this block
+  // measures nothing. (Yes, this exact mistake is in the last commit message.)
+  await page.keyboard.up("Alt");
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(250);
+  const ng = await page.locator("#nogloss").boundingBox();
+  await page.keyboard.down("Alt");
+  await page.mouse.move(ng.x + 20, ng.y + ng.height / 2);
+  await page.waitForTimeout(200);
+  const nogloss = await page.evaluate(() => {
+    const sh = document.getElementById("soisanuk-reader-root").shadowRoot;
+    const tt = sh.getElementById("word-tooltip");
+    return { shown: getComputedStyle(tt).display, thai: sh.getElementById("tt-thai").textContent,
+             en: sh.getElementById("tt-en").textContent };
+  });
+  check("a known word with no gloss still gets a tooltip", nogloss.shown === "block" && nogloss.thai === "บทสนทนา",
+    `${nogloss.shown} "${nogloss.thai}"`);
+  check("and the tooltip says why there is no meaning", /no meaning on file/.test(nogloss.en), nogloss.en);
+  await page.mouse.click(ng.x + 20, ng.y + ng.height / 2);
+  await page.waitForTimeout(400);
+  const ngCard = await page.evaluate(() => {
+    const sh = document.getElementById("soisanuk-reader-root").shadowRoot;
+    const ov = sh.getElementById("wc-overlay");
+    return { layers: ov.querySelectorAll(".wc-layer").length,
+             decomp: ov.querySelectorAll(".decomp-char").length,
+             text: ov.textContent.replace(/\s+/g, " ").trim().slice(0, 60) };
+  });
+  check("Alt-click on it opens the card with the letter breakdown", ngCard.layers > 0 && ngCard.decomp > 0,
+    `${ngCard.layers} layers, ${ngCard.decomp} decomp chars: ${ngCard.text}`);
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(250);
+  await page.keyboard.up("Alt");
+  // re-open the original card for the checks that follow
+  await page.keyboard.down("Alt");
+  await page.mouse.move(box.x + 32, box.y + 12);
+  await page.waitForTimeout(200);
+  await page.mouse.click(box.x + 32, box.y + 12);
+  await page.waitForTimeout(400);
+
   // The card must actually be READABLE. The CSS extractor once dropped every
   // rule that happened to follow a comment — including #wc-overlay, .wc-layer
   // and #word-tooltip — so the card rendered with transparent backgrounds and
