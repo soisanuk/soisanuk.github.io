@@ -52,6 +52,53 @@ function _glossLoad(cb) {
   document.head.appendChild(el);
 }
 
+// ── The gap-filler layer (gloss-vol.js, Volubilis, CC BY-SA 4.0) ───────────
+// Loaded the same lazy way, and consulted LAST. It covers 3,595 words no other
+// layer has, but its first row for a spelling is often a homograph — มา "moon",
+// เขา "mountain", ดี "gallbladder" — so it must never be in a position to
+// overwrite a gloss we already have. Where it carries genuinely distinct
+// senses the generated row already joins them with " · " and the card shows
+// both, rather than picking one.
+let _volMap = null;
+let _volLoading = null;
+function _volReady() { return _volMap !== null; }
+function _volInit(text) {
+  _volMap = new Map();
+  for (const line of String(text).split("\n")) {
+    const p = line.split("\t");
+    if (p.length === 2 && p[0]) _volMap.set(p[0], p[1]);
+  }
+  return _volMap.size;
+}
+function _volLoad(cb) {
+  if (_volReady()) return cb(true);
+  if (typeof GLOSS_VOL !== "undefined") { _volInit(GLOSS_VOL); return cb(true); }
+  if (_volLoading) { _volLoading.push(cb); return; }
+  _volLoading = [cb];
+  const done = ok => { const qs = _volLoading; _volLoading = null; qs.forEach(f => f(ok)); };
+  const el = document.createElement("script");
+  el.src = "js/gloss-vol.js";
+  el.onload = () => {
+    if (typeof GLOSS_VOL === "undefined") return done(false);
+    _volInit(GLOSS_VOL);
+    done(true);
+  };
+  el.onerror = () => done(false);
+  document.head.appendChild(el);
+}
+
+// Which source a word's gloss came from — "course", "extra", "wiktionary",
+// "volubilis", or null. The card uses it to credit the right dictionary:
+// Wiktionary is CC BY-SA 3.0 and Volubilis 4.0, and attribution is a condition
+// of both, so a screen showing a gloss has to name the one it actually used.
+function glossSource(word) {
+  if (typeof WORD_MAP !== "undefined" && WORD_MAP[word]) return "course";
+  if (_glossExtra(word)) return "extra";
+  if (_glossMap && _glossMap.get(word)) return "wiktionary";
+  if (_volMap && _volMap.get(word)) return "volubilis";
+  return null;
+}
+
 // The best available English for a word, or null.
 // The curriculum's own gloss ALWAYS wins: it is written for this course, it
 // matches the romanisation style, and it comes with example sentences. The
@@ -71,7 +118,8 @@ function thaiGloss(word) {
   const x = _glossExtra(word);
   if (x) return x[1];
   const e = _glossMap && _glossMap.get(word);
-  return e ? e.en : null;
+  if (e) return e.en;
+  return (_volMap && _volMap.get(word)) || null;
 }
 
 // The romanisation, same precedence: the course's hand-written one first, then

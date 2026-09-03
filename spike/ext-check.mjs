@@ -114,12 +114,12 @@ try {
   });
   check("Alt+click opens the word card", card.open, card.text);
 
-  // A word the lexicon knows but no gloss layer does. It WAS บทสนทนา, until
-  // that got a hand-curated entry in gloss-extra.js — the fixture has to keep
-  // ahead of the supplement. ความรู้สึก ("feeling") is lexicon rank 369 and
-  // has no gloss anywhere, which is the 38% gap in one word. A gloss-less word
-  // used to get a highlight and no tooltip, which a reader cannot tell apart
-  // from "did not parse".
+  // A word the lexicon knows but no gloss layer does. It has moved twice as
+  // the layers grew — บทสนทนา until gloss-extra.js covered it, ความรู้สึก
+  // until Volubilis did — which is the coverage improving, not the test
+  // rotting. เพียงใด is lexicon rank 1,802 and is in the 875 nothing reaches.
+  // A gloss-less word used to get a highlight and no tooltip, which a reader
+  // cannot tell apart from "did not parse".
   // The card from the previous check is still open and its overlay covers
   // the page — close it, or the pointer lands on the overlay and this block
   // measures nothing. (Yes, this exact mistake is in the last commit message.)
@@ -136,7 +136,7 @@ try {
     return { shown: getComputedStyle(tt).display, thai: sh.getElementById("tt-thai").textContent,
              en: sh.getElementById("tt-en").textContent };
   });
-  check("a known word with no gloss still gets a tooltip", nogloss.shown === "block" && nogloss.thai === "ความรู้สึก",
+  check("a known word with no gloss still gets a tooltip", nogloss.shown === "block" && nogloss.thai === "เพียงใด",
     `${nogloss.shown} "${nogloss.thai}"`);
   check("and the tooltip says why there is no meaning", /no meaning on file/.test(nogloss.en), nogloss.en);
   await page.mouse.click(ng.x + 20, ng.y + ng.height / 2);
