@@ -555,6 +555,19 @@ network at runtime.
   pops a dictionary on every hover makes the web worse everywhere it is
   installed.
 
+### Tone colour, and where it can honestly go
+
+The app paints Paste Text and the Reader by tone. The extension cannot do that
+to somebody else's page: repainting text means wrapping words in spans, which
+is the thing §10 measured as reflowing unspaced Thai. So the tone goes on the
+surfaces that are ours — the highlight drawn over the word, and the tooltip's
+headword, which was otherwise always saffron and said nothing.
+
+`toneOfWord` (curriculum.js, bundled for that one function) abstains on
+anything whose romanisation shows more than one syllable, and the extension
+abstains with it: วันนี้ and อากาศ stay the default pink rather than being
+painted a colour that would be false for half the word. Same rule as the app.
+
 ### Notes for whoever touches it next
 
 - `app.js` is deliberately absent: `_wcMap()` falls back to building from

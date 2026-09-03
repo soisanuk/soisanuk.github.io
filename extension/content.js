@@ -74,15 +74,37 @@ function _tdCredit(shadow) {
   return el;
 }
 
-function _tdHighlight(rect) {
+// The tone a word carries, or null when it cannot be proven. toneOfWord
+// (curriculum.js) abstains on anything whose romanisation shows more than one
+// syllable, because painting a two-syllable word one colour states something
+// false about at least half of it. The app abstains the same way.
+function _tdTone(word) {
+  return (typeof toneOfWord === "function") ? toneOfWord(word) : null;
+}
+
+function _tdHighlight(rect, tone) {
   const hl = _tdInit().getElementById(TD_HL_ID);
   if (!hl) return;
   if (!rect) { hl.style.display = "none"; return; }
+  // Tone colour goes on OUR highlight, not on the page's text. Repainting the
+  // page would mean wrapping words in spans, which reflows unspaced Thai (§10)
+  // — so the tone shows in the box we draw over the word instead.
+  const c = (tone && typeof TONE_COLORS === "object" && TONE_COLORS[tone]) || "#ff1493";
+  hl.style.background = _tdTint(c, 0.20);
+  hl.style.outlineColor = _tdTint(c, 0.70);
   hl.style.display = "block";
   hl.style.left = rect.left + "px";
   hl.style.top = rect.top + "px";
   hl.style.width = rect.width + "px";
   hl.style.height = rect.height + "px";
+}
+
+// #rrggbb -> rgba(). The tone palette is hex; the highlight needs alpha.
+function _tdTint(hex, alpha) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex).trim());
+  if (!m) return `rgba(255,20,147,${alpha})`;
+  const n = parseInt(m[1], 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
 }
 
 function _tdHide() {
@@ -115,13 +137,19 @@ function _tdLook(e) {
 function _tdOnMove(e) {
   const hit = _tdLook(e);
   if (!hit) return;
-  _tdHighlight(hit.rect);
+  const tone = hit.fragment ? null : _tdTone(hit.word);
+  _tdHighlight(hit.rect, tone);
   const key = hit.word + "|" + hit.rect.left + "," + hit.rect.top;
   if (key === _tdLast) return;
   _tdLast = key;
   const [thai, roman, gloss] = _tdEntry(hit.word, hit.fragment);
   if (typeof _tt === "object" && _tt && (roman || gloss)) {
     _tt.show(thai, roman, gloss, e.clientX, e.clientY);
+    // Paint the tooltip's headword by tone. It is otherwise always saffron,
+    // which says nothing; when the tone cannot be proven it stays saffron,
+    // which is the honest answer rather than a guess.
+    const th = _tdInit().getElementById("tt-thai");
+    if (th) th.style.color = (tone && typeof TONE_COLORS === "object" && TONE_COLORS[tone]) || "";
   }
 }
 
