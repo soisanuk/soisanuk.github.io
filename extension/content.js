@@ -138,8 +138,9 @@ function _tdOnMove(e) {
   const hit = _tdLook(e);
   if (!hit) return;
   const tone = hit.fragment ? null : _tdTone(hit.word);
+  // rect is null inside a form field — no Range, so nothing to draw.
   _tdHighlight(hit.rect, tone);
-  const key = hit.word + "|" + hit.rect.left + "," + hit.rect.top;
+  const key = hit.word + "|" + (hit.rect ? hit.rect.left + "," + hit.rect.top : "field");
   if (key === _tdLast) return;
   _tdLast = key;
   const [thai, roman, gloss] = _tdEntry(hit.word, hit.fragment);
@@ -153,7 +154,17 @@ function _tdOnMove(e) {
     const note = hit.fragment ? "part of a longer word — meaning not shown"
                : (roman || gloss) ? gloss
                : "no meaning on file · Alt-click for letters and tone";
-    _tt.show(thai, roman, note, e.clientX, e.clientY);
+    // NAME the tone beside the romanisation. The highlight and the headword
+    // are painted by tone, and a colour nobody has been given a key to is
+    // decoration rather than information — the app's own screens ship a
+    // legend for exactly this palette (_readerLegend in reader.js), and the
+    // extension has nowhere to put one. Saying "falling" makes the colour
+    // teach itself, and it appears only when the tone is proven, so it never
+    // asserts a tone for a multi-syllable word.
+    const label = tone && typeof TONE_LABELS === "object" ? TONE_LABELS[tone] : null;
+    const line = label ? (roman ? roman + " · " + label.toLowerCase() + " tone"
+                                : label.toLowerCase() + " tone") : roman;
+    _tt.show(thai, line, note, e.clientX, e.clientY);
     // Paint the tooltip's headword by tone. It is otherwise always saffron,
     // which says nothing; when the tone cannot be proven it stays saffron,
     // which is the honest answer rather than a guess.
