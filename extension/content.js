@@ -30,7 +30,48 @@ function _tdInit() {
       "transition:opacity .08s;z-index:1";
     shadow.appendChild(hl);
   }
+  _tdCredit(shadow);
   return shadow;
+}
+
+// The attribution the glosses are used under.
+//
+// gloss-th.js is derived from English Wiktionary and carries CC BY-SA 3.0:
+// attribution is a condition of use, not a courtesy. The trainer satisfies it
+// with a credit line on the Paste Text screen; this is the extension's
+// equivalent, and without it the extension is the one place the obligation
+// goes unmet the moment it reaches anyone else.
+//
+// Shown with the card rather than permanently: a credit stapled to every page
+// you browse would be its own kind of rude, and the obligation attaches to
+// where the glosses are actually displayed.
+function _tdCredit(shadow) {
+  let el = shadow.getElementById("td-credit");
+  if (el) return el;
+  el = document.createElement("div");
+  el.id = "td-credit";
+  el.style.cssText =
+    "position:fixed;left:0;right:0;bottom:0;display:none;z-index:2;" +
+    "padding:6px 10px;text-align:center;font:11px system-ui,sans-serif;" +
+    "color:#a487b8;background:rgba(13,0,21,0.92);border-top:1px solid #43155e";
+  el.innerHTML =
+    'Meanings from <a href="https://en.wiktionary.org/" target="_blank" rel="noopener noreferrer" ' +
+    'style="color:#00cc66">Wiktionary</a>, used under <a ' +
+    'href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer" ' +
+    'style="color:#00cc66">CC BY-SA 3.0</a>.';
+  shadow.appendChild(el);
+
+  // Toggle with the card. The ✕ closes it without going through any of our
+  // handlers, so watching the overlay is the only way to stay in step.
+  const overlay = shadow.getElementById("wc-overlay");
+  if (overlay && typeof MutationObserver === "function") {
+    const sync = () => {
+      el.style.display = overlay.querySelector(".wc-layer") ? "block" : "none";
+    };
+    new MutationObserver(sync).observe(overlay, { childList: true, subtree: true });
+    sync();
+  }
+  return el;
 }
 
 function _tdHighlight(rect) {
