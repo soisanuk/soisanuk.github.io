@@ -143,8 +143,17 @@ function _tdOnMove(e) {
   if (key === _tdLast) return;
   _tdLast = key;
   const [thai, roman, gloss] = _tdEntry(hit.word, hit.fragment);
-  if (typeof _tt === "object" && _tt && (roman || gloss)) {
-    _tt.show(thai, roman, gloss, e.clientX, e.clientY);
+  if (typeof _tt === "object" && _tt) {
+    // A known word with no dictionary entry used to get NO tooltip at all —
+    // the highlight drew and nothing else happened, which is indistinguishable
+    // from "did not parse". บทสนทนา is in the lexicon and segments cleanly;
+    // Wiktionary simply has no gloss for it. Say so, and say what Alt-click
+    // still offers, because the letters and the tone rule come from the
+    // spelling and work for every word the dictionary has never heard of.
+    const note = hit.fragment ? "part of a longer word — meaning not shown"
+               : (roman || gloss) ? gloss
+               : "no meaning on file · Alt-click for letters and tone";
+    _tt.show(thai, roman, note, e.clientX, e.clientY);
     // Paint the tooltip's headword by tone. It is otherwise always saffron,
     // which says nothing; when the tone cannot be proven it stays saffron,
     // which is the honest answer rather than a guess.
