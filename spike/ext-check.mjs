@@ -202,6 +202,63 @@ try {
   await page.mouse.click(box.x + 32, box.y + 12);
   await page.waitForTimeout(400);
 
+  // The tone colours need a key. The highlight and the headword are painted
+  // by tone, and the app's own screens ship a legend for that palette
+  // (_readerLegend) which the extension has nowhere to put — so the tooltip
+  // NAMES the tone instead, and the colour teaches itself.
+  await page.keyboard.up("Alt");
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(200);
+  const mono = await page.locator("#mono").boundingBox();
+  await page.keyboard.down("Alt");
+  await page.mouse.move(mono.x + 8, mono.y + mono.height / 2);
+  await page.waitForTimeout(220);
+  const named = await page.evaluate(() => {
+    const sh = document.getElementById("soisanuk-reader-root").shadowRoot;
+    return { thai: sh.getElementById("tt-thai").textContent,
+             rtgs: sh.getElementById("tt-rtgs").textContent,
+             colour: getComputedStyle(sh.getElementById("tt-thai")).color };
+  });
+  check("the tooltip names the tone, so the colour has a key",
+    /falling tone/.test(named.rtgs) && named.thai === "มาก", `${named.thai} "${named.rtgs}"`);
+  check("and the name matches the colour it is painted in",
+    /255, 107, 107/.test(named.colour), named.colour);
+
+  // Thai inside a form field. The caret API never yields a text node there —
+  // it hands back the INPUT itself plus an offset into .value — so a search
+  // box or a compose box used to be invisible to the tool.
+  const field = await page.locator("#field").boundingBox();
+  await page.mouse.move(field.x + 20, field.y + field.height / 2);
+  await page.waitForTimeout(220);
+  const inField = await page.evaluate(() => {
+    const sh = document.getElementById("soisanuk-reader-root").shadowRoot;
+    return { thai: sh.getElementById("tt-thai").textContent,
+             tip: getComputedStyle(sh.getElementById("word-tooltip")).display,
+             hl: getComputedStyle(sh.getElementById("td-highlight")).display };
+  });
+  check("Thai inside an <input> is looked up", inField.tip === "block" && inField.thai === "มาก",
+    `${inField.tip} "${inField.thai}"`);
+  check("no highlight box in a field (a Range cannot be made there)",
+    inField.hl === "none", inField.hl);
+
+  // and a password field is never read, whatever it contains
+  const pw = await page.locator("#pw").boundingBox();
+  await page.mouse.move(pw.x + 20, pw.y + pw.height / 2);
+  await page.waitForTimeout(220);
+  const pwTip = await page.evaluate(() => {
+    const sh = document.getElementById("soisanuk-reader-root").shadowRoot;
+    return getComputedStyle(sh.getElementById("word-tooltip")).display;
+  });
+  check("a password field is never read", pwTip === "none", pwTip);
+  await page.keyboard.up("Alt");
+
+  // restore the open card for the checks that follow
+  await page.keyboard.down("Alt");
+  await page.mouse.move(box.x + 32, box.y + 12);
+  await page.waitForTimeout(200);
+  await page.mouse.click(box.x + 32, box.y + 12);
+  await page.waitForTimeout(400);
+
   // The card must actually be READABLE. The CSS extractor once dropped every
   // rule that happened to follow a comment — including #wc-overlay, .wc-layer
   // and #word-tooltip — so the card rendered with transparent backgrounds and

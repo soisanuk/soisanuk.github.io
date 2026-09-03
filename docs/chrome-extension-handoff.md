@@ -668,6 +668,23 @@ already does, since WORD_MAP sits above every dictionary layer.
   like the kaikki dump), and 875 words would still have no gloss — the tail is
   the tail.
 
+### Two things real use turned up (2026-09-04)
+
+**Form fields were invisible.** `caretPositionFromPoint` never yields a text
+node inside an `<input>` or `<textarea>` — it hands back the ELEMENT plus a
+perfectly good offset into `.value`. Reading that makes a search box or a
+compose box lookupable; it stays read-only, so the field is untouched. There is
+no highlight there, because a `Range` cannot be made inside a field's value —
+the tooltip and the card carry the meaning instead. Password fields, and input
+types that do not hold prose, are never read.
+
+**The tone colours had no key.** The highlight and the tooltip's headword are
+painted by tone, and a colour nobody has been given a legend for is decoration.
+The app's own screens ship one (`_readerLegend`, reader.js) and the extension
+has nowhere to put it, so the tooltip NAMES the tone beside the romanisation —
+"mâak · falling tone", in the same red the highlight uses. It appears only when
+the tone is proven, so a multi-syllable word still shows no colour and no name.
+
 ### Notes for whoever touches it next
 
 - `app.js` is deliberately absent: `_wcMap()` falls back to building from

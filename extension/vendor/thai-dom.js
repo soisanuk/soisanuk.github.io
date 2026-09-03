@@ -212,40 +212,59 @@ if (typeof module === "object" && module.exports) module.exports.tdWire = tdWire
 // for a re-render to destroy, and contenteditable becomes readable rather than
 // off-limits. The cost is that hover/tap must be fast, which is why this
 // segments ONE text node on demand rather than the document.
+// The token containing `offset` in `text`, or null. Shared by both callers so
+// a form field and a paragraph cannot drift apart in how they segment.
+function _tdTokenAt(text, offset) {
+  if (!text || !TD_THAI.test(text)) return null;
+  let s = offset, e = offset;
+  while (s > 0 && TD_THAI.test(text[s - 1])) s--;
+  while (e < text.length && TD_THAI.test(text[e])) e++;
+  if (e <= s) return null;
+  const toks = (typeof segmentThai === "function") ? segmentThai(text.slice(s, e)) : [];
+  let at = s;
+  for (const t of toks) {
+    const start = at, end = at + t.text.length;
+    if (offset >= start && offset < end) return t.known ? { tok: t, start, end } : null;
+    at = end;
+  }
+  return null;
+}
+
 function tdWordAt(x, y) {
   const pos = document.caretPositionFromPoint
     ? document.caretPositionFromPoint(x, y)
     : (() => { const r = document.caretRangeFromPoint(x, y);
                return r && { offsetNode: r.startContainer, offset: r.startOffset }; })();
-  if (!pos || !pos.offsetNode || pos.offsetNode.nodeType !== 3) return null;
+  if (!pos || !pos.offsetNode) return null;
   const node = pos.offsetNode;
-  const text = node.nodeValue;
-  if (!TD_THAI.test(text)) return null;
 
-  // the Thai run containing the caret
-  let s = pos.offset, e = pos.offset;
-  while (s > 0 && TD_THAI.test(text[s - 1])) s--;
-  while (e < text.length && TD_THAI.test(text[e])) e++;
-  if (e <= s) return null;
-
-  const run = text.slice(s, e);
-  const toks = (typeof segmentThai === "function") ? segmentThai(run) : [];
-  let at = s;
-  for (const t of toks) {
-    const start = at, end = at + t.text.length;
-    if (pos.offset >= start && pos.offset < end) {
-      if (!t.known) return null;
-      // A Range gives the on-screen box without touching the document, so a
-      // highlight can be drawn as an overlay rather than as markup.
-      const r = document.createRange();
-      r.setStart(node, start); r.setEnd(node, end);
-      return { word: t.text, fragment: !!t.fragment, rect: r.getBoundingClientRect(),
-               splitLeft: start === 0 && !!tdAdjacentText(node, -1) && TD_THAI.test((tdAdjacentText(node, -1) || " ").slice(-1)),
-               splitRight: end === text.length && !!tdAdjacentText(node, 1) && TD_THAI.test((tdAdjacentText(node, 1) || " ")[0]) };
-    }
-    at = end;
+  // A form field never yields a text node — the caret API hands back the
+  // INPUT or TEXTAREA element itself, with a perfectly good offset into its
+  // .value. Reading that is what makes Thai in a search box or a compose box
+  // lookupable at all; it stays read-only, so the field is untouched.
+  //
+  // No rect: a Range cannot be made inside a field's value, so there is no
+  // box to draw. The tooltip and the card still work, which is the part that
+  // carries the meaning.
+  if (node.nodeType === 1 && (node.nodeName === "INPUT" || node.nodeName === "TEXTAREA")) {
+    // Never read a password, and only read the field types that hold prose.
+    const t = (node.type || "text").toLowerCase();
+    if (node.nodeName === "INPUT" && !["text", "search", "url", "email", "tel", ""].includes(t)) return null;
+    const hit = _tdTokenAt(node.value, pos.offset);
+    return hit ? { word: hit.tok.text, fragment: !!hit.tok.fragment, rect: null, inField: true } : null;
   }
-  return null;
+
+  if (node.nodeType !== 3) return null;
+  const text = node.nodeValue;
+  const hit = _tdTokenAt(text, pos.offset);
+  if (!hit) return null;
+  // A Range gives the on-screen box without touching the document, so a
+  // highlight can be drawn as an overlay rather than as markup.
+  const r = document.createRange();
+  r.setStart(node, hit.start); r.setEnd(node, hit.end);
+  return { word: hit.tok.text, fragment: !!hit.tok.fragment, rect: r.getBoundingClientRect(),
+           splitLeft: hit.start === 0 && !!tdAdjacentText(node, -1) && TD_THAI.test((tdAdjacentText(node, -1) || " ").slice(-1)),
+           splitRight: hit.end === text.length && !!tdAdjacentText(node, 1) && TD_THAI.test((tdAdjacentText(node, 1) || " ")[0]) };
 }
 
 if (typeof module === "object" && module.exports) module.exports.tdWordAt = tdWordAt;
