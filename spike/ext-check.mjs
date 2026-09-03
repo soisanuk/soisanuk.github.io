@@ -87,6 +87,21 @@ try {
              text: (ov.textContent || "").replace(/\s+/g, " ").trim().slice(0, 70) };
   });
   check("Alt+click opens the word card", card.open, card.text);
+
+  // CC BY-SA 3.0 attribution is a condition of using the Wiktionary glosses,
+  // and the extension is where it would otherwise go unmet.
+  const credit = await page.evaluate(() => {
+    const sh = document.getElementById("soisanuk-reader-root").shadowRoot;
+    const c = sh.getElementById("td-credit");
+    return c ? { shown: getComputedStyle(c).display, text: c.textContent.replace(/\s+/g, " ").trim(),
+                 links: [...c.querySelectorAll("a")].map(a => a.href) } : null;
+  });
+  check("the card credits Wiktionary and its licence",
+    credit && credit.shown !== "none" && /Wiktionary/.test(credit.text) && /CC BY-SA 3\.0/.test(credit.text),
+    credit ? credit.text.slice(0, 60) : "no credit element");
+  check("the credit links to the licence deed",
+    credit && credit.links.some(h => /creativecommons\.org\/licenses\/by-sa\/3\.0/.test(h)),
+    credit ? credit.links.join(" ") : "");
   await page.keyboard.up("Alt");
 
   // Escape must close it — the card sits over someone else's page, so a modal
@@ -98,6 +113,12 @@ try {
     return sh.getElementById("wc-overlay").querySelectorAll(".wc-layer").length;
   });
   check("Escape closes the card", closed === 0, `${closed} layers left`);
+
+  const creditGone = await page.evaluate(() => {
+    const sh = document.getElementById("soisanuk-reader-root").shadowRoot;
+    return getComputedStyle(sh.getElementById("td-credit")).display;
+  });
+  check("the credit goes with the card", creditGone === "none", `display: ${creditGone}`);
 
   // the page itself must be untouched throughout
   const after = await page.evaluate(() => ({ text: document.body.innerText, html: document.body.innerHTML.length }));

@@ -573,6 +573,19 @@ network at runtime.
 ### Still not done
 
 `<all_urls>` with no options page, no per-site toggle, and no icons. Fine for
-loading unpacked; all three would be needed before anyone else installs it —
-along with the CC BY-SA attribution `gloss-th.js` carries (§8), which applies
-on distribution and not to a local unpacked load.
+loading unpacked; all three would be needed before anyone else installs it.
+
+The CC BY-SA attribution `gloss-th.js` carries (§8) is **done** — the card shows
+"Meanings from Wiktionary, used under CC BY-SA 3.0" with both links, appearing
+and disappearing with the card rather than sitting permanently on every page you
+browse. It was added before the extension went anywhere, on the grounds that it
+is a two-minute change now and an awkward thing to remember later.
+
+Worth recording for whoever revisits the gloss source: **Volubilis**
+(belisan-volubilis.blogspot.com, ~105,000 Thai-English entries with romanised
+Thai, actively maintained) is **CC BY-SA 4.0** — confirmed on its About page. It
+is not a way out of share-alike, but it is a far bigger dictionary at the same
+licence cost, and switching to it would leave a single BY-SA 4.0 source instead
+of BY-SA 3.0. The deciding measurement — how much of our 12,241-word lexicon it
+covers against Wiktionary's 61.8% — has not been made. LEXiTRON is not an
+option: see §8.
