@@ -615,15 +615,53 @@ tone mark at all** — of 4,941 checked, 4,814 are unmarked and only 18 of the
 marked ones agree with our tone engine. Take the glosses; keep deriving
 romanisation from `thai-script.js` and the Wiktionary Paiboon layer.
 
+### Cross-referenced against what we already ship (2026-09-03)
+
+Meanings compared by SENSE OVERLAP, not string equality — both sides are
+`;`-separated sense lists, so "to buy" vs "buy; purchase" is agreement. Score
+is containment over content words, stop-words and parentheticals stripped.
+
+| | shared | strong (≥50%) | partial | **no shared word** |
+|---|---|---|---|---|
+| course words (hand-written) | 846 | 714 (84.4%) | 18 | **114 (13.5%)** |
+| Wiktionary layer | 6,520 | 4,613 (70.8%) | 642 | **1,265 (19.4%)** |
+
+**The disagreements are mostly one systematic thing: Volubilis's FIRST row for
+a spelling is often a homograph, not the common word.** มา row 0 is "moon", not
+"come"; เขา is "mount; mountain", not "he"; ดี is "gallbladder", not "good";
+ต่อ is "wasp". 3,162 of our lexicon's headwords have more than one Volubilis
+row, and taking row 0 blindly disagrees with us on 1,460 of them — but for 513
+of those, a LATER row for the same word agrees (ที่ best-of-6 is "who; which;
+that", ของ best-of-3 is "of; belonging to").
+
+So the builder must **not** take the first row. It has to pick among a
+headword's rows, and the only sound chooser we have is our own existing gloss:
+prefer the row that overlaps it, fall back to row 0 only when nothing is known.
+That makes Volubilis excellent at FILLING GAPS and unsafe as a REPLACEMENT —
+exactly inverting the plan below.
+
+The 947 with no agreeing row on any line are a genuine editorial split, not a
+bug on either side: Volubilis gives the concrete noun (พระ "Buddhist monk",
+รูป "photo", นาย "master"), Wiktionary the grammatical or abstract sense
+("god, deity", "outward appearance", "man"). Both are true; they are different
+dictionaries. 23 of the 114 course-word disagreements are top-100 words, which
+is precisely where the hand-written course gloss should keep winning — and it
+already does, since WORD_MAP sits above every dictionary layer.
+
 ### The plan, now that it is measured
 
-- **Volubilis becomes the primary gloss layer** (`gloss-vol.js`), built by a
-  `build-gloss-volubilis.mjs` that mirrors `build-gloss.mjs`: parse the OOXML,
-  keep the first senses, drop the romanisation column entirely.
-- **Wiktionary stays beneath it** rather than being dropped, for the 323 words
-  Volubilis lacks. Both are BY-SA; 3.0 and 4.0 coexist in the stack because
-  each file keeps its own notice, and nothing merges them into one database.
-  Attribution on the card gains a second line.
+- **Volubilis becomes a GAP-FILLER, not the primary layer** — revised after the
+  cross-reference above. `gloss-vol.js` sits BELOW Wiktionary, consulted only
+  when nothing else has the word. That is where its 3,595 new words live, and
+  it never gets to overwrite an existing gloss with a homograph.
+- **Row selection is the builder's real work.** For a word we already gloss,
+  pick the Volubilis row that overlaps our gloss (this is what rescues ที่,
+  ของ, มา). For a word we do not, take row 0 and accept the homograph risk —
+  which is bounded, because a word with no gloss anywhere is usually rare
+  enough to have only one row.
+- **Attribution on the card gains a second line.** Both sources are BY-SA; 3.0
+  and 4.0 coexist in the stack because each file keeps its own notice and
+  nothing merges them into one database.
 - **The supplement stays on top**, for the ~875 words neither has and for
   overriding either.
 - **Not done here:** the download is a manual step (the file is not checked in,
