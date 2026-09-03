@@ -24,6 +24,7 @@ const url = `http://127.0.0.1:${server.address().port}/`;
 
 const ctx = await chromium.launchPersistentContext(mkdtempSync(join(tmpdir(), "td-")), {
   headless: true,
+  acceptDownloads: true,   // or a download started by Alt+click cannot be observed
   channel: "chromium",
   args: [`--disable-extensions-except=${EXT}`, `--load-extension=${EXT}`],
 });
@@ -116,7 +117,8 @@ try {
 
   const creditGone = await page.evaluate(() => {
     const sh = document.getElementById("soisanuk-reader-root").shadowRoot;
-    return getComputedStyle(sh.getElementById("td-credit")).display;
+    const c = sh.getElementById("td-credit");
+    return c ? getComputedStyle(c).display : "ABSENT";
   });
   check("the credit goes with the card", creditGone === "none", `display: ${creditGone}`);
 
@@ -124,6 +126,32 @@ try {
   const after = await page.evaluate(() => ({ text: document.body.innerText, html: document.body.innerHTML.length }));
   check("host page text unchanged", before.text === after.text);
   check("host page markup unchanged", before.html === after.html, `${before.html} -> ${after.html}`);
+
+  // macOS puts Alt on the Option key, where Chrome already means something by
+  // it: Option+click on a link is "download linked file". Our handler has to
+  // suppress that as well as navigation, or looking up a word inside a link
+  // would quietly drop files in ~/Downloads.
+  const downloads = [];
+  page.on("download", d => downloads.push(d.suggestedFilename()));
+  const linkBox = await page.locator("#thelink").boundingBox();
+  const urlBeforeAlt = page.url();
+  await page.keyboard.down("Alt");
+  await page.mouse.move(linkBox.x + 20, linkBox.y + linkBox.height / 2);
+  await page.waitForTimeout(200);
+  await page.mouse.click(linkBox.x + 20, linkBox.y + linkBox.height / 2);
+  await page.waitForTimeout(600);
+  await page.keyboard.up("Alt");
+  const altOnLink = await page.evaluate(() => {
+    const sh = document.getElementById("soisanuk-reader-root").shadowRoot;
+    return sh.getElementById("wc-overlay").querySelectorAll(".wc-layer").length;
+  });
+  check("Alt+click on a Thai LINK opens the card", altOnLink > 0, `${altOnLink} layers`);
+  check("Alt+click on a link does not navigate", page.url() === urlBeforeAlt,
+    page.url() === urlBeforeAlt ? "url unchanged" : "NAVIGATED");
+  check("Alt+click on a link starts no download", downloads.length === 0,
+    downloads.length ? downloads.join(", ") : "none");
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(250);
 
   // an ordinary click on a link still navigates
   const urlBefore = page.url();
