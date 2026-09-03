@@ -584,22 +584,51 @@ Three layers now, in precedence order (`gloss.js`):
    checked against the engine by `tests/js/gloss.test.js`.
 3. **`gloss-th.js`** — the Wiktionary layer, CC BY-SA 3.0, generated.
 
-The supplement fixes words one at a time. Closing the gap needs a source, and
-the plan is:
+### Volubilis, measured (2026-09-03)
 
-- **Measure Volubilis first** (§11 above: CC BY-SA 4.0, ~105k Thai-English
-  entries, romanised). The deciding number is coverage of OUR lexicon — how
-  many of the 4,674 gloss-less words it glosses — not its headline size.
-  Needs the `.xlsx` download; a `build-gloss-volubilis.mjs` reading CSV would
-  mirror `build-gloss.mjs`, romanisation run through the same
-  contradicts-the-engine filter.
-- **If it covers most of the gap, it becomes layer 3** and Wiktionary is
-  dropped: one BY-SA 4.0 source instead of a 3.0 one, simpler attribution.
-- **If it does not, it becomes a layer between 2 and 3**, and the two BY-SA
-  versions coexist (3.0 → 4.0 is one-way compatible, so a merged derivative
-  would be 4.0).
-- **The supplement stays regardless**, above both, for the words that need a
-  teacher rather than a dictionary.
+`VOLUBILIS Duo Max ENG.xlsx` (SourceForge, 8.2MB, v24.3 Nov 2024) parsed
+directly from the OOXML — 105,258 rows, **94,499 distinct Thai headwords**.
+Columns: A romanisation, D Thai, E English.
+
+**Coverage of our lexicon is the number that matters, and it is good:**
+
+| | words |
+|---|---|
+| lexicon | 12,241 |
+| gloss-less today | 4,470 (36.5%) |
+| of those, Volubilis has | **3,595 (80.4%)** |
+| gap after adding it | **875 (7.1%)** |
+| top-1,000 gloss-less | 46 → Volubilis fixes **45** |
+
+It is also nearly a superset of what we already gloss: of 7,771 words with a
+gloss today, Volubilis has 7,448 and lacks 323.
+
+**Glosses are usable as-is.** Median 17 characters, p90 49. But it is a
+sense-list dictionary — 2,947 entries carry more than five `;`-separated
+senses, and the longest is 239 characters. The card wants the first sense or
+two, not the list, so the builder must truncate the way `build-gloss.mjs`
+already does for Wiktionary.
+
+**The romanisation is NOT usable.** Volubilis uses its own scheme with macrons
+(`khwām rūseuk`, `ā`, `yǿm`) and **97% of its monosyllabic entries carry no
+tone mark at all** — of 4,941 checked, 4,814 are unmarked and only 18 of the
+marked ones agree with our tone engine. Take the glosses; keep deriving
+romanisation from `thai-script.js` and the Wiktionary Paiboon layer.
+
+### The plan, now that it is measured
+
+- **Volubilis becomes the primary gloss layer** (`gloss-vol.js`), built by a
+  `build-gloss-volubilis.mjs` that mirrors `build-gloss.mjs`: parse the OOXML,
+  keep the first senses, drop the romanisation column entirely.
+- **Wiktionary stays beneath it** rather than being dropped, for the 323 words
+  Volubilis lacks. Both are BY-SA; 3.0 and 4.0 coexist in the stack because
+  each file keeps its own notice, and nothing merges them into one database.
+  Attribution on the card gains a second line.
+- **The supplement stays on top**, for the ~875 words neither has and for
+  overriding either.
+- **Not done here:** the download is a manual step (the file is not checked in,
+  like the kaikki dump), and 875 words would still have no gloss — the tail is
+  the tail.
 
 ### Notes for whoever touches it next
 
