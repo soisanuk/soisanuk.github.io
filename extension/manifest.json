@@ -12,6 +12,7 @@
         "vendor/data.js",
         "vendor/examples.js",
         "vendor/thai-script.js",
+        "vendor/curriculum.js",
         "vendor/tokeniser.js",
         "vendor/wordcard.js",
         "vendor/lexicon-th.js",

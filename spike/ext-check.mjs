@@ -78,6 +78,31 @@ try {
   check("Alt+hover highlights a word", active.hl === "block" && parseFloat(active.w) > 0, `${active.hl}, w=${active.w}`);
   check("tooltip says something about it", active.tip.length > 0, active.tip);
 
+  // Tone colour. The page's own text is never repainted — that would mean
+  // wrapping words in spans, which reflows unspaced Thai — so the tone shows
+  // in the highlight we draw and in the tooltip's headword. Multi-syllable
+  // words abstain, exactly as the app does, because painting two syllables one
+  // colour states something false about at least one of them.
+  const tones = [];
+  for (const dx of [10, 60, 110, 170, 230]) {
+    await page.mouse.move(box.x + dx, box.y + 12);
+    await page.waitForTimeout(140);
+    tones.push(await page.evaluate(() => {
+      const sh = document.getElementById("soisanuk-reader-root").shadowRoot;
+      const tt = sh.getElementById("tt-thai");
+      return { word: tt ? tt.textContent : "",
+               bg: getComputedStyle(sh.getElementById("td-highlight")).backgroundColor };
+    }));
+  }
+  const painted = new Set(tones.filter(t => t.word).map(t => t.bg));
+  check("the highlight is painted by tone", painted.size >= 3,
+    `${painted.size} distinct colours over ${tones.filter(t => t.word).length} words`);
+  const TONE_RGB = ["176, 182, 189", "74, 163, 255", "255, 107, 107", "47, 191, 113", "247, 179, 43"];
+  check("those colours come from the app's tone palette",
+    [...painted].some(c => TONE_RGB.some(t => c.includes(t))),
+    [...painted].join(" "));
+
+
   // Alt+click opens the card
   await page.mouse.click(box.x + 32, box.y + 12);
   await page.waitForTimeout(400);

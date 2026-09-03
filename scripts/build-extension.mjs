@@ -25,6 +25,11 @@ const SOURCES = [
   "web/js/data.js",
   "web/js/examples.js",
   "web/js/thai-script.js",
+  // curriculum.js is here for ONE function: toneOfWord. It is 20KB of course
+  // spine we do not otherwise need, but it is DOM-free at load and needs only
+  // what is already bundled, and reimplementing its multi-syllable abstention
+  // in the extension would be authoring the same rule twice.
+  "web/js/curriculum.js",
   "web/js/tokeniser.js",
   "web/js/wordcard.js",
   "web/js/lexicon-th.js",
