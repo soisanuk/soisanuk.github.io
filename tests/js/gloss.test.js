@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-for (const f of ["data.js", "thai-script.js", "gloss-extra.js", "gloss.js", "gloss-th.js"]) {
+for (const f of ["data.js", "thai-script.js", "gloss-extra.js", "gloss.js", "gloss-th.js", "gloss-vol.js"]) {
   vm.runInThisContext(
     readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"),
     { filename: f }
@@ -228,5 +228,59 @@ describe("GLOSS_EXTRA", () => {
         for (const mk of marks) assert.ok(MARK[mk] || mk === "\u030C", `${thai}: "${syl}" carries a mark outside the scheme`);
       }
     }
+  });
+});
+
+
+// ── The gap-filler layer (gloss-vol.js, Volubilis) ──────────────────────────
+// It covers 80% of the words no other layer can gloss, but its first row for a
+// spelling is often a homograph — มา "moon", เขา "mountain", ดี "gallbladder".
+// So it is consulted LAST and may never displace a gloss we already have.
+describe("GLOSS_VOL", () => {
+  test("fills words no other layer has", () => {
+    _volInit(GLOSS_VOL);
+    assert.equal(WORD_MAP["ความรู้สึก"], undefined, "not a course word");
+    assert.match(thaiGloss("ความรู้สึก"), /feeling/i);
+    assert.equal(glossSource("ความรู้สึก"), "volubilis");
+  });
+
+  test("never outranks the course, the supplement, or Wiktionary", () => {
+    _volInit("ไป\tWRONG-VOL\nทดสอบ\tWRONG-VOL\n");
+    _glossInit("ทดสอบ\tfrom wiktionary\tthot-soop\n");
+    // course word: WORD_MAP wins
+    assert.equal(thaiGloss("ไป"), WORD_MAP["ไป"][2]);
+    assert.equal(glossSource("ไป"), "course");
+    // Wiktionary has it: Volubilis must not displace it
+    assert.equal(thaiGloss("ทดสอบ"), "from wiktionary");
+    assert.equal(glossSource("ทดสอบ"), "wiktionary");
+  });
+
+  test("the homographs that caused this ordering never reach a reader", () => {
+    _volInit(GLOSS_VOL);
+    // every one of these is glossed by a higher layer, so Volubilis's
+    // homograph row is unreachable no matter what it says
+    for (const [w, wrong] of [["มา", /moon/i], ["เขา", /mountain/i], ["ดี", /gallbladder/i], ["ต่อ", /wasp/i]]) {
+      const g = thaiGloss(w);
+      assert.ok(g, `${w} should be glossed by a higher layer`);
+      assert.doesNotMatch(g, wrong, `${w} is showing the Volubilis homograph`);
+    }
+  });
+
+  test("multi-sense rows disclose rather than pick", () => {
+    _volInit(GLOSS_VOL);
+    const multi = GLOSS_VOL.split("\n").filter(r => r.includes(" \u00b7 "));
+    assert.ok(multi.length > 300, `expected many multi-sense rows, saw ${multi.length}`);
+    // and the joined line stays card-sized
+    for (const row of GLOSS_VOL.split("\n")) {
+      const en = row.split("\t")[1] || "";
+      assert.ok(en.length <= 90, `gloss too long for a card: ${row.slice(0, 60)}`);
+    }
+  });
+
+  test("carries no romanisation — Volubilis tone marks disagree with the engine", () => {
+    for (const row of GLOSS_VOL.split("\n").slice(0, 200)) {
+      assert.ok(row.split("\t").length <= 2, `unexpected third column: ${row.slice(0, 50)}`);
+    }
+    assert.equal(thaiRoman("ความรู้สึก"), null, "romanisation must not come from this layer");
   });
 });

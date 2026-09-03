@@ -98,6 +98,12 @@ function pasteAnalyse() {
     _glossLoad(() => {
       if (run !== _pasteRun) return;
       setTimeout(() => { if (run === _pasteRun) _pasteRender(text, out, true); }, 0);
+      // and the gap-filler beneath it, which covers 3,595 words Wiktionary
+      // does not. Loaded after, not instead: it is consulted last.
+      _volLoad(() => {
+        if (run !== _pasteRun) return;
+        setTimeout(() => { if (run === _pasteRun) _pasteRender(text, out, true); }, 0);
+      });
     });
   });
 }
@@ -140,9 +146,14 @@ function _pasteRender(text, out, reveal) {
     ${colorOn ? _readerLegend().replace("</div>",
       `<span class="paste-notone-key">◌ not determined</span></div>`) : ""}
     <div class="paste-credit">Meanings for words outside the course come from
-      <a href="https://en.wiktionary.org/" target="_blank" rel="noopener noreferrer">Wiktionary</a>,
-      used under <a href="https://creativecommons.org/licenses/by-sa/3.0/"
-      target="_blank" rel="noopener noreferrer">CC BY-SA 3.0</a>.</div>`;
+      <a href="https://en.wiktionary.org/" target="_blank" rel="noopener noreferrer">Wiktionary</a>
+      (<a href="https://creativecommons.org/licenses/by-sa/3.0/"
+      target="_blank" rel="noopener noreferrer">CC BY-SA 3.0</a>) and
+      <a href="https://belisan-volubilis.blogspot.com/" target="_blank" rel="noopener noreferrer">Volubilis</a>
+      (<a href="https://creativecommons.org/licenses/by-sa/4.0/"
+      target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>).
+      A word with more than one meaning shows them separated by \u00b7 — this
+      app does not guess which one a sentence means.</div>`;
   _pasteWireTokens(document.getElementById("paste-out"));
   // On a phone with the keyboard up the result lands ~116px below the fold, so
   // tapping Analyse looks like it did nothing and people tap it again. Drop the

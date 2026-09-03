@@ -19,6 +19,7 @@
         "vendor/segment.js",
         "vendor/gloss-th.js",
         "vendor/gloss-extra.js",
+        "vendor/gloss-vol.js",
         "vendor/gloss.js",
         "vendor/thai-dom.js",
         "tts.js",

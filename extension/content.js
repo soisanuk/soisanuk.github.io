@@ -195,6 +195,10 @@ function tdStart() {
   if (typeof _segLoad === "function") {
     _segLoad(ok => { _tdReady = !!ok; });
   }
+  // Both gloss layers are content scripts, so their globals already exist and
+  // these calls just build the maps — no injection, no network.
+  if (typeof _glossLoad === "function") _glossLoad(() => {});
+  if (typeof _volLoad === "function") _volLoad(() => {});
   document.addEventListener("mousemove", _tdOnMove, true);
   document.addEventListener("click", _tdOnClick, true);
   document.addEventListener("keyup", _tdOnKeyUp, true);

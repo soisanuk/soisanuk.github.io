@@ -36,6 +36,7 @@ const SOURCES = [
   "web/js/segment.js",
   "web/js/gloss-th.js",
   "web/js/gloss-extra.js",
+  "web/js/gloss-vol.js",
   "web/js/gloss.js",
   "spike/thai-dom.js",
 ];
