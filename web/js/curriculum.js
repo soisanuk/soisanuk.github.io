@@ -77,12 +77,15 @@ const GRAMMAR_LESSONS = [
   {
     id: "g2", title: "Polite armour", scenario: "every sentence, everywhere",
     intro: "ครับ (khráp) if you're a man, ค่ะ (khâ) if you're a woman — ends " +
-      "almost any sentence and makes the whole thing polite. It is the " +
+      "almost any sentence and makes the whole thing polite. One catch for " +
+      "women: on a QUESTION the particle is คะ (khá, high tone), not ค่ะ — " +
+      "อร่อยไหมคะ, never อร่อยไหมค่ะ. Men say ครับ either way. It is the " +
       "cheapest goodwill in Thailand. สวัสดี + particle = hello; ขอบคุณ + " +
       "particle = thank you.",
     pattern: [
       ["สวัสดีครับ", "sà-wàt-dii khráp", "hello (man speaking)"],
       ["ขอบคุณค่ะ", "khòop-khun khâ", "thank you (woman speaking)"],
+      ["อร่อยไหมคะ", "à-ròi mǎi khá", "is it good? (woman asking — คะ on a question)"],
       ["ไม่เป็นไร", "mâi pen rai", "no problem / it's nothing — the national motto"],
     ],
     practice: [

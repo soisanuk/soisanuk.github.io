@@ -54,8 +54,20 @@ function _glossLoad(cb) {
 // The curriculum's own gloss ALWAYS wins: it is written for this course, it
 // matches the romanisation style, and it comes with example sentences. The
 // Wiktionary layer only fills the gaps.
+// Precedence: the course's own words, then GLOSS_EXTRA (gloss-extra.js — hand-
+// curated entries for words Wiktionary does not cover, or covers badly), then
+// the Wiktionary layer. The supplement sits ABOVE Wiktionary on purpose: an
+// entry someone wrote for this app after checking it beats a crowd-sourced one,
+// and it is the only way to correct a Wiktionary gloss without editing a
+// generated file. Kept in its own file so the CC BY-SA boundary of gloss-th.js
+// stays exact — nothing of ours is mixed into the derived database.
+function _glossExtra(word) {
+  return (typeof GLOSS_EXTRA !== "undefined" && GLOSS_EXTRA[word]) || null;
+}
 function thaiGloss(word) {
   if (typeof WORD_MAP !== "undefined" && WORD_MAP[word]) return WORD_MAP[word][2];
+  const x = _glossExtra(word);
+  if (x) return x[1];
   const e = _glossMap && _glossMap.get(word);
   return e ? e.en : null;
 }
@@ -65,6 +77,8 @@ function thaiGloss(word) {
 // generator refused it.
 function thaiRoman(word) {
   if (typeof WORD_MAP !== "undefined" && WORD_MAP[word]) return WORD_MAP[word][1];
+  const x = _glossExtra(word);
+  if (x) return x[0] || null;
   const e = _glossMap && _glossMap.get(word);
   return (e && e.roman) ? e.roman : null;
 }
