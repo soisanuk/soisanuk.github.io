@@ -35,4 +35,38 @@ var GLOSS_EXTRA = {
   "บทสนทนา": ["bòt-sǒn-thá-naa", "conversation, dialogue"],
   "สนทนา":   ["sǒn-thá-naa",     "to converse, to chat"],
   "บท":      ["bòt",             "chapter, verse; a passage of text"],
+
+  // ── The top of the remaining gap (2026-09-03) ──────────────────────────
+  // After Volubilis, 875 lexicon words have no gloss from any dictionary.
+  // Only 31 of them fall in the top 3,000 by frequency — the band a reader
+  // actually meets — and most of THOSE are name fragments (ดิ, นิ, ลิ, เม,
+  // นุ, ซู, ทะ, เพ, ทร) or Sanskrit name elements (สุร, วร, สงค์), which are
+  // not words and get no entry: the card's "no meaning on file · Alt-click
+  // for letters and tone" is the honest answer for a syllable.
+  //
+  // These are the ones that ARE words. Compound romanisations are built from
+  // the app's own entries for their parts (โดย dooi + ที่ thîi), not written
+  // from memory; single syllables were checked against syllableToneInfo
+  // before being typed, and the test below re-checks them.
+  "โดยที่":    ["dooi-thîi",   "in that; whereas; given that"],
+  "มิใช่":     ["mí-châi",     "is not; not (formal)"],
+  "เพียงใด":   ["phiang-dai",  "how much; to what extent; however much"],
+  "มายัง":     ["maa-yang",    "to; towards (formal, as in a letter)"],
+  "พร้อมทั้ง": ["phróom-tháng", "together with; along with"],
+  "เป็นอัน":   ["pen-an",      "to be settled; to count as"],
+  "เป็นต้นมา": ["pen-tôn-maa", "since then; from that time on"],
+  "ดังเช่น":   ["dang-chên",   "such as; for example"],
+  "เอาแต่":    ["ao-tàe",      "to do nothing but; to insist on only"],
+  "ทีนี้":     ["thii-níi",    "now; now then"],
+  "วิกฤติ":    ["wí-krìt",     "crisis; critical (variant of วิกฤต)"],
+  "โอ๊ย":      ["óoi",         "ouch!; oh! (cry of pain or surprise)"],
+  "แหง":       ["ngǎe",        "certainly; for sure (colloquial)"],
+  "เถิด":      ["thòoet",      "let's; do (hortative particle; formal เถอะ)"],
+  "มัง":       ["mang",        "probably; I suppose (colloquial; = มั้ง)"],
+  "ดิ":        ["dì",          "go on; do (colloquial urging particle)"],
+  // Names. Worth glossing because a reader hovering one in running text
+  // wants to know it IS a name rather than a word they failed to learn.
+  "คึกฤทธิ์":  ["khúek-rít",   "Kukrit (personal name)"],
+  "พงษ์":      ["",            "-phong (element in personal names: lineage)"],
+  "แอน":       ["aen",         "Ann (name)"],
 };
