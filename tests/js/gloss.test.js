@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-for (const f of ["data.js", "thai-script.js", "gloss.js", "gloss-th.js"]) {
+for (const f of ["data.js", "thai-script.js", "gloss-extra.js", "gloss.js", "gloss-th.js"]) {
   vm.runInThisContext(
     readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"),
     { filename: f }
@@ -168,5 +168,65 @@ describe("the generated dictionary", () => {
 
   test("an unknown word is null, not a guess", () => {
     assert.equal(thaiGloss("ไม่มีคำนี้จริงๆนะ"), null);
+  });
+});
+
+
+// ── The supplement layer (gloss-extra.js) ───────────────────────────────────
+// Hand-curated entries for words Wiktionary does not cover. บทสนทนา was the
+// first: in the lexicon, segments as one token, and had nothing to say for
+// itself because English Wiktionary has no entry for it — nor for บท or สนทนา.
+describe("GLOSS_EXTRA", () => {
+  test("fills a gap the dictionary leaves", () => {
+    // not a course word, not in Wiktionary — only the supplement knows it
+    assert.equal(WORD_MAP["บทสนทนา"], undefined);
+    assert.equal(thaiGloss("บทสนทนา"), "conversation, dialogue");
+    assert.equal(thaiRoman("บทสนทนา"), "bòt-sǒn-thá-naa");
+  });
+
+  test("outranks Wiktionary, so a wrong crowd-sourced gloss can be corrected here", () => {
+    const saved = GLOSS_EXTRA["ทดสอบ"];
+    GLOSS_EXTRA["ทดสอบ"] = ["thót-sòop", "OVERRIDE"];
+    _glossInit("ทดสอบ\tfrom wiktionary\tthot-soop\n");
+    try {
+      assert.equal(thaiGloss("ทดสอบ"), "OVERRIDE");
+      assert.equal(thaiRoman("ทดสอบ"), "thót-sòop");
+    } finally {
+      if (saved) GLOSS_EXTRA["ทดสอบ"] = saved; else delete GLOSS_EXTRA["ทดสอบ"];
+    }
+  });
+
+  test("but never outranks the course's own words", () => {
+    const saved = GLOSS_EXTRA["ไป"];
+    GLOSS_EXTRA["ไป"] = ["WRONG", "WRONG"];
+    try { assert.equal(thaiGloss("ไป"), WORD_MAP["ไป"][2]); }
+    finally { if (saved) GLOSS_EXTRA["ไป"] = saved; else delete GLOSS_EXTRA["ไป"]; }
+  });
+
+  // Every entry's tone marks must agree with the engine — the same bar the
+  // generator holds Wiktionary's romanisations to. A hand-typed mark is the
+  // easiest thing in this file to get wrong and the hardest for a reader to
+  // notice.
+  test("every entry's tone marks agree with the tone engine", () => {
+    const MARK = { "\u0300": "low", "\u0302": "falling", "\u0301": "high", "\u030C": "rising" };
+    const toneOfSyl = syl => {
+      const m = syl.normalize("NFD").match(/[\u0300\u0301\u0302\u030C]/);
+      return m ? MARK[m[0]] : "mid";
+    };
+    for (const [thai, [roman]] of Object.entries(GLOSS_EXTRA)) {
+      if (!roman) continue;
+      const syls = roman.split(/[-\s]+/);
+      // a single-syllable entry can be checked directly against the engine
+      if (syls.length === 1) {
+        const info = syllableToneInfo(thai);
+        assert.ok(info, `${thai}: engine could not analyse it`);
+        assert.equal(toneOfSyl(roman), info.tone, `${thai} is romanised "${roman}" but the engine says ${info.tone}`);
+      }
+      // multi-syllable: every mark must at least be one of the four the scheme uses
+      for (const syl of syls) {
+        const marks = syl.normalize("NFD").match(/[\u0300-\u036F]/g) || [];
+        for (const mk of marks) assert.ok(MARK[mk] || mk === "\u030C", `${thai}: "${syl}" carries a mark outside the scheme`);
+      }
+    }
   });
 });

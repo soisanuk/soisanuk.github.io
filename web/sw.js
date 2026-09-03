@@ -22,6 +22,7 @@ const PRECACHE = [
   "./js/learn.js",
   "./js/reader.js",
   "./js/segment.js",
+  "./js/gloss-extra.js",
   "./js/gloss.js",
   "./js/paste.js",
   "./js/backup.js",

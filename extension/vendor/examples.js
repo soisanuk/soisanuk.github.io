@@ -75,7 +75,7 @@ const EXAMPLES = {
   "ทำงาน": ["พ่อทำงานที่บริษัทในกรุงเทพฯ", "phôo tham-ngaan thîi boo-rí-sàt nai krung-thêep", "Dad works at a company in Bangkok."],
   "เอา": ["เอาแก้วน้ำมาให้ฉันหน่อยได้ไหม", "ao kâeo-náam maa hâi chǎn nòoi dâi mǎi", "Can you bring me a glass of water?"],
   "วาง": ["วางกระเป๋าไว้บนโต๊ะได้เลย", "waang krà-pǎo wái bon tó dâi looei", "You can put your bag on the table."],
-  "เอาออก": ["เธอเอาออกหนังสือออกจากกล่อง", "thoe ao-òok nǎng-sǔue òok jàak klòong", "She took the books out of the box."],
+  "เอาออก": ["เอาออกก่อน แล้วค่อยใส่ใหม่", "ao òok kòon láeo khôi sài mài", "Take it out first, then put it back in."],
   "เปลี่ยน": ["ฉันอยากเปลี่ยนงานใหม่", "chǎn yàak plìian ngaan mài", "I want to change to a new job."],
   "หา": ["เขากำลังหากระเป๋าของเขา", "khǎo kam-lang hǎa krà-pǎo khǎong khǎo", "He is looking for his bag."],
   "ลืม": ["ฉันลืมชื่อเพื่อนคนนั้นแล้ว", "chǎn luuem chûue phûean khon nán láeo", "I have already forgotten that friend's name."],

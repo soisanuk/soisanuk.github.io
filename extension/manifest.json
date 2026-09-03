@@ -18,6 +18,7 @@
         "vendor/lexicon-th.js",
         "vendor/segment.js",
         "vendor/gloss-th.js",
+        "vendor/gloss-extra.js",
         "vendor/gloss.js",
         "vendor/thai-dom.js",
         "tts.js",

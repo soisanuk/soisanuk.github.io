@@ -568,6 +568,39 @@ anything whose romanisation shows more than one syllable, and the extension
 abstains with it: วันนี้ and อากาศ stay the default pink rather than being
 painted a colour that would be false for half the word. Same rule as the app.
 
+### The gloss gap, and the plan to close it
+
+Wiktionary glosses 62% of the 12,241-word lexicon. The other 38% are words the
+segmenter knows and no dictionary layer does — and they are not rare: ความรู้สึก
+("feeling") is lexicon rank 369, บทสนทนา and สนทนา are ordinary. A reader hits
+one within a paragraph.
+
+Three layers now, in precedence order (`gloss.js`):
+
+1. **`WORD_MAP`** — the 950 course words, hand-written.
+2. **`gloss-extra.js`** — hand-curated supplement, this project's own. For
+   words hit in practice, and the only way to override a wrong Wiktionary
+   gloss without editing generated output. Every entry's tone marks are
+   checked against the engine by `tests/js/gloss.test.js`.
+3. **`gloss-th.js`** — the Wiktionary layer, CC BY-SA 3.0, generated.
+
+The supplement fixes words one at a time. Closing the gap needs a source, and
+the plan is:
+
+- **Measure Volubilis first** (§11 above: CC BY-SA 4.0, ~105k Thai-English
+  entries, romanised). The deciding number is coverage of OUR lexicon — how
+  many of the 4,674 gloss-less words it glosses — not its headline size.
+  Needs the `.xlsx` download; a `build-gloss-volubilis.mjs` reading CSV would
+  mirror `build-gloss.mjs`, romanisation run through the same
+  contradicts-the-engine filter.
+- **If it covers most of the gap, it becomes layer 3** and Wiktionary is
+  dropped: one BY-SA 4.0 source instead of a 3.0 one, simpler attribution.
+- **If it does not, it becomes a layer between 2 and 3**, and the two BY-SA
+  versions coexist (3.0 → 4.0 is one-way compatible, so a merged derivative
+  would be 4.0).
+- **The supplement stays regardless**, above both, for the words that need a
+  teacher rather than a dictionary.
+
 ### Notes for whoever touches it next
 
 - `app.js` is deliberately absent: `_wcMap()` falls back to building from
