@@ -89,6 +89,28 @@ try {
   });
   check("Alt+click opens the word card", card.open, card.text);
 
+  // The card must actually be READABLE. The CSS extractor once dropped every
+  // rule that happened to follow a comment — including #wc-overlay, .wc-layer
+  // and #word-tooltip — so the card rendered with transparent backgrounds and
+  // black text on a dark scrim, and the only legible thing was the tooltip's
+  // yellow headword. Nothing in the suite noticed.
+  const paint = await page.evaluate(() => {
+    const sh = document.getElementById("soisanuk-reader-root").shadowRoot;
+    const cs = sel => { const el = sh.querySelector(sel); if (!el) return null;
+      const c = getComputedStyle(el); return { color: c.color, bg: c.backgroundColor }; };
+    return { layer: cs(".wc-layer"), thai: cs(".wc-thai"), en: cs(".wc-en"), tip: cs("#word-tooltip") };
+  });
+  const isBlack = c => c && /rgb\(0, 0, 0\)/.test(c.color);
+  const transparent = c => c && /rgba\(0, 0, 0, 0\)/.test(c.bg);
+  check("card text is not black-on-dark", !isBlack(paint.layer) && !isBlack(paint.en),
+    `layer ${paint.layer && paint.layer.color}`);
+  check("the card panel has its scrim", !transparent(paint.layer),
+    `layer bg ${paint.layer && paint.layer.bg}`);
+  check("the tooltip has its background", paint.tip && !transparent(paint.tip),
+    `tooltip bg ${paint.tip && paint.tip.bg}`);
+  check("the headword keeps its accent colour", paint.thai && /255, 20, 147/.test(paint.thai.color),
+    paint.thai && paint.thai.color);
+
   // CC BY-SA 3.0 attribution is a condition of using the Wiktionary glosses,
   // and the extension is where it would otherwise go unmet.
   const credit = await page.evaluate(() => {
