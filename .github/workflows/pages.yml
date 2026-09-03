@@ -15,6 +15,13 @@ jobs:
       - name: Run tests
         run: node --test
 
+      # The extension is COPIES of web/js sources plus styles extracted from
+      # index.html. Nothing stops someone editing a source and shipping an
+      # extension still carrying the old one, except this. CLAUDE.md claimed
+      # CI ran it before CI actually did.
+      - name: Check the extension matches its sources
+        run: node scripts/build-extension.mjs --check
+
   deploy:
     needs: test
     runs-on: ubuntu-latest
