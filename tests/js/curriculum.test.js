@@ -41,6 +41,19 @@ describe("the letter ladder covers the vocabulary", () => {
       `untaught letters block words from ever being decodable: ${report}`);
   });
 
+  // WORDS was the wrong dataset to check alone. The app also ships CONSONANTS
+  // — the full 44-letter alphabet, with names, classes and a reference chart —
+  // and four of them (ฌ ฐ ฑ ฬ) were in no batch while the WORDS check passed
+  // clean, because no WORDS entry happened to use them. A learner finishing the
+  // course had met 37 of 44 letters and had been told, by the last batch's own
+  // note, that this was the end of the alphabet.
+  test("every consonant in the app's own alphabet is taught", () => {
+    const taught = taughtGlyphs(LETTER_BATCHES.length - 1);
+    const missing = CONSONANTS.filter(c => !taught.has(c[0]));
+    assert.equal(missing.length, 0,
+      `the reference chart teaches letters the ladder never does: ${missing.map(c => c[0] + " (" + c[1] + ")").join(", ")}`);
+  });
+
   test("the full ladder makes almost all of WORDS decodable", () => {
     const n = courseDecodable(LETTER_BATCHES.length - 1, WORDS).length;
     // Not 100%: a couple of entries carry ฯ or a Thai digit, which the ladder

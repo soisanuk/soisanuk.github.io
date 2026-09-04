@@ -28,9 +28,12 @@ function _buildDecomposition(word) {
       if (i < chars.length && _thaiCharKind(chars[i].codePointAt(0)) === "cons") {
         cluster.push(chars[i]); i++;
       }
-      // collect trailing diacritics
+      // collect trailing diacritics — but never another leading vowel, which
+      // belongs to the syllable after this one (see the consonant branch).
       while (i < chars.length) {
-        const k2 = _thaiCharKind(chars[i].codePointAt(0));
+        const cp2 = chars[i].codePointAt(0);
+        if (cp2 >= 0x0E40 && cp2 <= 0x0E44) break;
+        const k2 = _thaiCharKind(cp2);
         if (k2 === "vowel" || k2 === "tone" || k2 === "diac") { cluster.push(chars[i]); i++; }
         else break;
       }
@@ -38,7 +41,17 @@ function _buildDecomposition(word) {
     } else if (kind === "cons") {
       const cluster = [chars[i]]; i++;
       while (i < chars.length) {
-        const k2 = _thaiCharKind(chars[i].codePointAt(0));
+        // A LEADING vowel (เ แ โ ใ ไ) is written before the consonant it is
+        // spoken after, so it always opens a new cluster — it can never be a
+        // trailing mark on this one. Without this break the greedy loop below
+        // swallowed it: อะไร decomposed as "อะไ + ร" instead of "อะ + ไร",
+        // and 174 of 973 words displayed a decode that split mid-syllable.
+        // The question words were all of them — อะไร ทำไม ที่ไหน เมื่อไร
+        // อย่างไร — and the app's own script note tells the learner, in so
+        // many words, that this vowel comes first.
+        const cp2 = chars[i].codePointAt(0);
+        if (cp2 >= 0x0E40 && cp2 <= 0x0E44) break;
+        const k2 = _thaiCharKind(cp2);
         if (k2 === "vowel" || k2 === "tone" || k2 === "diac") { cluster.push(chars[i]); i++; }
         else break;
       }
@@ -91,7 +104,18 @@ const _LETTER_SPEECH_EXTRA = {
 // vowel "aa", not กา), which also matches how vowels are voiced. Identity for
 // text without ◌.
 function vowelDisp(sym, host = "ก") {
-  return sym.replace(/◌/g, host);
+  const out = sym.replace(/◌/g, host);
+  if (out !== sym) return out;
+  // No ◌ to replace — but the caller may have handed us a BARE combining mark,
+  // which is how LETTER_BATCHES stores its vowels and tone marks ("ี", not
+  // "◌ี"). The old body returned those untouched, so learn.js's glyph card did
+  // `vowelDisp(g)` and rendered a floating accent over whatever U+25CC
+  // fallback the font supplied — a dotted circle, or tofu where the font has
+  // none. Card 5 of the very first lesson. The call was there; it just did
+  // nothing. Host it, which is the whole point of this function.
+  const cp = out.codePointAt(0);
+  const combining = cp === 0x0E31 || (cp >= 0x0E34 && cp <= 0x0E3A) || (cp >= 0x0E47 && cp <= 0x0E4E);
+  return (combining && [...out].length <= 2) ? host + out : out;
 }
 
 // Compound vowel patterns (keyed by their canonical ◌ form in VOWELS);
