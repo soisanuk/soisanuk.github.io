@@ -47,6 +47,12 @@ const _stt = {
   hide() { this._get().style.display = "none"; },
 };
 
+// " — a chicken" after the name, when anything knows what the name means.
+// Without it the row reads "Name: หีบ" to somebody who cannot read หีบ yet.
+function _wcNameEn(ch) {
+  const en = (typeof consNameEn === "function") ? consNameEn(ch) : null;
+  return en ? ` <span class="st-dim">\u2014 ${_wcEsc(en)}</span>` : "";
+}
 function _scriptTooltipHtml(ch) {
   const cp = ch.codePointAt(0);
   const kind = _thaiCharKind(cp);
@@ -56,7 +62,7 @@ function _scriptTooltipHtml(ch) {
     if (c) {
       const clsLabel = c[2] === "mid" ? "mid class" : c[2] === "high" ? "high class" : "low class";
       return `<span class="st-char" lang="th">${ch}</span>
-        <div class="st-row">Name: <span>${c[3]}</span></div>
+        <div class="st-row">Name: <span>${c[3]}</span>${_wcNameEn(ch)}</div>
         <div class="st-row">Romanisation: <span>/${c[1]}/</span></div>
         <div class="st-row">Class: <span>${clsLabel}</span></div>
         <div class="st-row">Initial: <span>/${c[4]}/</span> · Final: <span>/${c[5]}/</span></div>`;

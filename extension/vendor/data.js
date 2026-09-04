@@ -3,6 +3,30 @@
 // All Thai data — words, consonants, vowels, tones. This file is the source of truth.
 // (Originally generated from a Python app that has since been removed.)
 
+// English for the acrophonic names — the "ไก่" of "ก ไก่". Only the thirteen
+// names that are NOT course words live here; the other twenty-nine ARE in
+// WORDS, and consNameEn() reads their gloss instead, so there is one source of
+// truth per word and the chart cannot drift from the vocabulary.
+//
+// The name is not decoration. It is how Thai people spell out loud, and it is
+// the only way to say WHICH of ศ ษ ส you mean. A tooltip reading "Name: หีบ"
+// to a learner who cannot yet read หีบ has told them nothing at all.
+const CONS_NAME_EN = {
+  "พาน":     "a pedestal tray",
+  "สำเภา":   "a Chinese sailing junk",
+  "ฤๅษี":    "a hermit",
+  "หีบ":     "a chest, a box",
+  "ฉิ่ง":    "small cymbals",
+  "เฌอ":     "a tree (archaic)",
+  "ปฏัก":    "a cattle goad, a spear",
+  "ฐาน":     "a pedestal, a base",
+  "มณโฑ":    "Montho, a name from the Ramakien",
+  "ผู้เฒ่า": "an elder",
+  "เณร":     "a novice monk",
+  "ชฎา":     "a dancer's headdress",
+  "จุฬา":    "a star-shaped kite",
+};
+
 const CONSONANTS = [
   ["ก", "k", "mid", "ไก่", "k", "k"],
   ["ข", "kh", "high", "ไข่", "kh", "k"],
