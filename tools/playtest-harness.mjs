@@ -436,14 +436,40 @@ export async function openApp(opts = {}) {
             document.getElementById("learn-type-go")?.click();
             return item.word[2];
           }
-          // typeth is the on-screen Kedmanee keyboard; tap the right keys
+          // typeth is the on-screen Kedmanee keyboard; tap the right keys.
+          //
+          // This branch never typed a single character. It looked for
+          // "#learn-kbd .t-key" and the class is .tkey — zero matches, every
+          // time — and even with that fixed, matching a key's textContent
+          // against a Thai character cannot work: a key renders its Latin
+          // label AND its Thai face ("1ๅ"), and the face runs through _tDisp,
+          // which HOSTS a combining vowel on a dotted circle so it is not the
+          // bare character either. So every typeth card stalled and was
+          // force-advanced unscored, in every round, silently.
+          //
+          // Ask the app instead of scraping it: _tEntry(latinKey, shift) is
+          // what the keyboard itself uses to decide a key's Thai character.
+          // Shift matters — 38 of the 81 entries are on the shifted layer.
           const want = [...item.word[0]];
+          const keys = [...document.querySelectorAll("#learn-kbd .tkey")]
+            .filter(k2 => k2.dataset.key);
+          const shiftBtn = document.querySelector("#learn-kbd .tkey-shift");
+          let typed = 0;
           for (const ch of want) {
-            const key = [...document.querySelectorAll("#learn-kbd .t-key")]
-              .find(k2 => k2.textContent.trim() === ch);
-            if (key) key.click();
+            let hit = null, needShift = false;
+            for (const k2 of keys) {
+              const e0 = _tEntry(k2.dataset.key, false);
+              if (e0 && e0.thai === ch) { hit = k2; break; }
+              const e1 = _tEntry(k2.dataset.key, true);
+              if (e1 && e1.thai === ch) { hit = k2; needShift = true; break; }
+            }
+            if (!hit) continue;
+            const shiftOn = shiftBtn && shiftBtn.getAttribute("aria-pressed") === "true";
+            if (needShift !== shiftOn && shiftBtn) shiftBtn.click();
+            hit.click();
+            typed++;
           }
-          return item.word[0];
+          return { word: item.word[0], typed, of: want.length };
         }, kind);
       } else if (kind === "match") {
         action = "match";

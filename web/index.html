@@ -160,7 +160,13 @@ body {
 .learn-sign-2 { background: #fffde7 !important; color: #263238 !important;
   border: 1px solid #90a4ae !important; transform: rotate(-1.2deg);
   font-family: "Noteworthy", "Comic Sans MS", cursive; }
-.learn-intro-text { max-width: 560px; margin: 0.6rem auto; text-align: left; line-height: 1.5; }
+/* .card-prompt is a single class too and sets text-align:center further down
+   the sheet, so the bare .learn-intro-text selector lost the tie and every
+   long teaching paragraph in the course — chunk intros, the tone
+   explanation, the script notes — rendered centred. Centred prose is
+   markedly harder to read at this length, which is exactly the length that
+   needed the rule. Compounded so it wins. */
+.card-prompt.learn-intro-text { max-width: 560px; margin: 0.6rem auto; text-align: left; line-height: 1.5; }
 .learn-summary { text-align: center; padding: 0.5rem; opacity: 0.85; }
 .quiz-choices li.correct { border-color: #2fbf71; background: rgba(47,191,113,0.15); }
 .quiz-choices li.wrong { border-color: #e34a4a; background: rgba(227,74,74,0.12); }

@@ -21,24 +21,24 @@ const LETTER_BATCHES = [
     note: {
       title: "Where the vowel sits",
       word: "เอา", rom: "ao", en: "to take",
-      text: "เ is a vowel, and it is written BEFORE the consonant you say first: " +
-        "เอา is \u201cao\u201d. ู in ดู hangs underneath. Thai vowels sit around " +
-        "their consonant \u2014 before it, after it, above, below, or in several " +
-        "pieces at once \u2014 and the consonant never moves. This one fact is " +
-        "most of why Thai looks unreadable, and you have just learned it.",
+      text: "เ is a vowel, and it is written BEFORE the consonant you say " +
+        "first \u2014 เอา is \u201cao\u201d, not \u201ce-ao\u201d. In ดู the vowel hangs " +
+        "underneath instead. Thai vowels sit around their consonant: before " +
+        "it, after it, above, below, or in several pieces at once, and the " +
+        "consonant itself never moves.",
     } },
-  { id: "b3", title: "Enough to say no", glyphs: ["ร", "ั", "ว", "ท", "ไ"] },
-  { id: "b4", title: "Rising and falling", glyphs: ["ส", "ล", "ห", "้", "ะ"] },
-  { id: "b5", title: "Shops and streets", glyphs: ["บ", "ป", "ต", "ื", "แ"],
+  { id: "b3", title: "Enough to say no", glyphs: ["ร", "ั", "ว", "ท", "ไ"],
     note: {
       title: "The vowel that is not there",
-      word: "ตลาด", rom: "t\u00e0-l\u00e0at", en: "market",
-      text: "Four letters, two syllables \u2014 and the first syllable\u2019s vowel " +
-        "is not written at all. Thai drops a short \u201ca\u201d between two " +
-        "consonants that open a word and expects you to put it back. Read ตลาด " +
-        "as \u201ctlaat\u201d and nobody will know the word; it is \u201ct\u00e0-l\u00e0at\u201d. " +
-        "You will meet this on signs every single day.",
+      word: "อร่อย", rom: "\u00e0-r\u00f2oi", en: "delicious",
+      text: "Two syllables, and the first one\u2019s vowel is not written at all. " +
+        "Thai leaves a short \u201ca\u201d between two consonants that open a word " +
+        "and expects you to put it back \u2014 อร่อย is \u201c\u00e0-r\u00f2oi\u201d, never " +
+        "\u201croi\u201d. The same rule gives you ตลาด, \u201ct\u00e0-l\u00e0at\u201d, on half the " +
+        "signs in the country.",
     } },
+  { id: "b4", title: "Rising and falling", glyphs: ["ส", "ล", "ห", "้", "ะ"] },
+  { id: "b5", title: "Shops and streets", glyphs: ["บ", "ป", "ต", "ื", "แ"] },
   { id: "b6", title: "People and things", glyphs: ["ค", "ง", "จ", "ใ", "็"] },
   { id: "b7", title: "The spice rack", glyphs: ["ช", "ข", "ผ", "ถ", "ๆ", "๊"] },
   { id: "b8", title: "The long tail", glyphs: ["พ", "ฟ", "ซ", "ญ", "ณ", "๋", "ำ", "ิ"] },
@@ -51,21 +51,22 @@ const LETTER_BATCHES = [
     note: {
       title: "Thai points at its silent letters",
       word: "เบียร์", rom: "bia", en: "beer",
-      text: "The ร on the end is not pronounced, and that little curl above it " +
-        "\u2014 ์, called การันต์ \u2014 is Thai telling you so. English hides its " +
-        "silent letters and lets you find out by being laughed at; Thai marks " +
-        "every one. Also in this batch: โ, one more vowel written before its " +
-        "consonant (โรงแรม, roong-raem, hotel).",
+      text: "The ร on the end is not pronounced, and the little curl sitting " +
+        "above it is what tells you so \u2014 it is called การันต์, and Thai puts " +
+        "one over every letter it wants you to skip. English hides its silent " +
+        "letters and lets you find out by being laughed at. Also in this " +
+        "batch: โ, one more vowel written before its consonant (โรงแรม, " +
+        "roong-raem, hotel).",
     } },
   { id: "b10", title: "The borrowed consonants", glyphs: ["ศ", "ษ", "ภ", "ธ", "ฉ", "ฝ", "ฮ", "ฤ", "ฆ", "ฏ", "ฒ", "ฎ"],
     note: {
       title: "Why there are so many letters for one sound",
-      word: "ประเทศ", rom: "pr\u00e0-th\u00eaet", en: "country",
-      text: "ศ, ษ and ส are all just \u201cs\u201d. Thai borrowed heavily from " +
-        "Sanskrit and Pali and kept the original spellings, so a word\u2019s letters " +
-        "often record where it came from rather than how it sounds. You do not " +
-        "have to know which is which to read \u2014 they sound the same. That is " +
-        "the good news at the end of the alphabet.",
+      word: "ศาลา", rom: "s\u01cea-laa", en: "pavilion/sala",
+      text: "ศ, ษ and ส are all just \u201cs\u201d \u2014 ศาลา is \u201cs\u01cea-laa\u201d. Thai " +
+        "borrowed heavily from Sanskrit and Pali and kept the original " +
+        "spellings, so a word\u2019s letters often record where it came from " +
+        "rather than how it sounds. You never have to know which is which to " +
+        "read it. That is the good news at the end of the alphabet.",
     } },
 ];
 
