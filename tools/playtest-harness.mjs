@@ -51,7 +51,16 @@ const APP_URL = `file://${REPO}/web/index.html`;
 
 // Steps you advance by clicking a button, vs steps you advance by ANSWERING.
 // This split is the thing a from-scratch driver gets wrong.
-const TEACH_STEPS = new Set(["glyph", "wordintro", "toneIntro", "tonecalc", "chunkIntro", "chunk"]);
+//
+// This set is a FALLBACK. It was a hand-kept copy of learn.js's _TEACH_KINDS
+// and it drifted the first time the app grew a card kind: `scriptnote` (the
+// script notes on the letter ladder) was unknown here, so it fell through to
+// the skip branch and advanced correctly by luck — while every round logged it
+// as "skip:scriptnote" and no persona ever reported on a teaching card that had
+// been added precisely to be read. Silent, and exactly the wrong kind of quiet.
+// openApp now asks the page for the real set, which is this module's whole
+// stated philosophy: the app already knows what step it is on, so do not guess.
+const TEACH_STEPS = new Set(["glyph", "wordintro", "toneIntro", "tonecalc", "chunkIntro", "chunk", "scriptnote"]);
 const CHOICE_STEPS = new Set(["mc", "mc2", "speed", "listen", "mcth", "clozex", "cloze", "toneear", "toneread"]);
 
 // Every browser this module launches, so the process cannot exit while one is
@@ -354,7 +363,7 @@ export async function openApp(opts = {}) {
       let action = "unknown";
       let forced = false;
 
-      if (TEACH_STEPS.has(kind)) {
+      if ((app.teachKinds || TEACH_STEPS).has(kind)) {
         action = "advance";
         await app.safe("advance:" + kind, () => {
           const b = [...document.querySelectorAll("#lesson-body button")]
@@ -549,5 +558,11 @@ export async function openApp(opts = {}) {
     if (opts.noAudio) await page.evaluate(() => { try { _tts.available = () => false; } catch (e) {} });
   }
   await app.dismissTutorial();
+  // Ask the app for its own teach-vs-answer split rather than trusting the
+  // copy at the top of this file. A card kind added to learn.js is then driven
+  // correctly by every round from that moment, with nothing to remember here.
+  const kinds = await page.evaluate(() =>
+    (typeof _TEACH_KINDS !== "undefined" && _TEACH_KINDS.size) ? [..._TEACH_KINDS] : null);
+  if (kinds) app.teachKinds = new Set(kinds);
   return app;
 }
