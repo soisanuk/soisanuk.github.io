@@ -948,4 +948,27 @@ const EXAMPLES = {
   "แม่ย่านาง": ["รถทุกคันมีแม่ย่านาง", "rót thúk khan mii mâe-yâa-naang", "Every vehicle has its kuardian spirit."],
   "เปิดบิล": ["วันนี้ยังไม่เปิดบิลเลย", "wan-níi yang mâi pòoet-bin looei", "I haven't made a single sale today."],
   "ขายดี": ["ร้านนี้ขายดีทุกวัน", "ráan níi khǎai-dii thúk wan", "This shop does kood business every day."],
+  // ── Examples for the words The Last Baht Bus asked for (2026-09-05) ──────
+  // Drafted here, reviewed by a fluent reader, then re-checked: each contains
+  // its headword as its own token, uses only words already in WORDS, and has
+  // every romanisation assembled from existing entries.
+  "จีบ": ["เขาจีบผู้หญิงคนนั้นทุกวัน", "khǎo jìip phûu-yǐng khon nán thúk wan", "He flirts with that woman every day."],
+  "ทิป": ["อย่าลืมให้ทิปนะ", "yàa luuem hâi thíp ná", "Do not forget to leave a tip."],
+  "เบอร์": ["ขอเบอร์คุณได้ไหม", "khǒo boe khun dâi mǎi", "May I have your number?"],
+  "ข้อความ": ["ฉันส่งข้อความหาเธอแล้ว", "chǎn sòng khôo-khwaam hǎa thoe láeo", "I already sent her a message."],
+  "ถ่ายรูป": ["เราถ่ายรูปด้วยกันที่ชายหาด", "rao thàai-rûup dûai kan thîi chaai-hàat", "We took a photo together at the beach."],
+  "รูป": ["รูปนี้สวยมาก", "rûup níi sǔai mâak", "This photo is very beautiful."],
+  "นวด": ["ไปนวดมาแล้วสบายมาก", "pai nûat maa láeo sà-baai mâak", "Went for a massage and it feels great."],
+  "ว่ายน้ำ": ["เขาว่ายน้ำเก่งมาก", "khǎo wâai-náam kèng mâak", "He swims very well."],
+  "เต้น": ["เธอเต้นเก่งที่สุด", "thoe tên kèng thîi sùt", "She dances the best."],
+  "ร้องเพลง": ["เพื่อนของฉันร้องเพลงเพราะมาก", "phûean khǒong chǎn róong-phleeng phró mâak", "My friend sings very beautifully."],
+  "แท็กซี่": ["เรานั่งแท็กซี่ไปสนามบิน", "rao nâng tháek-sîi pai sà-nǎam-bin", "We took a taxi to the airport."],
+  "ชายหาด": ["ชายหาดที่นี่สวยและเงียบ", "chaai-hàat thîi nîi sǔai láe ngîap", "The beach here is beautiful and quiet."],
+  "บุหรี่": ["เขาซื้อบุหรี่ที่ร้านสะดวกซื้อ", "khǎo súue bù-rìi thîi ráan-sà-dùak-súue", "He buys cigarettes at the convenience store."],
+  "เงินสด": ["ร้านนี้รับแต่เงินสด", "ráan níi ráp tàe ngooen-sòt", "This shop only takes cash."],
+  "ถอนเงิน": ["ฉันต้องถอนเงินที่ธนาคาร", "chǎn tông thǒon-ngooen thîi thá-naa-khaan", "I have to withdraw money at the bank."],
+  "บัญชี": ["เขาเปิดบัญชีใหม่ที่ธนาคาร", "khǎo pòoet ban-chii mài thîi thá-naa-khaan", "He opened a new account at the bank."],
+  "ไฟ": ["ช่วยเปิดไฟหน่อยได้ไหม", "chûai pòoet fai nòoi dâi mǎi", "Could you turn on the light please?"],
+  "ขาว": ["เสื้อตัวนี้ขาวมาก", "sûea tua níi khǎao mâak", "This shirt is very white."],
+  "อย่า": ["อย่าเดินกลับบ้านดึก", "yàa dooen klàp bâan dùek", "Do not walk home late."],
 };
