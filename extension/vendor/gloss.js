@@ -91,8 +91,29 @@ function _volLoad(cb) {
 // "volubilis", or null. The card uses it to credit the right dictionary:
 // Wiktionary is CC BY-SA 3.0 and Volubilis 4.0, and attribution is a condition
 // of both, so a screen showing a gloss has to name the one it actually used.
+// The course's own words, as a map. Prefers the host app's WORD_MAP (app.js
+// builds one) and otherwise builds its own — the same fallback wordcard.js
+// carries under _wcMap, for the same reason: this file is also loaded by the
+// browser extension, which bundles data.js but NOT app.js.
+//
+// The three checks below used to read `typeof WORD_MAP !== "undefined" && ...`
+// with nothing after the &&, which in the extension is simply false. So the
+// entire course layer never fired there and all 970 hand-written glosses fell
+// through to Wiktionary. Not a subtle degradation: สวัสดี came back as
+// "welfare, well-being; prosperity, success" — the Sanskrit etymology — rather
+// than "hello/goodbye", and every correction made here was invisible to the
+// extension the moment it shipped. A guard with no fallback is a silent
+// opt-out wearing a safety check's clothes.
+let _glMapCache = null;
+function _glCourse(word) {
+  if (typeof WORD_MAP !== "undefined") return WORD_MAP[word] || null;
+  if (typeof WORDS === "undefined") return null;
+  if (!_glMapCache) _glMapCache = Object.fromEntries(WORDS.map(w => [w[0], w]));
+  return _glMapCache[word] || null;
+}
+
 function glossSource(word) {
-  if (typeof WORD_MAP !== "undefined" && WORD_MAP[word]) return "course";
+  if (_glCourse(word)) return "course";
   if (_glossExtra(word)) return "extra";
   if (_glossMap && _glossMap.get(word)) return "wiktionary";
   if (_volMap && _volMap.get(word)) return "volubilis";
@@ -114,7 +135,8 @@ function _glossExtra(word) {
   return (typeof GLOSS_EXTRA !== "undefined" && GLOSS_EXTRA[word]) || null;
 }
 function thaiGloss(word) {
-  if (typeof WORD_MAP !== "undefined" && WORD_MAP[word]) return WORD_MAP[word][2];
+  const c = _glCourse(word);
+  if (c) return c[2];
   const x = _glossExtra(word);
   if (x) return x[1];
   const e = _glossMap && _glossMap.get(word);
@@ -126,7 +148,8 @@ function thaiGloss(word) {
 // the derived one, then null. Never a guess — an empty derived field means the
 // generator refused it.
 function thaiRoman(word) {
-  if (typeof WORD_MAP !== "undefined" && WORD_MAP[word]) return WORD_MAP[word][1];
+  const c = _glCourse(word);
+  if (c) return c[1];
   const x = _glossExtra(word);
   if (x) return x[0] || null;
   const e = _glossMap && _glossMap.get(word);
