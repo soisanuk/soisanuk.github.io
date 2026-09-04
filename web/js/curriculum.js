@@ -95,7 +95,7 @@ const GRAMMAR_LESSONS = [
   },
   {
     id: "g3", title: "Ordering food", scenario: "the food stall",
-    intro: "เอา (ao) = I'll take. ขอ (khǎaw) = may I have (softer). Point, say " +
+    intro: "เอา (ao) = I'll take. ขอ (khǒo) = may I have (softer). Point, say " +
       "the dish, add หน่อย (nòi — 'a little', softens anything) and your " +
       "particle. ไม่เผ็ด (mâi phèt) = not spicy. You now survive any menu.",
     pattern: [
@@ -112,7 +112,7 @@ const GRAMMAR_LESSONS = [
   },
   {
     id: "g4", title: "Haggling", scenario: "the market",
-    intro: "เท่าไหร่ (thâo-rài) = how much. แพง (phaaeng) = expensive; แพงไป = " +
+    intro: "เท่าไหร่ (thâo-rài) = how much. แพง (phaeng) = expensive; แพงไป = " +
       "TOO expensive. ลดหน่อยได้ไหม (lót nòi dâai mǎi) = can you come down a " +
       "little? — ได้ไหม turns anything into a request. Smile the whole time; " +
       "the smile is half the discount.",
@@ -164,8 +164,8 @@ const GRAMMAR_LESSONS = [
   },
   {
     id: "g7", title: "Getting around", scenario: "the baht bus",
-    intro: "You flag a สองแถว (sǎawng-thǎaew — 'two rows', the red baht bus). " +
-      "Hop in the back; when you want out, press the buzzer or call จอด (jàawt, " +
+    intro: "You flag a สองแถว (sǒong-thǎeo — 'two rows', the red baht bus). " +
+      "Hop in the back; when you want out, press the buzzer or call จอด (jòot, " +
       "stop). ตรงไป is straight, เลี้ยว is turn. Ten baht down Beach Road — no " +
       "haggling, just name where you're going and add your particle.",
     pattern: [

@@ -175,7 +175,7 @@ function showStats() {
 
 // ─── tutorial ────────────────────────────────────────────────────────────────
 const _TUT_KEY = "soisanuk_seen_tutorial";
-const _TUT_TOTAL = 5;
+const _TUT_TOTAL = 6;
 let _tutStep = 0;
 
 // The tour used to hard-code its own counts ("878 vocabulary words"), which
