@@ -292,3 +292,40 @@ describe("romanisation scheme", () => {
     }
   });
 });
+
+// ── The consonant chart ─────────────────────────────────────────────────────
+// Found by reading a Thai SOLT I textbook's alphabet table against ours: ฏ was
+// a straight copy of ฎ — same acrophonic name (ชฎา, which belongs to ฎ), same
+// sound "d" where ฏ is "t". Two letters that look alike, one row duplicated,
+// and nothing could see it because the tone engine keys on CLASS and both are
+// mid class, so every tone the app derived was still right. Only the name and
+// the sound were wrong, and those are exactly what a letter card teaches.
+describe("the consonant chart is internally consistent", () => {
+  test("no two consonants share an acrophonic name", () => {
+    const by = {};
+    for (const c of CONSONANTS) (by[c[3]] = by[c[3]] || []).push(c[0]);
+    const dupes = Object.entries(by).filter(([, v]) => v.length > 1);
+    assert.equal(dupes.length, 0,
+      dupes.map(([n, v]) => `"${n}" is the name of both ${v.join(" and ")}`).join("; "));
+  });
+
+  test("every row's class agrees with the tone engine", () => {
+    // The chart teaches the class and the engine derives tone from it. If they
+    // disagree, the app contradicts itself and one of them is wrong.
+    for (const c of CONSONANTS)
+      assert.equal(c[2], _consClass(c[0]), `${c[0]}: chart says ${c[2]}, engine says ${_consClass(c[0])}`);
+  });
+
+  test("every consonant used in WORDS has a chart entry", () => {
+    // ษ was in eight words and in the letter ladder, but had no row — so it had
+    // no name, no class in the reference chart, and no script SRS card, while
+    // the engine happily classified it high. ฤ is excluded on purpose: it is
+    // the vowel-like "ru" character, not a consonant, and belongs to no class.
+    const NOT_A_CONSONANT = new Set(["ฤ", "ฦ"]);
+    const have = new Set(CONSONANTS.map(c => c[0]));
+    const used = new Set();
+    for (const w of WORDS) for (const ch of w[0]) if (/[ก-ฮ]/.test(ch)) used.add(ch);
+    const missing = [...used].filter(c => !have.has(c) && !NOT_A_CONSONANT.has(c));
+    assert.deepEqual(missing, [], `used in WORDS but absent from CONSONANTS: ${missing.join(" ")}`);
+  });
+});
