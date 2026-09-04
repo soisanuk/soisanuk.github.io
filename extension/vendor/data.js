@@ -1049,6 +1049,37 @@ const WORDS = [
   ["เปิดบิล", "pòoet-bin", "to open the bill — make the first sale; start a tab", "verb", "beliefs"],
   ["ขายดี", "khǎai-dii", "to sell well, do good business", "verb", "beliefs"],
 
+
+  // ── Requested by The Last Baht Bus (2026-09-04) ──────────────────────────
+  // Ordinary beginner vocabulary the game needs and the course did not have.
+  // Three were near-misses already in here: ถอนหายใจ but no ถอนเงิน, รูปร่าง
+  // but no bare รูป, and no ไฟ at all. Romanisations come from the shipped
+  // dictionary, normalised to the house scheme (เ◌อร์ is oe, so เบอร์ is
+  // "boe" and not the dictionary's "booe"), with every syllable checked
+  // against syllableToneInfo.
+  ["จีบ", "jìip", "to flirt; to chat someone up", "verb", "nightlife"],
+  ["ทิป", "thíp", "tip (gratuity)", "noun", "nightlife"],
+  ["เบอร์", "boe", "number (phone number)", "noun", "tech"],
+  ["ข้อความ", "khôo-khwaam", "message; text", "noun", "tech"],
+  ["ถ่ายรูป", "thàai-rûup", "to take a photo", "verb", "general"],
+  ["รูป", "rûup", "photo; picture", "noun", "general"],
+  ["นวด", "nûat", "massage; to massage", "verb", "health"],
+  ["ว่ายน้ำ", "wâai-náam", "to swim", "verb", "verbs_core"],
+  ["เต้น", "tên", "to dance", "verb", "nightlife"],
+  ["ร้องเพลง", "róong-phleeng", "to sing", "verb", "nightlife"],
+  ["แท็กซี่", "tháek-sîi", "taxi", "noun", "places"],
+  ["ชายหาด", "chaai-hàat", "beach", "noun", "nature"],
+  ["บุหรี่", "bù-rìi", "cigarette", "noun", "general"],
+  ["เงินสด", "ngooen-sòt", "cash", "noun", "work"],
+  ["ถอนเงิน", "thǒon-ngooen", "to withdraw money", "verb", "work"],
+  ["บัญชี", "ban-chii", "account (bank)", "noun", "work"],
+  ["ไฟ", "fai", "light; fire", "noun", "general"],
+  // ขาว and อย่า are core beginner words the course somehow lacked: colours
+  // were only ever stored as สี-compounds (สีขาว), so bare ขาว was missing —
+  // which is what made the tokeniser read ซอยบัวขาว as "soi, lotus, leg".
+  // Having it here fixes that at source, for both apps, with no predicate.
+  ["ขาว", "khǎao", "white", "adjective", "colors"],
+  ["อย่า", "yàa", "don't (prohibitive)", "verb", "grammar"],
 ];
 
 const TOP_100 = [
