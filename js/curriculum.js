@@ -37,7 +37,17 @@ const LETTER_BATCHES = [
     } },
   { id: "b4", title: "Rising and falling", glyphs: ["ส", "ล", "ห", "้", "ะ"] },
   { id: "b5", title: "Shops and streets", glyphs: ["บ", "ป", "ต", "ื", "แ"] },
-  { id: "b6", title: "People and things", glyphs: ["ค", "ง", "จ", "ใ", "็"] },
+  { id: "b6", title: "People and things", glyphs: ["ค", "ง", "จ", "ใ", "็"],
+    note: {
+      title: "When a vowel changes shape",
+      word: "\u0e40\u0e1b\u0e47\u0e19", rom: "pen", en: "to be",
+      text: "Close a syllable with a final consonant and some vowels change " +
+        "shape. เปะ is \u201cp\u00e8\u201d \u2014 put น on the end and the vowel shrinks to " +
+        "the small mark you just learned: เป็น, \u201cpen\u201d. ◌ะ does the same, " +
+        "becoming ◌ั in มัน and รัก. It is not a different vowel and not a " +
+        "different sound. It is the same vowel written smaller, because the " +
+        "final consonant needed the room.",
+    } },
   { id: "b7", title: "The spice rack", glyphs: ["ช", "ข", "ผ", "ถ", "ๆ", "๊"] },
   { id: "b8", title: "The long tail", glyphs: ["พ", "ฟ", "ซ", "ญ", "ณ", "๋", "ำ", "ิ"] },
   // b9/b10 close a hole the ladder shipped with: eighteen glyphs appeared in
@@ -100,6 +110,67 @@ function courseNewWords(batchIdx, words) {
   if (batchIdx === 0) return now;
   const before = new Set(courseDecodable(batchIdx - 1, words).map(w => w[0]));
   return now.filter(w => !before.has(w[0]));
+}
+
+// ── Consonant contrasts and look-alikes ──────────────────────────────────────
+// Two drills the ladder never had. It taught every glyph in isolation and then
+// only ever asked what a WORD means — so it never once asked "which letter is
+// this?", and letter shapes are exactly what beginners confuse. Both gaps were
+// found by reading a Thai SOLT I alphabet lesson against this course.
+
+// Sounds English merges. Thai keeps unaspirated ก ต ป apart from aspirated
+// ข/ค ท/ถ ผ/พ, and บ ด apart from ป ต. English has no contrast at all in the
+// first case, so ปิด and ผิด arrive in the ear as one word.
+const CONS_CONTRASTS = [
+  ["ก", "ข", "ค"], ["ต", "ท", "ถ"], ["ป", "ผ", "พ"],
+  ["บ", "ป"], ["ด", "ต"], ["จ", "ช"], ["ส", "ซ"],
+];
+
+// Minimal pairs are DERIVED from WORDS, never written down: two course words of
+// the same length differing in exactly one consonant, that consonant being a
+// contrast above. Fourteen today. The list grows by itself as vocabulary does,
+// it can never name a word the course does not teach, and its glosses cannot
+// drift from the vocabulary because they ARE the vocabulary.
+let _cmpCache = null;
+function consMinimalPairs(words) {
+  if (!words && _cmpCache) return _cmpCache;
+  const src = words || (typeof WORDS !== "undefined" ? WORDS : []);
+  const grp = new Map();
+  CONS_CONTRASTS.forEach((set, i) => set.forEach(c => {
+    if (!grp.has(c)) grp.set(c, []);
+    grp.get(c).push(i);
+  }));
+  const byLen = new Map();
+  for (const w of src) {
+    if (!byLen.has(w[0].length)) byLen.set(w[0].length, []);
+    byLen.get(w[0].length).push(w);
+  }
+  const out = [];
+  for (const list of byLen.values()) {
+    for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
+      const a = list[i][0], b = list[j][0];
+      let n = 0, at = -1;
+      for (let k = 0; k < a.length; k++) if (a[k] !== b[k]) { n++; at = k; }
+      if (n !== 1) continue;
+      const ga = grp.get(a[at]), gb = grp.get(b[at]);
+      if (!ga || !gb || !ga.some(x => gb.includes(x))) continue;
+      out.push({ a: list[i], b: list[j], at });
+    }
+  }
+  if (!words) _cmpCache = out;
+  return out;
+}
+
+// Letters that LOOK alike. Shape confusion is its own skill, separate from
+// sound: ก ถ ภ differ by one stroke and mean nothing like each other, and a
+// course that shows each once, alone, never makes you tell them apart.
+const CONFUSABLE_CONS = [
+  ["ก", "ถ", "ภ"], ["ข", "ช", "ซ"], ["ค", "ด", "ต"], ["ท", "ห", "น"],
+  ["ผ", "ฝ", "พ", "ฟ"], ["ฎ", "ฏ", "ฐ"], ["บ", "ป", "ษ"], ["ม", "ฆ", "ฒ"],
+  ["ร", "ธ"], ["ล", "ส"], ["ง", "จ"], ["อ", "ฮ"], ["ณ", "ญ"],
+];
+function confusableFor(ch) {
+  return CONFUSABLE_CONS.find(g => g.includes(ch)) || null;
 }
 
 // ── Scenario chunk lessons (grammar-lite) ────────────────────────────────────
