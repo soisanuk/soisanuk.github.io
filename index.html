@@ -2790,6 +2790,31 @@ body.mobile #app-shell {
     </div>
 
     <div class="tutorial-slide">
+      <h2>🔤 How the romanisation works</h2>
+      <p>The spellings beside every Thai word are a <strong>hybrid</strong>, not a standard system —
+        so it is worth two minutes now rather than a puzzle later.</p>
+      <p><strong>Consonants follow RTGS</strong>, the spelling you will meet on Thai road signs and
+        maps: <em>k</em> for ก, <em>kh</em> for ข and ค, <em>ph</em> for พ (never an English "f"),
+        <em>th</em> for ท. So พัทยา is <em>phat-tha-yaa</em> — three plain letters, no surprises when
+        you read a street sign.</p>
+      <p><strong>Tones follow Paiboon</strong>, because RTGS does not write them at all and tone is
+        half the word. The mark sits on the vowel:</p>
+      <div class="tut-decomp-demo" style="line-height:2">
+        <span style="color:var(--dim)">no mark</span> <strong>kaa</strong> mid ·
+        <strong>kàa</strong> low · <strong>kâa</strong> falling ·
+        <strong>káa</strong> high · <strong>kǎa</strong> rising
+      </div>
+      <p><strong>A doubled vowel is a long one.</strong> <em>a</em> is short and <em>aa</em> is long,
+        and the same for <em>ii</em>, <em>uu</em>, <em>uue</em>, <em>ooe</em>. Length changes meaning
+        in Thai as surely as tone does, so it is written rather than left to be guessed.</p>
+      <p>Two more worth knowing: a final ย is written <em>-i</em> (ยาว <em>yaao</em>, ร้อย
+        <em>róoi</em>) and a final ว is written <em>-o</em> (เลว <em>leo</em>). Every spelling in the
+        app follows these rules, and the tone marks are derived from the spelling by the same engine
+        that teaches the tone rules — so if a mark ever disagrees with what you worked out, one of
+        us has a bug worth reporting.</p>
+    </div>
+
+    <div class="tutorial-slide">
       <h2>✨ Tap Thai text to explore</h2>
       <p>In any flashcard or vocab list, <strong style="color:var(--saffron)">tap the Thai word</strong> to open its detail card — romanisation, audio, and an example sentence in context.</p>
       <p>Then <strong style="color:var(--saffron)">tap the Thai word inside the card</strong> to decompose it into syllable clusters. Every character is labelled and hoverable.</p>
@@ -2812,6 +2837,7 @@ body.mobile #app-shell {
       <div class="tutorial-dot" onclick="_tutGoTo(2)"></div>
       <div class="tutorial-dot" onclick="_tutGoTo(3)"></div>
       <div class="tutorial-dot" onclick="_tutGoTo(4)"></div>
+      <div class="tutorial-dot" onclick="_tutGoTo(5)"></div>
     </div>
     <div id="tutorial-nav">
       <button id="tutorial-prev" onclick="_tutPrev()">← Back</button>
