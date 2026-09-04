@@ -88,6 +88,14 @@ function _unitQueue(unit, dueWords, audio = true) {
   for (const w of dueWords || []) queue.push({ kind: "mc", word: w, tag: "review" });
   if (unit.kind === "letters") {
     const batch = LETTER_BATCHES[unit.batch];
+    // The batch's script note comes FIRST, before its glyphs. The ladder used
+    // to introduce เ as one more shape to memorise and never mention that it
+    // is written before the consonant you voice first — so the learner met the
+    // fact as an inconsistency in the data instead of as the rule it is.
+    // Placement before inventory; the ordering is owed to the reading tier in
+    // The Last Baht Bus, which teaches where a vowel SITS before teaching how
+    // many there are.
+    if (batch.note) queue.push({ kind: "scriptnote", note: batch.note });
     for (const g of batch.glyphs) queue.push({ kind: "glyph", glyph: g });
     const fresh = courseNewWords(unit.batch).slice(0, 8);
     const pool = courseDecodable(unit.batch);
@@ -188,7 +196,7 @@ function _unitStart(idx) {
 // which is why their target is chosen at queue-build time (item.pick), not
 // per-render: a stable recap needs a stable question.
 const _TEACH_KINDS = new Set(["glyph", "wordintro", "chunkIntro", "chunk",
-  "toneIntro", "tonecalc"]);
+  "toneIntro", "tonecalc", "scriptnote"]);
 
 function _learnStep() {
   if (!_lu || _lu.at >= _lu.queue.length) { _unitFinish(); return; }
@@ -212,7 +220,7 @@ function _learnStep() {
   showScreen("lesson-screen", "Q");
   if (review && !_TEACH_KINDS.has(item.kind)) { _wReviewCard(item, body); }
   else {
-    ({ glyph: _wGlyph, wordintro: _wWordIntro, mc: _wMC, mc2: _wMC2, speed: _wMC, listen: _wListen,
+    ({ glyph: _wGlyph, wordintro: _wWordIntro, scriptnote: _wScriptNote, mc: _wMC, mc2: _wMC2, speed: _wMC, listen: _wListen,
        mcth: _wMCTH, typeen: _wTypeEN, typeth: _wTypeTH, clozex: _wClozeX,
        cloze: _wCloze, match: _wMatch, chunkIntro: _wChunkIntro, chunk: _wChunk,
        toneIntro: _wToneIntro, tonecalc: _wToneCalc, toneear: _wToneEar, toneread: _wToneRead }[item.kind])(item, body);
@@ -707,6 +715,18 @@ function _wMatch(item, body) {
 }
 
 // chunk lesson intro + per-chunk absorb cards
+// One thing about HOW THAI IS WRITTEN, hung on a real word from this batch —
+// the same shape as a chunk intro, because it teaches rather than tests.
+function _wScriptNote(item, body) {
+  const n = item.note;
+  const w = (typeof WORD_MAP !== "undefined" && WORD_MAP[n.word]) || null;
+  body.innerHTML = `<div class="screen-title">${_esc(n.title)}</div>
+    <div class="thai-big" lang="th" onclick="_tts.speak(${_toneSpeak(n.word)})">${_esc(n.word)}</div>
+    <div class="rtgs">${_esc(n.rom)} \u00b7 ${_esc(n.en)}</div>
+    <div class="card-prompt learn-intro-text">${_esc(n.text)}</div>
+    <div class="btn-row">${w ? _wordCardBtn(w) : ""}<button class="btn btn-primary" onclick="_learnNext()">Got it \u2192</button></div>`;
+  _tts.speak(n.word);
+}
 function _wChunkIntro(item, body) {
   const l = item.lesson;
   body.innerHTML = `<div class="screen-title">${_esc(l.title)}</div>
@@ -979,8 +999,13 @@ if (typeof document !== "undefined") setTimeout(_streakRender, 0);
 // then passed in silence. Four thresholds spaced 3/4/4/3 fit a 14-unit spine;
 // three units were added later and this table wasn't revisited.
 // A test pins the last threshold to COURSE.length so it can't drift again.
+// Thresholds are unit counts, and the course grew from 17 units to 19 when the
+// ladder gained the two rungs that teach ์ and โ. The top MUST equal
+// COURSE.length or the final units award nothing; a test pins that. "Old hand"
+// moved 11 -> 12 to keep the run-in to the title from stretching to eight
+// units, which is longer than any earlier gap.
 const LEVELS = [[0, "Fresh off the plane"], [3, "Soi tourist"], [7, "Soi regular"],
-  [11, "Old hand"], [17, "เจ้าของบาร์"]];
+  [12, "Old hand"], [19, "เจ้าของบาร์"]];
 function _levelName(done) {
   let name = LEVELS[0][1];
   for (const [n, l] of LEVELS) if (done >= n) name = l;

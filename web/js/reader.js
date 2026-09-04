@@ -7,18 +7,24 @@
 // App-only, not vendored. readerGrade/readerFeed are DOM-free and vm-tested.
 
 // Cutoffs are the reading-ladder rung a sentence's hardest glyph needs. Full
-// example sentences are letter-rich, so even "First reads" sits a few rungs in;
-// the top tier (max = LETTER_BATCHES.length) also admits sentences using
-// consonants the guided course never formally teaches. Counts on the real
-// corpus: ≤4 → 18, ≤6 → 151, ≤7 → 367, ≤8 → 940. (These drift with EXAMPLES —
+// example sentences are letter-rich, so even "First reads" sits a few rungs in.
+// The top tier used to be a catch-all for glyphs the course never taught —
+// eighteen of them — which is no longer a category: the ladder teaches every
+// Thai letter in WORDS as of the b9/b10 rungs, and a test holds it there.
+// Counts on the real corpus: ≤4 → 20, ≤6 → 156, ≤7 → 378, ≤10 → 960 (recounted
+// 2026-09-05, at ten rungs and 960 examples). These drift with EXAMPLES —
 // editing ONE example sentence moved two of them the same day this comment was
 // last corrected. The UI computes them live, so only this comment and
-// architecture.md can ever be wrong; recount rather than trust them.)
+// architecture.md can ever be wrong; recount rather than trust them.
 const READER_LEVELS = [
   { name: "First reads", max: 4 },
   { name: "Getting around", max: 6 },
   { name: "Street Thai", max: 7 },
-  { name: "The whole soi", max: 8 },
+  // DERIVED, not 8. The comment above always said "max = LETTER_BATCHES.length"
+  // while the value was hardcoded, so the day the ladder grew two rungs the top
+  // tier would have silently dropped every sentence needing them — exactly the
+  // sentences the new rungs exist to unlock.
+  { name: "The whole soi", max: LETTER_BATCHES.length },
 ];
 const READER_COLOR_KEY = "soisanuk_tonecolor";
 const READER_POS_KEY = "soisanuk_readerpos";

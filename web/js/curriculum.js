@@ -15,13 +15,56 @@
 // WORDS. A word is decodable when every codepoint is taught (see below).
 const LETTER_BATCHES = [
   { id: "b1", title: "The first six", glyphs: ["ก", "น", "ม", "า", "ี", "ด"] },
-  { id: "b2", title: "Your first tone mark", glyphs: ["อ", "ย", "ู", "เ", "่"] },
+  { id: "b2", title: "Your first tone mark", glyphs: ["อ", "ย", "ู", "เ", "่"],
+    note: {
+      title: "Where the vowel sits",
+      word: "เอา", rom: "ao", en: "to take",
+      text: "เ is a vowel, and it is written BEFORE the consonant you say first: " +
+        "เอา is \u201cao\u201d. ู in ดู hangs underneath. Thai vowels sit around " +
+        "their consonant \u2014 before it, after it, above, below, or in several " +
+        "pieces at once \u2014 and the consonant never moves. This one fact is " +
+        "most of why Thai looks unreadable, and you have just learned it.",
+    } },
   { id: "b3", title: "Enough to say no", glyphs: ["ร", "ั", "ว", "ท", "ไ"] },
   { id: "b4", title: "Rising and falling", glyphs: ["ส", "ล", "ห", "้", "ะ"] },
-  { id: "b5", title: "Shops and streets", glyphs: ["บ", "ป", "ต", "ื", "แ"] },
+  { id: "b5", title: "Shops and streets", glyphs: ["บ", "ป", "ต", "ื", "แ"],
+    note: {
+      title: "The vowel that is not there",
+      word: "ตลาด", rom: "t\u00e0-l\u00e0at", en: "market",
+      text: "Four letters, two syllables \u2014 and the first syllable\u2019s vowel " +
+        "is not written at all. Thai drops a short \u201ca\u201d between two " +
+        "consonants that open a word and expects you to put it back. Read ตลาด " +
+        "as \u201ctlaat\u201d and nobody will know the word; it is \u201ct\u00e0-l\u00e0at\u201d. " +
+        "You will meet this on signs every single day.",
+    } },
   { id: "b6", title: "People and things", glyphs: ["ค", "ง", "จ", "ใ", "็"] },
   { id: "b7", title: "The spice rack", glyphs: ["ช", "ข", "ผ", "ถ", "ๆ", "๊"] },
   { id: "b8", title: "The long tail", glyphs: ["พ", "ฟ", "ซ", "ญ", "ณ", "๋", "ำ", "ิ"] },
+  // b9/b10 close a hole the ladder shipped with: eighteen glyphs appeared in
+  // WORDS and in NO batch, so 188 words (19%) could never become decodable no
+  // matter how far you got. The worst of them were not obscure — ์ (47 words),
+  // โ (39), ุ (51) — which meant a learner who finished the entire guided
+  // course still could not read เบียร์ or โรงแรม. Beer and hotel.
+  { id: "b9", title: "The last vowels, and the silent mark", glyphs: ["ุ", "ึ", "โ", "์"],
+    note: {
+      title: "Thai points at its silent letters",
+      word: "เบียร์", rom: "bia", en: "beer",
+      text: "The ร on the end is not pronounced, and that little curl above it " +
+        "\u2014 ์, called การันต์ \u2014 is Thai telling you so. English hides its " +
+        "silent letters and lets you find out by being laughed at; Thai marks " +
+        "every one. Also in this batch: โ, one more vowel written before its " +
+        "consonant (โรงแรม, roong-raem, hotel).",
+    } },
+  { id: "b10", title: "The borrowed consonants", glyphs: ["ศ", "ษ", "ภ", "ธ", "ฉ", "ฝ", "ฮ", "ฤ", "ฆ", "ฏ", "ฒ", "ฎ"],
+    note: {
+      title: "Why there are so many letters for one sound",
+      word: "ประเทศ", rom: "pr\u00e0-th\u00eaet", en: "country",
+      text: "ศ, ษ and ส are all just \u201cs\u201d. Thai borrowed heavily from " +
+        "Sanskrit and Pali and kept the original spellings, so a word\u2019s letters " +
+        "often record where it came from rather than how it sounds. You do not " +
+        "have to know which is which to read \u2014 they sound the same. That is " +
+        "the good news at the end of the alphabet.",
+    } },
 ];
 
 // every glyph taught up to and including batch index i
@@ -303,7 +346,9 @@ const COURSE = [
   { kind: "chunks", lesson: "g6", label: "Speak: this one, that one" },
   { kind: "letters", batch: 7, label: "Read: the long tail" },
   { kind: "chunks", lesson: "g7", label: "Speak: getting around" },
+  { kind: "letters", batch: 8, label: "Read: beer, hotel, and the silent mark" },
   { kind: "chunks", lesson: "g8", label: "Speak: prices and counting" },
+  { kind: "letters", batch: 9, label: "Read: the borrowed consonants" },
 ];
 
 // mastery gate: a unit passes at 80% first-try accuracy
