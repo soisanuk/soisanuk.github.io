@@ -97,7 +97,22 @@ function _unitQueue(unit, dueWords, audio = true) {
     // many there are.
     if (batch.note) queue.push({ kind: "scriptnote", note: batch.note });
     for (const g of batch.glyphs) queue.push({ kind: "glyph", glyph: g });
-    const fresh = courseNewWords(unit.batch).slice(0, 8);
+    let fresh = courseNewWords(unit.batch).slice(0, 8);
+    // A note's anchor word MUST be one this unit actually teaches — a rule
+    // about ตลาด means nothing in a unit that never shows ตลาด. But fresh-8 is
+    // just the first eight of an order-dependent list, so adding any word
+    // anywhere can silently push an anchor out of it: adding the classifier
+    // อัน displaced อร่อย from batch 2 and broke the unwritten-vowel note,
+    // which is not a relationship anybody should have to remember. Pull the
+    // anchor in explicitly and the coupling is gone.
+    if (batch.note) {
+      const nw = (typeof WORD_MAP !== "undefined" && WORD_MAP[batch.note.word]) ||
+                 (typeof WORDS !== "undefined" && WORDS.find(x => x[0] === batch.note.word));
+      // Prepended, NOT swapped for the eighth: another test holds that every
+      // word in fresh-8 gets an intro, and dropping one to make room broke it.
+      // A unit with a note teaches nine words; that is the correct price.
+      if (nw && !fresh.some(x => x[0] === nw[0])) fresh = [nw, ...fresh];
+    }
     const pool = courseDecodable(unit.batch);
     // TEACH before testing: meet each new word — decode it, hear it, learn what
     // it MEANS — before any card asks you to recall it. (This was the hole:
@@ -450,14 +465,33 @@ function _speakBtn(text) {
 }
 
 // a letter/vowel/tone-mark introduction card — tap to hear, then on
+// One sentence about what this glyph does, correct for the ones that are not
+// consonants and not tone marks either.
+const _GLYPH_NOTE = {
+  "ๆ": "ไม้ยมก. It sits AFTER a word and repeats it — เด็กๆ is \u201cchildren\u201d, ช้าๆ is \u201cslowly\u201d. It is not a tone mark and it does not ride above anything.",
+  "็": "ไม้ไต่คู้. It SHORTENS the vowel beneath it — เป็น, not เปน. Vowel length is half of every tone rule, so this small hook matters twice.",
+};
+function _glyphNote(g, isToneMark) {
+  if (_GLYPH_NOTE[g]) return _GLYPH_NOTE[g];
+  if (isToneMark) return "A tone mark. It rides above the consonant and sets the syllable's tone — with the consonant's class and the vowel's length, it is the third thing the rule needs.";
+  return "Tap the glyph to hear it. Say it back. Twice.";
+}
 function _wGlyph(item, body) {
   const g = item.glyph;
-  const isMark = ["่", "้", "๊", "๋", "็", "ๆ", "ำ"].includes(g);
+  // What this glyph IS, asked of the app's own data instead of a hand-kept
+  // list. The list lumped ๆ and ำ in with the tone marks and told the learner
+  // "a mark, not a letter — it rides above and bends the tone", which is false
+  // of both: ๆ sits on the baseline AFTER a word and repeats it, and ำ is a
+  // VOWEL — VOWELS has it, _thaiCharKind calls it one, letterSpeech names it
+  // สระอำ. Three of our own datasets said so while the card said otherwise.
+  // It also suppressed the NAME for everything in the list, so the one thing a
+  // learner could actually use — ไม้เอก, ไม้ยมก — was the thing withheld.
+  const isToneMark = ["่", "้", "๊", "๋"].includes(g);
   const disp = typeof vowelDisp === "function" ? vowelDisp(g) : g;
-  const name = typeof letterSpeech === "function" && !isMark ? letterSpeech(g) : "";
+  const name = typeof letterSpeech === "function" ? letterSpeech(g) : "";
   body.innerHTML = `<div class="thai-big learn-glyph" lang="th" onclick="_tts.speak(letterSpeechParts(${_toneSpeak(g)}))">${_esc(disp)}</div>
     <div class="rtgs">${_esc(name)}</div>
-    <div class="card-prompt">${isMark ? "A mark, not a letter — it rides above and bends the tone. Learn each word's tone with the word." : "Tap the glyph to hear it. Say it back. Twice."}</div>
+    <div class="card-prompt">${_esc(_glyphNote(g, isToneMark))}</div>
     <div class="btn-row"><button class="btn btn-primary" onclick="_learnNext()">Got it →</button></div>`;
   if (typeof letterSpeechParts === "function") _tts.speak(letterSpeechParts(g));
 }

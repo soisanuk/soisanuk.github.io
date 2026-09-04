@@ -103,12 +103,13 @@ describe("script notes", () => {
   // anchored on ตลาด, which no batch ever teaches — so the rule was stated,
   // never demonstrated, and never asked. Decodable is not enough; it has to be
   // a word the learner actually meets in that unit.
-  test("each note's word is one the unit actually teaches", () => {
-    for (const [i, b] of noted) {
-      const fresh = courseNewWords(i).slice(0, 8).map(w => w[0]);
-      assert.ok(fresh.includes(b.note.word),
-        `${b.id}: note anchors on ${b.note.word}, but batch ${i} teaches ${fresh.join(" ")}`);
-    }
+  test("each note's word is a real course word", () => {
+    // That the unit INTRODUCES it is asserted in learn.test.js, where the queue
+    // lives — _unitQueue pulls the anchor into the taught set explicitly, so it
+    // no longer depends on where the word happens to fall in fresh-8.
+    for (const [, b] of noted)
+      assert.ok(WORDS.some(w => w[0] === b.note.word),
+        `${b.id}: note anchors on ${b.note.word}, which is not in WORDS`);
   });
 
   // CLAUDE.md: a combining mark with no base character renders as a dotted
@@ -187,5 +188,46 @@ describe("consonant contrasts and look-alikes", () => {
     const fake = [["ปา", "paa", "to throw", "verb", "x"], ["ผา", "phǎa", "a cliff", "noun", "x"]];
     const got = consMinimalPairs(fake);
     assert.equal(got.length, 1, "ปา/ผา is a ป↔ผ minimal pair and should be found");
+  });
+});
+
+describe("a unit that promises reading can actually be read", () => {
+  // The chunk lessons are deliberately lexical — "chunks stick by mouth, not
+  // by eye" — so a "Speak:" unit showing a letter the ladder has not reached
+  // is fine: you repeat it after the audio. Four of them do, and requiring
+  // otherwise would push the first speaking lesson to batch 8, which is worse.
+  //
+  // A unit labelled "Read:" makes a different promise. COURSE[11], the only
+  // signage lesson in the course, printed เปิด ปิด ห้องน้ำ and ห้ามสูบบุหรี่
+  // using ิ ำ ุ — none of them taught for another two or three rungs. The one
+  // unit about reading signs was the one you could not read.
+  test("every Read: unit's Thai uses only letters taught before it", () => {
+    for (let i = 0; i < COURSE.length; i++) {
+      const u = COURSE[i];
+      if (u.kind !== "chunks" || !/^Read:/.test(u.label)) continue;
+      let last = -1;
+      for (let j = 0; j < i; j++) if (COURSE[j].kind === "letters") last = COURSE[j].batch;
+      const taught = taughtGlyphs(last);
+      const L = GRAMMAR_LESSONS.find(g => g.id === u.lesson);
+      const missing = new Set();
+      for (const p of (L.pattern || []))
+        for (const ch of p[0]) if (/[\u0E00-\u0E7F]/.test(ch) && !taught.has(ch)) missing.add(ch);
+      for (const pr of (L.practice || []))
+        for (const ch of ((pr.th || "") + (pr.answer || "")))
+          if (/[\u0E00-\u0E7F]/.test(ch) && !taught.has(ch)) missing.add(ch);
+      assert.equal(missing.size, 0,
+        `COURSE[${i}] "${u.label}" runs after batch ${last} but needs ${[...missing].join(" ")}`);
+    }
+  });
+
+  test("the ladder front-loads the vowels that unlock the most words", () => {
+    // ๆ (mai yamok, 6 words in the whole lexicon) had a batch-7 slot while ิ —
+    // the fourth commonest vowel in Thai, 1,917 lexicon words — waited for
+    // batch 8, which is why เปิด and ปิด, the two commonest shop signs in the
+    // country, were undecodable until the second-to-last rung.
+    const at = ch => LETTER_BATCHES.findIndex(b => b.glyphs.includes(ch));
+    for (const [common, rare] of [["ิ", "ๆ"], ["ุ", "ๆ"], ["ำ", "ๆ"], ["ิ", "๋"]])
+      assert.ok(at(common) < at(rare),
+        `${common} is far commoner than ${rare} but is taught later (batch ${at(common)} vs ${at(rare)})`);
   });
 });

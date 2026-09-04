@@ -636,3 +636,19 @@ test("every typed-Thai target can be spelled on the keyboard the course shows", 
   }
   assert.ok(checked > 20, `expected plenty of typed-Thai cards, saw ${checked}`);
 });
+
+test("a script note's anchor word is always introduced by its own unit", () => {
+  // The note says "อร่อย is à-ròoi, and its first vowel is not written". If the
+  // unit never shows อร่อย, the rule is stated and never instantiated. fresh-8
+  // is order-dependent, so this cannot be left to luck: _unitQueue pulls the
+  // anchor in. Adding one classifier to WORDS once broke it silently.
+  for (const u of COURSE) {
+    if (u.kind !== "letters") continue;
+    const note = LETTER_BATCHES[u.batch].note;
+    if (!note) continue;
+    const q = _unitQueue(u, []);
+    const intro = q.filter(x => x.kind === "wordintro").map(x => x.word[0]);
+    assert.ok(intro.includes(note.word),
+      `batch ${u.batch}: note teaches ${note.word}, but the unit introduces ${intro.join(" ")}`);
+  }
+});
