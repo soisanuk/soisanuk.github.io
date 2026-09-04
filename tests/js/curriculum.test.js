@@ -84,6 +84,38 @@ describe("script notes", () => {
     }
   });
 
+  // A persona who does not read prose found this: a note is only teaching if
+  // the unit it opens goes on to SHOW the thing. The unwritten-vowel note sat
+  // on batch 4 whose eight new words contain no unwritten vowel at all, and
+  // anchored on ตลาด, which no batch ever teaches — so the rule was stated,
+  // never demonstrated, and never asked. Decodable is not enough; it has to be
+  // a word the learner actually meets in that unit.
+  test("each note's word is one the unit actually teaches", () => {
+    for (const [i, b] of noted) {
+      const fresh = courseNewWords(i).slice(0, 8).map(w => w[0]);
+      assert.ok(fresh.includes(b.note.word),
+        `${b.id}: note anchors on ${b.note.word}, but batch ${i} teaches ${fresh.join(" ")}`);
+    }
+  });
+
+  // CLAUDE.md: a combining mark with no base character renders as a dotted
+  // circle where the font has U+25CC and as tofu where it does not. Two notes
+  // shipped with one — "ู in ดู hangs underneath" and "the curl — ์ — above
+  // it" — in the exact sentence pointing AT the mark, which is the worst place
+  // for it to be unreadable.
+  test("no note text contains a combining mark with nothing to attach to", () => {
+    const COMB = /[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/;
+    const CONS = /[\u0E01-\u0E2E]/;
+    for (const [, b] of noted) {
+      const t = b.note.text;
+      for (let i = 0; i < t.length; i++) {
+        if (!COMB.test(t[i])) continue;
+        assert.ok(CONS.test(t[i - 1] || ""),
+          `${b.id}: orphan ${t[i]} (U+${t.codePointAt(i).toString(16).toUpperCase()}) in "...${t.slice(Math.max(0, i - 20), i + 10)}..."`);
+      }
+    }
+  });
+
   test("each note's word is decodable at its own batch", () => {
     for (const [i, b] of noted) {
       const ok = courseDecodable(i, WORDS).some(w => w[0] === b.note.word);
