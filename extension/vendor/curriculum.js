@@ -58,7 +58,7 @@ const LETTER_BATCHES = [
         "batch: โ, one more vowel written before its consonant (โรงแรม, " +
         "roong-raem, hotel).",
     } },
-  { id: "b10", title: "The borrowed consonants", glyphs: ["ศ", "ษ", "ภ", "ธ", "ฉ", "ฝ", "ฮ", "ฤ", "ฆ", "ฏ", "ฒ", "ฎ"],
+  { id: "b10", title: "The borrowed consonants", glyphs: ["ศ", "ษ", "ภ", "ธ", "ฉ", "ฝ", "ฮ", "ฤ"],
     note: {
       title: "Why there are so many letters for one sound",
       word: "ศาลา", rom: "s\u01cea-laa", en: "pavilion/sala",
@@ -66,8 +66,14 @@ const LETTER_BATCHES = [
         "borrowed heavily from Sanskrit and Pali and kept the original " +
         "spellings, so a word\u2019s letters often record where it came from " +
         "rather than how it sounds. You never have to know which is which to " +
-        "read it. That is the good news at the end of the alphabet.",
+        "read it, and that is the good news.",
     } },
+  // The alphabet has 44 consonants and this ladder taught 37 of them. ฌ, ฐ, ฑ
+  // and ฬ were in CONSONANTS, in real words, and in no batch — the same hole
+  // b9/b10 closed for WORDS, one dataset over, which the test then pinned
+  // against WORDS only and so could not see. ฐ carries รัฐ and รัฐบาล; ฬ
+  // carries นาฬิกา, on the front of every watch shop.
+  { id: "b11", title: "The last eight", glyphs: ["ฆ", "ฏ", "ฒ", "ฎ", "ฌ", "ฐ", "ฑ", "ฬ"] },
 ];
 
 // every glyph taught up to and including batch index i
@@ -352,6 +358,7 @@ const COURSE = [
   { kind: "letters", batch: 8, label: "Read: beer, hotel, and the silent mark" },
   { kind: "chunks", lesson: "g8", label: "Speak: prices and counting" },
   { kind: "letters", batch: 9, label: "Read: the borrowed consonants" },
+  { kind: "letters", batch: 10, label: "Read: the last eight letters" },
 ];
 
 // mastery gate: a unit passes at 80% first-try accuracy

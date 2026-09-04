@@ -1005,7 +1005,7 @@ if (typeof document !== "undefined") setTimeout(_streakRender, 0);
 // moved 11 -> 12 to keep the run-in to the title from stretching to eight
 // units, which is longer than any earlier gap.
 const LEVELS = [[0, "Fresh off the plane"], [3, "Soi tourist"], [7, "Soi regular"],
-  [12, "Old hand"], [19, "เจ้าของบาร์"]];
+  [12, "Old hand"], [20, "เจ้าของบาร์"]];
 function _levelName(done) {
   let name = LEVELS[0][1];
   for (const [n, l] of LEVELS) if (done >= n) name = l;
