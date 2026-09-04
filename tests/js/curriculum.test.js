@@ -123,8 +123,12 @@ describe("script notes", () => {
       const t = b.note.text;
       for (let i = 0; i < t.length; i++) {
         if (!COMB.test(t[i])) continue;
-        assert.ok(CONS.test(t[i - 1] || ""),
-          `${b.id}: orphan ${t[i]} (U+${t.codePointAt(i).toString(16).toUpperCase()}) in "...${t.slice(Math.max(0, i - 20), i + 10)}..."`);
+        // ◌ (U+25CC) counts as a host: it is the data's canonical placeholder
+        // and _scriptNoteText runs the string through vowelDisp before render,
+        // which swaps it for a real consonant. A BARE mark has no such rescue.
+        const prev = t[i - 1] || "";
+        assert.ok(CONS.test(prev) || prev === "\u25CC",
+          `${b.id}: orphan ${t[i]} (U+${t.codePointAt(i).toString(16).toUpperCase()}) in "...${t.slice(Math.max(0, i - 20), i + 10)}..." — host it on a consonant or write it as ◌${t[i]}`);
       }
     }
   });
@@ -141,5 +145,47 @@ describe("script notes", () => {
       assert.ok(b.note.title && b.note.text, `${b.id}: note is missing title or text`);
       assert.ok(b.note.text.length > 80, `${b.id}: note text is too thin to teach anything`);
     }
+  });
+});
+
+// ── The two drills the ladder was missing ───────────────────────────────────
+describe("consonant contrasts and look-alikes", () => {
+  test("every look-alike group names real consonants, with no repeats", () => {
+    const have = new Set(CONSONANTS.map(c => c[0]));
+    const seen = new Set();
+    for (const g of CONFUSABLE_CONS) {
+      assert.ok(g.length >= 2, `a group of ${g.length} cannot be a discrimination test`);
+      for (const ch of g) {
+        assert.ok(have.has(ch), `${ch} is in a look-alike group but not in CONSONANTS`);
+        assert.ok(!seen.has(ch), `${ch} appears in more than one look-alike group`);
+        seen.add(ch);
+      }
+    }
+  });
+
+  test("minimal pairs are real course words differing in exactly one consonant", () => {
+    const pairs = consMinimalPairs();
+    assert.ok(pairs.length >= 10, `only ${pairs.length} pairs — the drill needs a supply`);
+    const have = new Set(WORDS.map(w => w[0]));
+    for (const p of pairs) {
+      assert.ok(have.has(p.a[0]) && have.has(p.b[0]), `${p.a[0]}/${p.b[0]}: not both course words`);
+      assert.equal(p.a[0].length, p.b[0].length);
+      let diff = 0;
+      for (let i = 0; i < p.a[0].length; i++) if (p.a[0][i] !== p.b[0][i]) diff++;
+      assert.equal(diff, 1, `${p.a[0]}/${p.b[0]} differ in ${diff} places, not one`);
+      // and the differing letters must actually be a contrast worth drilling
+      const set = CONS_CONTRASTS.find(g => g.includes(p.a[0][p.at]) && g.includes(p.b[0][p.at]));
+      assert.ok(set, `${p.a[0]}/${p.b[0]}: ${p.a[0][p.at]}/${p.b[0][p.at]} is not a listed contrast`);
+      // a pair whose two words mean the same thing teaches nothing
+      assert.notEqual(p.a[2], p.b[2], `${p.a[0]}/${p.b[0]} share a gloss`);
+    }
+  });
+
+  test("the pairs are derived, not frozen — new vocabulary feeds them", () => {
+    // Passing a word list in must bypass the cache, or the drill silently
+    // stops growing the day someone memoises it wrong.
+    const fake = [["ปา", "paa", "to throw", "verb", "x"], ["ผา", "phǎa", "a cliff", "noun", "x"]];
+    const got = consMinimalPairs(fake);
+    assert.equal(got.length, 1, "ปา/ผา is a ป↔ผ minimal pair and should be found");
   });
 });

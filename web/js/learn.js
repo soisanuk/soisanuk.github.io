@@ -133,6 +133,38 @@ function _unitQueue(unit, dueWords, audio = true) {
       const listen = _shuffle(pool.slice()).slice(0, Math.min(5, pool.length));
       listen.forEach((w, i) => queue.push({ kind: "listen", word: w, pool, mode: i % 2 ? "en" : "th" }));
     }
+    // WHICH LETTER IS THIS? The unit has just shown each new glyph once, alone,
+    // and then spent the rest of itself asking what words mean. Nothing ever
+    // asked the learner to tell ก from ถ from ภ — which is the thing they
+    // actually get wrong. Options are the look-alikes, so elimination does not
+    // work; only knowing the shape does. Two per unit, on newly taught letters.
+    if (typeof confusableFor === "function") {
+      const pick = batch.glyphs
+        .map(g => ({ g, group: confusableFor(g) }))
+        .filter(x => x.group && x.group.length >= 2)
+        .slice(0, 2);
+      for (const { g, group } of pick) {
+        const c = CONSONANTS.find(x => x[0] === g);
+        if (c) queue.push({ kind: "glyphpick", cons: c, group: group.slice() });
+      }
+    }
+    // ONE LETTER APART. A minimal pair from this batch's own decodable words —
+    // taught side by side, then tested with its partner guaranteed among the
+    // options. Random distractors would let the learner answer by recognising
+    // the shape of a word they know; the partner forces the contrast itself.
+    if (typeof consMinimalPairs === "function") {
+      const known = new Set(pool.map(w => w[0]));
+      // shuffled, not .find() — the first match is the same pair for every
+      // batch that can reach it, so three different units were all teaching
+      // ปิด/ผิด and the other thirteen pairs were never shown to anybody.
+      const pair = _shuffle(consMinimalPairs().filter(p => known.has(p.a[0]) && known.has(p.b[0])))[0];
+      if (pair) {
+        queue.push({ kind: "conspair", pair });
+        const first = Math.random() < 0.5;
+        queue.push({ kind: "pairpick", word: first ? pair.a : pair.b,
+                     other: first ? pair.b : pair.a, pool });
+      }
+    }
   } else if (unit.kind === "tone") {
     // the tone unit: teach the rule (intro + interactive calculator), then
     // drill it — hear a tone and pick the script (ear), read a real word and
@@ -196,7 +228,7 @@ function _unitStart(idx) {
 // which is why their target is chosen at queue-build time (item.pick), not
 // per-render: a stable recap needs a stable question.
 const _TEACH_KINDS = new Set(["glyph", "wordintro", "chunkIntro", "chunk",
-  "toneIntro", "tonecalc", "scriptnote"]);
+  "toneIntro", "tonecalc", "scriptnote", "conspair"]);
 
 function _learnStep() {
   if (!_lu || _lu.at >= _lu.queue.length) { _unitFinish(); return; }
@@ -220,7 +252,8 @@ function _learnStep() {
   showScreen("lesson-screen", "Q");
   if (review && !_TEACH_KINDS.has(item.kind)) { _wReviewCard(item, body); }
   else {
-    ({ glyph: _wGlyph, wordintro: _wWordIntro, scriptnote: _wScriptNote, mc: _wMC, mc2: _wMC2, speed: _wMC, listen: _wListen,
+    ({ glyph: _wGlyph, wordintro: _wWordIntro, scriptnote: _wScriptNote, conspair: _wConsPair,
+       pairpick: _wPairPick, glyphpick: _wGlyphPick, mc: _wMC, mc2: _wMC2, speed: _wMC, listen: _wListen,
        mcth: _wMCTH, typeen: _wTypeEN, typeth: _wTypeTH, clozex: _wClozeX,
        cloze: _wCloze, match: _wMatch, chunkIntro: _wChunkIntro, chunk: _wChunk,
        toneIntro: _wToneIntro, tonecalc: _wToneCalc, toneear: _wToneEar, toneread: _wToneRead }[item.kind])(item, body);
@@ -288,6 +321,14 @@ function _wReviewCard(item, body) {
   }
   // toneear has no .word/.item — its target is the minimal-set entry picked
   // at queue-build time (item.pick), the same one the live card answered
+  if (item.kind === "glyphpick") {
+    const c = item.cons;
+    const en = (typeof consNameEn === "function") ? consNameEn(c[0]) : null;
+    body.innerHTML = `<div class="learn-teach-tag">REVIEW</div>
+      <div class="thai-big learn-glyph" lang="th">${_esc(c[0])}</div>
+      <div class="learn-mean">${_esc(c[3])}${en ? " — " + _esc(en) : ""} · /${_esc(c[4])}/</div>${fwdBtn}`;
+    return;
+  }
   if (item.kind === "toneear") {
     const target = toneMinimalSet(item.cons, item.vowel)[item.pick || 0];
     body.innerHTML = `<div class="learn-teach-tag">REVIEW</div>
@@ -717,15 +758,70 @@ function _wMatch(item, body) {
 // chunk lesson intro + per-chunk absorb cards
 // One thing about HOW THAI IS WRITTEN, hung on a real word from this batch —
 // the same shape as a chunk intro, because it teaches rather than tests.
+// Note prose may name a vowel in the data's canonical ◌ form (◌ั, เ◌ะ) —
+// that is how VOWELS stores them and how the reference chart labels them. It
+// must never REACH the page that way: U+25CC is missing from many fonts and a
+// ◌+mark cluster renders as tofu, which is the whole reason vowelDisp exists.
+// Host it here, so the note can use the notation the rest of the app uses.
+function _scriptNoteText(t) {
+  return (typeof vowelDisp === "function") ? vowelDisp(String(t)) : String(t);
+}
 function _wScriptNote(item, body) {
   const n = item.note;
   const w = (typeof WORD_MAP !== "undefined" && WORD_MAP[n.word]) || null;
   body.innerHTML = `<div class="screen-title">${_esc(n.title)}</div>
     <div class="thai-big" lang="th" onclick="_tts.speak(${_toneSpeak(n.word)})">${_esc(n.word)}</div>
     <div class="rtgs">${_esc(n.rom)} \u00b7 ${_esc(n.en)}</div>
-    <div class="card-prompt learn-intro-text">${_esc(n.text)}</div>
+    <div class="card-prompt learn-intro-text">${_esc(_scriptNoteText(n.text))}</div>
     <div class="btn-row">${w ? _wordCardBtn(w) : ""}<button class="btn btn-primary" onclick="_learnNext()">Got it \u2192</button></div>`;
   _tts.speak(n.word);
+}
+// Two words that differ by ONE consonant, side by side. English hears ปิด and
+// ผิด as the same word; Thai does not, and the tone usually moves as well
+// because the two letters are different classes. Showing them together is the
+// whole lesson — the card after this one tests it with the partner as the
+// distractor, which is the hardest one there is.
+function _wConsPair(item, body) {
+  const [a, b] = [item.pair.a, item.pair.b];
+  // Side by side, not stacked: the contrast IS the layout, and two full-height
+  // example blocks pushed the button off the bottom of an iPhone.
+  const row = w => `<div class="learn-ex-block" style="flex:1 1 0;margin:0;padding:0.6rem"
+      onclick="_tts.speak(${_toneSpeak(w[0])})">
+      <div lang="th" style="font-size:1.9rem;line-height:1.3">${_esc(w[0])}</div>
+      <div class="rtgs" style="margin:0.1rem 0">${_esc(w[1])}</div>
+      <div class="card-prompt" style="margin:0">${_esc(w[2])}</div></div>`;
+  body.innerHTML = `<div class="screen-title">One letter apart</div>
+    <div style="display:flex;gap:0.6rem;align-items:stretch">${row(a)}${row(b)}</div>
+    <div class="card-prompt learn-intro-text">${_esc(a[0])} and ${_esc(b[0])} differ by a single consonant — ` +
+    `${_esc(a[0][item.pair.at])} against ${_esc(b[0][item.pair.at])}. Tap each one and listen for it. ` +
+    `English does not make this distinction, so your ear has to be taught it deliberately.</div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="_learnNext()">Got it →</button></div>`;
+  _tts.speak(a[0]);
+}
+
+// The pair again, this time as a question, with the partner guaranteed to be
+// on the list. A distractor picked at random makes this card easy for the
+// wrong reason.
+function _wPairPick(item, body) {
+  const w = item.word, other = item.other;
+  const pool = (item.pool || WORDS).filter(x => x[0] !== w[0] && x[0] !== other[0]);
+  const opts = _shuffle([w[0], other[0], ..._shuffle(pool).slice(0, 2).map(x => x[0])]);
+  body.innerHTML = `<div class="screen-title" style="padding:1rem 0">${_esc(w[2])}</div>
+    <div class="card-prompt">Which one says it?</div>
+    <ul class="quiz-choices learn-thai-choices" id="learn-choices"></ul>`;
+  _mcWire(opts, w[0], w[0], 0, () => _tts.speak(w[0]), w);
+}
+
+// Which letter is this? Options are the letters it LOOKS like, so the card
+// cannot be answered by elimination — only by knowing the shape.
+function _wGlyphPick(item, body) {
+  const c = item.cons;
+  const en = (typeof consNameEn === "function") ? consNameEn(c[0]) : null;
+  body.innerHTML = `<div class="screen-title" style="padding:1rem 0">${_esc(c[3])}${en ? " — " + _esc(en) : ""}</div>
+    <div class="card-prompt">Which letter is it? /${_esc(c[4])}/</div>
+    <ul class="quiz-choices learn-thai-choices" id="learn-choices"></ul>`;
+  _mcWire(_shuffle(item.group.slice()), c[0], "sc:" + c[0], 0,
+    () => _tts.speak(letterSpeechParts ? letterSpeechParts(c[0]).join(" ") : c[0]));
 }
 function _wChunkIntro(item, body) {
   const l = item.lesson;

@@ -101,6 +101,22 @@ const _LETTER_SPEECH_EXTRA = {
 // convention); pass "อ" where the vowel should read as its pure sound (อา = the
 // vowel "aa", not กา), which also matches how vowels are voiced. Identity for
 // text without ◌.
+// What a consonant's acrophonic name MEANS. Course vocabulary first — 29 of the
+// 42 names are words the learner is already being taught, and reading their own
+// gloss keeps the chart from ever disagreeing with the vocabulary — then
+// CONS_NAME_EN for the thirteen that are not. Null when nothing knows.
+function consNameEn(ch) {
+  const c = (typeof CONSONANTS !== "undefined") && CONSONANTS.find(x => x[0] === ch);
+  if (!c) return null;
+  const name = c[3];
+  if (typeof WORD_MAP !== "undefined" && WORD_MAP[name]) return WORD_MAP[name][2];
+  if (typeof WORDS !== "undefined") {
+    const w = WORDS.find(x => x[0] === name);
+    if (w) return w[2];
+  }
+  return (typeof CONS_NAME_EN !== "undefined" && CONS_NAME_EN[name]) || null;
+}
+
 function vowelDisp(sym, host = "ก") {
   const out = sym.replace(/◌/g, host);
   if (out !== sym) return out;
