@@ -69,4 +69,19 @@ var GLOSS_EXTRA = {
   "คึกฤทธิ์":  ["khúek-rít",   "Kukrit (personal name)"],
   "พงษ์":      ["",            "-phong (element in personal names: lineage)"],
   "แอน":       ["aen",         "Ann (name)"],
+
+  // ── From The Last Baht Bus (2026-09-04) ────────────────────────────────
+  // Sent by the game, which meets colloquial Thai the course does not teach.
+  // Five words came over; three were already glossed by Wiktionary (ขาว, อย่า,
+  // มารยาท) and are not repeated here. These two are genuinely new.
+  //
+  // หวัดดี romanises from its own syllables through the engine — หวัด is high
+  // class, dead, short -> low; ดี is mid -> mid — and matches the course's own
+  // สวัสดี "sà-wàt-dii" with the first syllable clipped, which is what the
+  // colloquial form is.
+  "หวัดดี": ["wàt-dii", "hi (colloquial สวัสดี)"],
+  // They sent this one with an empty romanisation rather than guess, which is
+  // exactly right. Filled in from the engine: ห leads ร, making it high class,
+  // live and long -> rising.
+  "หรอ":    ["rǒo",     "really? (colloquial question particle)"],
 };
