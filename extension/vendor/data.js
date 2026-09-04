@@ -1080,6 +1080,10 @@ const WORDS = [
   // Having it here fixes that at source, for both apps, with no predicate.
   ["ขาว", "khǎao", "white", "adjective", "colors"],
   ["อย่า", "yàa", "don't (prohibitive)", "verb", "grammar"],
+  // Added so the บุหรี่ example could stay natural: a fluent review said
+  // "buys cigarettes at the shop" reads incomplete without naming the kind
+  // of shop, and in Thailand that shop is the 7-Eleven on every corner.
+  ["ร้านสะดวกซื้อ", "ráan-sà-dùak-súue", "convenience store", "noun", "places"],
 ];
 
 const TOP_100 = [
