@@ -37,7 +37,7 @@ const LETTER_BATCHES = [
     } },
   { id: "b4", title: "Rising and falling", glyphs: ["ส", "ล", "ห", "้", "ะ"] },
   { id: "b5", title: "Shops and streets", glyphs: ["บ", "ป", "ต", "ื", "แ"] },
-  { id: "b6", title: "People and things", glyphs: ["ค", "ง", "จ", "ใ", "็"],
+  { id: "b6", title: "People and things", glyphs: ["ค", "ง", "จ", "ใ", "็", "ิ", "ุ", "ำ"],
     note: {
       title: "When a vowel changes shape",
       word: "\u0e40\u0e1b\u0e47\u0e19", rom: "pen", en: "to be",
@@ -48,14 +48,14 @@ const LETTER_BATCHES = [
         "different sound. It is the same vowel written smaller, because the " +
         "final consonant needed the room.",
     } },
-  { id: "b7", title: "The spice rack", glyphs: ["ช", "ข", "ผ", "ถ", "ๆ", "๊"] },
-  { id: "b8", title: "The long tail", glyphs: ["พ", "ฟ", "ซ", "ญ", "ณ", "๋", "ำ", "ิ"] },
+  { id: "b7", title: "The spice rack", glyphs: ["ช", "ข", "ผ", "ถ", "๊"] },
+  { id: "b8", title: "The long tail", glyphs: ["พ", "ฟ", "ซ", "ญ", "ณ", "๋", "ๆ"] },
   // b9/b10 close a hole the ladder shipped with: eighteen glyphs appeared in
   // WORDS and in NO batch, so 188 words (19%) could never become decodable no
   // matter how far you got. The worst of them were not obscure — ์ (47 words),
   // โ (39), ุ (51) — which meant a learner who finished the entire guided
   // course still could not read เบียร์ or โรงแรม. Beer and hotel.
-  { id: "b9", title: "The last vowels, and the silent mark", glyphs: ["ุ", "ึ", "โ", "์"],
+  { id: "b9", title: "The last vowels, and the silent mark", glyphs: ["ึ", "โ", "์"],
     note: {
       title: "Thai points at its silent letters",
       word: "เบียร์", rom: "bia", en: "beer",
