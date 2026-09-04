@@ -140,3 +140,52 @@ describe("_tokenise app wrapper", () => {
     assert.equal(result[1].word, null);
   });
 });
+
+// ── Repairing a stranded letter ─────────────────────────────────────────────
+// Greedy longest-match fails in one specific way: when the map holds a SHORTER
+// word that is a prefix of the real one, it takes the short match and strands
+// the remainder. ซอยบัวขาว came out ซอย|บัว|ขา|ว — "soi, lotus, leg" and a
+// loose ว — because the curriculum stores colours as compounds (สีขาว) and has
+// no bare ขาว, while it does have ขา "leg". Reported from The Last Baht Bus,
+// which shows Thai place names on this card.
+describe("stranded-letter healing", () => {
+  const MAP = { "ซอย": ["ซอย"], "บัว": ["บัว"], "ขา": ["ขา"], "ไป": ["ไป"], "ย่าง": ["ย่าง"] };
+  const LEX = new Set(["ซอย", "บัว", "ขาว", "ขา", "อย่าง", "ไป", "ย่าง"]);
+  const isWord = w => !!MAP[w] || LEX.has(w);
+
+  test("without a word list the tokeniser is unchanged", () => {
+    // The Last Baht Bus vendors this file and has no lexicon; it must behave
+    // exactly as before rather than half-healing against the curriculum map.
+    const plain = makeTokeniser(MAP);
+    assert.deepEqual(plain("ซอยบัวขาว").map(t => t.text), ["ซอย", "บัว", "ขา", "ว"]);
+  });
+
+  test("with one, the stranded letter rejoins the word it came from", () => {
+    const healed = makeTokeniser(MAP, isWord);
+    assert.deepEqual(healed("ซอยบัวขาว").map(t => t.text), ["ซอย", "บัว", "ขาว"]);
+  });
+
+  test("the repaired token carries no curriculum entry, because it has none", () => {
+    const healed = makeTokeniser(MAP, isWord);
+    const khao = healed("ซอยบัวขาว").find(t => t.text === "ขาว");
+    assert.equal(khao.word, null, "ขาว is not a curriculum word and must not claim to be");
+  });
+
+  test("a letter belonging to the NEXT word joins forwards instead", () => {
+    // ไปอย่าง: greedy takes ไป, then strands อ before ย่าง. Merging backwards
+    // would give ไปอ, which is not a word; อ + ย่าง is.
+    const healed = makeTokeniser({ "ไป": ["ไป"] }, w => ["ไป", "อย่าง"].includes(w));
+    assert.deepEqual(healed("ไปอย่าง").map(t => t.text), ["ไป", "อย่าง"]);
+  });
+
+  test("a letter that makes no word either way is left alone", () => {
+    // Never merge blind: on the real corpus that is wrong 17 times.
+    const healed = makeTokeniser(MAP, isWord);
+    assert.deepEqual(healed("ซอยขาฅ").map(t => t.text), ["ซอย", "ขา", "ฅ"]);
+  });
+
+  test("healing never eats a known word", () => {
+    const healed = makeTokeniser(MAP, () => true);   // the most aggressive predicate possible
+    for (const t of healed("ซอยบัวขา").filter(t => t.word)) assert.ok(MAP[t.text], `${t.text} lost its entry`);
+  });
+});

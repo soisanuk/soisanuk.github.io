@@ -21,7 +21,7 @@ function _tkLegalBoundary(s, p) {
 
 // Returns a tokenise(sentence) function. Tokens are {text, word} where
 // word is the wordMap entry, or null for runs of unmatched characters.
-function makeTokeniser(wordMap) {
+function makeTokeniser(wordMap, isWord) {
   // Sort by descending length so longer compounds match before substrings
   const keys = Object.keys(wordMap).sort((a, b) => b.length - a.length);
   return function tokenise(sentence) {
@@ -52,8 +52,46 @@ function makeTokeniser(wordMap) {
         i = j;
       }
     }
-    return tokens;
+    return isWord ? _tkHeal(tokens, isWord) : tokens;
   };
+}
+
+// ── Repair a stranded letter ────────────────────────────────────────────────
+// Greedy longest-match over the ~950-word curriculum map goes wrong in one
+// specific way: when the map holds a SHORTER word that is a prefix of the real
+// one, it takes the short match and leaves the remainder stranded. ซอยบัวขาว
+// came out ซอย|บัว|ขา|ว — "soi, lotus, leg" and a loose ว — because the
+// curriculum stores colours as compounds (สีขาว) and has no bare ขาว, while it
+// does have ขา "leg". Reported from The Last Baht Bus, which shows Thai place
+// names on this card.
+//
+// A lone Thai letter is never a word, so it is always a tokenisation failure.
+// It is repaired by joining it to whichever neighbour makes a real word —
+// which requires a real word list, so `isWord` is injected rather than assumed:
+// with no predicate the tokeniser behaves exactly as it always has.
+//
+// Backward first, because that is where the stranding comes from. Merging
+// blind, without checking the result is a word, is wrong 17 times in the
+// corpus — ไปอ|ย่าง, ให้พ|นัก|งาน, จนก|รอบ — where the letter belongs to the
+// NEXT word instead. Measured on all 941 example sentences: 27 improved,
+// 0 headword highlights lost or gained.
+function _tkHeal(tokens, isWord) {
+  const out = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i], prev = out[out.length - 1], next = tokens[i + 1];
+    const lone = !t.word && [...t.text].length === 1 && /[ก-ฮ]/.test(t.text);
+    if (lone && prev && isWord(prev.text + t.text)) {
+      out[out.length - 1] = { text: prev.text + t.text, word: null };
+      continue;
+    }
+    if (lone && next && !next.word && isWord(t.text + next.text)) {
+      out.push({ text: t.text + next.text, word: null });
+      i++;
+      continue;
+    }
+    out.push(t);
+  }
+  return out;
 }
 
 // App-wide tokeniser, built lazily on first use so load order doesn't
@@ -66,7 +104,11 @@ function _tokenise(sentence) {
     const map = typeof WORD_MAP !== "undefined"
       ? WORD_MAP
       : Object.fromEntries(WORDS.map(w => [w[0], w]));
-    _appTokenise = makeTokeniser(map);
+    // The word list for repairing stranded letters: the curriculum map, plus
+    // the 12k-word segmentation lexicon when it happens to be loaded. Both are
+    // optional — without either, tokenising is unchanged.
+    _appTokenise = makeTokeniser(map, w =>
+      !!map[w] || (typeof _segWords !== "undefined" && _segWords !== null && _segWords.has(w)));
   }
   return _appTokenise(sentence);
 }
