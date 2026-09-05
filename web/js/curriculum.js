@@ -77,10 +77,13 @@ const LETTER_BATCHES = [
         "read it, and that is the good news.",
     } },
   // The alphabet has 44 consonants and this ladder taught 37 of them. ฌ, ฐ, ฑ
-  // and ฬ were in CONSONANTS, in real words, and in no batch — the same hole
-  // b9/b10 closed for WORDS, one dataset over, which the test then pinned
-  // against WORDS only and so could not see. ฐ carries รัฐ and รัฐบาล; ฬ
-  // carries นาฬิกา, on the front of every watch shop.
+  // and ฬ were in CONSONANTS, in no batch, and — correcting what this comment
+  // first claimed — in no WORDS entry either. They earn a rung through the
+  // READING corpus, not the course vocabulary: across THAI_LEXICON's 12,241
+  // words ฐ appears in 73 (รัฐ, รัฐบาล, เศรษฐกิจ), ฑ in 40 (เกณฑ์,
+  // ผลิตภัณฑ์), ฬ in 14 (กีฬา, นาฬิกา — on the front of every watch shop) and
+  // ฌ in 5. The graded reader, Paste Text and the extension all work over that
+  // corpus, so a learner meets these letters long before the course does.
   { id: "b11", title: "The last eight", glyphs: ["ฆ", "ฏ", "ฒ", "ฎ", "ฌ", "ฐ", "ฑ", "ฬ"] },
 ];
 

@@ -25,6 +25,10 @@ const CONS_NAME_EN = {
   "เณร":     "a novice monk",
   "ชฎา":     "a dancer's headdress",
   "จุฬา":    "a star-shaped kite",
+  // OVERRIDES, not gaps: these names are course words, but the course teaches
+  // a different sense than the one the letter is named for. หนู is taught as
+  // the pronoun a young woman uses of herself; the letter's หนู is the animal.
+  "หนู":     "a mouse",
 };
 
 const CONSONANTS = [
@@ -111,7 +115,7 @@ const TONES = [
 const TONE_CLASSES = {
   "mid": ["ก", "จ", "ด", "ต", "บ", "ป", "อ", "ฏ", "ฎ"],
   "high": ["ข", "ฉ", "ถ", "ผ", "ฝ", "ศ", "ษ", "ส", "ห", "ฐ"],
-  "low": ["ค", "ง", "ช", "ซ", "ญ", "ณ", "น", "ม", "ย", "ร", "ล", "ว", "ฆ", "ฌ", "ฑ", "ฒ", "ธ", "ภ", "พ", "ฟ", "ฬ", "ฮ"],
+  "low": ["ค", "ง", "ช", "ซ", "ญ", "ณ", "น", "ม", "ย", "ร", "ล", "ว", "ฆ", "ฌ", "ฑ", "ฒ", "ท", "ธ", "ภ", "พ", "ฟ", "ฬ", "ฮ"],
 };
 
 const WORDS = [

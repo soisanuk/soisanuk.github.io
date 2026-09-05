@@ -329,3 +329,28 @@ describe("the consonant chart is internally consistent", () => {
     assert.deepEqual(missing, [], `used in WORDS but absent from CONSONANTS: ${missing.join(" ")}`);
   });
 });
+
+// ── Datasets that describe the same letters must agree ──────────────────────
+describe("TONE_CLASSES and CONSONANTS describe the same alphabet", () => {
+  test("every consonant has a tone class, and the two agree", () => {
+    const listed = new Set([...TONE_CLASSES.mid, ...TONE_CLASSES.high, ...TONE_CLASSES.low]);
+    const missing = CONSONANTS.filter(c => !listed.has(c[0])).map(c => c[0]);
+    // ท — the commonest low-class consonant there is — was absent. Latent,
+    // because _consClass reads CONSONANTS first and never reached this table;
+    // but two datasets naming the same 42 letters must not differ by one.
+    assert.deepEqual(missing, [], `no tone class for: ${missing.join(" ")}`);
+    for (const c of CONSONANTS) {
+      const cls = ["mid", "high", "low"].find(k => TONE_CLASSES[k].includes(c[0]));
+      assert.equal(cls, c[2], `${c[0]}: CONSONANTS says ${c[2]}, TONE_CLASSES says ${cls}`);
+    }
+  });
+
+  test("no letter is listed in two classes", () => {
+    const seen = new Set();
+    for (const k of ["mid", "high", "low"])
+      for (const ch of TONE_CLASSES[k]) {
+        assert.ok(!seen.has(ch), `${ch} is in more than one tone class`);
+        seen.add(ch);
+      }
+  });
+});
