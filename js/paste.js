@@ -120,16 +120,21 @@ function _pasteRender(text, out, reveal) {
       // it stays inert text rather than becoming a tappable token
       if (!t.known) return _wcEsc(t.text);
       total++;
-      if (typeof WORD_MAP !== "undefined" && WORD_MAP[t.text]) known++;
-      if (!t.fragment && thaiGloss(t.text)) glossed++;
-      const tone = (typeof toneOfWord === "function") ? toneOfWord(t.text) : null;
+      // LOOK UP the base, DISPLAY the text. segmentThai sets `base` when a
+      // token is a stretched spelling — มากกกก, จังงงง — and the meaning, the
+      // tone and the word card all belong to the word underneath. The letters
+      // on screen stay exactly what the writer typed.
+      const key = t.base || t.text;
+      if (typeof WORD_MAP !== "undefined" && WORD_MAP[key]) known++;
+      if (!t.fragment && thaiGloss(key)) glossed++;
+      const tone = (typeof toneOfWord === "function") ? toneOfWord(key) : null;
       const style = (colorOn && tone) ? ` style="color:${TONE_COLORS[tone]}"` : "";
       const frag = t.fragment ? ` data-frag="1" title="Part of a longer word — meaning not shown"` : "";
       // With colours on, a word whose tone we can't prove is left alone — but
       // mid-tone grey and ordinary text are nearly the same shade, so the
       // abstention read as a claim of "mid" on most of the screen. Mark it.
       const untoned = (colorOn && !tone) ? ` data-notone="1" title="Tone not determined"` : "";
-      return `<span class="w-token"${frag}${untoned} data-w="${_wcEsc(t.text)}">${
+      return `<span class="w-token"${frag}${untoned} data-w="${_wcEsc(key)}">${
         `<span${style}>${_wcEsc(t.text)}</span>`}</span>`;
     }).join("");
     return `<div class="paste-line" lang="th">${html}</div>`;
