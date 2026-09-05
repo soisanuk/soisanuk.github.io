@@ -652,3 +652,31 @@ test("a script note's anchor word is always introduced by its own unit", () => {
       `batch ${u.batch}: note teaches ${note.word}, but the unit introduces ${intro.join(" ")}`);
   }
 });
+
+test("no letters unit GRADES a word it has never introduced", () => {
+  // The teach-first test above only inspects cards tagged "new", which is the
+  // eight fresh words. It could not see the other half of the unit: speed
+  // reads, the match round, typing targets and listening all drew from
+  // courseDecodable() — every word the ladder's letters can spell. By batch 3
+  // that is hundreds of words against a few dozen introduced, so 50–63% of a
+  // unit's graded cards asked the meaning of a word no unit ever shows, with
+  // an 80% first-try pass gate and every unit locked behind the last. A
+  // beginner persona simulated a 13% pass rate at unit 3 and 0–3% after.
+  //
+  // Distractors from the wider pool are fine — a wrong answer you have not met
+  // is fair. A QUESTION you have not met is not.
+  const TARGET_KINDS = ["speed", "match", "typeth", "listen", "mc", "mcth", "typeen", "clozex"];
+  for (const u of COURSE) {
+    if (u.kind !== "letters") continue;
+    const seen = new Set();
+    for (let b = 0; b <= u.batch; b++) for (const w of courseUnitWords(b)) seen.add(w[0]);
+    for (const item of _unitQueue(u, [])) {
+      if (!TARGET_KINDS.includes(item.kind)) continue;
+      for (const w of (item.kind === "match" ? item.pairs : [item.word])) {
+        if (!w) continue;
+        assert.ok(seen.has(w[0]),
+          `batch ${u.batch}: a ${item.kind} card grades "${w[0]}", which no unit up to here introduces`);
+      }
+    }
+  }
+});
