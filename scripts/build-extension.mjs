@@ -33,6 +33,8 @@ const SOURCES = [
   "web/js/tokeniser.js",
   "web/js/wordcard.js",
   "web/js/lexicon-th.js",
+  "web/js/seg-extra.js",
+  "web/js/seg-phrases.js",
   "web/js/segment.js",
   "web/js/gloss-th.js",
   "web/js/gloss-extra.js",
