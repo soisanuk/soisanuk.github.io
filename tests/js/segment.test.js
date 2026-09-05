@@ -141,3 +141,35 @@ describe("_segInit", () => {
     _segInit(THAI_LEXICON.split("\n")); // restore for any later file
   });
 });
+
+describe("stretched spellings", () => {
+  // Thai writers stretch a final letter for emphasis and it is in every real
+  // paste — อร่อยยยย, มากกกก, จังงงง. The DP had no notion of it, so มากกกก
+  // parsed as มา|กก|กก, "to come / reed / reed", with a confident gloss on
+  // each. Absorbed at the base word's own cost, so a stretch is never a better
+  // parse than the word and never a worse one.
+  test("a stretched word resolves to the word", () => {
+    for (const [input, want] of [["มากกกก", "มาก"], ["จังงงง", "จัง"], ["อร่อยยยย", "อร่อย"]]) {
+      const toks = segmentThai(input);
+      assert.equal(toks.length, 1, `${input} should be one token, got ${toks.map(t => t.text).join("|")}`);
+      assert.equal(toks[0].text, input, "the letters the writer typed are kept");
+      assert.equal(toks[0].base, want, "and the meaning is looked up under the word");
+    }
+  });
+
+  test("one extra letter is not a stretch", () => {
+    // กก is a real word (rank 2886); collapsing a single repeat would eat it.
+    assert.deepEqual(segmentThai("มากก").map(t => t.text), ["มา", "กก"]);
+    assert.equal(segmentThai("ลูกกวาด").length, 1, "ลูกกวาด is one word, not a stretch");
+  });
+
+  test("a real word always beats a stretch of a shorter one", () => {
+    // Five lexicon entries carry three identical consonants. เออออ ("to agree")
+    // lost to เอ + a stretch before the guard, because เอ is far commoner.
+    for (const w of ["คะแนนนิยม", "แวววาว", "เออออ", "งงงวย"]) {
+      const toks = segmentThai(w);
+      assert.equal(toks.length, 1, `${w} split as ${toks.map(t => t.text).join("|")}`);
+      assert.equal(toks[0].base, undefined, `${w} is a word, not a stretch of one`);
+    }
+  });
+});

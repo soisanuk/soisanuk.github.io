@@ -102,6 +102,11 @@ function _segLoad(cb) {
 // tokens rather than emitted one character at a time.
 //
 // Returns [] when the lexicon hasn't loaded — callers go through _segLoad.
+// Letters a writer stretches for emphasis. Consonants and the two long
+// vowel-signs that can carry it; NOT tone marks or above/below vowels, which
+// do not repeat and whose duplication is a typo rather than a stretch.
+const _SEG_REPEATABLE = /[\u0E01-\u0E2E\u0E32\u0E33]/;
+
 function segmentThai(text) {
   const s = String(text == null ? "" : text);
   if (!_segReady() || !s) return [];
@@ -109,6 +114,7 @@ function segmentThai(text) {
   const best = new Float64Array(n + 1).fill(Infinity);
   const prev = new Int32Array(n + 1).fill(-1);
   const known = new Uint8Array(n + 1);
+  const base = new Array(n + 1).fill("");   // canonical word for a stretched token
   best[0] = 0;
 
   for (let i = 0; i < n; i++) {
@@ -121,7 +127,35 @@ function segmentThai(text) {
       const w = s.substr(i, L);
       if (!_segWords.has(w)) continue;
       const c = best[i] + Math.log(_segRank.get(w) + 10);
-      if (c < best[i + L]) { best[i + L] = c; prev[i + L] = i; known[i + L] = 1; }
+      if (c < best[i + L]) { best[i + L] = c; prev[i + L] = i; known[i + L] = 1; base[i + L] = ""; }
+      // LENGTHENING. Thai writers stretch a final letter for emphasis —
+      // อร่อยยยย, มากกกก, จังงงง — and every one of those is in any real
+      // paste. The DP had no idea, so มากกกก cost less as มา|กก|กก ("to come /
+      // reed / reed") than as anything sane, and เหนื่อยมากกก ended in "reed".
+      //
+      // Absorbed at the SAME cost as the base word, so a stretched word is
+      // exactly as good a parse as the word — never better, never worse. The
+      // token keeps the letters the writer typed and carries `base` so callers
+      // look the meaning up under มาก.
+      //
+      // Two or more EXTRA copies, not one: กก is a real word (rank 2886) and
+      // ลูกกวาด is a real word, so collapsing a single repeat would break
+      // ordinary Thai.
+      //
+      // And never when the stretched span is ITSELF a word. Five lexicon
+      // entries carry three identical consonants — คะแนนนิยม แวววาว แบบบาง
+      // เออออ งงงวย — and without this guard เออออ (to agree, rank 11796) lost
+      // to เอ plus a stretch, because เอ is far commoner and the stretch is
+      // free. A real word must always beat a hypothesis about a typing habit.
+      const lastCh = w[L - 1];
+      if (_SEG_REPEATABLE.test(lastCh)) {
+        let k = 0;
+        while (i + L + k < n && s[i + L + k] === lastCh) k++;
+        const e = i + L + k;
+        if (k >= 2 && _tkLegalBoundary(s, e) && !_segWords.has(s.slice(i, e))) {
+          if (c < best[e]) { best[e] = c; prev[e] = i; known[e] = 1; base[e] = w; }
+        }
+      }
     }
     // fall-through: swallow one whole character cluster as unknown
     let j = i + 1;
@@ -131,7 +165,13 @@ function segmentThai(text) {
   }
 
   const raw = [];
-  for (let p = n; p > 0; p = prev[p]) raw.unshift({ text: s.slice(prev[p], p), known: !!known[p] });
+  for (let p = n; p > 0; p = prev[p]) {
+    const t = { text: s.slice(prev[p], p), known: !!known[p] };
+    // Only when it differs — a token whose base IS its text would just be
+    // noise for every consumer to carry.
+    if (base[p] && base[p] !== t.text) t.base = base[p];
+    raw.unshift(t);
+  }
 
   const out = [];
   for (const t of raw) {
