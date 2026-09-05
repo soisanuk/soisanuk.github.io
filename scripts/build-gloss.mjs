@@ -120,7 +120,13 @@ const LENGTH_RULES = [
   // counts match and the guard waves through "pòok-khroong". Wrong syllable.
   // Counting is not aligning. Restricted to one-syllable romanisations, where
   // there is only one syllable it could possibly mean.
-  { thai: new RegExp(TH_C + "อ" + TH_C, "g"), bad: /(?<!o)o(?=(?:[bdgkmnptwjlr]|ng)(?!o))/g, monoOnly: true },
+  // A TONE MARK may sit between the consonant and its ◌อ — it is stored right
+  // after the consonant it rides on. Without the optional mark here the rule
+  // matched สอง บอก ตอบ and missed ต้อง ห้อง ร้อน, so the corpus ended up with
+  // "tông" beside "sǒong" for the same vowel. Fifteen rows in gloss-th.js and
+  // four in WORDS. Found when a fluent reader saw ต้อง and ท้อง side by side on
+  // a card headed "One letter apart" and counted more than one difference.
+  { thai: new RegExp(TH_C + "[\u0E48-\u0E4B]?อ" + TH_C, "g"), bad: /(?<!o)o(?=(?:[bdgkmnptwjlr]|ng)(?!o))/g, monoOnly: true },
 ];
 
 // Double the matched "o", keeping any tone mark on the first of the pair —

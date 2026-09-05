@@ -100,6 +100,19 @@ function _scriptTooltipHtml(ch) {
     return `<span class="st-char" lang="th">${vowelDisp(ch)}</span><div class="st-row">Tone mark: <span>${names[ch] || ch}</span></div>`;
   }
 
+  // The three marks that are neither consonant, vowel nor tone. Without these
+  // the card fell through to "U+0E4C" — a codepoint, shown to a reader who
+  // wanted to know why a letter they can see is not pronounced, on the very
+  // mark the course teaches by name.
+  const MARKS = {
+    "\u0E4C": ["การันต์", "Silences the letter beneath it — the ร in เบียร์ is written and not said."],
+    "\u0E46": ["ไม้ยมก", "Repeat the word before it: เด็กๆ is \u201cchildren\u201d, ช้าๆ is \u201cslowly\u201d."],
+    "\u0E2F": ["ไปยาลน้อย", "An abbreviation mark — the rest of a long name is left off."],
+  };
+  if (MARKS[ch])
+    return `<span class="st-char" lang="th">${ch === "\u0E4C" ? "ก" + ch : ch}</span>` +
+      `<div class="st-row">Mark: <span>${MARKS[ch][0]}</span></div>` +
+      `<div class="st-row">${_wcEsc(MARKS[ch][1])}</div>`;
   return `<span class="st-char" lang="th">${ch}</span><div class="st-row">U+${cp.toString(16).toUpperCase().padStart(4,"0")}</div>`;
 }
 
