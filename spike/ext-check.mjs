@@ -281,20 +281,40 @@ try {
   check("the headword keeps its accent colour", paint.thai && /255, 20, 147/.test(paint.thai.color),
     paint.thai && paint.thai.color);
 
-  // CC BY-SA 3.0 attribution is a condition of using the Wiktionary glosses,
-  // and the extension is where it would otherwise go unmet.
+  // Attribution is a CONDITION of both dictionaries' licences — and they are
+  // not the same licence. These checks used to assert "Wiktionary, CC BY-SA
+  // 3.0" unconditionally, which passed while the card said exactly that over
+  // a Volubilis gloss (CC BY-SA 4.0) and over the project's own course
+  // glosses. The check was pinning the bug. It now asks the app which layer
+  // answered and requires the credit to match it.
   const credit = await page.evaluate(() => {
     const sh = document.getElementById("soisanuk-reader-root").shadowRoot;
     const c = sh.getElementById("td-credit");
-    return c ? { shown: getComputedStyle(c).display, text: c.textContent.replace(/\s+/g, " ").trim(),
-                 links: [...c.querySelectorAll("a")].map(a => a.href) } : null;
+    const head = sh.querySelector(".wc-thai");
+    const word = head ? head.textContent.trim() : null;
+    return {
+      // From the ELEMENT, not from calling glossSource() — this evaluate runs
+      // in the page's main world, where the extension's functions do not
+      // exist, so the call returned undefined and every word looked
+      // source-less. content.js writes the answer onto the credit element.
+      source: c ? (c.dataset.source || null) : null,
+      word,
+      shown: c ? getComputedStyle(c).display : null,
+      text: c ? c.textContent.replace(/\s+/g, " ").trim() : "",
+      links: c ? [...c.querySelectorAll("a")].map(a => a.href) : [],
+    };
   });
-  check("the card credits Wiktionary and its licence",
-    credit && credit.shown !== "none" && /Wiktionary/.test(credit.text) && /CC BY-SA 3\.0/.test(credit.text),
-    credit ? credit.text.slice(0, 60) : "no credit element");
-  check("the credit links to the licence deed",
-    credit && credit.links.some(h => /creativecommons\.org\/licenses\/by-sa\/3\.0/.test(h)),
-    credit ? credit.links.join(" ") : "");
+  const WANT = {
+    wiktionary: [/Wiktionary/, /CC BY-SA 3\.0/, /by-sa\/3\.0/],
+    volubilis:  [/Volubilis/, /CC BY-SA 4\.0/, /by-sa\/4\.0/],
+  }[credit.source];
+  check("the credit names the dictionary that actually answered",
+    WANT ? (credit.shown !== "none" && WANT[0].test(credit.text) && WANT[1].test(credit.text))
+         : credit.text === "",
+    `${credit.word} came from ${credit.source} — credit reads "${credit.text.slice(0, 50)}"`);
+  check("the credit links to that dictionary's own licence deed",
+    WANT ? credit.links.some(h => WANT[2].test(h)) : credit.links.length === 0,
+    credit.links.join(" ") || "(none, correctly — the gloss is the course's own)");
   await page.keyboard.up("Alt");
 
   // Escape must close it — the card sits over someone else's page, so a modal

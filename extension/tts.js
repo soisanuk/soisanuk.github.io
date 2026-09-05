@@ -24,6 +24,13 @@ const _tts = {
   available() { return !!this.voice(); },
 
   speak(text, btn) {
+    // Suppressed while content.js opens the card. openWordModal speaks on its
+    // own, and speak() below calls speechSynthesis.cancel() — so on somebody
+    // else's page an Alt-click played audio unasked AND interrupted whatever
+    // the page was saying. In the trainer that auto-speak is wanted; here the
+    // page is not ours. The card's own 🔊 buttons are unaffected: those are a
+    // gesture, and cancelling the page's speech for one is fair.
+    if (typeof _tdMuted !== "undefined" && _tdMuted) return;
     if (!text || typeof speechSynthesis === "undefined") return;
     const v = this.voice();
     if (!v) return;
