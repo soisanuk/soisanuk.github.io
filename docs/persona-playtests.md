@@ -267,6 +267,93 @@ found the unit score badge storing the last attempt rather than the best, and
 three bugs in the harness itself including one that silently mis-scored the
 entire tone unit.
 
+## What six fable-model rounds produced (2026-09-05)
+
+Recorded for the same reason as the first two, and because one of them found
+the worst defect this repo has had.
+
+**Priya — a skimmer who does not read explanatory text.** Drove 189 cards
+across five units, dismissing every teaching card on sight. Passed every unit
+at 81% without reading a single script note, which was the point of hiring her.
+Found that only one card kind in a letters unit can even notice you skipped a
+note, and it fires on a coin flip; that nothing anywhere tests a note's content;
+that a note anchored on ตลาด sat in a unit that never shows ตลาด; and a CSS
+rule that had never applied — `.learn-intro-text{text-align:left}` losing to
+`.card-prompt{text-align:center}` on equal specificity, so every long teaching
+paragraph in the course had always been centred.
+
+**Dave — a sign-reader who wants to decode shopfronts.** Drove all 19 units,
+the reader, Paste Text and the pure functions. Found the letter ladder
+**eighteen letters short of its own vocabulary**: 43 glyphs taught against 61
+used, so 188 words (19%) could never become decodable and a learner who
+finished the entire course still could not read เบียร์ or โรงแรม. Also 174
+words decomposing across a syllable boundary, `vowelDisp` being a no-op on the
+one call that needed it, and 69 example translations with word-initial g
+corrupted to k ("not kood at all", "the karden died").
+
+**Margaret — a retired proofreader learning the alphabet completely.** Took the
+six Script screens, none of which any round had opened. Found the tone chart
+**playing the wrong tone for two of the five tones** — the high row showed a
+non-word and spoke สาม (rising), the rising row spoke ห้า (falling) — the
+letter tooltip identifying ั as "◌ัว, ua vowel" and ะ as "เ◌าะ, short o", ท
+missing from `TONE_CLASSES`, and เ◌าะ ranked the second commonest vowel in Thai
+because compounds inherited their commonest character's frequency.
+
+**Tom — a beginner with four days before he flies.** Found that **the course
+was unpassable**. A letters unit teaches eight words and then drew its speed
+reads, match round, typing targets and listening from every decodable word —
+185 by rung 3, 606 by rung 5 — so 50–63% of graded cards asked the meaning of a
+word no unit ever shows, against an 80% pass gate on strictly-gated units. His
+simulation: 17% at unit 1, 0–3% after. Fixed, and re-measured at 94–98%.
+
+**Ploy-Anne — fluent by ear, never schooled in the script.** Found การันต์
+never raising a sentence's grade (`isLetter` ended one codepoint short of
+U+0E4C), so 55 sentences carrying a silent letter sat two levels below the rung
+that teaches it; the days of the week glossed as Hindu deities (จันทร์ =
+"Candra, the moon god"); the tone colour contradicting the card on the two
+words the tests already exempt; and the generator bug behind a correction made
+the previous day — the ◌อ length rule matches consonant + อ + consonant, and a
+tone mark sits between them.
+
+**Marcus — an engineer who uninstalls anything that gets in his way.** Drove
+the real unpacked extension over 17 hostile fixtures. Found Escape leaking into
+the host page (closing the site's own modal), `transform` on body blacking out
+the card entirely, `mousedown` destroying the page's selection, unasked audio
+that cancelled the page's own speech, and the licence credit naming Wiktionary
+over Volubilis glosses and over the project's own.
+
+### The lesson these six paid for: a driver cannot fail to know something
+
+Tom's finding is the one to remember. A course that a real learner could not
+pass beyond unit 1 sat there while **590 tests passed, the screen sweep was
+clean, and four previous persona rounds completed those same units easily.**
+
+Every automated route through the app reads the answer out of the queue item —
+`item.word` is right there, and `driveLessonStep` uses it. A harness therefore
+cannot experience not knowing a word, which is precisely the experience the
+unit was failing to provide for. The teach-first test that existed inspected
+cards tagged `"new"`, which were the eight words that were already fine.
+
+So: when the thing under test is whether a learner can DO something, no amount
+of driving proves it. Ask for the moment comprehension fails, and brief the
+persona to report that moment rather than a defect list.
+
+### Two ways a check can be worse than no check
+
+Both found on the same day, both in this repo's own tests.
+
+- **A check can pin the bug.** `spike/ext-check.mjs` asserted the card credits
+  "Wiktionary, CC BY-SA 3.0" unconditionally. It passed for as long as the card
+  said that over Volubilis glosses under a different licence. A check written
+  from the implementation rather than the requirement locks in whatever the
+  implementation did.
+- **A check can pass for the wrong reason.** The rewrite of that check called
+  `glossSource()` inside `page.evaluate` — which runs in the page's main world,
+  where a content script's functions do not exist. Every word came back
+  source-less, so "no credit needed" was always true and the check was green
+  without testing anything. It reads the answer off the DOM now, because that
+  is the only thing the two worlds share.
+
 ### The second lesson: re-run after fixing, before running a new persona
 
 Round 5 was briefed as a fresh persona and its most valuable finding was a
