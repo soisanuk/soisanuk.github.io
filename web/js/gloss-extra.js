@@ -95,4 +95,29 @@ var GLOSS_EXTRA = {
   "ศุกร์":    ["sùk",          "Friday; Venus"],
   "เสาร์":    ["sǎo",          "Saturday; Saturn"],
   "อาทิตย์":  ["aa-thít",      "Sunday; a week; the sun"],
+
+  // ── Meanings for the curated segmenter words (2026-09-06) ──────────────
+  // seg-extra.js teaches the SEGMENTER that these are words, which stopped
+  // โอเลี้ยง coming apart into "a type of lacquerware" and "to dribble". It
+  // does not teach the reader what they mean — a persona tapped every one and
+  // got "Not in the course", which is better than a wrong answer and still not
+  // why he tapped. The meanings were sitting in that file as source comments.
+  //
+  // Romanisations are engine-checked syllable by syllable where the spelling
+  // is regular. Four are "" on purpose: ทวิต and อัพ are borrowed and their
+  // real pronunciation contradicts what their spelling derives, and เมมเบอร์
+  // and คอมเมนต์ carry การันต์, which the engine cannot analyse at all.
+  // Guessing would be worse than the card falling back to letters and tone.
+  "รีวิว":     ["rii-wiu",    "a review; to review"],
+  "ดราม่า":    ["draa-mâa",   "drama, a public row (from English)"],
+  "ไอดอล":     ["ai-doon",    "an idol, a performer"],
+  "เมมเบอร์":  ["",           "a member (of a group or fan club)"],
+  "คอมเมนต์":  ["",           "a comment; to comment"],
+  "แท็ก":      ["tháek",      "a tag; to tag someone"],
+  "บอท":       ["bòot",       "a bot"],
+  "ทวิต":      ["",           "a tweet; to tweet"],
+  "ไอจี":      ["ai-jii",     "Instagram (IG)"],
+  "อัพ":       ["",           "to upload, to update (from English “up”)"],
+  "โอเลี้ยง":  ["oo-líang",   "Thai iced black coffee"],
+  "เซเว่น":    ["see-wên",    "7-Eleven"],
 };

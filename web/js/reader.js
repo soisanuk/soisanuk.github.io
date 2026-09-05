@@ -11,8 +11,9 @@
 // The top tier used to be a catch-all for glyphs the course never taught —
 // eighteen of them — which is no longer a category: the ladder teaches every
 // Thai letter in WORDS as of the b9/b10 rungs, and a test holds it there.
-// Counts on the real corpus: ≤4 → 20, ≤6 → 156, ≤7 → 378, ≤10 → 960 (recounted
-// 2026-09-05, at ten rungs and 960 examples). These drift with EXAMPLES —
+// Counts on the real corpus: ≤4 → 20, ≤6 → 289, ≤7 → 464, ≤11 → 959 (recounted
+// 2026-09-06, at eleven rungs; 959 not 960 because _gradeCorpus de-dupes one
+// sentence that is the example for two different words). These drift with EXAMPLES —
 // editing ONE example sentence moved two of them the same day this comment was
 // last corrected. The UI computes them live, so only this comment and
 // architecture.md can ever be wrong; recount rather than trust them.
@@ -200,13 +201,40 @@ function readerOpen(levelIdx, restart) {
   _readerShow();
 }
 
+// The 12k-word segmenter, not the 950-word curriculum matcher.
+//
+// The reader shows open text, and the curriculum tokeniser matches greedily
+// against course words only — so any course word sitting inside a longer word
+// was cut out and made tappable with its own card. จังหวัด rendered as
+// จัง|ห|วัด and tapping วัด said "temple"; ฤดู became ฤ|ดู, "to look". 25
+// sentences and 36 wrong cards, every one of which segmentThai gets right.
+//
+// Tappable = a real lexicon word that is not a flagged fragment, which is the
+// rule Paste Text already uses. The key for the card is `base || text`, so a
+// stretched or reduplicated form looks its meaning up under the plain word.
+// Returns null before the lexicon has loaded; the caller then gets the old
+// behaviour for one paint and _readerEnsureLexicon repaints.
+function _readerTokens(thai) {
+  if (typeof segmentThai !== "function" || typeof _segReady !== "function" || !_segReady()) return null;
+  return segmentThai(thai).map(t => {
+    const key = t.base || t.text;
+    const known = t.known && !t.fragment;
+    return {
+      text: t.text,
+      key,
+      word: known ? ((typeof WORD_MAP !== "undefined" && WORD_MAP[key]) || [key, "", ""]) : null,
+    };
+  });
+}
+
 // interactive, optionally tone-coloured Thai line (reuses the word-card modal)
 function _readerThaiHtml(thai, colorOn) {
   return toneColorHtml(thai, (escaped, tone, tok) => {
     if (!tok.word) return escaped; // unknown token: plain, no tap-to-define span
     const style = (colorOn && tone) ? ` style="color:${TONE_COLORS[tone]}"` : "";
-    return `<span class="w-token"${style} data-w="${escaped}">${escaped}</span>`;
-  });
+    const key = _wcEsc(tok.key || tok.text);
+    return `<span class="w-token"${style} data-w="${key}">${escaped}</span>`;
+  }, _readerTokens(thai));
 }
 
 function _readerLegend() {

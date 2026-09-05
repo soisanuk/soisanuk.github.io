@@ -257,3 +257,52 @@ describe("non-Thai runs", () => {
     assert.ok(t.length > 2, `expected the words to stay tappable, got ${t.join("|")}`);
   });
 });
+
+describe("what a fluent reader caught", () => {
+  before(() => { _segWords = null; _segLoad(() => {}); });
+
+  test("a stretch works on a vowel final, not just a consonant", () => {
+    // The stretch branch sat after a `continue` that fires for any word ending
+    // in a dependent vowel, so ค่า+าาา never ran — every vowel-final stretch
+    // failed, which is most of Thai chat. า and ำ were listed as repeatable
+    // the whole time and were dead code.
+    for (const [input, want] of [["ค่าาาา", "ค่า"], ["จ้าาา", "จ้า"], ["น้ำำำ", "น้ำ"]]) {
+      const t = segmentThai(input);
+      assert.equal(t.length, 1, `${input} → ${t.map(x => x.text).join("|")}`);
+      assert.equal(t[0].base, want);
+    }
+  });
+
+  test("and the word BEFORE a stretch keeps its meaning", () => {
+    // ขอบคุณค่าาา is about as common as Thai gets. The stretch failing made
+    // ค่าาา unmatched residue, which flagged ขอบคุณ as a fragment and took its
+    // gloss away — the failure cost two words, not one.
+    const t = segmentThai("ขอบคุณค่าาา");
+    assert.equal(t[0].text, "ขอบคุณ");
+    assert.ok(!t[0].fragment, "ขอบคุณ must keep its gloss");
+  });
+
+  test("a shredded loanword is flagged all the way through", () => {
+    // The flag only looked for UNMATCHED Thai beside a token, so a piece next
+    // to a piece kept its full gloss: อินสตาแกรม gave แก "a second person
+    // pronoun" and รม "to smoke".
+    for (const w of ["อินสตาแกรม", "ช้อปปี้", "วินเทจ"]) {
+      const t = segmentThai(w);
+      const loose = t.filter(x => x.known && !x.fragment).map(x => x.text);
+      assert.deepEqual(loose, [], `${w}: ${loose.join(" ")} would still show a meaning`);
+    }
+  });
+
+  test("but it stops at a space and at a word the course teaches", () => {
+    // Otherwise one bad loanword silences the rest of the sentence, and ไป in
+    // ไปเฟซบุ๊ก loses a gloss the learner has been taught and can rely on.
+    const t = segmentThai("ยูทูป ดีมาก");
+    const after = t.slice(t.findIndex(x => /\s/.test(x.text)) + 1);
+    assert.ok(after.some(x => x.known && !x.fragment), "words after the space keep their meaning");
+  });
+
+  test("base never survives onto a token that did not earn it", () => {
+    for (const t of segmentThai("มากกกกๆ"))
+      if (!t.known) assert.equal(t.base, undefined, `${t.text} carries a borrowed base`);
+  });
+});

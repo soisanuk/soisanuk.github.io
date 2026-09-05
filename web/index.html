@@ -226,7 +226,10 @@ body.mobile .example-speak, body.mobile .rating-btn { min-height:44px; }
   max-width:640px; margin:0.6rem auto 0.2rem; padding:0 0.3rem; }
 .paste-count { opacity:0.7; font-size:0.9em; }
 .paste-text { max-width:640px; margin:0.4rem auto; font-size:1.55em; line-height:1.85; }
-.paste-line { margin:0.15rem 0; }
+/* A run with no spaces in it — "5555555555555555", "ฮาาาาาาา" — is one inert
+   text node with no break opportunity, so it ran off the right edge of a phone
+   and the screen clips overflow-x. Half of real Thai chat contains one. */
+.paste-line { margin:0.15rem 0; overflow-wrap:anywhere; }
 .paste-line-blank { height:0.7em; }
 /* every token is tappable here, so they need to look separable — the reader
    can lean on sentence rhythm, a wall of pasted text cannot */
