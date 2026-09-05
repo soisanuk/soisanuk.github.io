@@ -17,8 +17,13 @@
 // editing ONE example sentence moved two of them the same day this comment was
 // last corrected. The UI computes them live, so only this comment and
 // architecture.md can ever be wrong; recount rather than trust them.
+// Cutoffs rebalanced when the levels became bands. At max 4, "First reads"
+// held 20 sentences — one sitting, and then a 269-sentence step. Grades 0–2 are
+// empty (a full example sentence is letter-rich), so the only way to give the
+// first rung any depth is to reach up to 5. The bands are now 125 / 164 / 175
+// / 495; the last is the everything-else tier and grade 9 alone is 347 of it.
 const READER_LEVELS = [
-  { name: "First reads", max: 4 },
+  { name: "First reads", max: 5 },
   { name: "Getting around", max: 6 },
   { name: "Street Thai", max: 7 },
   // DERIVED, not 8. The comment above always said "max = LETTER_BATCHES.length"
@@ -130,9 +135,25 @@ function _readerCorpus() {
 // every EXAMPLES sentence decodable by `maxBatch`, easiest first, de-duped.
 // An explicit `examples` override (tests) always grades fresh, bypassing the
 // memo, which only ever caches the real corpus.
-function readerFeed(maxBatch, examples) {
+// A BAND, not a prefix. `minBatch` defaults to 0 so the old call still means
+// "everything up to here", which is what the tests and _readerCorpus want.
+function readerFeed(maxBatch, examples, minBatch) {
+  const lo = minBatch || 0;
   const graded = examples ? _gradeCorpus(examples) : _readerCorpus();
-  return graded.filter(s => s.grade <= maxBatch);
+  return graded.filter(s => s.grade <= maxBatch && s.grade >= lo);
+}
+
+// The rung a level STARTS at: one past the level below it.
+//
+// Every level used to be the one below it plus more on the end. Level 2 opened
+// with level 1's twenty sentences in the same order; level 4's first unseen
+// sentence was number 465 of 959, and the only navigation is ‹ / Next ›, so
+// moving up a level meant pressing Next four hundred and sixty-four times
+// before reading anything new. The card said "289 sentences" on a day you had
+// read none of them, which is the part that actually misleads: the counter did
+// not mean what it said.
+function _readerMin(idx) {
+  return idx > 0 ? READER_LEVELS[idx - 1].max + 1 : 0;
 }
 
 // ── Rendering ────────────────────────────────────────────────────────────────
@@ -157,15 +178,26 @@ function startReader() {
   const body = document.getElementById("reader-body");
   const pos = _readerPosLoad();
   const cards = READER_LEVELS.map((lv, i) => {
-    const feed = readerFeed(lv.max);
+    const feed = readerFeed(lv.max, null, _readerMin(i));
     const n = feed.length;
     const saved = pos[i];
     const read = saved ? (saved.done ? n : _readerResumeAt(saved, feed)) : 0;
     const label = !read ? `${n} sentence${n === 1 ? "" : "s"}`
       : saved.done ? `✓ read all ${n}`
       : `${read} / ${n} read`;
+    // Say which rungs the level needs. The intro promises "letters up to a
+    // level you choose" and then the cards named only a level and a count, so
+    // there was no way to line the reader up against the course without
+    // reading READER_LEVELS. A learner knows which unit they are on.
+    // What you must KNOW, not which rungs the band spans. A sentence's grade is
+    // its HARDEST letter, so a grade-7 sentence still uses letters from every
+    // rung below it — "rungs 8–11" would suggest otherwise and undo the point
+    // of banding the sentences in the first place.
+    const hi = Math.min(lv.max, (typeof LETTER_BATCHES !== "undefined" ? LETTER_BATCHES.length : lv.max + 1) - 1);
+    const rungs = `needs letters through rung ${hi + 1}`;
     return `<li class="reader-level" onclick="readerOpen(${i})">
       <span class="reader-level-name">${_tcEsc(lv.name)}</span>
+      <span class="reader-level-rungs">${_tcEsc(rungs)}</span>
       <span class="reader-level-count">${label}</span>
       ${read && !saved.done ? `<span class="reader-level-bar"><i style="width:${
         Math.round(100 * read / n)}%"></i></span>` : ""}</li>`;
@@ -195,7 +227,7 @@ function _readerEnsureLexicon() {
 function readerOpen(levelIdx, restart) {
   _readerEnsureLexicon();
   const lv = READER_LEVELS[levelIdx];
-  const feed = readerFeed(lv.max);
+  const feed = readerFeed(lv.max, null, _readerMin(levelIdx));
   const saved = _readerPosLoad()[levelIdx];
   _rd = { feed, at: restart ? 0 : _readerResumeAt(saved, feed), level: lv, idx: levelIdx };
   _readerShow();
