@@ -97,7 +97,11 @@ function _unitQueue(unit, dueWords, audio = true) {
     // many there are.
     if (batch.note) queue.push({ kind: "scriptnote", note: batch.note });
     for (const g of batch.glyphs) queue.push({ kind: "glyph", glyph: g });
-    let fresh = courseNewWords(unit.batch).slice(0, 8);
+    let fresh = courseUnitWords(unit.batch);
+    // Words already met, this rung or any earlier one. The four card kinds
+    // below that pick a TARGET rather than a distractor must draw from this,
+    // not from every decodable word — see courseTaughtWords.
+    const taught = courseTaughtWords(unit.batch);
     // A note's anchor word MUST be one this unit actually teaches — a rule
     // about ตลาด means nothing in a unit that never shows ตลาด. But fresh-8 is
     // just the first eight of an order-dependent list, so adding any word
@@ -105,14 +109,7 @@ function _unitQueue(unit, dueWords, audio = true) {
     // อัน displaced อร่อย from batch 2 and broke the unwritten-vowel note,
     // which is not a relationship anybody should have to remember. Pull the
     // anchor in explicitly and the coupling is gone.
-    if (batch.note) {
-      const nw = (typeof WORD_MAP !== "undefined" && WORD_MAP[batch.note.word]) ||
-                 (typeof WORDS !== "undefined" && WORDS.find(x => x[0] === batch.note.word));
-      // Prepended, NOT swapped for the eighth: another test holds that every
-      // word in fresh-8 gets an intro, and dropping one to make room broke it.
-      // A unit with a note teaches nine words; that is the correct price.
-      if (nw && !fresh.some(x => x[0] === nw[0])) fresh = [nw, ...fresh];
-    }
+
     const pool = courseDecodable(unit.batch);
     // TEACH before testing: meet each new word — decode it, hear it, learn what
     // it MEANS — before any card asks you to recall it. (This was the hole:
@@ -132,20 +129,20 @@ function _unitQueue(unit, dueWords, audio = true) {
       // impossible one, and the card cannot be completed. The guard is
       // typeof-ed because _unitQueue is vm-tested without tutor.js loaded.
       const canType = typeof _tTypeable === "function" ? _tTypeable(_T_ROWS_FULL, true) : null;
-      const spellable = pool.filter(w =>
+      const spellable = taught.filter(w =>
         [...w[0]].length <= 4 && (!canType || [...w[0]].every(c => canType.has(c))));
       for (const w of _shuffle(spellable).slice(0, 2)) queue.push({ kind: "typeth", word: w });
     }
     // cloze from the real corpus: the word's own example sentence, blanked
     const withEx = fresh.filter(w => typeof EXAMPLES === "object" && EXAMPLES[w[0]]);
     for (const w of _shuffle(withEx.slice()).slice(0, 2)) queue.push({ kind: "clozex", word: w, pool });
-    const speed = _shuffle(pool.slice()).slice(0, Math.min(8, pool.length));
+    const speed = _shuffle(taught.slice()).slice(0, Math.min(8, taught.length));
     for (const w of speed) queue.push({ kind: "speed", word: w });
     // a match round as the mid-unit breather: five Thai ↔ five meanings
-    if (pool.length >= 5) queue.push({ kind: "match", pairs: _shuffle(pool.slice()).slice(0, 5) });
+    if (taught.length >= 5) queue.push({ kind: "match", pairs: _shuffle(taught.slice()).slice(0, 5) });
     // listening: hear it — pick the script, or (every other card) the meaning
     if (audio) {
-      const listen = _shuffle(pool.slice()).slice(0, Math.min(5, pool.length));
+      const listen = _shuffle(taught.slice()).slice(0, Math.min(5, taught.length));
       listen.forEach((w, i) => queue.push({ kind: "listen", word: w, pool, mode: i % 2 ? "en" : "th" }));
     }
     // WHICH LETTER IS THIS? The unit has just shown each new glyph once, alone,
@@ -472,9 +469,30 @@ const _GLYPH_NOTE = {
   "ๆ": "ไม้ยมก. It sits AFTER a word and repeats it — เด็กๆ is \u201cchildren\u201d, ช้าๆ is \u201cslowly\u201d. It is not a tone mark and it does not ride above anything.",
   "็": "ไม้ไต่คู้. It SHORTENS the vowel beneath it — เป็น, not เปน. Vowel length is half of every tone rule, so this small hook matters twice.",
 };
+// The SOUND, and what the name means. Both are in CONSONANTS and VOWELS and
+// neither reached this card: it printed "ก · กอไก่" and nothing else, so with
+// no Thai voice the first six cards of the course carried no information about
+// what any letter sounds like. The glyphpick card then asked "ไก่ — chicken ·
+// Which letter is it? /k/", introducing the sound AND the meaning on the
+// question. Taught one thing, tested another, four cards apart.
+function _glyphSound(g) {
+  const c = (typeof CONSONANTS !== "undefined") && CONSONANTS.find(x => x[0] === g);
+  if (c) {
+    const en = (typeof consNameEn === "function") ? consNameEn(g) : null;
+    const sound = c[4] === "-" ? "" : `  ·  /${c[4]}/`;
+    return `${sound}${en ? "  ·  " + en : ""}`;
+  }
+  const v = (typeof VOWELS !== "undefined") && VOWELS.find(x => x[0].replace(/◌/g, "") === g);
+  return v ? `  ·  /${v[1]}/  ·  ${v[2]}` : "";
+}
 function _glyphNote(g, isToneMark) {
   if (_GLYPH_NOTE[g]) return _GLYPH_NOTE[g];
-  if (isToneMark) return "A tone mark. It rides above the consonant and sets the syllable's tone — with the consonant's class and the vowel's length, it is the third thing the rule needs.";
+  // Stands on its own at rung 2, where this card first appears. It used to end
+  // "with the consonant's class and the vowel's length, it is the third thing
+  // the rule needs" — class, length and "the rule" all arrive in the tone unit,
+  // nine units later, so at first meeting it named three unknowns and defined
+  // none of them.
+  if (isToneMark) return "A tone mark. It rides above the consonant and changes the syllable's tone, which changes the word: แม่ is \u201cmother\u201d and แม้ is \u201ceven if\u201d. Which tone it makes depends on the consonant underneath as well, and the course comes back to that properly later.";
   return "Tap the glyph to hear it. Say it back. Twice.";
 }
 function _wGlyph(item, body) {
@@ -491,7 +509,7 @@ function _wGlyph(item, body) {
   const disp = typeof vowelDisp === "function" ? vowelDisp(g) : g;
   const name = typeof letterSpeech === "function" ? letterSpeech(g) : "";
   body.innerHTML = `<div class="thai-big learn-glyph" lang="th" onclick="_tts.speak(letterSpeechParts(${_toneSpeak(g)}))">${_esc(disp)}</div>
-    <div class="rtgs">${_esc(name)}</div>
+    <div class="rtgs">${_esc(name)}${_esc(_glyphSound(g))}</div>
     <div class="card-prompt">${_esc(_glyphNote(g, isToneMark))}</div>
     <div class="btn-row"><button class="btn btn-primary" onclick="_learnNext()">Got it →</button></div>`;
   if (typeof letterSpeechParts === "function") _tts.speak(letterSpeechParts(g));
