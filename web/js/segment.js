@@ -142,13 +142,23 @@ function segmentThai(text) {
     if (best[i] === Infinity || !_tkLegalBoundary(s, i)) continue;
     const lim = Math.min(_segMaxLen, n - i);
     for (let L = lim; L >= 1; L--) {
-      // a word that would end mid-cluster is not a candidate — same rule the
-      // curriculum tokeniser enforces, so both agree on where a cut may fall
-      if (!_tkLegalBoundary(s, i + L)) continue;
       const w = s.substr(i, L);
       if (!_segWords.has(w)) continue;
       const c = best[i] + Math.log(_segRank.get(w) + 10);
-      if (c < best[i + L]) { best[i + L] = c; prev[i + L] = i; known[i + L] = 1; base[i + L] = ""; }
+      // A word that would end mid-cluster is not a candidate — same rule the
+      // curriculum tokeniser enforces, so both agree on where a cut may fall.
+      //
+      // This guard used to sit at the TOP of the loop, as a `continue`, which
+      // made the two branches below unreachable for any word ending in a
+      // dependent vowel. ค่า + าาา never fired, because the cut it was tested
+      // against was the one at ค่า|าาา — illegal, and not the cut the stretch
+      // makes. So every vowel-final stretch failed: ค่าาาา, จ้าาา, มาาาา,
+      // ฮาาาา, the ones Thai chat is actually made of. า and ำ were listed in
+      // _SEG_REPEATABLE the whole time as dead code. Each branch now checks
+      // the boundary IT lands on.
+      if (_tkLegalBoundary(s, i + L) && c < best[i + L]) {
+        best[i + L] = c; prev[i + L] = i; known[i + L] = 1; base[i + L] = "";
+      }
       // LENGTHENING. Thai writers stretch a final letter for emphasis —
       // อร่อยยยย, มากกกก, จังงงง — and every one of those is in any real
       // paste. The DP had no idea, so มากกกก cost less as มา|กก|กก ("to come /
@@ -200,7 +210,12 @@ function segmentThai(text) {
     let j = i + 1;
     while (j < n && !_tkLegalBoundary(s, j)) j++;
     const c = best[i] + _SEG_UNKNOWN_COST;
-    if (c < best[j]) { best[j] = c; prev[j] = i; known[j] = 0; }
+    // base[] must be cleared too. Every other branch sets it; this one did not,
+    // so a losing stretch path left its base behind and the winning unknown
+    // token inherited it: มากกกกๆ produced ๆ with base "กก". Nothing renders
+    // it today, but `base` is a promise about what a token MEANS, and a token
+    // carrying somebody else's is a lie waiting for its first consumer.
+    if (c < best[j]) { best[j] = c; prev[j] = i; known[j] = 0; base[j] = ""; }
   }
 
   const raw = [];
@@ -276,6 +291,39 @@ function segmentThai(text) {
     const brokenBefore = prev && !prev.known && isThai(prev.text[prev.text.length - 1]);
     const brokenAfter  = next && !next.known && isThai(next.text[0]);
     if (brokenBefore || brokenAfter) out[i].fragment = true;
+  }
+
+  // …and PROPAGATE, because a shredded word is shredded all the way through.
+  // The pass above only looks for UNMATCHED Thai beside a token, so the piece
+  // next to a piece was missed and kept its full, authoritative gloss:
+  // อินสตาแกรม came apart as อิน† · ส · ตา† · แก · รม, and แก — untouched by
+  // the pass, because both its neighbours are known — offered "a second person
+  // pronoun". ช้อปปี้ gave "gaming token", ยูทูป gave "the Latin letter U".
+  // This is the เซเว่น failure the flag was built for, one hop further along.
+  //
+  // A flag crosses only where the words touch — a space is an ordinary
+  // boundary — and it STOPS at a word the course teaches. Without that, ไป in
+  // ไปเซเว่น was flagged for touching the wreckage of a loanword beside it,
+  // and ไป is a word the learner has been taught and whose meaning is right
+  // regardless of what follows. The pieces of a shredded loanword (แก, รม,
+  // ปี้, ราง) are lexicon entries the course never teaches, which is exactly
+  // the line between "a real word here" and "a syllable of something else".
+  const touches = (a, b) => a && b && isThai(a.text[a.text.length - 1]) && isThai(b.text[0]);
+  // WORD_MAP is built in app.js, which the extension and the tests do not
+  // load — so a bare `typeof WORD_MAP !== "undefined"` is simply false there
+  // and the propagation would never stop. Same guard-without-a-fallback shape
+  // that made the extension miss all 970 course glosses. Fall back to WORDS.
+  const taught = t => (typeof WORD_MAP !== "undefined" && !!WORD_MAP[t.text]) ||
+    (typeof WORDS !== "undefined" && WORDS.some(w => w[0] === t.text));
+  for (let pass = 0; pass < out.length; pass++) {
+    let moved = false;
+    for (let i = 0; i < out.length; i++) {
+      if (!out[i].known || out[i].fragment || taught(out[i])) continue;
+      const prev = out[i - 1], next = out[i + 1];
+      if ((prev && prev.fragment && touches(prev, out[i])) ||
+          (next && next.fragment && touches(out[i], next))) { out[i].fragment = true; moved = true; }
+    }
+    if (!moved) break;
   }
   return out;
 }
