@@ -176,6 +176,41 @@ function confusableFor(ch) {
   return CONFUSABLE_CONS.find(g => g.includes(ch)) || null;
 }
 
+// The words a unit actually INTRODUCES: its eight new ones, plus a script
+// note's anchor when the note names a word that is not among them.
+function courseUnitWords(batchIdx, words) {
+  let fresh = courseNewWords(batchIdx, words).slice(0, 8);
+  const note = LETTER_BATCHES[batchIdx] && LETTER_BATCHES[batchIdx].note;
+  if (note) {
+    const src = words || (typeof WORDS !== "undefined" ? WORDS : []);
+    const nw = src.find(w => w[0] === note.word);
+    if (nw && !fresh.some(w => w[0] === nw[0])) fresh = [nw, ...fresh];
+  }
+  return fresh;
+}
+
+// Everything introduced up to and including this rung — the only words a
+// learner can fairly be TESTED on.
+//
+// This exists because a beginner persona could not pass the course. A letters
+// unit teaches eight words and then draws its speed reads, its match round,
+// its typing targets and its listening from courseDecodable() — every word the
+// ladder's letters can spell, which by rung 3 is hundreds, of which the course
+// has introduced a few dozen. Measured on the real queue builder: 50–63% of
+// graded target cards from batch 3 on were words no unit ever shows. Units
+// gate at 80% first-try and each is locked behind the last, so a real learner
+// stopped at unit 1 while every automated check passed — the harness reads the
+// answer off item.word, and a test written for `tag: "new"` cards never looked
+// at these. Distractors may still come from the wider pool; a wrong answer you
+// have not seen is fair. A QUESTION you have not seen is not.
+function courseTaughtWords(batchIdx, words) {
+  const out = [], seen = new Set();
+  for (let b = 0; b <= batchIdx; b++)
+    for (const w of courseUnitWords(b, words))
+      if (!seen.has(w[0])) { seen.add(w[0]); out.push(w); }
+  return out;
+}
+
 // ── Scenario chunk lessons (grammar-lite) ────────────────────────────────────
 // Just enough for everyday needs; advanced concepts deferred by design.
 // pattern: the chunks to absorb (tap-to-hear). practice: active recall — cloze
