@@ -45,6 +45,27 @@ function _tdInit() {
 // Shown with the card rather than permanently: a credit stapled to every page
 // you browse would be its own kind of rude, and the obligation attaches to
 // where the glosses are actually displayed.
+// Which layer answered for the word the card is showing. Set on open.
+let _tdLastSource = null;
+
+// The credit named Wiktionary whatever the gloss's actual source. It is not
+// decoration: attribution is a CONDITION of both licences, and the two are not
+// the same licence. วีซ่า is glossed by Volubilis (CC BY-SA 4.0) and the card
+// credited Wiktionary (CC BY-SA 3.0) — the wrong project under the wrong
+// terms. glossSource() has always been able to say which; nothing asked it.
+// Course and hand-written entries are this project's own and need no credit.
+function _tdCreditHtml(source) {
+  const L = {
+    wiktionary: ["Wiktionary", "https://en.wiktionary.org/",
+                 "CC BY-SA 3.0", "https://creativecommons.org/licenses/by-sa/3.0/"],
+    volubilis:  ["Volubilis", "https://belisan-volubilis.blogspot.com/",
+                 "CC BY-SA 4.0", "https://creativecommons.org/licenses/by-sa/4.0/"],
+  }[source];
+  if (!L) return "";
+  const a = (t, h) => `<a href="${h}" target="_blank" rel="noopener noreferrer" style="color:#00cc66">${t}</a>`;
+  return `Meaning from ${a(L[0], L[1])}, used under ${a(L[2], L[3])}.`;
+}
+
 function _tdCredit(shadow) {
   let el = shadow.getElementById("td-credit");
   if (el) return el;
@@ -54,11 +75,6 @@ function _tdCredit(shadow) {
     "position:fixed;left:0;right:0;bottom:0;display:none;z-index:2;" +
     "padding:6px 10px;text-align:center;font:11px system-ui,sans-serif;" +
     "color:#a487b8;background:rgba(13,0,21,0.92);border-top:1px solid #43155e";
-  el.innerHTML =
-    'Meanings from <a href="https://en.wiktionary.org/" target="_blank" rel="noopener noreferrer" ' +
-    'style="color:#00cc66">Wiktionary</a>, used under <a ' +
-    'href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer" ' +
-    'style="color:#00cc66">CC BY-SA 3.0</a>.';
   shadow.appendChild(el);
 
   // Toggle with the card. The ✕ closes it without going through any of our
@@ -66,7 +82,16 @@ function _tdCredit(shadow) {
   const overlay = shadow.getElementById("wc-overlay");
   if (overlay && typeof MutationObserver === "function") {
     const sync = () => {
-      el.style.display = overlay.querySelector(".wc-layer") ? "block" : "none";
+      const open = overlay.querySelector(".wc-layer");
+      el.style.display = open ? "block" : "none";
+      if (open) {
+        el.innerHTML = _tdCreditHtml(_tdLastSource);
+        // Also on the element, because the DOM is the only thing the page's
+        // world and this isolated world share: a checker calling glossSource()
+        // through page.evaluate gets `undefined` and would conclude "no source,
+        // so no credit owed" for every word. That is how the old check passed.
+        el.dataset.source = _tdLastSource || "";
+      }
     };
     new MutationObserver(sync).observe(overlay, { childList: true, subtree: true });
     sync();
@@ -173,6 +198,8 @@ function _tdOnMove(e) {
   }
 }
 
+// Set while the card is being opened, read by extension/tts.js. See _tdOnClick.
+let _tdMuted = false;
 function _tdOnClick(e) {
   const hit = _tdLook(e);
   if (!hit) return;
@@ -181,20 +208,51 @@ function _tdOnClick(e) {
   e.preventDefault();
   e.stopPropagation();
   _tdHide();
-  if (typeof openWordModal === "function") openWordModal(_tdEntry(hit.word, hit.fragment));
+  // Do NOT let the card speak on its own. openWordModal auto-speaks, and
+  // extension/tts.js calls speechSynthesis.cancel() first — so on somebody
+  // else's page an Alt-click both played audio nobody asked for and killed
+  // whatever the page was already saying. Verified: a page mid-utterance got
+  // onerror "interrupted". The 🔊 buttons on the card still work; those are a
+  // gesture. This one was not.
+  _tdLastSource = (typeof glossSource === "function") ? glossSource(hit.word) : null;
+  _tdMuted = true;
+  try { if (typeof openWordModal === "function") openWordModal(_tdEntry(hit.word, hit.fragment)); }
+  finally { _tdMuted = false; }
+}
+
+// Cancelling `click` alone is not enough: the page still receives mousedown
+// and mouseup. That collapsed a 49-character selection to nothing, moved the
+// caret inside a contenteditable, and handed a Monaco-style editor the
+// Alt+mousedown it reads as "add a cursor" while withholding the click that
+// would have completed it. preventDefault on mousedown is what stops focus
+// moving and the selection dying.
+function _tdOnMouseRaw(e) {
+  if (!_tdLook(e)) return;
+  e.preventDefault();
+  e.stopPropagation();
 }
 
 function _tdOnKeyUp(e) {
-  if (e.key === "Alt") { _tdHide(); return; }
+  if (e.key === "Alt") _tdHide();
+}
+
+// Escape closes the card — on KEYDOWN, and consumed.
+//
+// It used to be handled on keyup, by which point the page's own keydown
+// handler had already run: pressing Escape to dismiss our card also closed the
+// site's modal behind it, and emptied a <input type=search> whose page listens
+// for Escape. Closing our own overlay is not licence to fire the host page's
+// shortcuts. Consumed ONLY when a card is actually open — otherwise Escape is
+// the page's, and we must not swallow it.
+function _tdOnKeyDown(e) {
   if (e.key !== "Escape") return;
-  _tdHide();
-  // Escape must also close the card. In the trainer main.js owns this; here
-  // there is no key handler but ours, so without it the only way out is the ✕
-  // — and a modal you cannot dismiss from the keyboard, sitting on top of
-  // somebody else's page, is a trap.
   const shadow = _tdInit();
   const layers = shadow.querySelectorAll("#wc-overlay .wc-layer");
-  if (layers.length && typeof _wcPop === "function") _wcPop(layers[layers.length - 1]);
+  if (!layers.length) { _tdHide(); return; }
+  e.preventDefault();
+  e.stopPropagation();
+  _tdHide();
+  if (typeof _wcPop === "function") _wcPop(layers[layers.length - 1]);
 }
 
 function tdStart() {
@@ -211,7 +269,10 @@ function tdStart() {
   if (typeof _glossLoad === "function") _glossLoad(() => {});
   if (typeof _volLoad === "function") _volLoad(() => {});
   document.addEventListener("mousemove", _tdOnMove, true);
+  document.addEventListener("mousedown", _tdOnMouseRaw, true);
+  document.addEventListener("mouseup", _tdOnMouseRaw, true);
   document.addEventListener("click", _tdOnClick, true);
+  document.addEventListener("keydown", _tdOnKeyDown, true);
   document.addEventListener("keyup", _tdOnKeyUp, true);
   // Scrolling moves the word out from under a highlight drawn in viewport
   // coordinates; cheaper to drop it than to track.

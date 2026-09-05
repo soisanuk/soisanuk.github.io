@@ -67,7 +67,16 @@ function tdShell(cssText) {
   wrap.innerHTML = TD_SHELL_HTML;
   while (wrap.firstChild) shadow.appendChild(wrap.firstChild);
 
-  (document.body || document.documentElement).appendChild(host);
+  // <html>, NOT <body>. A `transform`, `will-change: transform` or
+  // `contain: paint` on body makes body the containing block for every
+  // position:fixed descendant — including our overlay, highlight and tooltip,
+  // which are all fixed. On such a page the card rendered at y=-550 and the
+  // user saw a full-viewport scrim and nothing else; the highlight landed a
+  // whole scrollY away from the word. Those three properties are ordinary on
+  // modern sites (any scroll-animation library sets one). documentElement is
+  // the containing block for fixed positioning unless the root itself is
+  // transformed, which is far rarer.
+  document.documentElement.appendChild(host);
   if (typeof _wcSetRoot === "function") _wcSetRoot(shadow);
   return (_tdShadow = shadow);
 }
