@@ -71,11 +71,19 @@ function _scriptTooltipHtml(ch) {
   }
 
   if (kind === "vowel") {
-    // find matching VOWELS entry by char
-    const v = VOWELS.find(x => x[0].replace(/◌/g, "").includes(ch));
+    // EXACT match on the bare symbol first, substring only as a fallback.
+    // A plain `includes` matched the first pattern that merely CONTAINED the
+    // character, so hovering ั in ปฏิบัติ reported "◌ัว · ua vowel" and
+    // hovering ะ in เกาะ reported "เ◌าะ · short o" — the two commonest short
+    // vowels in the language, each identified as something else entirely.
+    const _bare = x => x[0].replace(/◌/g, "");
+    const v = VOWELS.find(x => _bare(x) === ch) || VOWELS.find(x => _bare(x).includes(ch));
     if (v) {
+      // hosted, never raw: v[0] is the canonical ◌ form and U+25CC is missing
+      // from many fonts. Every other surface hosts it; this one printed it.
+      const shown = (typeof vowelDisp === "function") ? vowelDisp(v[0], "อ") : v[0];
       return `<span class="st-char" lang="th">${ch}</span>
-        <div class="st-row">Vowel: <span>${v[0]}</span></div>
+        <div class="st-row">Vowel: <span>${shown}</span></div>
         <div class="st-row">Sound: <span>${v[1]}</span></div>
         <div class="st-row">${_wcEsc(v[2])}</div>`;
     }

@@ -178,7 +178,7 @@ function startConsonantFlash() {
   const deck = buildDeck(keys, { fallback: 15 });
   const map = {};
   for (const c of CONSONANTS)
-    map[`sc:${c[0]}`] = [c[0], c[1], `${c[2]} class  ·  ${c[3]}  ·  /${c[4]}/ → /${c[5]}/`];
+    map[`sc:${c[0]}`] = [c[0], c[1], `${c[2]} class  ·  ${_scName(c)}  ·  /${c[4]}/ → /${c[5]}/`];
   _startScriptFlash(deck, map, "Consonant");
 }
 
@@ -194,6 +194,20 @@ function startVowelFlash() {
   _startScriptFlash(deck, vmap, "Vowel");
 }
 
+// "ไก่ — chicken". The meaning was wired into the word-card tooltip and the
+// lesson glyph card and nowhere else, so the four screens actually NAMED after
+// the letters — Consonant Cards, Script SRS, Browse Consonants and the
+// reference chart — were the ones still showing a name the learner cannot read.
+// A fix that touches a display has to be applied at every surface that renders
+// it; grep for the accessor, not the symptom.
+function _scName(c) {
+  const en = (typeof consNameEn === "function") ? consNameEn(c[0]) : null;
+  return en ? `${c[3]} (${en})` : c[3];
+}
+function _scNameEn(ch) {
+  const en = (typeof consNameEn === "function") ? consNameEn(ch) : null;
+  return en ? ` <span class="drill-dim">— ${_esc(en)}</span>` : "";
+}
 function _startScriptFlash(deck, map, label) {
   session = { mode: "script-flash", type: "script", deck, idx: 0, correct: 0, map, label };
   _scriptFlashShow();
@@ -362,7 +376,7 @@ function drillShowConsonant() {
     </div>
     <div class="drill-row">
       <span class="drill-label">Name (ชื่อ)</span>
-      <span class="drill-value">${_esc(name)}</span>
+      <span class="drill-value">${_esc(name)}${_scNameEn(thai)}</span>
     </div>
     <div class="drill-row">
       <span class="drill-label">Initial / Final</span>
@@ -462,7 +476,7 @@ function startScriptSRS() {
     if (key.startsWith("sc:")) {
       const thai = key.slice(3);
       const c = CONSONANTS.find(x => x[0] === thai);
-      return c ? [c[0], c[1], `${c[2]} class · ${c[3]} · /${c[4]}/ → /${c[5]}/`] : [thai, "", ""];
+      return c ? [c[0], c[1], `${c[2]} class · ${_scName(c)} · /${c[4]}/ → /${c[5]}/`] : [thai, "", ""];
     } else {
       const pat = key.slice(3);
       const v = VOWELS.find(x => x[0] === pat);
