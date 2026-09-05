@@ -14,7 +14,12 @@ const EXT = `${REPO}/extension`;
 
 const server = createServer((req, res) => {
   try {
-    const body = readFileSync(`${REPO}/spike/fixtures/thai-page.html`);
+    let body = readFileSync(`${REPO}/spike/fixtures/thai-page.html`, "utf8");
+    // ?root=8px serves the same page with a hostile root font-size. Real sites
+    // set one to make their own rem arithmetic tidier, and a shadow root does
+    // NOT scope rem — it resolves against the host document's <html>.
+    const m = /[?&]root=([\w.%]+)/.exec(req.url || "");
+    if (m) body = body.replace("<style>", `<style>html{font-size:${decodeURIComponent(m[1])}}`);
     res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
     res.end(body);
   } catch { res.writeHead(500); res.end(); }
@@ -372,6 +377,43 @@ try {
   check("a plain click still follows links", page.url() !== urlBefore, page.url() === urlBefore ? "did NOT navigate" : "navigated");
 
   check("no page errors", errs.length === 0, errs.join("; "));
+
+  // ── the card must not inherit the host page's type scale ─────────────────
+  // shell.css had 66 rem values, and rem resolves against the HOST document's
+  // <html>. On a page with html{font-size:8px} the tooltip rendered at 6.6px
+  // and the headword at 40px instead of 80px; a 24px root would have made it
+  // enormous. The app keeps rem on purpose — a reader who raises their browser
+  // font gets a bigger card — but in the extension the root belongs to a
+  // stranger. build-extension.mjs fixes them at the 16px default.
+  const typeAt = async root => {
+    const p2 = await ctx.newPage();
+    await p2.goto(root ? `${url}?root=${encodeURIComponent(root)}` : url, { waitUntil: "domcontentloaded" });
+    await p2.waitForTimeout(1000);
+    const b2 = await p2.locator("#prose").boundingBox();
+    await p2.keyboard.down("Alt");
+    await p2.mouse.move(b2.x + 30, b2.y + 10);
+    await p2.waitForTimeout(350);
+    const sizes = await p2.evaluate(() => {
+      const sh = document.getElementById("soisanuk-reader-root").shadowRoot;
+      const px = id => { const el = sh.getElementById(id); return el ? parseFloat(getComputedStyle(el).fontSize) : null; };
+      return { tip: px("word-tooltip"), overlay: px("wc-overlay"), root: parseFloat(getComputedStyle(document.documentElement).fontSize) };
+    });
+    await p2.keyboard.up("Alt");
+    await p2.close();
+    return sizes;
+  };
+  const normal = await typeAt(null);
+  const tiny = await typeAt("8px");
+  const huge = await typeAt("24px");
+  check("the host page's root font-size does not shrink the card",
+    normal.tip && tiny.tip === normal.tip,
+    `root ${tiny.root}px -> tooltip ${tiny.tip}px (normal ${normal.tip}px)`);
+  check("nor enlarge it",
+    normal.tip && huge.tip === normal.tip,
+    `root ${huge.root}px -> tooltip ${huge.tip}px`);
+  check("no rem survives in the shadow stylesheet",
+    !readFileSync(`${REPO}/extension/shell.css`, "utf8").match(/[\d.]rem\b/),
+    "rem resolves against the host document, always");
 
   for (const r of results) console.log(`  ${r.p ? "PASS" : "FAIL"}  ${r.n}${r.d ? "  — " + r.d : ""}`);
   const failed = results.filter(r => !r.p).length;
