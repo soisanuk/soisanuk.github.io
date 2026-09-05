@@ -43,7 +43,7 @@ const LETTER_BATCHES = [
       word: "\u0e40\u0e1b\u0e47\u0e19", rom: "pen", en: "to be",
       text: "Close a syllable with a final consonant and some vowels change " +
         "shape. เปะ is \u201cp\u00e8\u201d \u2014 put น on the end and the vowel shrinks to " +
-        "the small mark you just learned: เป็น, \u201cpen\u201d. ◌ะ does the same, " +
+        "a small mark you are about to meet: เป็น, \u201cpen\u201d. ◌ะ does the same, " +
         "becoming ◌ั in มัน and รัก. It is not a different vowel and not a " +
         "different sound. It is the same vowel written smaller, because the " +
         "final consonant needed the room.",
