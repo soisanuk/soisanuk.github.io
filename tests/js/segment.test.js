@@ -4,12 +4,14 @@
 // lexicon-th.js for the real 12k word list.
 // Run with: node --test tests/js/
 
-import { test, describe } from "node:test";
+import { test, describe, before } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-for (const f of ["tokeniser.js", "segment.js", "lexicon-th.js"]) {
+// data.js for WORDS (the course-word guard below reads it), and the two
+// corpus-derived layers segment.js now consults.
+for (const f of ["data.js", "tokeniser.js", "seg-extra.js", "seg-phrases.js", "segment.js", "lexicon-th.js"]) {
   vm.runInThisContext(
     readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"),
     { filename: f }
@@ -171,5 +173,53 @@ describe("stretched spellings", () => {
       assert.equal(toks.length, 1, `${w} split as ${toks.map(t => t.text).join("|")}`);
       assert.equal(toks[0].base, undefined, `${w} is a word, not a stretch of one`);
     }
+  });
+});
+
+describe("the corpus-derived layers", () => {
+  // _segWords is module state and an earlier test in this file installs its own
+  // small list. Reinstall the real one, through the real path, so the curated
+  // supplement and the phrase filter are applied the way the app applies them.
+  before(() => { _segWords = null; _segLoad(() => {}); });
+  test("curated words are whole, and their pieces are not the answer", () => {
+    // A word the segmenter does not know is not skipped — it is CUT UP, and
+    // the pieces are usually real words, so the reader gets a confident wrong
+    // answer rather than a blank. โอเลี้ยง was โอ|เลี้ยง, "a type of
+    // lacquerware" plus "to maintain; to dribble".
+    for (const w of ["โอเลี้ยง", "รีวิว", "ดราม่า", "เซเว่น"])
+      assert.deepEqual(segmentThai(w).map(t => t.text), [w], `${w} should be one token`);
+  });
+
+  test("phrases the linguists split are no longer merged", () => {
+    // ตกหนัก is in the frequency list at rank 6792 and cost less than ตก +
+    // หนัก, so ฝนตกหนัก glossed as "shoulder a burden". VISTEC's annotators cut
+    // through it in 24 of 24 occurrences.
+    assert.deepEqual(segmentThai("ฝนตกหนัก").map(t => t.text), ["ฝน", "ตก", "หนัก"]);
+  });
+
+  test("but never a word the course teaches", () => {
+    // 36 prune candidates are course vocabulary. VISTEC's convention splits
+    // them; ours must not, or Paste Text would disagree with the flashcard
+    // about the same word. The guard is on the PRUNE LIST — it cannot stop the
+    // DP splitting a word on cost, and does not claim to: ไม่ใช่ sits at rank
+    // 11,886 against ไม่ at 9 and ใช่ at 131, and has always come apart.
+    const pruned = new Set(SEG_PHRASES.split("\n").filter(Boolean));
+    const course = new Set(WORDS.map(w => w[0]));
+    const clash = [...pruned].filter(w => course.has(w));
+    assert.deepEqual(clash, [], `the course teaches these, they must not be pruned: ${clash.join(" ")}`);
+    // and the ones that were whole before still are
+    for (const w of ["ภาษาไทย", "วันจันทร์", "ที่ไหน"]) {
+      assert.ok(course.has(w), `${w} should be a course word`);
+      assert.deepEqual(segmentThai(w).map(t => t.text), [w], `${w} must stay whole`);
+    }
+  });
+
+  test("ไม้ยมก belongs to the word it repeats", () => {
+    // §1.5 of the corpus's own criteria, and 15,000 occurrences agree.
+    const t = segmentThai("เด็กๆ");
+    assert.deepEqual(t.map(x => x.text), ["เด็กๆ"]);
+    assert.equal(t[0].base, "เด็ก", "looked up under the unrepeated word");
+    // …but a space before it is still a boundary: formal Thai writes เพื่อน ๆ
+    assert.ok(segmentThai("เพื่อน ๆ").length > 1);
   });
 });
