@@ -405,7 +405,14 @@ function _wordRtgs(text) {
   if (typeof WORDS !== "undefined") { const w = WORDS.find(x => x[0] === text); if (w) return w[1]; }
   return null;
 }
+// Words whose real tone the spelling does not predict. data.test.js has
+// exempted these two from the engine for a while — แอป is a loanword and ก็ is
+// irregular — but only the TEST knew. toneColorHtml painted both low from the
+// engine while the word card printed kôo and áep from WORDS, so the colour
+// contradicted the romanisation directly beneath it.
+const TONE_EXCEPTIONS = { "ก็": "falling", "แอป": "high" };
 function toneOfWord(text) {
+  if (TONE_EXCEPTIONS[text]) return TONE_EXCEPTIONS[text];
   if (typeof syllableTone !== "function") return null;
   const rtgs = _wordRtgs(text);
   if (rtgs && /[-\s]/.test(rtgs.trim())) return null;   // multi-syllable romanisation

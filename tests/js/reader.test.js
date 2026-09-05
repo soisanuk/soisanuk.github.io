@@ -183,3 +183,15 @@ describe("_readerResumeAt", () => {
     assert.equal(_readerResumeAt({ at: -5, th: null }, feed), 0);
   });
 });
+
+test("การันต์ raises a sentence's grade — it is a letter you must be taught", () => {
+  // isLetter stopped at 0x0E4B and ์ is 0x0E4C, one codepoint outside, so the
+  // mark never raised a grade: เบียร์ scored 4 while ์ is not taught until
+  // rung 8. 17 sentences carrying it sat in "Getting around" (max 6) and 38 in
+  // "Street Thai" (max 7) — a reader shown, two levels early, exactly the mark
+  // that stops a finished learner reading the word "beer".
+  assert.equal(readerGrade("เบียร์"), 8, "เบียร์ needs the rung that teaches ์");
+  assert.ok(readerGrade("เบียร์") > readerGrade("เบีย"), "the mark must cost something");
+  // and the other two non-letter marks still do not
+  assert.equal(readerGrade("มา฿"), readerGrade("มา"), "฿ is currency, not a letter");
+});

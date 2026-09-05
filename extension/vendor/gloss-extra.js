@@ -79,4 +79,22 @@ var GLOSS_EXTRA = {
   // data.js — which is the vendored file, so The Last Baht Bus gets them too;
   // this file is not vendored. WORD_MAP outranks this layer anyway, so keeping
   // them here as well would have been two sources of truth for one word.
+
+  // ── The days of the week, bare (2026-09-05) ────────────────────────────
+  // The course teaches วันจันทร์ and Wiktionary knows the bare forms — but its
+  // first sense is the Sanskrit ETYMOLOGY, so a fluent reader pasting ordinary
+  // Thai got จันทร์ "Candra, the moon god", ศุกร์ "Venus: god of love" and
+  // อาทิตย์ "Surya (the first of the nine influential stars navagraha)". Thais
+  // write these bare constantly — จันทร์นี้, ศุกร์หน้า — and none of them is
+  // discussing a deity. The planet senses are real and stay, after the day,
+  // which is what a reader actually meets. Romanisations are the course's own
+  // วัน- compounds with the วัน taken off.
+  "จันทร์":   ["jan",          "Monday; the moon"],
+  "อังคาร":   ["ang-khaan",    "Tuesday; Mars"],
+  "พุธ":      ["phút",         "Wednesday; Mercury"],
+  "พฤหัส":    ["phá-rúe-hàt",  "Thursday (short for พฤหัสบดี)"],
+  "พฤหัสบดี": ["phá-rúe-hàt-sà-boo-dii", "Thursday; Jupiter"],
+  "ศุกร์":    ["sùk",          "Friday; Venus"],
+  "เสาร์":    ["sǎo",          "Saturday; Saturn"],
+  "อาทิตย์":  ["aa-thít",      "Sunday; a week; the sun"],
 };

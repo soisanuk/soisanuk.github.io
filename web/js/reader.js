@@ -91,7 +91,13 @@ function readerGrade(thai) {
     // ฿ (U+0E3F, baht sign) falls inside the mark range below but is
     // currency, not a letter — skip it so a price doesn't inflate the grade.
     if (cp === 0x0E3F) continue;
-    const isLetter = (cp >= 0x0E01 && cp <= 0x0E2E) || (cp >= 0x0E30 && cp <= 0x0E4B);
+    // …0x0E4C, not 0x0E4B. การันต์ (U+0E4C) sat one codepoint outside the
+    // range, so it never raised a sentence's grade: every word carrying a
+    // silent letter — เบียร์, บาร์, ดวงจันทร์, สัปดาห์ — graded as if the mark
+    // were not there. 17 such sentences sat in "Getting around" (max 6) and 38
+    // in "Street Thai" (max 7) while ์ is not taught until rung 8. It is the
+    // exact letter the rung-8 note exists to introduce.
+    const isLetter = (cp >= 0x0E01 && cp <= 0x0E2E) || (cp >= 0x0E30 && cp <= 0x0E4C);
     if (!isLetter) continue; // skip spaces, punctuation, digits
     g = Math.max(g, _glyphBatch(ch));
   }
