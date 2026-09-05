@@ -198,7 +198,10 @@ function _buildVowelChart() {
     html += `<button class="alpha-cell" onclick="_vowelCellSpeak(${i})" title="${desc}">` +
       `<span class="alpha-char" style="color:var(--lotus);font-size:1.3rem" lang="th">${disp}</span>` +
       `<span class="alpha-rom">${rom}</span>` +
-      `<span class="alpha-name">${desc.split(" ")[0]}</span>` +
+      // The whole description, not its first word. split(" ")[0] made 13 of
+      // 21 cells read just "long" or "short" — the length survived and the
+      // vowel it belonged to was thrown away.
+      `<span class="alpha-name">${desc}</span>` +
       `</button>`;
   }
   html += `</div>`;
@@ -211,7 +214,7 @@ function _buildToneChart() {
   const el = document.getElementById("chart-tones");
   const marks = [
     { mark: "—",  nameTh: "สามัญ", nameEn: "mid tone",     desc: "Default — no mark",          example: "กา · kaa · crow",       speak: "กา" },
-    { mark: "่",  nameTh: "เอก",   nameEn: "low tone",      desc: "Mai ek — low falling",        example: "ข่า · khàa · galangal", speak: "ข่า" },
+    { mark: "่",  nameTh: "เอก",   nameEn: "low tone",      desc: "Mai ek — low",                   example: "ข่า · khàa · galangal", speak: "ข่า" },
     { mark: "้",  nameTh: "โท",    nameEn: "falling tone",  desc: "Mai tho — falling from high", example: "ข้า · khâa · servant",  speak: "ข้า" },
     { mark: "๊",  nameTh: "ตรี",   nameEn: "high tone",     desc: "Mai tri — high (rare)",       example: "โต๊ะ · tó · table",     speak: "โต๊ะ" },
     { mark: "๋",  nameTh: "จัตวา", nameEn: "rising tone",   desc: "Mai chattawa — rising (rare)",example: "เดี๋ยว · dǐao · a moment", speak: "เดี๋ยว" },

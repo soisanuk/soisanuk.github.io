@@ -111,12 +111,17 @@ function consNameEn(ch) {
   const c = (typeof CONSONANTS !== "undefined") && CONSONANTS.find(x => x[0] === ch);
   if (!c) return null;
   const name = c[3];
+  // CONS_NAME_EN FIRST, then course vocabulary. The order was the other way and
+  // น came out as "หนู — I/me (young woman); mouse", because หนู is taught as
+  // the pronoun and the acrophonic sense is the animal. An explicit entry has
+  // to be able to win, exactly as gloss-extra.js outranks the dictionary.
+  if (typeof CONS_NAME_EN !== "undefined" && CONS_NAME_EN[name]) return CONS_NAME_EN[name];
   if (typeof WORD_MAP !== "undefined" && WORD_MAP[name]) return WORD_MAP[name][2];
   if (typeof WORDS !== "undefined") {
     const w = WORDS.find(x => x[0] === name);
     if (w) return w[2];
   }
-  return (typeof CONS_NAME_EN !== "undefined" && CONS_NAME_EN[name]) || null;
+  return null;
 }
 
 function vowelDisp(sym, host = "ก") {

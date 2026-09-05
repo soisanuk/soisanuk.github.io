@@ -176,11 +176,21 @@ const CHAR_FREQ = (() => {
 const CONSONANT_SORTED = [...CONSONANTS].sort((a, b) =>
   (CHAR_FREQ[b[0]] || 0) - (CHAR_FREQ[a[0]] || 0));
 
-const VOWEL_SORTED = [...VOWELS].sort((a, b) => {
-  const fa = Math.max(...[...a[0]].map(c => CHAR_FREQ[c] || 0));
-  const fb = Math.max(...[...b[0]].map(c => CHAR_FREQ[c] || 0));
-  return fb - fa;
-});
+// How often a vowel PATTERN actually occurs, not how common its commonest
+// character is. VOWEL_SORTED used Math.max over the pattern's characters, so
+// every compound inherited its most frequent piece: เ◌าะ contains เ, so Browse
+// Vowels presented it as "Rank #2/19 · 400 uses" when five course words use it.
+// เ◌ีย and เ◌ือ both read 244 for the same reason. Build a regex from the
+// pattern instead — ◌ is one or more consonants, so เ◌ือ matches เกลือ too.
+const VOWEL_FREQ = (() => {
+  const out = {};
+  for (const [sym] of VOWELS) {
+    const re = new RegExp(sym.replace(/◌/g, "[\u0E01-\u0E2E]+"));
+    out[sym] = WORDS.reduce((n, w) => n + (re.test(w[0]) ? 1 : 0), 0);
+  }
+  return out;
+})();
+const VOWEL_SORTED = [...VOWELS].sort((a, b) => (VOWEL_FREQ[b[0]] || 0) - (VOWEL_FREQ[a[0]] || 0));
 
 const RARE_THRESHOLD = 3;
 

@@ -468,6 +468,7 @@ function _speakBtn(text) {
 // One sentence about what this glyph does, correct for the ones that are not
 // consonants and not tone marks either.
 const _GLYPH_NOTE = {
+  "ฤ": "Neither a consonant nor a vowel: ฤ is a whole syllable in one character, \u201cr\u00fa\u201d or \u201cr\u00ed\u201d, borrowed from Sanskrit. It has no class and no name of its own. You need it for อังกฤษ (English) and พฤหัสบดี (Thursday), and then almost never again.",
   "ๆ": "ไม้ยมก. It sits AFTER a word and repeats it — เด็กๆ is \u201cchildren\u201d, ช้าๆ is \u201cslowly\u201d. It is not a tone mark and it does not ride above anything.",
   "็": "ไม้ไต่คู้. It SHORTENS the vowel beneath it — เป็น, not เปน. Vowel length is half of every tone rule, so this small hook matters twice.",
 };

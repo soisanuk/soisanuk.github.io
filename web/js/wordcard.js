@@ -89,8 +89,15 @@ function _scriptTooltipHtml(ch) {
   }
 
   if (kind === "tone") {
-    const names = { "่": "mai ek ่ — low/falling", "้": "mai tho ้ — falling", "๊": "mai tri ๊ — high", "๋": "mai jattawa ๋ — rising" };
-    return `<span class="st-char" lang="th">${ch}</span><div class="st-row">Tone mark: <span>${names[ch] || ch}</span></div>`;
+    // ็ falls in the tone codepoint range but is NOT a tone mark: it is
+    // ไม้ไต่คู้, and it shortens the vowel under it. The card said "Tone mark:
+    // ็" while the lesson glyph card said the opposite, correctly.
+    if (ch === "\u0E47")
+      return `<span class="st-char" lang="th">ก็</span>` +
+        `<div class="st-row">Mai taikhu <span>ไม้ไต่คู้</span></div>` +
+        `<div class="st-row">Shortens the vowel — not a tone mark</div>`;
+    const names = { "่": "mai ek ่ — low", "้": "mai tho ้ — falling", "๊": "mai tri ๊ — high", "๋": "mai jattawa ๋ — rising" };
+    return `<span class="st-char" lang="th">${vowelDisp(ch)}</span><div class="st-row">Tone mark: <span>${names[ch] || ch}</span></div>`;
   }
 
   return `<span class="st-char" lang="th">${ch}</span><div class="st-row">U+${cp.toString(16).toUpperCase().padStart(4,"0")}</div>`;
