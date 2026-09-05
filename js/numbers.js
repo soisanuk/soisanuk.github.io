@@ -144,7 +144,11 @@ function _setAlphaOrder(order) {
 }
 
 function _alphaCell({ ch, rom, cls, name }) {
-  return `<button class="alpha-cell alpha-${cls}" onclick="_alphaCellSpeak('${ch}')" title="${ch}อ${name}">` +
+  // The cell is small, so the meaning goes in the tooltip rather than the face:
+  // "ก อไก่ — chicken" on hover, which is where somebody scanning the chart for
+  // a half-remembered letter actually looks.
+  const en = (typeof consNameEn === "function") ? consNameEn(ch) : null;
+  return `<button class="alpha-cell alpha-${cls}" onclick="_alphaCellSpeak('${ch}')" title="${ch}อ${name}${en ? " — " + en : ""}">` +
     `<span class="alpha-char" lang="th">${ch}</span>` +
     `<span class="alpha-rom">${rom}</span>` +
     `<span class="alpha-name">${name}</span>` +
@@ -209,8 +213,8 @@ function _buildToneChart() {
     { mark: "—",  nameTh: "สามัญ", nameEn: "mid tone",     desc: "Default — no mark",          example: "กา · kaa · crow",       speak: "กา" },
     { mark: "่",  nameTh: "เอก",   nameEn: "low tone",      desc: "Mai ek — low falling",        example: "ข่า · khàa · galangal", speak: "ข่า" },
     { mark: "้",  nameTh: "โท",    nameEn: "falling tone",  desc: "Mai tho — falling from high", example: "ข้า · khâa · servant",  speak: "ข้า" },
-    { mark: "๊",  nameTh: "ตรี",   nameEn: "high tone",     desc: "Mai tri — high (rare)",       example: "ค๊าน — rare",           speak: "สาม" },
-    { mark: "๋",  nameTh: "จัตวา", nameEn: "rising tone",   desc: "Mai chattawa — rising (rare)",example: "ค๋าน — rare",           speak: "ห้า" },
+    { mark: "๊",  nameTh: "ตรี",   nameEn: "high tone",     desc: "Mai tri — high (rare)",       example: "โต๊ะ · tó · table",     speak: "โต๊ะ" },
+    { mark: "๋",  nameTh: "จัตวา", nameEn: "rising tone",   desc: "Mai chattawa — rising (rare)",example: "เดี๋ยว · dǐao · a moment", speak: "เดี๋ยว" },
   ];
   let html = `<table class="tone-table">
     <tr><th>Mark</th><th>Name</th><th>Type</th><th>Example</th></tr>`;
