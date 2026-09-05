@@ -63,6 +63,27 @@ let _segMaxLen = 0;
 function _segReady() { return _segWords !== null; }
 
 // Build the lookup tables from a frequency-ordered word list.
+// Build the effective word list: the generated lexicon, plus our own curated
+// supplement, minus the entries human linguists treat as more than one word.
+//
+// This is deliberately NOT inside _segInit. That function's contract is "build
+// the tables from THIS list", and callers pass their own — quietly appending
+// fifteen words and removing a hundred and forty-three would make every rank
+// they computed wrong, which is exactly what it did to the dedupe test.
+//
+// Appended, so every curated word lands at a rarer rank than anything the
+// corpus supplied (see seg-extra.js). Filtered afterwards, because a unigram
+// cost always prefers one token to two: a phrase that happens to be in the
+// list always beats its own parts, and removing it is the only lever that
+// moves no other decision (see seg-phrases.js).
+function _segEffective(list) {
+  if (typeof SEG_EXTRA !== "undefined" && Array.isArray(SEG_EXTRA)) list = list.concat(SEG_EXTRA);
+  const phrases = (typeof SEG_PHRASES !== "undefined" && SEG_PHRASES)
+    ? new Set(SEG_PHRASES.split("\n").filter(Boolean)) : null;
+  if (phrases) list = list.filter(w => !phrases.has(w));
+  return list;
+}
+
 function _segInit(list) {
   _segWords = new Set();
   _segRank = new Map();
@@ -84,7 +105,7 @@ function _segInit(list) {
 let _segLoading = null;
 function _segLoad(cb) {
   if (_segReady()) return cb(true);
-  if (typeof THAI_LEXICON !== "undefined") { _segInit(THAI_LEXICON.split("\n")); return cb(true); }
+  if (typeof THAI_LEXICON !== "undefined") { _segInit(_segEffective(THAI_LEXICON.split("\n"))); return cb(true); }
   if (_segLoading) { _segLoading.push(cb); return; }
   _segLoading = [cb];
   const done = ok => { const qs = _segLoading; _segLoading = null; qs.forEach(f => f(ok)); };
@@ -92,7 +113,7 @@ function _segLoad(cb) {
   el.src = "js/lexicon-th.js";
   el.onload = () => {
     if (typeof THAI_LEXICON === "undefined") return done(false);
-    _segInit(THAI_LEXICON.split("\n"));
+    _segInit(_segEffective(THAI_LEXICON.split("\n")));
     done(true);
   };
   el.onerror = () => done(false);
@@ -149,6 +170,24 @@ function segmentThai(text) {
       // เออออ งงงวย — and without this guard เออออ (to agree, rank 11796) lost
       // to เอ plus a stretch, because เอ is far commoner and the stretch is
       // free. A real word must always beat a hypothesis about a typing habit.
+      // ไม้ยมก attaches to the word it repeats. เด็กๆ is ONE token meaning
+      // "children" — VISTEC's annotators write it that way 15,000 times across
+      // 40k sentences (มากๆ 3942, ดีๆ 1292, น้องๆ 1222), and their published
+      // criteria §1.5 say so: "Reduplication is any word composed of the
+      // repeating morphemes… written with the repetition symbol (ๆ)".
+      //
+      // This file previously called ๆ "not part of the word before it", which
+      // was right about one thing — ๆ must not make เด็ก look like a FRAGMENT —
+      // and wrong about the token. Absorbing it fixes both: there is no residue
+      // left to flag, and the token is the word a reader sees. `base` carries
+      // the unrepeated word so the meaning is looked up under เด็ก.
+      //
+      // Only when it is written tight against the word. Formal Thai puts a
+      // space before it (เพื่อน ๆ) and then the space is its own boundary.
+      if (i + L < n && s[i + L] === "\u0E46" && _tkLegalBoundary(s, i + L + 1)) {
+        const e = i + L + 1;
+        if (c < best[e]) { best[e] = c; prev[e] = i; known[e] = 1; base[e] = w; }
+      }
       const lastCh = w[L - 1];
       if (_SEG_REPEATABLE.test(lastCh)) {
         let k = 0;

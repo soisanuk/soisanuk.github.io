@@ -16,6 +16,8 @@
         "vendor/tokeniser.js",
         "vendor/wordcard.js",
         "vendor/lexicon-th.js",
+        "vendor/seg-extra.js",
+        "vendor/seg-phrases.js",
         "vendor/segment.js",
         "vendor/gloss-th.js",
         "vendor/gloss-extra.js",
