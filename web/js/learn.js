@@ -165,16 +165,26 @@ function _unitQueue(unit, dueWords, audio = true) {
     // options. Random distractors would let the learner answer by recognising
     // the shape of a word they know; the partner forces the contrast itself.
     if (typeof consMinimalPairs === "function") {
-      const known = new Set(pool.map(w => w[0]));
-      // shuffled, not .find() — the first match is the same pair for every
-      // batch that can reach it, so three different units were all teaching
-      // ปิด/ผิด and the other thirteen pairs were never shown to anybody.
-      const pair = _shuffle(consMinimalPairs().filter(p => known.has(p.a[0]) && known.has(p.b[0])))[0];
+      // ANCHORED, not both-unknown and not both-known. Requiring both words to
+      // be taught yields zero pairs in the whole course; requiring neither gave
+      // five of six cards where the learner knew neither word, so a lesson
+      // about one consonant also became a lesson about two nouns. One side must
+      // be familiar — "you know ปิด; here is ผิด, one letter apart" — and that
+      // familiar side is the one the following card grades.
+      // Fires the moment its anchor is taught, and only then. "Known" was too
+      // loose: only one or two pairs ever qualify from the taught set, so the
+      // same เก่า/เข่า card appeared in eight of ten units. Keyed to THIS
+      // unit's new words instead, each pair shows once, in the unit that just
+      // introduced one half of it — "you have just learned เก่า; here is เข่า,
+      // one letter apart" — which is also when the contrast is worth drawing.
+      const isFresh = new Set(fresh.map(w => w[0]));
+      const pair = _shuffle(consMinimalPairs()
+        .filter(p => isFresh.has(p.a[0]) || isFresh.has(p.b[0])))[0];
       if (pair) {
         queue.push({ kind: "conspair", pair });
-        const first = Math.random() < 0.5;
-        queue.push({ kind: "pairpick", word: first ? pair.a : pair.b,
-                     other: first ? pair.b : pair.a, pool });
+        const aFresh = isFresh.has(pair.a[0]);
+        queue.push({ kind: "pairpick", word: aFresh ? pair.a : pair.b,
+                     other: aFresh ? pair.b : pair.a, pool });
       }
     }
   } else if (unit.kind === "tone") {
@@ -185,6 +195,8 @@ function _unitQueue(unit, dueWords, audio = true) {
     // Ear hosts must be MID class: mid + the four marks spans all five tones.
     queue.push({ kind: "toneIntro" });
     queue.push({ kind: "tonecalc" });
+    // The ladder rung the tone unit sits after (COURSE index 6, following
+    // batch 3). Both the ear hosts and the read words are limited to it.
     const taught = typeof taughtGlyphs === "function" ? taughtGlyphs(3) : new Set(["ก", "ด"]);
     const hosts = ["ก", "ด", "ต", "บ", "ป"].filter(c =>
       typeof _consClass === "function" && _consClass(c) === "mid" && taught.has(c));
@@ -208,6 +220,13 @@ function _unitQueue(unit, dueWords, audio = true) {
       // syllable and misreads a polysyllable with confidence, so any text
       // that isn't already known-monosyllabic must go through toneOfWord
       .filter(w => typeof toneOfWord === "function" && toneOfWord(w[0]))
+      // …and only words this unit's learner can actually READ. The tone unit
+      // runs after rung 3, and TONE_READ_WORDS carried สอง (ง), คุณ (ค ุ ณ),
+      // ผม (ผ) and น้ำ (ำ) — none of those letters taught for another seven
+      // units. "Read this word and name its tone" is not a tone question when
+      // the word contains letters you have never seen.
+      .filter(w => typeof taughtGlyphs !== "function" ||
+        [...w[0]].every(ch => !/[\u0E00-\u0E7F]/.test(ch) || taught.has(ch)))
       .slice(0, 4);
     for (const w of readWords) queue.push({ kind: "toneread", word: w });
   } else {

@@ -354,3 +354,26 @@ describe("TONE_CLASSES and CONSONANTS describe the same alphabet", () => {
       }
   });
 });
+
+test("◌อ is a LONG vowel and is doubled before a final consonant", () => {
+  // The scheme doubles long vowels, and the tests above already establish that
+  // ◌อ is the long open o. Four entries had slipped through anyway — ต้อง
+  // "tông", ร้อน "rón", ห้อง "hông" against สอง "sǒong", ท้อง "thóong", สอน
+  // "sǒon" — so a minimal-pair card put ต้อง and ท้อง side by side under a
+  // heading saying they differ by ONE consonant while their romanisations
+  // also disagreed about the vowel. Found by a beginner persona reading the
+  // two words next to each other.
+  const strip = r => r.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const bad = [];
+  for (const w of WORDS) {
+    // อ as the VOWEL: a consonant (with optional tone mark), then อ, then a
+    // final consonant. อ opening a syllable is the carrier, not this vowel.
+    // MONOSYLLABLES only — the same guard build-gloss.mjs puts on this rule.
+    // In ไก่อบ (kài-òp) the อ is not this vowel at all: it opens a second
+    // syllable as the carrier consonant, and òp is correctly short.
+    if (/[-\s]/.test(w[1])) continue;
+    if (!/[\u0E01-\u0E2E][\u0E48-\u0E4B]?\u0E2D[\u0E01\u0E07\u0E19\u0E21\u0E22\u0E27\u0E1A\u0E14\u0E08]$/.test(w[0])) continue;
+    if (!/oo/.test(strip(w[1]))) bad.push(`${w[0]} "${w[1]}"`);
+  }
+  assert.deepEqual(bad, [], `◌อ + final wants a doubled o: ${bad.join(", ")}`);
+});
