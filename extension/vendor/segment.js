@@ -214,11 +214,39 @@ function segmentThai(text) {
     raw.unshift(t);
   }
 
+  // Merge unknown runs — but only within a KIND. Merging everything glued
+  // punctuation to the space beside it, so ") " and " (" and " #" came out as
+  // single tokens. Human annotators split all three: across 3,000 corpus
+  // sentences, whitespace runs are 72% of non-Thai tokens, latin/digit runs
+  // 13.5%, and single punctuation marks 7.4% — each standing alone.
+  // Three kinds, and a mark is its own token — except for the two cases the
+  // annotators do join, both checked against the corpus:
+  //   · a RUN of the same mark: "..", "...", "!!", "//" all stay whole
+  //   · a # and the latin tag after it: "#BNK48" 580 times in 4,000 sentences
+  // A Thai hashtag is deliberately NOT joined. Their §1.11 keeps it whole, and
+  // for a tokeniser that is right — but this app's reader taps a word to learn
+  // it, and #เรื่องมันช่างน่าอาย is six words worth glossing separately. Their
+  // convention serves annotation; ours serves reading.
+  // Thai needs its own kind. Without it an unmatched Thai fragment fell into
+  // "mark" and was split per character: ออเดอร์ came out ...อ|เด|อ|ร์ instead
+  // of ...อ|เดอร์, cutting a การันต์ away from the letter it silences.
+  const kindOf = ch => /\s/.test(ch) ? "space"
+    : /[A-Za-z0-9]/.test(ch) ? "latin"
+    : /[\u0E00-\u0E7F]/.test(ch) ? "thai"
+    : "mark";
   const out = [];
   for (const t of raw) {
     const last = out[out.length - 1];
-    if (!t.known && last && !last.known) last.text += t.text;   // merge unknown runs
-    else out.push(t);
+    const k = t.known ? null : kindOf(t.text[0]);
+    let join = false;
+    if (!t.known && last && !last.known) {
+      const prevCh = last.text[last.text.length - 1];
+      if (last.kind === k && k !== "mark") join = true;                 // space/latin run
+      else if (k === "mark" && prevCh === t.text[0]) join = true;       // "..." "!!!"
+      else if (k === "latin" && prevCh === "#") { join = true; last.kind = "latin"; }
+    }
+    if (join) last.text += t.text;
+    else { if (!t.known) t.kind = k; out.push(t); }
   }
 
   // Flag fragments. A known token pressed flush against UNMATCHED THAI is

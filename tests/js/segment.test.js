@@ -223,3 +223,37 @@ describe("the corpus-derived layers", () => {
     assert.ok(segmentThai("เพื่อน ๆ").length > 1);
   });
 });
+
+describe("non-Thai runs", () => {
+  before(() => { _segWords = null; _segLoad(() => {}); });
+
+  // Merging every unknown character into one blob glued punctuation to the
+  // space beside it — ") " and " (" and " #" came out as single tokens. Across
+  // 3,000 corpus sentences the annotators split all three: whitespace runs are
+  // 72% of non-Thai tokens, latin/digit runs 13.5%, single marks 7.4%.
+  test("space, latin and punctuation are separate tokens", () => {
+    assert.deepEqual(segmentThai("สวัสดี (ครับ)").map(t => t.text),
+      ["สวัสดี", " ", "(", "ครับ", ")"]);
+    assert.deepEqual(segmentThai("ราคา 250 บาท!").map(t => t.text),
+      ["ราคา", " ", "250", " ", "บาท", "!"]);
+  });
+
+  test("but a run of the SAME mark stays whole", () => {
+    // "..." 217x, "!!" 78x, "!!!" 48x, "//" 46x in 4,000 sentences
+    assert.deepEqual(segmentThai("รอ... นะ").map(t => t.text), ["รอ", "...", " ", "นะ"]);
+    assert.deepEqual(segmentThai("ดีมาก!!!").map(t => t.text), ["ดี", "มาก", "!!!"]);
+  });
+
+  test("and # keeps its latin tag", () => {
+    // #BNK48 appears 580 times in 4,000 sentences
+    assert.deepEqual(segmentThai("#BNK48 น่ารัก").map(t => t.text), ["#BNK48", " ", "น่ารัก"]);
+  });
+
+  test("a THAI hashtag is deliberately left apart", () => {
+    // Their §1.11 keeps it whole and for a tokeniser that is right. This app's
+    // reader taps a word to learn it, so six glossable words beat one token.
+    const t = segmentThai("#เรื่องมันช่างน่าอาย").map(x => x.text);
+    assert.equal(t[0], "#");
+    assert.ok(t.length > 2, `expected the words to stay tappable, got ${t.join("|")}`);
+  });
+});
