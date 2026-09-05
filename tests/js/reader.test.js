@@ -195,3 +195,39 @@ test("การันต์ raises a sentence's grade — it is a letter you mus
   // and the other two non-letter marks still do not
   assert.equal(readerGrade("มา฿"), readerGrade("มา"), "฿ is currency, not a letter");
 });
+
+describe("the levels are bands, not prefixes", () => {
+  // Every level used to be the one below it plus more on the end: level 2
+  // opened with level 1's twenty sentences in the same order, and level 4's
+  // first unseen sentence was number 465 of 959. With only ‹ / Next › to
+  // navigate, moving up a level meant pressing Next 464 times to reach
+  // anything new — and the card said "289 sentences" on a day you had read
+  // none of them, which is the counter not meaning what it says.
+  test("no sentence appears in two levels", () => {
+    const seen = new Map();
+    READER_LEVELS.forEach((lv, i) => {
+      for (const s of readerFeed(lv.max, null, i > 0 ? READER_LEVELS[i - 1].max + 1 : 0)) {
+        assert.ok(!seen.has(s.th),
+          `"${s.th}" is in both ${seen.get(s.th)} and ${lv.name}`);
+        seen.set(s.th, lv.name);
+      }
+    });
+  });
+
+  test("and between them they still cover the whole corpus", () => {
+    let n = 0;
+    READER_LEVELS.forEach((lv, i) => {
+      n += readerFeed(lv.max, null, i > 0 ? READER_LEVELS[i - 1].max + 1 : 0).length;
+    });
+    assert.equal(n, readerFeed(READER_LEVELS[READER_LEVELS.length - 1].max).length,
+      "banding must not drop sentences off the bottom or the top");
+  });
+
+  test("the first rung is more than one sitting", () => {
+    // It was 20 — done in a day, then a 269-sentence step. Grades 0–2 are
+    // empty because a full example sentence is letter-rich, so the only way to
+    // give the first band depth is to reach a rung higher.
+    assert.ok(readerFeed(READER_LEVELS[0].max).length >= 100,
+      `"${READER_LEVELS[0].name}" holds only ${readerFeed(READER_LEVELS[0].max).length}`);
+  });
+});
