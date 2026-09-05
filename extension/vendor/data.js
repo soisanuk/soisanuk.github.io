@@ -73,7 +73,9 @@ const CONSONANTS = [
 ];
 
 const VOWELS = [
+  ["◌ะ", "a", "short a", "จะ (jà) = future marker"],
   ["◌า", "aa", "long a", "มา (maa) = come"],
+  ["◌ั", "a", "short a, closed syllable", "วัน (wan) = day"],
   ["◌ิ", "i", "short i", "นิด (nit) = a little"],
   ["◌ี", "ii", "long i", "นี้ (nii) = this"],
   ["◌ึ", "ue", "short ue", "กึ่ง (kueng) = half"],
@@ -102,8 +104,8 @@ const TONES = [
   ["สามัญ", "mid", "mid tone — no mark", "กา (kaa) = crow"],
   ["เอก", "low", "low tone — ่ (mai ek)", "ข่า (khàa) = galangal"],
   ["โท", "falling", "falling tone — ้ (mai tho)", "ข้า (khâa) = servant"],
-  ["ตรี", "high", "high tone — ๊ (mai tri)", "ค๊าน — rare"],
-  ["จัตวา", "rising", "rising tone — ๋ (mai chattawa)", "ค๋าน — rare"],
+  ["ตรี", "high", "high tone — ๊ (mai tri)", "โต๊ะ (tó) = table"],
+  ["จัตวา", "rising", "rising tone — ๋ (mai chattawa)", "เดี๋ยว (dǐao) = a moment"],
 ];
 
 const TONE_CLASSES = {
