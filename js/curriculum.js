@@ -439,10 +439,17 @@ function toneOfWord(text) {
 // per-token structure (tap-to-define spans, colouring only KNOWN words) pass
 // their own decorator instead of duplicating the tokenise+escape loop — the
 // reader (reader.js _readerThaiHtml) does this.
-function toneColorHtml(thai, decorate) {
-  const toks = (typeof _tokenise === "function")
+// `toks` lets a caller supply its own tokenisation. The default is the
+// curriculum tokeniser, which matches greedily against the 950 course words —
+// fine for course material, wrong for open text, because a course word inside
+// a longer word gets cut out and handed a card of its own. The graded reader
+// rendered จังหวัด as จัง|ห|วัด and glossed วัด "temple"; ตัวเลขอย่างแม่นยำ
+// came out ตัว|เล|ขอ|ย่าง|แม่น|ยำ and offered "to request", "grilled" and
+// "Thai salad" under a sentence about an accountant. See _readerTokens.
+function toneColorHtml(thai, decorate, toks_) {
+  const toks = toks_ || ((typeof _tokenise === "function")
     ? _tokenise(thai)
-    : [{ text: String(thai), word: null }];
+    : [{ text: String(thai), word: null }]);
   const deco = decorate || ((escaped, tone) =>
     tone ? `<span style="color:${TONE_COLORS[tone]}">${escaped}</span>` : escaped);
   return toks.map(t => deco(_tcEsc(t.text), toneOfWord(t.text), t)).join("");
