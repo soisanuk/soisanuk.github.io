@@ -176,7 +176,23 @@ function startReader() {
   showScreen("reader-screen", "D");
 }
 
+// The 12k-word segmentation lexicon, loaded lazily — and until now, ONLY by
+// Paste Text. The tokeniser's stranded-letter repair consults _segWords, so
+// the reader rendered รอ|ง|เท้า, ชา|ว|บ้าน and รอ|ย|ยิ้ม with a dead single
+// letter in the middle, and the SAME sentence healed itself if the reader
+// happened to open Paste Text first. Behaviour that depends on which screen
+// you visited earlier is close to unreportable — a fluent reader found it by
+// noticing that a sentence changed between two sessions.
+//
+// The predicate reads _segWords at call time, so a late load fixes future
+// tokenising by itself; the repaint is for the sentence already on screen.
+function _readerEnsureLexicon() {
+  if (typeof _segLoad !== "function" || (typeof _segReady === "function" && _segReady())) return;
+  _segLoad(() => { if (_rd) _readerShow(); });
+}
+
 function readerOpen(levelIdx, restart) {
+  _readerEnsureLexicon();
   const lv = READER_LEVELS[levelIdx];
   const feed = readerFeed(lv.max);
   const saved = _readerPosLoad()[levelIdx];
