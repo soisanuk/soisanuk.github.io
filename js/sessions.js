@@ -51,9 +51,22 @@ function buildDeck(keys, { mode = "union", freshCap = 10, cap = null, fallback =
   let deck = mode === "due-first"
     ? (due.length ? due : fresh)
     : [...new Set([...due, ...fresh])];
-  if (!deck.length && fallback) deck = keys.slice(0, fallback);
+  // A fallback deck is not a review — nothing in it is due. The caller could
+  // not tell, so the flashcard modes silently re-served the commonest cards
+  // and looked identical to a real session, while Script SRS on the same store
+  // said "All caught up". Two review screens, one state, opposite answers.
+  // Mark it and let the screen say so.
+  let wasFallback = false;
+  if (!deck.length && fallback) { deck = keys.slice(0, fallback); wasFallback = true; }
   deck = shuffle(deck);
-  return cap ? deck.slice(0, cap) : deck;
+  const out = cap ? deck.slice(0, cap) : deck;
+  // NON-ENUMERABLE on purpose. A plain `out.fallback = …` is an own enumerable
+  // property, so the returned array stopped being deepEqual to the plain array
+  // every buildDeck test compares it against — six of them failed at once.
+  // Defined this way the value is readable by callers and invisible to
+  // deepEqual, JSON, spread and Object.keys, so nothing else sees a change.
+  Object.defineProperty(out, "fallback", { value: wasFallback, enumerable: false });
+  return out;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -66,6 +79,7 @@ function startVocab(mode) {
 function _startFlash(mode, wordList) {
   const deck = buildDeck(wordList.map(w => w[0]), { fallback: 20 });
   session = { mode, wordList, deck, idx: 0, correct: 0, type: "vocab" };
+  _flashFallbackNote(deck, "Flashcard");
   flashShow();
   showScreen("flash-screen", mode === "th2en" ? "1" : "2");
 }
@@ -101,6 +115,15 @@ function _flashThaiClearClickable() {
   el.removeAttribute("tabindex");
 }
 
+// "Nothing due — practising the commonest instead." Shown once, on the header,
+// when buildDeck fell back. Honest about what this session is.
+function _flashFallbackNote(deck, label) {
+  const h = document.getElementById("flash-header");
+  if (!h) return;
+  h.textContent = deck && deck.fallback
+    ? `${label} · nothing due — practising the commonest`
+    : label;
+}
 function flashShow() {
   const { mode, deck, idx, wordList } = session;
   if (idx >= deck.length) { showSessionEnd(); return; }
@@ -210,6 +233,7 @@ function _scNameEn(ch) {
 }
 function _startScriptFlash(deck, map, label) {
   session = { mode: "script-flash", type: "script", deck, idx: 0, correct: 0, map, label };
+  _flashFallbackNote(deck, `${label} cards`);
   _scriptFlashShow();
   showScreen("flash-screen", label === "Consonant" ? "5" : "6");
 }
@@ -432,7 +456,10 @@ function drillShowVowelTone() {
 
   let freqHtml = "";
   if (isVowel) {
-    const freq = Math.max(...[...symbol].map(c => CHAR_FREQ[c] || 0));
+    // the pattern's own count (app.js VOWEL_FREQ), not its commonest letter's
+    const freq = (typeof VOWEL_FREQ !== "undefined" && VOWEL_FREQ[symbol] !== undefined)
+      ? VOWEL_FREQ[symbol]
+      : Math.max(...[...symbol].map(c => CHAR_FREQ[c] || 0));
     const freqCls = item.rank <= item.total / 2 ? "freq-common" : "freq-rare";
     if (freq > 0)
       freqHtml = `<div class="drill-row">
