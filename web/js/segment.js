@@ -252,6 +252,16 @@ function segmentThai(text) {
     }
     // fall-through: swallow one whole character cluster as unknown
     let j = i + 1;
+    // An astral character is ONE character in TWO code units, and this loop
+    // counts code units. Emoji are half of what a LINE message is made of, and
+    // every one of them came out as two tokens holding a lone surrogate each —
+    // strings that are individually invalid. Nothing renders wrong TODAY only
+    // because both consumers concatenate unknown tokens straight back into one
+    // HTML string, so the parser rejoins the halves; the first consumer to
+    // wrap a non-Thai token in its own element gets two replacement chars.
+    // Same rule as the base[] comment below: a token is a promise about a
+    // piece of text, and half a character is not one.
+    if (s.codePointAt(i) > 0xFFFF) j = i + 2;
     while (j < n && !_tkLegalBoundary(s, j)) j++;
     const c = best[i] + _SEG_UNKNOWN_COST;
     // base[] must be cleared too. Every other branch sets it; this one did not,
