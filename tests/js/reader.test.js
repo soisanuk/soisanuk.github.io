@@ -231,3 +231,39 @@ describe("the levels are bands, not prefixes", () => {
       `"${READER_LEVELS[0].name}" holds only ${readerFeed(READER_LEVELS[0].max).length}`);
   });
 });
+
+describe("progress written before the levels became bands", () => {
+  // The index fallback in _readerResumeAt was written for one case — the
+  // remembered sentence left the corpus. Re-banding created a second that
+  // looks identical and means the opposite: the sentence is still there, in a
+  // different level. Reusing the index then INVENTS progress. A record saying
+  // at:300 from the old nested level 3 rendered "300 / 495 read" on a band
+  // where nothing had been read, and the first open rewrote the anchor, so
+  // afterwards it could not be told from a real one.
+  test("a record whose anchor now belongs to another band is stale", () => {
+    const all = readerFeed(READER_LEVELS[READER_LEVELS.length - 1].max);
+    const lvl3 = 3, min3 = READER_LEVELS[2].max + 1;
+    const band3 = readerFeed(READER_LEVELS[3].max, null, min3);
+    // a sentence that is in the corpus but NOT in band 3
+    const elsewhere = all.find(s => !band3.some(b => b.th === s.th));
+    assert.ok(elsewhere, "the bands must not cover everything for this test to mean anything");
+    assert.equal(_readerStale({ at: 300, th: elsewhere.th, done: false }, lvl3), true);
+  });
+
+  test("a 'done' from a shorter list is stale too", () => {
+    // Old First reads held 20 sentences; this one holds 125. A record that
+    // says finished while its own position is near the start finished
+    // something else. A real completion stores an `at` at the end.
+    const band0 = readerFeed(READER_LEVELS[0].max, null, 0);
+    assert.equal(_readerStale({ at: 19, th: band0[19].th, done: true }, 0), true,
+      "an old 20-sentence completion must not claim the 125-sentence band");
+    assert.equal(_readerStale({ at: band0.length, th: band0[band0.length - 1].th, done: true }, 0), false,
+      "a genuine completion must survive");
+  });
+
+  test("a sentence gone from the corpus still falls back to the index", () => {
+    // The original case, and it must keep working — otherwise editing one
+    // example throws away everybody's place.
+    assert.equal(_readerStale({ at: 5, th: "ไม่มีประโยคนี้แล้ว", done: false }, 1), false);
+  });
+});

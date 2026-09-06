@@ -57,6 +57,48 @@ function _readerPosSave(pos) {
 // resume? Re-anchor on the text; fall back to the index, clamped; 0 if neither
 // is usable. Never returns the end-of-level screen — finishing and coming back
 // starts you over rather than dropping you on "you read them all".
+// Is a stored record from BEFORE the levels became bands?
+//
+// The index fallback below was written for one case — the remembered sentence
+// left the corpus — and re-banding created a second that looks identical and
+// means the opposite: the sentence is still in the corpus, just in a different
+// level now. Reusing the index against a different list then invents progress.
+// A record saying at:300 in the old nested level 3 became "300 / 495 read" on
+// a band where nothing had been read, and a `done` on the old 20-sentence
+// First reads became "✓ read all 125" over 105 sentences never seen. Worse,
+// the first open rewrites `th`, so afterwards the record is indistinguishable
+// from a real one — the evidence destroys itself.
+//
+// The anchor says which band it belongs to. If its grade is outside this
+// level's range, the record predates the change and the only honest answer is
+// to start the level over.
+// Two ways an anchor can be missing from its level, and they mean opposite
+// things. Gone from the CORPUS (an example was edited or removed) — the stored
+// index is the best guess left, which is what _readerResumeAt does. Still in
+// the corpus but in a DIFFERENT band — the record predates the re-banding, and
+// its index describes a list that no longer exists.
+//
+// Telling them apart needs the whole corpus, so it happens here rather than
+// inside _readerResumeAt, which stays pure and vm-tested against a feed a test
+// hands it.
+function _readerStale(saved, levelIdx) {
+  if (!saved || !saved.th || typeof READER_LEVELS === "undefined") return false;
+  const lv = READER_LEVELS[levelIdx];
+  if (!lv) return false;
+  const band = readerFeed(lv.max, null, _readerMin(levelIdx));
+  if (band.some(s => s.th === saved.th)) {
+    // The anchor is still here, so the position is fine — but a `done` can
+    // still be a lie. Old First reads held twenty sentences and this one holds
+    // 125; a record that says "finished" while its own last-read position is
+    // near the start finished a shorter list. A real completion stores an `at`
+    // at the end, because _readerRemember(true) runs when the feed runs out.
+    const at = Number(saved.at);
+    return !!saved.done && Number.isFinite(at) && at < band.length - 1;
+  }
+  const top = READER_LEVELS[READER_LEVELS.length - 1].max;
+  return readerFeed(top).some(s => s.th === saved.th);
+}
+
 function _readerResumeAt(saved, feed) {
   if (!saved || !feed || !feed.length) return 0;
   // A cleared level starts over. Its card says "✓ read all 18", so tapping it
@@ -181,10 +223,17 @@ function startReader() {
     const feed = readerFeed(lv.max, null, _readerMin(i));
     const n = feed.length;
     const saved = pos[i];
-    const read = saved ? (saved.done ? n : _readerResumeAt(saved, feed)) : 0;
+    // A stale `done` is the loudest lie of the lot — "✓ read all 125" over a
+    // band whose contents changed underneath it. Same test as the resume.
+    const stale = saved && _readerStale(saved, i);
+    const read = (saved && !stale) ? (saved.done ? n : _readerResumeAt(saved, feed)) : 0;
+    // `read` is the resume INDEX — how many sentences sit before the one you
+    // are on — so parked on the last of 125 the card said "124 / 125 read"
+    // while the 125th was on screen. Count the one you are looking at.
+    const shown = Math.min(read + (read ? 1 : 0), n);
     const label = !read ? `${n} sentence${n === 1 ? "" : "s"}`
-      : saved.done ? `✓ read all ${n}`
-      : `${read} / ${n} read`;
+      : (saved.done && !stale) ? `✓ read all ${n}`
+      : `${shown} / ${n} read`;
     // Say which rungs the level needs. The intro promises "letters up to a
     // level you choose" and then the cards named only a level and a count, so
     // there was no way to line the reader up against the course without
@@ -200,7 +249,7 @@ function startReader() {
       <span class="reader-level-rungs">${_tcEsc(rungs)}</span>
       <span class="reader-level-count">${label}</span>
       ${read && !saved.done ? `<span class="reader-level-bar"><i style="width:${
-        Math.round(100 * read / n)}%"></i></span>` : ""}</li>`;
+        Math.round(100 * shown / n)}%"></i></span>` : ""}</li>`;
   }).join("");
   body.innerHTML = `<div class="card-prompt reader-intro">Read Thai you can actually decode — every
     sentence here is built only from letters up to a level you choose. Tap any word to look it up;
@@ -228,7 +277,8 @@ function readerOpen(levelIdx, restart) {
   _readerEnsureLexicon();
   const lv = READER_LEVELS[levelIdx];
   const feed = readerFeed(lv.max, null, _readerMin(levelIdx));
-  const saved = _readerPosLoad()[levelIdx];
+  const raw = _readerPosLoad()[levelIdx];
+  const saved = _readerStale(raw, levelIdx) ? null : raw;
   _rd = { feed, at: restart ? 0 : _readerResumeAt(saved, feed), level: lv, idx: levelIdx };
   _readerShow();
 }
@@ -303,7 +353,19 @@ function _readerShow() {
       ${_speakBtn(s.th)}
       <button class="btn btn-primary" onclick="_readerNext()">${_rd.at + 1 === _rd.feed.length ? "Done" : "Next ›"}</button>
     </div>`;
-  _wcWireTokens(document.getElementById("reader-thai"));
+  // _pasteWireTokens, not _wcWireTokens. The latter attaches a handler only
+  // when the word is in the CURRICULUM map — fine when the tokens came from
+  // the curriculum matcher, which is where it was written. Now that the reader
+  // segments with the 12k-word lexicon it paints far more words as tappable
+  // than the course teaches, and 510 of 5,419 rendered tokens looked like
+  // controls — hover highlight, pointer cursor — and did nothing when tapped.
+  // In "The whole soi" that is 41% of sentences carrying at least one.
+  //
+  // The cruelty is the selection: the dead ones are exactly the words a reader
+  // cannot already read. ตึก, เศรษฐกิจ, รัฐบาล, หน้าต่าง all have glosses and
+  // all open properly in Paste Text, through this same function.
+  (typeof _pasteWireTokens === "function" ? _pasteWireTokens : _wcWireTokens)(
+    document.getElementById("reader-thai"));
 }
 
 // Save on every card rather than on exit: there is no exit event to hook —

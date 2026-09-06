@@ -272,7 +272,7 @@ export async function openApp(opts = {}) {
     next: () => app.safe("next", () => {
       const sc = document.querySelector(".screen.active");
       const b = [...sc.querySelectorAll("button")]
-        .find(x => /next|got it|continue|reveal|→/i.test(x.textContent) && !/menu|quit/i.test(x.textContent));
+        .find(x => /next|got it|continue|reveal|done|→/i.test(x.textContent) && !/menu|quit/i.test(x.textContent));
       if (!b) return null;
       b.click();
       return b.textContent.trim();
