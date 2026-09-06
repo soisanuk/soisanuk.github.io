@@ -306,3 +306,24 @@ describe("what a fluent reader caught", () => {
       if (!t.known) assert.equal(t.base, undefined, `${t.text} carries a borrowed base`);
   });
 });
+
+describe("the second prune tier", () => {
+  before(() => { _segWords = null; _segLoad(() => {}); });
+
+  test("an entry the annotators cut EVERY time is pruned even on few sightings", () => {
+    // หย่ากัน and ตื่นนอน are split 7 of 7 times in the corpus — under the
+    // first tier's bar of 20, so they went on swallowing หย่า and ตื่น in the
+    // sentences that exist to teach those words. At 100% you need fewer
+    // meetings to be believed.
+    assert.deepEqual(segmentThai("หย่ากัน").map(t => t.text), ["หย่า", "กัน"]);
+    assert.deepEqual(segmentThai("ตื่นนอน").map(t => t.text), ["ตื่น", "นอน"]);
+  });
+
+  test("but a real word the course happens to teach a PART of stays whole", () => {
+    // ยอมรับ is kept whole 606 times and ใจดี 335. The example for ยอม uses
+    // ยอมรับ — that is a fact about the example, not a reason to split a word
+    // in a reader that shows sentences, not headwords.
+    assert.deepEqual(segmentThai("เขายอมรับความผิด").map(t => t.text), ["เขา", "ยอมรับ", "ความผิด"]);
+    assert.deepEqual(segmentThai("เธอใจดีมาก").map(t => t.text), ["เธอ", "ใจดี", "มาก"]);
+  });
+});
