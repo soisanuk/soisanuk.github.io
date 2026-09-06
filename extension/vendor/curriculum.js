@@ -16,7 +16,23 @@
 // pragmatic frequency — chosen so early batches maximise decodable words from
 // WORDS. A word is decodable when every codepoint is taught (see below).
 const LETTER_BATCHES = [
-  { id: "b1", title: "The first six", glyphs: ["ก", "น", "ม", "า", "ี", "ด"] },
+  { id: "b1", title: "The first six", glyphs: ["ก", "น", "ม", "า", "ี", "ด"],
+    // The single most disorienting fact about Thai text, and nothing in the
+    // app said it. A learner meets ดีมาก in the first unit and has no way to
+    // know it is two words — or that every line of Thai they will ever see
+    // is packed the same way. Rung 1 is the only honest place for it: it is
+    // true before the first letter and it never stops being true.
+    note: {
+      title: "Thai does not put spaces between words",
+      word: "ดีมาก", rom: "dii-mâak", en: "very good/well done",
+      text: "ดี is “good” and มาก is “very”, and ดีมาก is written with " +
+        "nothing between them. Thai packs its words tight and spends a space " +
+        "only to break up a sentence, roughly where English would put a comma " +
+        "or a full stop. Nothing marks where one word ends and the next " +
+        "begins, so reading Thai means recognising words by their shape " +
+        "instead of by the gaps around them — which is why this course " +
+        "starts with the letters and not with phrases.",
+    } },
   { id: "b2", title: "Your first tone mark", glyphs: ["อ", "ย", "ู", "เ", "่"],
     note: {
       title: "Where the vowel sits",
@@ -483,6 +499,17 @@ const COURSE = [
   { kind: "letters", batch: 9, label: "Read: the borrowed consonants" },
   { kind: "letters", batch: 10, label: "Read: the last eight letters" },
 ];
+
+// The course unit that teaches a ladder rung, numbered the way the path
+// screen numbers it. The graded reader bands its sentences by RUNG and said
+// so — "needs letters through rung 9" — but a learner has never seen a rung
+// number anywhere in the app. They see a numbered list of units, and the two
+// do not line up: the chunk lessons sit between the letters units, so rung 9
+// is unit 17. The sentence named a real thing and pointed at nothing.
+function courseUnitNo(batchIdx) {
+  const i = COURSE.findIndex(u => u.kind === "letters" && u.batch === batchIdx);
+  return i < 0 ? null : i + 1;
+}
 
 // mastery gate: a unit passes at 80% first-try accuracy
 const COURSE_PASS = 0.8;

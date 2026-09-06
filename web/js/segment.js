@@ -235,6 +235,18 @@ function segmentThai(text) {
         const e = i + L + k;
         if (k >= 2 && _tkLegalBoundary(s, e) && !_segWords.has(s.slice(i, e))) {
           if (c < best[e]) { best[e] = c; prev[e] = i; known[e] = 1; base[e] = w; }
+          // A stretch and a ไม้ยมก stack: มากกกกๆ is มาก, held AND repeated.
+          // The ๆ branch above only reaches the dictionary word's own end, so
+          // the mark had nothing to attach to and became its own unknown
+          // token. That was not merely untidy — absorbing ๆ is free, so the
+          // parse that COULD take it won: เหนื่อยมากกกๆ came out
+          // เหนื่อย|มาก|กกๆ, "tired / very / reed, repeated", because กก
+          // could swallow the mark and มาก+stretch could not. The stretched
+          // span has to be allowed to reach past it too.
+          const e2 = e + 1;
+          if (e < n && s[e] === "\u0E46" && _tkLegalBoundary(s, e2) && c < best[e2]) {
+            best[e2] = c; prev[e2] = i; known[e2] = 1; base[e2] = w;
+          }
         }
       }
     }

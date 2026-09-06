@@ -206,7 +206,9 @@ function _pasteWireTokens(container) {
     span.addEventListener("keydown", e => {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); }
     });
-    if (typeof _tt !== "undefined" && (w || entry[2])) {
+    // _WC_HOVER: no hover tooltips on touch — see wordcard.js, which loads
+    // first and owns the rule for both files.
+    if (typeof _tt !== "undefined" && _WC_HOVER && (w || entry[2])) {
       span.addEventListener("mouseenter", e => _tt.show(entry[0], entry[1], entry[2], e.clientX, e.clientY));
       span.addEventListener("mouseleave", () => _tt.hide());
     }

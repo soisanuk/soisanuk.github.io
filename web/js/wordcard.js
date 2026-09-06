@@ -25,6 +25,19 @@ function _wcMap() {
   return _wcMapCache;
 }
 
+// Touch devices have no hover, and a tap fires a synthetic mouseenter with no
+// mouseleave behind it. So on a phone, tapping a word left its tooltip parked
+// on top of the sentence you were reading, with nothing to dismiss it: the
+// document mousemove that repositions it never fires again either. Everything
+// the tooltip says is on the card the same tap opens, so on touch we do not
+// wire it at all.
+//
+// (hover: hover) is the PRIMARY pointer. A touchscreen laptop reports hover
+// and keeps the old behaviour for finger taps — the right trade, since gating
+// on "any device that can touch" would strip tooltips from the machines where
+// they are most of the point.
+const _WC_HOVER = typeof matchMedia !== "function" || matchMedia("(hover: hover)").matches;
+
 // ── script tooltip ────────────────────────────────────────────────────────
 const _stt = {
   el: null,
@@ -134,9 +147,11 @@ function renderDecomposition(container, word) {
       span.textContent = ch;
 
       const tipHtml = _scriptTooltipHtml(ch);
-      span.addEventListener("mouseenter", e => _stt.show(tipHtml, e.clientX, e.clientY));
-      span.addEventListener("mousemove",  e => _stt.show(tipHtml, e.clientX, e.clientY));
-      span.addEventListener("mouseleave", () => _stt.hide());
+      if (_WC_HOVER) {
+        span.addEventListener("mouseenter", e => _stt.show(tipHtml, e.clientX, e.clientY));
+        span.addEventListener("mousemove",  e => _stt.show(tipHtml, e.clientX, e.clientY));
+        span.addEventListener("mouseleave", () => _stt.hide());
+      }
 
       clusterDiv.appendChild(span);
     });
@@ -273,7 +288,7 @@ const _tt = {
   hide() { if (this.el) this.el.style.display = "none"; },
 };
 
-if (typeof document !== "undefined") {
+if (typeof document !== "undefined" && _WC_HOVER) {
   document.addEventListener("mousemove", e => _tt.move(e.clientX, e.clientY));
 }
 
@@ -343,7 +358,7 @@ function _wcWireTokens(container) {
     if (!w) return;
     span.style.cursor = "pointer";
     span.addEventListener("click", () => openWordModal(w));
-    if (typeof _tt !== "undefined") {
+    if (typeof _tt !== "undefined" && _WC_HOVER) {
       span.addEventListener("mouseenter", e => _tt.show(w[0], w[1], w[2], e.clientX, e.clientY));
       span.addEventListener("mouseleave", () => _tt.hide());
     }
