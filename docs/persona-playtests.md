@@ -322,6 +322,46 @@ the card entirely, `mousedown` destroying the page's selection, unasked audio
 that cancelled the page's own speech, and the licence credit naming Wiktionary
 over Volubilis glosses and over the project's own.
 
+### The ledger above is not the whole ledger
+
+Four more rounds ran without an entry here, and their absence caused a real
+mistake on 2026-09-07: a round was aimed at "the games, Numbers and the
+keyboard tutor, which no persona has walked", and all three had been walked.
+The provenance was in the tests the whole time. Before aiming a round, run:
+
+```sh
+grep -rn "round" tests/js/*.js web/js/*.js | grep -o "20[0-9-]* [a-z-]* round"
+```
+
+The unrecorded ones: a **games look-and-feel round** (2026-08-30) over
+`game.js`, `connect4.js`, `clock.js` and `numbers.js` — a *visual* lens only,
+which is why "already walked" and "already judged" are different questions; a
+**Baht Bus round** and a **Last Bus round** (both 2026-08-30); and a **typist
+round** (2026-09-01) over `tutor.js`. Genuinely unwalked as of 2026-09-07:
+`soi-buakhao.js` at any lens, `idioms.js`, and the Vocab List / Statistics /
+Records display screens.
+
+**Bee — a commuter who reads LINE Thai, pointed at an hour-old commit.** Aimed
+at the five fixes in `1584446` on the doctrine below. All five held under
+checking — the reader's new "needs letters through unit N" claim is true for
+0/959 sentences graded above it, the new rung-1 note's rule is demonstrated by
+its own unit, no second surface named a rung, no fourth hover affordance
+existed. The finding was somewhere else entirely: the DP's fall-through
+advances one **code unit**, so every emoji in a pasted message became two
+tokens holding a lone surrogate each. It rendered correctly only because both
+consumers concatenate unknown tokens back into one HTML string and the parser
+rejoins the halves — a defect that was live and invisible at the same time.
+
+Two things worth keeping from that round. **The first probe was wrong in a way
+already on file**: it counted ฯ as a letter and reported 13 sentences over
+their band, which is the exact false positive recorded a day earlier. Probe
+with the app's own accessor (`isLetter`, `readerGrade`), never a fresh regex —
+a hand-rolled rule re-derives the app's bugs and its non-bugs indiscriminately.
+And **a fix aimed at fresh ground found nothing in the fresh ground**: the
+doctrine below says just-changed code has the highest defect density, and this
+time it did not. The round still paid, because a persona briefed on a surface
+explores the surface, not only the diff.
+
 ### The lesson these six paid for: a driver cannot fail to know something
 
 Tom's finding is the one to remember. A course that a real learner could not
