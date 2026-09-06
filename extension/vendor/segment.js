@@ -130,6 +130,29 @@ function _segLoad(cb) {
 // do not repeat and whose duplication is a typo rather than a stretch.
 const _SEG_REPEATABLE = /[\u0E01-\u0E2E\u0E32\u0E33]/;
 
+// Bigram hook — MEASURED AND NOT SHIPPED, kept so it can be re-measured.
+//
+// null means unigram only, which is what the app runs. A caller may set
+// { count(prev, w), gamma } and the DP below applies gamma·log(1 + count) as
+// a bonus on observed pairs. spike/bigram-check.mjs drives it against a corpus.
+//
+// Against VISTEC-TP-TH-2021 (40k train sentences, 2.0M adjacent pairs, 537k
+// distinct bigrams, 91k at count>=3) the best setting found — a bonus of 0.5
+// plus a penalty on unseen pairs after a common word — moved held-out F1 from
+// 93.75 to 93.84 and would ship a 2.4 MB table to do it. On the words that
+// motivated it: ทำการบ้าน and เขาใหญ่ fixed; ขนมอบกรอบ unchanged, because the
+// corpus has c(ขนม,อบ)=0 and no model built from it can know; ได้ยินดี
+// unchanged, with c(ได้,ยินดี)=3 supporting the WRONG cut; and ฝนตกหนักทำให้
+// น้ำท่วม regressed — ทำให้ and น้ำท่วม both came apart. Two fixed, two
+// unreachable, one broken. The table is too sparse for the failures that
+// remain, and the ones it can reach are outnumbered by the ones it creates.
+//
+// It exists as a hook rather than a copy because the first attempt at this
+// measurement WAS a copy of the DP, and its baseline scored 84.33 against the
+// real 93.75 — it had silently lost the non-Thai run handling, and every
+// number it produced was against the wrong function. See docs/segmentation.md.
+let _segBigram = null;
+
 function segmentThai(text) {
   const s = String(text == null ? "" : text);
   if (!_segReady() || !s) return [];
@@ -146,7 +169,16 @@ function segmentThai(text) {
     for (let L = lim; L >= 1; L--) {
       const w = s.substr(i, L);
       if (!_segWords.has(w)) continue;
-      const c = best[i] + Math.log(_segRank.get(w) + 10);
+      let c = best[i] + Math.log(_segRank.get(w) + 10);
+      // Optional bigram bonus. When _segBigram is set — {count(prev, w),
+      // gamma} — an observed pair costs less by gamma·log(1 + count). A bonus,
+      // never a penalty: an unseen pair costs exactly what it does today, so
+      // with no table loaded this is byte-for-byte the unigram segmenter. The
+      // previous word is the one the best path INTO i ended with (beam 1).
+      if (_segBigram && known[i] && prev[i] >= 0) {
+        const k = _segBigram.count(s.slice(prev[i], i), w);
+        if (k) c -= _segBigram.gamma * Math.log(1 + k);
+      }
       // A word that would end mid-cluster is not a candidate — same rule the
       // curriculum tokeniser enforces, so both agree on where a cut may fall.
       //

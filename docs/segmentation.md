@@ -147,12 +147,42 @@ same word. `build-lexicon.mjs` protects curriculum words for the same reason.
   learn it — six glossable words beat one token. Their convention serves
   annotation; ours serves reading. Latin tags (`#BNK48`) do stay whole.
 
-## The next real step
+## Bigrams — measured, and not worth their table
 
-Bigram transition costs `−log P(wᵢ | wᵢ₋₁)` from the same corpus. `P(มอบ|ขน) ≈ 0`
-kills `ขน|มอบ|กรอบ` regardless of unigram frequencies, and `P(ตก|ฝน)` settles
-ฝนตกหนัก without touching the lexicon. That is a different segmenter, not a
-tuning, and the table has to ship — so cost it before starting.
+The obvious next step, and the doc above said to cost it before building. So
+it was built as a hook (`_segBigram` in `segment.js`) and measured against the
+real function on the held-out split, with `spike/bigram-check.mjs`.
+
+From 40k train sentences: 2.0M adjacent Thai pairs, 537k distinct bigrams, 91k
+at count≥3 (a 2.4 MB table covering 75% of pairs). A bonus of `γ·log(1+c)` on
+observed pairs, plus a penalty on an unseen pair after a common word:
+
+| setting | F1 | exact |
+|---|---|---|
+| unigram, today | 93.75 | 97 |
+| bonus 0.5 | 93.76 | 100 |
+| bonus 0.5 + penalty 1 (T=200) | **93.84** | 101 |
+| bonus ≥ 1 | falls | falls |
+
+**+0.09 at best.** The named cases explain why the aggregate barely moves:
+
+- `ทำการบ้าน → ทำ|การบ้าน` and `เขาใหญ่` **fixed** — `c(ทำ,การบ้าน)=82`.
+- `ขนมอบกรอบ` **unchanged** — `c(ขนม,อบ)=0`. The corpus has never seen the pair,
+  so no model built from it can know. The poster child is unreachable.
+- `ได้ยินดี` **unchanged** — `c(ได้,ยินดี)=3` supports the *wrong* cut.
+- `ฝนตกหนักทำให้น้ำท่วม` **regressed** — ทำให้ and น้ำท่วม both came apart, in
+  the sentence that started all of this.
+
+Two fixed, two unreachable, one broken. The table is too sparse for the
+failures that remain, and the ones it reaches are outnumbered by the ones it
+creates. Not shipped; the hook stays inert so a larger corpus can be tried in
+one line.
+
+**A note on method.** The first prototype was a *copy* of the DP with a bigram
+term added, and its baseline scored **84.33** where the real function scores
+93.75 — it had silently lost the non-Thai run handling, and every number it
+produced was against the wrong function. The hook exists so that the only
+thing measured is the term.
 
 ## Re-running any of this
 
