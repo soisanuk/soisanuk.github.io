@@ -222,6 +222,20 @@ describe("the corpus-derived layers", () => {
     // …but a space before it is still a boundary: formal Thai writes เพื่อน ๆ
     assert.ok(segmentThai("เพื่อน ๆ").length > 1);
   });
+
+  test("a stretch and a ๆ stack", () => {
+    // The ๆ branch only reached a dictionary word's own end, so after a
+    // stretch the mark was stranded. Absorbing ๆ is free, which made the
+    // stranding change the ANSWER: whichever parse could take the mark won,
+    // and for เหนื่อยมากกกๆ that was กก — "reed" — not มาก.
+    for (const [input, want] of [["มากกกกๆ", "มาก"], ["อร่อยยยยๆ", "อร่อย"]]) {
+      const t = segmentThai(input);
+      assert.deepEqual(t.map(x => x.text), [input], `${input} is one token`);
+      assert.equal(t[0].base, want, `${input} looks up under ${want}`);
+    }
+    assert.deepEqual(segmentThai("เหนื่อยมากกกๆ").map(x => x.text),
+      ["เหนื่อย", "มากกกๆ"]);
+  });
 });
 
 describe("non-Thai runs", () => {

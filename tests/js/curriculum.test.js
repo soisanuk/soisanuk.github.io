@@ -81,6 +81,29 @@ describe("the letter ladder covers the vocabulary", () => {
   });
 });
 
+describe("rung → unit", () => {
+  // The reader names a UNIT because that is what a learner can see and open;
+  // it can only do that if every rung has one. A rung with no letters unit
+  // would send the reader back to printing its own bookkeeping number.
+  test("every ladder rung is taught by exactly one numbered unit", () => {
+    for (let i = 0; i < LETTER_BATCHES.length; i++) {
+      const n = courseUnitNo(i);
+      assert.ok(n >= 1 && n <= COURSE.length, `rung ${i + 1} maps to no unit`);
+      assert.equal(COURSE[n - 1].batch, i, `unit ${n} does not teach rung ${i + 1}`);
+      assert.equal(COURSE.filter(u => u.kind === "letters" && u.batch === i).length, 1,
+        `rung ${i + 1} is taught by more than one unit`);
+    }
+    assert.equal(courseUnitNo(LETTER_BATCHES.length), null, "no unit past the ladder");
+  });
+
+  // The numbers differ, which is the whole reason the helper exists: the
+  // chunk lessons push the letters units down the list, so a rung number
+  // printed as a unit number would be wrong from rung 3 onwards.
+  test("rung number and unit number are not the same number", () => {
+    assert.notEqual(courseUnitNo(8), 9, "rung 9 is not unit 9");
+  });
+});
+
 describe("script notes", () => {
   // A note explains how Thai is WRITTEN — where the vowel sits, why ร is silent
   // — hung on a real word. If its anchor is not decodable at that rung, the

@@ -243,7 +243,12 @@ function startReader() {
     // rung below it — "rungs 8–11" would suggest otherwise and undo the point
     // of banding the sentences in the first place.
     const hi = Math.min(lv.max, (typeof LETTER_BATCHES !== "undefined" ? LETTER_BATCHES.length : lv.max + 1) - 1);
-    const rungs = `needs letters through rung ${hi + 1}`;
+    // Say it in units, because units are what the learner can see and open.
+    // The rung number is the app's own bookkeeping and appears in no other
+    // screen; falling back to it is better than saying nothing, but only just.
+    const unitNo = (typeof courseUnitNo === "function") ? courseUnitNo(hi) : null;
+    const rungs = unitNo ? `needs letters through unit ${unitNo}`
+                         : `needs letters through rung ${hi + 1}`;
     return `<li class="reader-level" onclick="readerOpen(${i})">
       <span class="reader-level-name">${_tcEsc(lv.name)}</span>
       <span class="reader-level-rungs">${_tcEsc(rungs)}</span>
