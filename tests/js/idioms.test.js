@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { runInThisContext } from "node:vm";
 
-for (const f of ["wordcard.js", "idioms.js"]) {
+for (const f of ["data.js", "tokeniser.js", "wordcard.js", "idioms.js"]) {
   runInThisContext(readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"), { filename: f });
 }
 
@@ -53,4 +53,28 @@ describe("_idEsc", () => {
   test("leaves Thai and plain text alone", () => {
     assert.equal(_idEsc("บุญคุณ ok"), "บุญคุณ ok");
   });
+});
+
+
+// ── findings from the 2026-09-07 reference-screens round ────────────────────
+
+// Nothing checked an idiom's romanisation against the app's own dictionary, so
+// เมียน้อย read "mia-nói" where น้อย is "nóoi" everywhere else, and
+// ขายตัวไม่ได้ขายใจ read "dâai" where ได้ is "dâi". Both are the ◌อย/ไ◌ vowel
+// rules settled on 2026-09-03 and pinned for WORDS and EXAMPLES — this file
+// was simply outside the pin.
+test("every idiom romanises its curriculum words the way data.js does", () => {
+  const map = new Map(WORDS.map(w => [w[0], w[1]]));
+  const bad = [];
+  for (const { items } of PATTAYA_IDIOMS) {
+    for (const [th, rom] of items) {
+      for (const t of _tokenise(th).filter(x => x.word).map(x => x.text)) {
+        if (!map.has(t)) continue;
+        const want = map.get(t).replace(/-/g, "").toLowerCase();
+        if (!rom.replace(/[- ]/g, "").toLowerCase().includes(want))
+          bad.push(`${th} "${rom}" — ${t} should read "${map.get(t)}"`);
+      }
+    }
+  }
+  assert.deepEqual(bad, []);
 });

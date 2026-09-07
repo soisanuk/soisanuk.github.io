@@ -8,7 +8,7 @@
 
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import vm from "node:vm";
 
 function makeLocalStorage() {
@@ -120,4 +120,24 @@ test("an ordinary lesson still grades normally", () => {
   _lu = { idx: 0, results: [] };
   _learnRecord("นอน", 5, 400);
   assert.ok(progress["นอน"], "non-placement lessons must still write");
+});
+
+
+// ── findings from the 2026-09-07 games round ────────────────────────────────
+
+// app.js has carried a correct Fisher-Yates `shuffle` since the beginning, and
+// three separate files still reinvented it as sort(() => Math.random() - 0.5),
+// which is not a shuffle at all — it left the correct answer in slot A 28.1
+// per cent of the time and slot D 18.8. connect4.js, baht-bus.js and
+// soi-buakhao.js each kept their own copy (clock.js's _ckShuffle was already
+// correct). This guards the idiom rather than any one file, because the bug
+// spread by copying.
+test("no source uses a comparator as a shuffle", () => {
+  const dir = new URL("../../web/js/", import.meta.url);
+  const offenders = readdirSync(dir)
+    .filter(f => f.endsWith(".js"))
+    .filter(f => /\.sort\(\s*\(\s*\)\s*=>\s*Math\.random\(\)\s*-/.test(
+      readFileSync(new URL(f, dir), "utf8")));
+  assert.deepEqual(offenders, [],
+    "sort(() => Math.random() - 0.5) is a biased permutation — use a Fisher-Yates");
 });

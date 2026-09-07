@@ -1,6 +1,9 @@
 // Soi Buakhao — Pattaya Dialogue Visual Novel
 // 3-night bar crawl. Navigate Thai conversation with a hostess.
-// Score ≥ 60% correct each night for a happy ending.
+// Score 3 of 4 (75%) each night for a happy ending. The gate is
+// ceil(_sbQs.length * 0.6) over a 4-question night, so 60% is not an
+// attainable score — the only scores are 0/25/50/75/100%. This comment
+// said "60%" until the 2026-09-07 games round measured what it does.
 
 // ── Venue & character data ─────────────────────────────────────────────────
 
@@ -21,7 +24,7 @@ const _SB_HOSTESSES = [
   { name:"Fon",  th:"ฝน",    e:"🌺", desc:"a shy girl who warms up the moment you speak Thai" },
   { name:"Gift", th:"กิ๊ฟ",  e:"💎", desc:"a confident girl with perfect makeup and sharp wit" },
   { name:"Kwan",  th:"กวาง",   e:"🦋", desc:"a gentle girl with a soft voice and gentle eyes" },
-  { name:"Cindy", th:"ซินดี้", e:"🌹", desc:"the mamasan of Cindy Bar — sharp as a razor, warm as a Chang on a hot night, and on the soi longer than most expats have had passports" },
+  { name:"Cindy", th:"ซินดี้", e:"🌹", desc:"the mamasan here — sharp as a razor, warm as a Chang on a hot night, and on the soi longer than most expats have had passports" },
 ];
 
 // ── Dialogue pools ─────────────────────────────────────────────────────────
@@ -217,8 +220,24 @@ function _sbEsc(s) {
   return _wcEsc(s);
 }
 
+// Fisher-Yates. This file used sort(() => Math.random() - 0.5), which V8's
+// sort turns into a badly skewed permutation: over 400,000 shuffles of four
+// items the correct answer landed in slot A 28.1 per cent of the time and
+// slot D 18.8. Found by the 2026-09-07 games round, in three files at once.
+// app.js has carried a correct shuffle() all along, but pulling it in here
+// would drag srs.js with it (app.js calls loadProgress at load), so this
+// follows clock.js's own _ckShuffle and keeps a local copy.
+function _sbShuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function _sbSample(arr, n) {
-  return arr.slice().sort(() => Math.random() - 0.5).slice(0, n);
+  return _sbShuffle(arr).slice(0, n);
 }
 
 function _sbBody() { return document.getElementById("soi-body"); }
@@ -292,7 +311,7 @@ function _sbNextQ() {
   _sbAnswered = false;
   const q       = _sbQs[_sbQIdx];
   const h       = _sbHost;
-  const choices = q.choices.slice().sort(() => Math.random() - 0.5);
+  const choices = _sbShuffle(q.choices);
   const letters = ["A","B","C","D"];
 
   _sbHead(`Q ${_sbQIdx + 1} / ${_sbQs.length}`);
