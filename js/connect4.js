@@ -63,6 +63,22 @@ function _c4ValidCols(board) {
   return out;
 }
 
+// Fisher-Yates. This file used sort(() => Math.random() - 0.5), which V8's
+// sort turns into a badly skewed permutation: over 400,000 shuffles of four
+// items the correct answer landed in slot A 28.1 per cent of the time and
+// slot D 18.8. Found by the 2026-09-07 games round, in three files at once.
+// app.js has carried a correct shuffle() all along, but pulling it in here
+// would drag srs.js with it (app.js calls loadProgress at load), so this
+// follows clock.js's own _ckShuffle and keeps a local copy.
+function _c4Shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 // Returns { p, cells } for a connect-4, or null.
 function _c4Winner(board) {
   const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
@@ -192,8 +208,8 @@ function _c4MakeQuiz() {
   // Exclude entries sharing the answer's romanisation (e.g. the two "ai"s,
   // the two "oo"s) so only one choice can be right.
   const others = pool.filter(v => v !== answer && v[1] !== answer[1]);
-  const distractors = others.sort(() => Math.random() - 0.5).slice(0, 3);
-  const choices = [answer, ...distractors].sort(() => Math.random() - 0.5);
+  const distractors = _c4Shuffle(others).slice(0, 3);
+  const choices = _c4Shuffle([answer, ...distractors]);
   return { answer, choices };
 }
 

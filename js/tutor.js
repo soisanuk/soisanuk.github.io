@@ -12,7 +12,7 @@ const TUTOR_ALL = [
   { key:'i', thai:'ร', name:'Ro Rua',         cat:'consonant' },
   { key:'o', thai:'น', name:'No Nu',          cat:'consonant' },
   { key:'p', thai:'ย', name:'Yo Yak',         cat:'consonant' },
-  { key:'a', thai:'ฟ', name:'Fo Fa',          cat:'consonant' },
+  { key:'a', thai:'ฟ', name:'Fo Fan',          cat:'consonant' },
   { key:'s', thai:'ห', name:'Ho Hip',         cat:'consonant' },
   { key:'d', thai:'ก', name:'Ko Kai',         cat:'consonant' },
   { key:'f', thai:'ด', name:'Do Dek',         cat:'consonant' },
