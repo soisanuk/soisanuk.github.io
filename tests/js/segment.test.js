@@ -240,30 +240,6 @@ describe("the corpus-derived layers", () => {
 
 describe("non-Thai runs", () => {
   before(() => { _segWords = null; _segLoad(() => {}); });
-
-  // Merging every unknown character into one blob glued punctuation to the
-  // space beside it — ") " and " (" and " #" came out as single tokens. Across
-  // 3,000 corpus sentences the annotators split all three: whitespace runs are
-  // 72% of non-Thai tokens, latin/digit runs 13.5%, single marks 7.4%.
-  // Found by the 2026-09-07 chat-Thai round. This loop counts CODE UNITS, so
-  // every astral character — every emoji in a pasted LINE message — came out
-  // as two tokens holding one lone surrogate each. It rendered correctly only
-  // by luck: both consumers concatenate unknown tokens back into a single HTML
-  // string, so the parser rejoined the halves. Assert the property (no token
-  // is an invalid string), not the token count, so a future merge rule that
-  // splits them a different way still fails this.
-  test("an emoji is never cut in half", () => {
-    const lone = t => [...t].some(c => {
-      const cp = c.codePointAt(0); return cp >= 0xD800 && cp <= 0xDFFF;
-    });
-    for (const s of ["ดีมาก 😭", "ขอบคุณ🙏ครับ", "โอเค👍", "ไป 🇹🇭 กัน", "ก👨‍👩‍👧‍👦ข"]) {
-      const toks = segmentThai(s).map(t => t.text);
-      assert.equal(toks.join(""), s, `${s} must round-trip`);
-      for (const t of toks) assert.ok(!lone(t), `${s} → token ${JSON.stringify(t)} is half a character`);
-    }
-    assert.deepEqual(segmentThai("ขอบคุณ🙏ครับ").map(t => t.text), ["ขอบคุณ", "🙏", "ครับ"]);
-  });
-
   test("space, latin and punctuation are separate tokens", () => {
     assert.deepEqual(segmentThai("สวัสดี (ครับ)").map(t => t.text),
       ["สวัสดี", " ", "(", "ครับ", ")"]);

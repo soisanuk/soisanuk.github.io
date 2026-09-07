@@ -322,16 +322,66 @@ the card entirely, `mousedown` destroying the page's selection, unasked audio
 that cancelled the page's own speech, and the licence credit naming Wiktionary
 over Volubilis glosses and over the project's own.
 
-### The ledger above is not the whole ledger
+### One round, one numbered test file — the ledger has to maintain itself
 
-Four more rounds ran without an entry here, and their absence caused a real
-mistake on 2026-09-07: a round was aimed at "the games, Numbers and the
-keyboard tutor, which no persona has walked", and all three had been walked.
-The provenance was in the tests the whole time. Before aiming a round, run:
+**Every round gets `tests/js/roundNN.test.js`, and its first line names the
+date, the persona and the lens.** Borrowed from The Last Baht Bus, which has
+run this way since round 30-odd and has 16 such files:
+
+```js
+// Round 46 (2026-09-06) — Gareth, the girls' stories (lens: filler-girls).
+```
+
+The number is the filing and the name is the header, so nothing is lost by
+numbering — you get both. The point is that the ledger stops being prose
+somebody has to remember to update:
 
 ```sh
-grep -rn "round" tests/js/*.js web/js/*.js | grep -o "20[0-9-]* [a-z-]* round"
+ls tests/js/round*.test.js          # what has run
+head -1 tests/js/round*.test.js     # …at what lens, on what date
 ```
+
+**Run that before aiming a round.** On 2026-09-07 a round was aimed at "the
+games, Numbers and the keyboard tutor, which no persona has walked" and all
+three had been walked — the provenance was sitting in test comments, and four
+rounds had never made the prose ledger below. Naming the lens matters as much
+as naming the surface: the 2026-08-30 games round was *look-and-feel* only, so
+"already walked" and "already judged for content" were different answers, and
+the second round found a wrong tone on every question the game asked.
+
+Findings still belong next to their subject when the guard is general — the
+comparator-shuffle guard reads every source, not one game — but the round file
+is where a round's pins go by default, so the file's existence is the record.
+
+### The full ledger
+
+| # | date | persona | lens |
+|---|---|---|---|
+| 1 | 2026-08-30 | a fluent Thai reader | gloss & romanisation data |
+| 2 | 2026-08-30 | a six-months-in learner | Paste Text |
+| 3 | 2026-08-30 | a first-time learner | Guided Course |
+| 4 | 2026-08-30 | a learner returning after a gap | SRS backlog & streak |
+| 5 | 2026-08-30 | a completionist | 100% everywhere |
+| 6 | 2026-08-30 | — | games look-and-feel (visual only) |
+| 7 | 2026-08-30 | — | Baht Bus |
+| 8 | 2026-08-30 | — | Last Bus / the clock |
+| 9 | 2026-09-01 | a typist | Kedmanee keyboard tutor |
+| 10 | 2026-09-01 | a returner | ▶ Continue & re-entry |
+| 11 | 2026-09-05 | Priya | skips explanatory text |
+| 12 | 2026-09-05 | Dave | decoding shopfronts |
+| 13 | 2026-09-05 | Margaret | the six Script screens |
+| 14 | 2026-09-05 | Tom | four days before he flies |
+| 15 | 2026-09-05 | Ploy-Anne | fluent by ear, not schooled in script |
+| 16 | 2026-09-05 | Marcus | the unpacked browser extension |
+| 17 | 2026-09-07 | Bee | chat-Thai, aimed at an hour-old commit |
+| 18 | 2026-09-07 | Kwan | winnability & language quality (bar games) |
+| 19 | 2026-09-07 | Ray | cross-screen data agreement |
+
+Rounds 1-16 predate the convention and their pins live in the topic test files
+with a provenance comment; 17 onward have their own file. Genuinely unwalked as
+of round 19: the Vocab List, Statistics and Records display screens beyond
+Ray's pass, and Quiz / Flashcards / Sentence SRS at any lens but the lapsed
+learner's.
 
 The unrecorded ones: a **games look-and-feel round** (2026-08-30) over
 `game.js`, `connect4.js`, `clock.js` and `numbers.js` — a *visual* lens only,
