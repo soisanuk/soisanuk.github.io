@@ -47,6 +47,26 @@ const _C4_GIRLS = [
 // ── Pure board logic (7 cols × 6 rows; 0 empty, 1 player, 2 hostess) ──────
 
 const _C4_COLS = 7, _C4_ROWS = 6;
+// How often Madam Oy plays something other than her best move. Measured, not
+// picked — a player who takes a win, blocks a loss and otherwise plays centre,
+// against her, over 5,000-12,000 games a cell:
+//
+//   blunder   no Thai   perfect quiz
+//     19%       0.1%        3.7%
+//     20%       0.0%        4.6%
+//     21%       0.1%        4.6%   <- here (12,000 games)
+//     22%       0.1%        5.4%
+//     24%       0.1%        6.5%
+//
+// The target was ~5% for a player at their best. 4.6 and 5.4 are equally close
+// to it and the curve is flat between them, so anything finer is noise. 21%
+// errs low on purpose: a genuinely perfect player is better than the model
+// above, so their real rate sits above the number in this table.
+//
+// What matters more than the exact figure is the first column. Answering none
+// of the vowel questions wins ~0% at every rate here, so the Thai is what buys
+// the win and not the Connect-4.
+const _C4_OY_BLUNDER = 0.21;
 
 function _c4NewBoard() {
   return Array.from({ length: _C4_ROWS }, () => new Array(_C4_COLS).fill(0));
@@ -196,7 +216,29 @@ function _c4AiMove(board, level) {
     if (block !== -1) return block;
     return Math.random() < 0.7 ? centreish[0] : valid[Math.floor(Math.random() * valid.length)];
   }
-  // Madam Oy: negamax lookahead
+  // Madam Oy: negamax lookahead, with a mistake rate.
+  //
+  // She was pure depth-5 search with fixed centre-out tie-breaking, so she was
+  // fully deterministic: every game against her was the identical nine moves,
+  // and the vowel quiz was worth nothing — a sensible player lost 100% of the
+  // time whether they answered every question right or none of them. Her three
+  // `lose:` lines could not fire. Found by the 2026-09-07 games round.
+  //
+  // The other two tiers already make their difficulty this way — Nong takes a
+  // winning move only 35% of the time, Pim plays centre 70% — and Oy was the
+  // only one with no mistake rate at all. At _C4_OY_BLUNDER a sensible player
+  // wins about 5% of the time with a perfect quiz and about 0% with none, so
+  // the Thai is what buys the win rather than the Connect-4.
+  //
+  // She never blunders away an outright win or an outright block: a mistake
+  // should cost her the long game, not hand over the short one.
+  if (Math.random() < _C4_OY_BLUNDER) {
+    const win = _c4ImmediateWin(board, 2);
+    if (win !== -1) return win;
+    const block = _c4ImmediateWin(board, 1);
+    if (block !== -1) return block;
+    return valid[Math.floor(Math.random() * valid.length)];
+  }
   return _c4BestMove(board, 2, 5);
 }
 

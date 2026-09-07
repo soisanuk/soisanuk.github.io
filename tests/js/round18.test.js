@@ -76,4 +76,37 @@ describe("round 18 — the bar games", () => {
     }
     assert.deepEqual(bad, []);
   });
+
+  // Madam Oy was fully deterministic — depth-5 negamax with fixed centre-out
+  // tie-breaking — so every game against her was the identical nine moves and
+  // the vowel quiz changed nothing: a sensible player lost 100% of the time at
+  // 0% and at 100% quiz accuracy alike, and her three `lose:` lines could not
+  // fire. She now has the same kind of mistake rate Nong and Pim already had.
+  test("Madam Oy is not the same game every time", () => {
+    const board = () => Array.from({ length: _C4_ROWS }, () => new Array(_C4_COLS).fill(0));
+    const seen = new Set();
+    for (let i = 0; i < 400; i++) seen.add(_c4AiMove(board(), 2));
+    assert.ok(seen.size > 1,
+      `Madam Oy opened with the same column 400 times running (${[...seen]})`);
+  });
+
+  // A mistake should cost her the long game, never hand over the short one.
+  test("Madam Oy never blunders away an immediate win or an immediate block", () => {
+    const at = (row, cols, who) => {
+      const b = Array.from({ length: _C4_ROWS }, () => new Array(_C4_COLS).fill(0));
+      for (const c of cols) b[row][c] = who;
+      return b;
+    };
+    for (let i = 0; i < 500; i++) {
+      assert.equal(_c4AiMove(at(5, [0, 1, 2], 2), 2), 3, "she must take her own win");
+      assert.equal(_c4AiMove(at(5, [0, 1, 2], 1), 2), 3, "she must block the player's win");
+    }
+  });
+
+  // The rate is measured, not decorative: outside this range the quiz stops
+  // deciding anything (too low) or she stops being the hard tier (too high).
+  test("the blunder rate is in the measured band", () => {
+    assert.ok(_C4_OY_BLUNDER >= 0.15 && _C4_OY_BLUNDER <= 0.25,
+      `_C4_OY_BLUNDER is ${_C4_OY_BLUNDER}`);
+  });
 });
