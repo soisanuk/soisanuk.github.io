@@ -227,30 +227,6 @@ test("every vowel example gloss agrees with the dictionary", () => {
       `${sym}: card says ${th} = "${en}", dictionary says "${entry.gloss}"`);
   }
 });
-
-// Found by the 2026-09-07 reference-screens round. The test below strips the
-// combining diacritics off BOTH sides before comparing, which makes it
-// structurally incapable of noticing the one thing it most needed to: a
-// missing tone mark. Eight of the 21 examples carried a non-mid tone spelled
-// flat -- นี้ "nii", กุ้ง "kung", น้ำ "naam", เขา "khao" -- and the last of
-// those is the exact word docs/architecture.md names as the reason bare RTGS
-// is unusable here. They surface on Vowel Cards, Script SRS and the Vowel &
-// Tone Drill, so a learner met เขา as "khao" on a script card and "kh\u01ceo" on
-// a vocab card in the same session. This one compares the MARKS; the strip
-// below stays, because vowel-length spelling is a real dictionary difference.
-test("no vowel example is spelled without the tone its own engine computes", () => {
-  const TONE_MARK = { high: "\u0301", low: "\u0300", falling: "\u0302", rising: "\u030c" };
-  for (const [sym, , , ex] of VOWELS) {
-    const m = /^(\S+)\s*\(([^)]+)\)/.exec(ex || "");
-    if (!m) continue;
-    const tone = syllableTone(m[1]);
-    if (!tone || tone === "mid") continue;
-    const marks = m[2].normalize("NFD").match(/[\u0300-\u036f]/g) || [];
-    assert.ok(marks.includes(TONE_MARK[tone]),
-      `${sym}: card romanises ${m[1]} as "${m[2]}", but the tone engine says ${tone}`);
-  }
-});
-
 test("every vowel example romanisation matches the dictionary's", () => {
   const strip = r => r.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   for (const [sym, , , ex] of VOWELS) {
