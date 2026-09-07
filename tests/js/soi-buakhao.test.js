@@ -9,7 +9,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-for (const f of ["wordcard.js", "soi-buakhao.js"]) {
+for (const f of ["data.js", "tokeniser.js", "wordcard.js", "soi-buakhao.js"]) {
   vm.runInThisContext(
     readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"),
     { filename: f }
@@ -127,4 +127,43 @@ describe("_sbSample", () => {
   test("n larger than the pool returns the whole pool", () => {
     assert.equal(_sbSample([1, 2], 5).length, 2);
   });
+});
+
+
+// ── findings from the 2026-09-07 games round ────────────────────────────────
+
+// This file was on the Paiboon g/bp/dt + aaw scheme that docs/architecture.md
+// records the project abandoning twice before — 16 of its 75 romanisations
+// carried a tell (gin, gàp, châawp, tâwng-gaan) and 36 curriculum words
+// disagreed with data.js. It was the ONLY file in web/js that did; the pin in
+// data.test.js covers data.js and examples.js only, so nothing was watching
+// the file with the most original Thai prose in the repo.
+test("every line romanises its curriculum words the way data.js does", () => {
+  const map = new Map(WORDS.map(w => [w[0], w[1]]));
+  const src = readFileSync(new URL("../../web/js/soi-buakhao.js", import.meta.url), "utf8");
+  const pairs = [...src.matchAll(/(?:th|q):\s*"([^"]+)"\s*,\s*rom:\s*"([^"]+)"/g)];
+  assert.ok(pairs.length >= 70, `expected the dialogue data, found ${pairs.length} lines`);
+  const bad = [];
+  for (const [, th, rom] of pairs)
+    for (const t of _tokenise(th).filter(x => x.word).map(x => x.text)) {
+      if (!map.has(t)) continue;
+      const want = map.get(t).replace(/-/g, "").toLowerCase();
+      if (!rom.replace(/[- ]/g, "").toLowerCase().includes(want))
+        bad.push(`${th} "${rom}" — ${t} should read "${map.get(t)}"`);
+    }
+  assert.deepEqual(bad, []);
+});
+
+// ค่ะ (statement) is khâ, falling. คะ (question) is khá, high. Every one of the
+// twelve hostess questions romanised its particle khâ — the highest-frequency
+// particle in the language, taught with the wrong tone on every question.
+test("a question ending in คะ romanises its particle khá, not khâ", () => {
+  const src = readFileSync(new URL("../../web/js/soi-buakhao.js", import.meta.url), "utf8");
+  const bad = [];
+  for (const [, th, rom] of src.matchAll(/(?:th|q):\s*"([^"]+)"\s*,\s*rom:\s*"([^"]+)"/g)) {
+    if (!/คะ\s*\??\s*$/.test(th)) continue;
+    const last = (rom.match(/kh[áâ]/g) || []).slice(-1)[0];
+    if (last === "khâ") bad.push(`${th} → ${rom}`);
+  }
+  assert.deepEqual(bad, []);
 });
