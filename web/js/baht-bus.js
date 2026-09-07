@@ -99,14 +99,28 @@ const _BB_DESTS = [
   { en: "Nong Nooch Garden",   th: "สวนนงนุช",      fair: 500 },  // ~18 km south
 ];
 
+// Fisher-Yates. This file used sort(() => Math.random() - 0.5), which V8's
+// sort turns into a badly skewed permutation: over 400,000 shuffles of four
+// items the correct answer landed in slot A 28.1 per cent of the time and
+// slot D 18.8. Found by the 2026-09-07 games round, in three files at once.
+// app.js has carried a correct shuffle() all along, but pulling it in here
+// would drag srs.js with it (app.js calls loadProgress at load), so this
+// follows clock.js's own _ckShuffle and keeps a local copy.
+function _bbShuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function _bbMakeCharter() {
   const dest  = _BB_DESTS[Math.floor(Math.random() * _BB_DESTS.length)];
   const quote = dest.fair;
-  const deltas = [-50, -30, -20, -10, 10, 20, 30, 50, 100]
-    .filter(d => quote + d >= 20)
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 3);
-  const choices = [quote, ...deltas.map(d => quote + d)].sort(() => Math.random() - 0.5);
+  const deltas = _bbShuffle([-50, -30, -20, -10, 10, 20, 30, 50, 100]
+    .filter(d => quote + d >= 20)).slice(0, 3);
+  const choices = _bbShuffle([quote, ...deltas.map(d => quote + d)]);
   const bottom = quote - (quote >= 350 ? 120 : quote >= 150 ? 60 : quote >= 80 ? 30 : 20);
   let counter = bottom + [-20, -10, 0, 10][Math.floor(Math.random() * 4)];
   counter = Math.max(10, Math.min(counter, quote - 10));

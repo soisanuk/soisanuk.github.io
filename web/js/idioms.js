@@ -1,7 +1,13 @@
 // Pattaya Idioms — a distinct reference section for the load-bearing culture /
 // obligation / relationship concepts of the nightlife world. These are ADVANCED
-// idioms held deliberately OUT of the beginner phonics ladder and the SRS store:
-// their own small dataset here, not the WORDS list. DOM-free at load (the DOM is
+// idioms kept in their own small dataset here rather than the WORDS list, so
+// the beginner phonics ladder does not have to carry them.
+//
+// FOUR OF THEM ARE ALSO WORDS ENTRIES — เท่าไหร่, ควาย, สบาย, สนุก — so those
+// four DO have SRS cards and DO appear in the Vocab List. This comment used to
+// claim the set was held out of the SRS store entirely, which was never true
+// of those four; the 2026-09-07 reference-screens round caught it. Their
+// romanisations agree with WORDS in all four cases, and a test pins that. DOM-free at load (the DOM is
 // only touched inside functions the tests never call), so it vm-loads cleanly.
 // Each item: [thai, romanisation, english, cultural note?].
 
@@ -30,9 +36,9 @@ const PATTAYA_IDIOMS = [
     ["เมีย", "mia", "wife (colloquial)", ""],
     ["ผัว", "phǔa", "husband (colloquial)", ""],
     ["เมียหลวง", "mia-lǔang", "major / first wife", ""],
-    ["เมียน้อย", "mia-nói", "minor / second wife (mistress)",
+    ["เมียน้อย", "mia-nóoi", "minor / second wife (mistress)",
       "The 'overseas branch manager' arrangement. She knows about the wife back home — secrecy buys nothing; the steady money is the whole deal."],
-    ["ขายตัวไม่ได้ขายใจ", "khǎai-tua-mâi-dâai-khǎai-jai", "sell the body, not the heart",
+    ["ขายตัวไม่ได้ขายใจ", "khǎai-tua-mâi-dâi-khǎai-jai", "sell the body, not the heart",
       "The firewall: the transaction is physical; the heart stays home with the family."],
   ]},
   { key: "street", label: "🗯️ Street slang", items: [
@@ -40,7 +46,7 @@ const PATTAYA_IDIOMS = [
       "A public shaming insult, yelled the length of the soi."],
     ["สบาย", "sà-baai", "comfortable / at ease", "Half of 'sabai sabai' — the easy, unbothered ideal."],
     ["สนุก", "sà-nùk", "fun / a good time",
-      "The whole point of a night out — the สนุก meter the games keep score with."],
+      "The whole point of a night out. Ask if something was สนุก and you are asking whether it was worth the evening, not whether it was funny."],
   ]},
 ];
 

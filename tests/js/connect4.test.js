@@ -191,6 +191,26 @@ describe("_c4MakeQuiz", () => {
   });
 });
 
+// ── findings from the 2026-09-07 games round ────────────────────────────────
+
+// sort(() => Math.random() - 0.5) is not a shuffle. V8's sort turns it into a
+// badly skewed permutation, and this file used it to place the quiz options:
+// the correct answer landed in slot A 28.1 per cent of the time and slot D
+// 18.8. A learner who always picks the first option beats one who always
+// picks the last, which is unfairness the game does not intend.
+//
+// The band is wide (3 points) so the test cannot flake, and the bug it
+// replaces was 6 points out — well outside it.
+test("_c4Shuffle places an item in every slot equally often", () => {
+  const N = 100000, K = 4, hits = new Array(K).fill(0);
+  for (let i = 0; i < N; i++) hits[_c4Shuffle([0, 1, 2, 3]).indexOf(0)]++;
+  for (let i = 0; i < K; i++) {
+    const pct = 100 * hits[i] / N;
+    assert.ok(Math.abs(pct - 25) < 3,
+      `slot ${i} got ${pct.toFixed(1)}% of the time, expected ~25%`);
+  }
+});
+
 // Found by the 2026-08-30 games look-and-feel round: _c4Girl is null on the
 // opponent-select screen, so the middle HUD span rendered as " <strong>0</strong>"
 // — a stray, unlabelled 0 floating between "🟡 You 0" and "🍹 Tab ฿0".
