@@ -922,7 +922,7 @@ const WORDS = [
   ["ทางเดียว", "thaang-diao", "one way", "phrase", "highway"],
   ["ลดความเร็ว", "lót-khwaam-reo", "reduce speed", "phrase", "highway"],
   ["จำกัดความเร็ว", "jam-kàt-khwaam-reo", "speed limit", "noun", "highway"],
-  ["กิโลเมตรต่อชั่วโมง", "ki-loo-meet-tòo-chûua-moong", "km/h", "noun", "highway"],
+  ["กิโลเมตรต่อชั่วโมง", "kì-loo-mêet-tòo-chûua-moong", "km/h", "noun", "highway"],
   ["กิโลเมตร", "kì-loo-mêet", "kilometre", "noun", "highway"],
   ["ก่อสร้าง", "kòo-sâang", "construction / under construction", "noun", "highway"],
   ["งานก่อสร้าง", "ngaan-kòo-sâang", "construction work ahead", "noun", "highway"],
@@ -987,7 +987,7 @@ const WORDS = [
   ["เข้าใจไหม", "khâo-jai-mǎi", "do you understand?", "phrase", "classroom"],
   ["เปิดหนังสือ", "pòoet-nǎng-sǔue", "open your book", "phrase", "classroom"],
   ["ปิดหนังสือ", "pìt-nǎng-sǔue", "close your book", "phrase", "classroom"],
-  ["ถามได้เลย", "tǎam-dâi-looei", "feel free to ask", "phrase", "classroom"],
+  ["ถามได้เลย", "thǎam-dâi-looei", "feel free to ask", "phrase", "classroom"],
   ["ลองทำดู", "loong-tham-duu", "give it a try", "phrase", "classroom"],
 
   // ─── Love & Nightlife ─────────────────────────────────────────────────────
