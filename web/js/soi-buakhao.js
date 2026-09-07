@@ -36,7 +36,7 @@ const _SB_QS = {
     {
       q: "สวัสดีค่ะ คุณชื่ออะไรคะ?", rom: "Sà-wàt-dii khâ. Khun chûue à-rai khá?", en:"Hello! What's your name?",
       choices:[
-        {th:"ผมชื่อเดฟครับ ยินดีที่รู้จักครับ",  rom: "Phǒm chûue Dave khráp. Yin-dii thîi rúu-jàk khráp.",   en:"My name's Dave. Nice to meet you.", ok:true},
+        {th:"ผมชื่อเดฟครับ", rom: "Phǒm chûue Dave khráp.", en:"My name's Dave.", ok:true},
         {th:"ผมไม่รู้จักคุณครับ",                rom: "Phǒm mâi rúu-jàk khun khráp.",                          en:"I don't know you.",                ok:false},
         {th:"ขอบคุณมากครับ",                      rom: "Khòop-khun mâak khráp.",                                en:"Thank you very much.",             ok:false},
         {th:"ผมหิวข้าวมากครับ",                  rom: "Phǒm hǐu khâao mâak khráp.",                            en:"I'm very hungry.",                 ok:false},
@@ -45,7 +45,7 @@ const _SB_QS = {
     {
       q: "คุณมาจากประเทศไหนคะ?", rom: "Khun maa-jàak prà-thêet nǎi khá?", en:"What country are you from?",
       choices:[
-        {th:"ผมมาจากอังกฤษครับ",                 rom: "Phǒm maa-jàak Ang-krìt khráp.",                         en:"I come from England.",             ok:true},
+        {th:"ผมมาจากอังกฤษครับ",                 rom: "Phǒm maa-jàak Ang-krìt khráp.",                         en:"I'm from England.", ok:true},
         {th:"ผมอยู่ที่นี่ครับ",                   rom: "Phǒm yùu thîi-nîi khráp.",                               en:"I'm here.",                        ok:false},
         {th:"ผมชอบประเทศไทยครับ",                rom: "Phǒm chôop prà-thêet Thai khráp.",                      en:"I like Thailand.",                 ok:false},
         {th:"ผมไม่เข้าใจครับ",                   rom: "Phǒm mâi khâo-jai khráp.",                               en:"I don't understand.",              ok:false},
@@ -54,7 +54,7 @@ const _SB_QS = {
     {
       q: "คุณจะอยู่พัทยานานแค่ไหนคะ?", rom: "Khun jà yùu phát-thá-yaa naan khâe-nǎi khá?", en:"How long will you stay in Pattaya?",
       choices:[
-        {th:"ผมจะอยู่สามวันครับ",                rom: "Phǒm jà yùu sǎam wan khráp.",                           en:"I'll stay three days.",            ok:true},
+        {th:"ผมจะอยู่สามวันครับ",                rom: "Phǒm jà yùu sǎam wan khráp.",                           en:"I'll stay 3 days.", ok:true},
         {th:"ผมชอบกินข้าวผัดครับ",               rom: "Phǒm chôop kin khâao-phàt khráp.",                      en:"I like fried rice.",               ok:false},
         {th:"โรงแรมผมอยู่ใกล้ครับ",              rom: "Roong-raem phǒm yùu klâi khráp.",                        en:"My hotel is nearby.",              ok:false},
         {th:"ผมไม่มีเงินครับ",                   rom: "Phǒm mâi mii ngooen khráp.",                               en:"I have no money.",                 ok:false},
@@ -63,7 +63,7 @@ const _SB_QS = {
     {
       q: "คุณมาพัทยาคนเดียวหรือเปล่าคะ?", rom: "Khun maa phát-thá-yaa khon-diao rǔue-plào khá?", en:"Did you come to Pattaya alone?",
       choices:[
-        {th:"ใช่ครับ มาคนเดียวเลยครับ",          rom: "Châi khráp. Maa khon-diao looei khráp.",                 en:"Yes, completely alone.",           ok:true},
+        {th:"ใช่ครับ มาคนเดียวเลยครับ",          rom: "Châi khráp. Maa khon-diao looei khráp.",                 en:"Yes, all alone.", ok:true},
         {th:"ผมมากับสุนัขครับ",                   rom: "Phǒm maa kàp sù-nák khráp.",                             en:"I came with my dog.",              ok:false},
         {th:"ผมไม่รู้จักพัทยาครับ",              rom: "Phǒm mâi rúu-jàk phát-thá-yaa khráp.",                   en:"I don't know Pattaya.",            ok:false},
         {th:"ผมต้องการน้ำแข็งครับ",              rom: "Phǒm tôong-kaan náam-khǎeng khráp.",                     en:"I need some ice.",                 ok:false},
@@ -132,8 +132,8 @@ const _SB_QS = {
     {
       q:"คืนนี้คุณหล่อมากเลยค่ะ", rom: "Khuuen-níi khun lòo mâak looei khâ.", en:"You look very handsome tonight.",
       choices:[
-        {th:"ขอบคุณครับ คุณก็สวยมากเหมือนกันครับ", rom: "Khòop-khun khráp. Khun kôo sǔai mâak mǔean-kan.", en:"Thanks! You're beautiful too.", ok:true},
-        {th:"ผมรู้ครับ",                          rom: "Phǒm rúu khráp.",                                         en:"I know.",                          ok:false},
+        {th:"ขอบคุณครับ คุณก็สวยครับ", rom: "Khòop-khun khráp. Khun kôo sǔai khráp.", en:"Thanks! You're beautiful too.", ok:true},
+        {th:"ผมรู้ครับ ผมหล่อทุกวันครับ", rom: "Phǒm rúu khráp. Phǒm lòo thúk wan khráp.", en:"I know. I am handsome every day.", ok:false},
         {th:"ขอบิลครับ",                          rom: "Khǒo bin khráp.",                                         en:"Check please.",                    ok:false},
         {th:"ผมอยากนอนครับ",                     rom: "Phǒm yàak noon khráp.",                                  en:"I want to sleep.",                 ok:false},
       ],
@@ -144,33 +144,33 @@ const _SB_QS = {
         {th:"อยากไปมากครับ คุณอยากไปไหน?",      rom: "Yàak pai mâak khráp. Khun yàak pai nǎi?",               en:"I'd love to. Where do you want to go?", ok:true},
         {th:"ผมต้องอยู่ที่นี่ครับ",               rom: "Phǒm tôong yùu thîi-nîi khráp.",                         en:"I have to stay here.",             ok:false},
         {th:"ผมโทรหาเพื่อนก่อนครับ",             rom: "Phǒm thoo hǎa phûean kòon khráp.",                     en:"I need to call my friend first.",  ok:false},
-        {th:"ผมไม่มีเวลาครับ",                   rom: "Phǒm mâi mii wee-laa khráp.",                               en:"I don't have time.",               ok:false},
+        {th:"ผมไม่มีเวลาครับ พรุ่งนี้ผมต้องทำงานครับ", rom: "Phǒm mâi mii wee-laa khráp. Phrûng-níi phǒm tôong tham-ngaan khráp.", en:"I don't have time. I have to work tomorrow.", ok:false},
       ],
     },
     {
       q:"ฉันชอบคุณมากนะคะ คุณล่ะ?", rom: "Chǎn chôop khun mâak ná khá. Khun lâ?", en:"I really like you. What about you?",
       choices:[
-        {th:"ผมก็ชอบคุณมากเหมือนกันครับ",        rom: "Phǒm kôo chôop khun mâak mǔean-kan khráp.",           en:"I really like you too.",           ok:true},
-        {th:"ผมชอบเบียร์มากกว่าครับ",            rom: "Phǒm chôop bia mâak-kwàa khráp.",                       en:"I like beer more.",                ok:false},
-        {th:"คุณพูดเร็วเกินไปครับ",              rom: "Khun phûut reo kooen-pai khráp.",                         en:"You speak too fast.",              ok:false},
+        {th:"ผมก็ชอบคุณครับ", rom: "Phǒm kôo chôop khun khráp.", en:"I like you too.", ok:true},
+        {th:"ผมชอบเบียร์มากกว่าครับ ขอเบียร์อีกขวดครับ", rom: "Phǒm chôop bia mâak-kwàa khráp. Khǒo bia ìik khùat khráp.", en:"I like beer more. One more bottle, please.", ok:false},
+        {th:"ผมง่วงครับ", rom: "Phǒm ngûang khráp.", en:"I am sleepy.", ok:false},
         {th:"ผมต้องกลับบ้านแล้วครับ",           rom: "Phǒm tôong klàp bâan láeo khráp.",                       en:"I have to go home now.",           ok:false},
       ],
     },
     {
       q: "คุณอยากอยู่กับฉันคืนนี้ไหมคะ?", rom: "Khun yàak yùu kàp chǎn khuuen-níi mǎi khá?", en:"Would you like to spend tonight with me?",
       choices:[
-        {th:"อยากมากครับ คืนนี้คงสนุกมากแน่ๆ",  rom: "Yàak mâak khráp. Khuuen-níi khong sà-nùk mâak nâe-nâe.", en:"Very much. Tonight's going to be a lot of fun.", ok:true},
+        {th:"อยากอยู่กับคุณครับ", rom: "Yàak yùu kàp khun khráp.", en:"I want to be with you.", ok:true},
         {th:"ผมต้องโทรหาภรรยาก่อนครับ",         rom: "Phǒm tôong thoo hǎa phan-rá-yaa kòon khráp.",           en:"I need to call my wife first.",    ok:false},
-        {th:"ราคาเท่าไหร่ครับ?",                 rom: "Raa-khaa thâo-rài khráp?",                                en:"How much does it cost?",           ok:false},
+        {th:"ราคาเท่าไหร่ครับ? ผมมีเงินไม่มากครับ", rom: "Raa-khaa thâo-rài khráp? Phǒm mii ngooen mâi mâak khráp.", en:"How much does it cost? I do not have much money.", ok:false},
         {th:"ผมเหนื่อยมากครับ",                  rom: "Phǒm nùeai mâak khráp.",                                 en:"I'm very tired.",                  ok:false},
       ],
     },
     {
       q:"คุณเป็นคนใจดีมากค่ะ ฉันชอบคุณจริงๆ", rom: "Khun pen khon jai-dii mâak khâ. Chǎn chôop khun jing-jing.", en:"You're so kind. I genuinely like you.",
       choices:[
-        {th:"ขอบคุณครับ ผมก็รู้สึกดีกับคุณมากครับ", rom: "Khòop-khun khráp. Phǒm kôo rúu-sùek dii kàp khun mâak.", en:"Thank you. I feel great about you too.", ok:true},
+        {th:"ขอบคุณครับ ผมก็ชอบคุณ", rom: "Khòop-khun khráp. Phǒm kôo chôop khun.", en:"Thank you. I like you too.", ok:true},
         {th:"ผมต้องการเงินคืนครับ",               rom: "Phǒm tôong-kaan ngooen khuuen khráp.",                    en:"I want my money back.",            ok:false},
-        {th:"ฝนตกครับ",                           rom: "Fǒn tòk khráp.",                                          en:"It's raining.",                    ok:false},
+        {th:"ฝนตกครับ ผมต้องกลับบ้านแล้วครับ", rom: "Fǒn tòk khráp. Phǒm tôong klàp bâan láeo khráp.", en:"It is raining. I have to go home now.", ok:false},
         {th:"ผมไม่ได้ยินครับ",                   rom: "Phǒm mâi dâi-yin khráp.",                                en:"I didn't hear you.",               ok:false},
       ],
     },

@@ -10,7 +10,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import vm from "node:vm";
 
-for (const f of ["data.js", "tokeniser.js", "thai-script.js", "connect4.js"])
+for (const f of ["data.js", "tokeniser.js", "thai-script.js", "connect4.js", "wordcard.js", "soi-buakhao.js"])
   vm.runInThisContext(readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"),
     { filename: f });
 
@@ -108,5 +108,39 @@ describe("round 18 — the bar games", () => {
   test("the blunder rate is in the measured band", () => {
     assert.ok(_C4_OY_BLUNDER >= 0.15 && _C4_OY_BLUNDER <= 0.25,
       `_C4_OY_BLUNDER is ${_C4_OY_BLUNDER}`);
+  });
+
+  // Soi Buakhao was winnable without reading one Thai character. The correct
+  // reply was always the elaborated, two-clause, polite one and every
+  // distractor was a short deflection, so "pick the longest option" scored
+  // 11/15 overall and 5/5 on night 3 — the climactic night. Twelve of twelve
+  // simulated playthroughs reached the second-best ending deterministically.
+  //
+  // The gate is ceil(4 * 0.6) = 3 of 4, and _sbSample draws 4 of a night's 5
+  // questions. So a strategy that gets 3 or more of the 5 right can land a
+  // 4-subset containing them and pass; at 2 or fewer it cannot pass that night
+  // no matter which 4 are drawn. Requiring every strategy to be held to 2 on at
+  // least one night is therefore exactly "no length tell can reach the ending",
+  // which is the thing that was broken — not a proxy for it.
+  test("no length tell can carry a player through a night", () => {
+    const METRICS = { th: c => c.th.length, en: c => c.en.length, rom: c => c.rom.length };
+    const bad = [];
+    for (const [name, len] of Object.entries(METRICS))
+      for (const dir of [1, -1]) {
+        const perNight = [1, 2, 3].map(n => {
+          let hits = 0;
+          for (const q of _SB_QS[n]) {
+            const vals = q.choices.map(c => dir * len(c));
+            const top = Math.max(...vals);
+            const winners = q.choices.filter((c, i) => vals[i] === top);
+            if (winners.length === 1 && winners[0].ok) hits++;
+          }
+          return hits;
+        });
+        const label = `${dir > 0 ? "longest" : "shortest"} ${name}`;
+        if (Math.min(...perNight) > 2)
+          bad.push(`${label} scores ${perNight.join("/")} — passes every night on shape alone`);
+      }
+    assert.deepEqual(bad, []);
   });
 });
