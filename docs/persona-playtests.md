@@ -386,11 +386,7 @@ with a provenance comment; 17 onward have their own file. Genuinely unwalked as
 of round 23: the Records screen under a long history, and the first-run
 tutorial as a thing a beginner follows rather than a string to lint. Nights
 1-2 of Soi Buakhao still carry a weak length tell (40% of no-comprehension
-runs pass one night; the ending is unreachable). Round 22 left four verified
-findings unfixed — backupValid accepting 26 of 39 malformed inputs while one
-bad card record rejects an entire good backup, the streak merge giving a tie
-to the local device, placement-passed units growing a "0%" badge, and
-backupCopy failing silently with no .catch.
+runs pass one night; the ending is unreachable).
 
 The unrecorded ones: a **games look-and-feel round** (2026-08-30) over
 `game.js`, `connect4.js`, `clock.js` and `numbers.js` — a *visual* lens only,
