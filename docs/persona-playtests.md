@@ -378,13 +378,19 @@ is where a round's pins go by default, so the file's existence is the record.
 | 19 | 2026-09-07 | Ray | cross-screen data agreement |
 | 20 | 2026-09-08 | Nat | can a score be earned without the words (Quiz, flashcards) |
 | 21 | 2026-09-08 | Owen | production vs recognition (Sentence SRS) |
+| 22 | 2026-09-09 | Priya | can a restore lose data (Backup & Restore) |
+| 23 | 2026-09-09 | Jesse | is a listening drill passable by looking (Tone Drill, Browse) |
 
 Rounds 1-16 predate the convention and their pins live in the topic test files
 with a provenance comment; 17 onward have their own file. Genuinely unwalked as
-of round 21: the tone drill and the two Browse screens at any lens but
-Margaret's data pass, Backup & Restore, and the Records screen under a long
-history. Nights 1-2 of Soi Buakhao still carry a weak length tell (40% of
-no-comprehension runs pass one night; the ending is unreachable).
+of round 23: the Records screen under a long history, and the first-run
+tutorial as a thing a beginner follows rather than a string to lint. Nights
+1-2 of Soi Buakhao still carry a weak length tell (40% of no-comprehension
+runs pass one night; the ending is unreachable). Round 22 left four verified
+findings unfixed — backupValid accepting 26 of 39 malformed inputs while one
+bad card record rejects an entire good backup, the streak merge giving a tie
+to the local device, placement-passed units growing a "0%" badge, and
+backupCopy failing silently with no .catch.
 
 The unrecorded ones: a **games look-and-feel round** (2026-08-30) over
 `game.js`, `connect4.js`, `clock.js` and `numbers.js` — a *visual* lens only,
