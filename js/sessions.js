@@ -134,9 +134,12 @@ function flashShow() {
   if (!word) { session.idx++; flashShow(); return; }
 
   const [thai, rtgs, english] = word;
-  setProgress("flash-prog", idx, deck.length);
+  // sessionProgress, not deck.length — a requeued lapse must not move the
+  // denominator mid-session (see showSessionEnd).
+  const fp = sessionProgress(deck, idx);
+  setProgress("flash-prog", fp.done, fp.total);
   document.getElementById("flash-counter").textContent =
-    `${session.type === "script" ? "Script" : "Vocab"}  ${idx + 1} / ${deck.length}`;
+    `${session.type === "script" ? "Script" : "Vocab"}  ${fp.done + 1} / ${fp.total}`;
 
   // Consonant/vowel cards render via _scriptFlashShow, not here — flashShow
   // only ever sees th2en/en2th.
@@ -244,8 +247,9 @@ function _scriptFlashShow() {
   const key  = deck[idx];
   const [thai, rtgs, answer] = map[key] || ["?", "", "?"];
 
-  setProgress("flash-prog", idx, deck.length);
-  document.getElementById("flash-counter").textContent = `${label}  ${idx + 1} / ${deck.length}`;
+  const sfp = sessionProgress(deck, idx);
+  setProgress("flash-prog", sfp.done, sfp.total);
+  document.getElementById("flash-counter").textContent = `${label}  ${sfp.done + 1} / ${sfp.total}`;
   document.getElementById("flash-thai").textContent  = vowelDisp(thai, "อ"); // อ host: vowels read as their pure sound (no-op for consonants)
   document.getElementById("flash-rtgs").textContent  = `(${rtgs})`;
   _flashThaiClearClickable();
@@ -288,8 +292,30 @@ function _startQuiz(wordList) {
 // alone let a distractor with the SAME displayed answer text appear in the
 // choice list, so the quiz could show "orange" twice with only one marked
 // correct. Mirrors learn.js's _mcOptions, which already guards on gloss too.
+// Distractors come from the deck's OWN pool, topped up from the full corpus
+// only when that pool cannot fill four.
+//
+// They used to come from all 978 words while the deck came from one category,
+// so in a Food quiz the answer was the only food on screen. A player who reads
+// no Thai, sees only the four English glosses and remembers which topic they
+// picked scored a mean of 94.9% across the 27 categories — 99% on the small
+// ones — against 25% for a coin. All 27 scored above 75%. The same shape held
+// for Top 20/50/100, where the answer was the only everyday word among three
+// drawn from the whole corpus (~86%). Found by the 2026-09-08 self-testing
+// round; this is the app's only objectively-scored vocabulary mode, and
+// choosing a topic to study — the obvious thing to do — was what broke it.
+//
+// Scoping to the deck's pool rather than to the part of speech on purpose:
+// POS-matching leaves the category signal untouched, and category was the
+// dominant one. In "All categories" the pool IS the corpus, and that mode was
+// already clean — twelve shape strategies all landed within 24.8-25.2%.
 function _quizDistractors(word, pool) {
-  return shuffle(pool.filter(w => w[0] !== word[0] && w[2] !== word[2])).slice(0, 3);
+  const usable = w => w[0] !== word[0] && w[2] !== word[2];
+  const near = shuffle((pool || WORDS).filter(usable)).slice(0, 3);
+  if (near.length === 3) return near;
+  const have = new Set(near.map(w => w[0]));
+  return near.concat(shuffle(WORDS.filter(w => usable(w) && !have.has(w[0])))
+    .slice(0, 3 - near.length));
 }
 
 function quizShow() {
@@ -302,7 +328,7 @@ function quizShow() {
 
   const [thai, rtgs, english] = word;
 
-  const distractors = _quizDistractors(word, WORDS);
+  const distractors = _quizDistractors(word, session.wordList);
   const choices = shuffle([word, ...distractors]);
   session.correctIdx = choices.findIndex(c => c[0] === thai);
   session.choices = choices;

@@ -321,8 +321,15 @@ function showSessionEnd(allCaughtUp) {
       <div class="sub-msg">No cards due. Come back later or try a different mode.</div>
     `;
   } else {
+    // DISTINCT cards, not deck.length. _buildRatingHandler requeues a lapsed
+    // card into the same deck, so deck.length grows as you relearn: a learner
+    // given 20 cards who cleared all 20 was told "Reviewed: 29 · Rated ≥ OK:
+    // 20 · 69%". Working harder in-session lowered the score. The 2026-08-30
+    // lapsed round introduced sessionProgress for exactly this and wired it
+    // into the two SRS counters; the end screen and the two flashcard counters
+    // were never updated. Found by the 2026-09-08 self-testing round.
     const { deck, correct } = session;
-    const total = deck ? deck.length : 0;
+    const total = deck ? new Set(deck).size : 0;
     const pct   = total ? Math.round(correct / total * 100) : 0;
     document.getElementById("end-body").innerHTML = `
       <div class="big-msg">❀ Session Complete! ❀</div>
