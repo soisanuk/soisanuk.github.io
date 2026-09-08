@@ -9,7 +9,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-for (const f of ["data.js", "tokeniser.js", "thai-script.js", "numbers.js", "idioms.js", "tutor.js"])
+for (const f of ["data.js", "srs.js", "tokeniser.js", "thai-script.js", "numbers.js", "idioms.js", "tutor.js"])
   vm.runInThisContext(readFileSync(new URL(`../../web/js/${f}`, import.meta.url), "utf8"),
     { filename: f });
 
@@ -62,5 +62,54 @@ describe("round 19 — what the reference screens print", () => {
     assert.deepEqual([...byName].filter(([, v]) => v.length > 1), []);
     assert.equal(TUTOR_ALL.find(t => t.thai === "ฟ").name, "Fo Fan");
     assert.equal(TUTOR_ALL.find(t => t.thai === "ฝ").name, "Fo Fa");
+  });
+
+  // Statistics contradicted itself the moment you got one card wrong. Its
+  // headline counts records in `progress`; its own category rows, and the
+  // Vocab List's dot, counted `repetitions > 0`. But `repetitions` is SM-2's
+  // consecutive-SUCCESS counter and reviewCard zeroes it on any miss, so 55
+  // Cards Seen sat 200px above rows summing to 40, and the Vocab List showed a
+  // lapsed word as never opened — backwards, since a lapse is the word you most
+  // need to find again.
+  //
+  // Asserted on the SOURCE because these are DOM-bound renderers, and on the
+  // OPERATION rather than the vocabulary: what must never come back is the
+  // predicate `repetitions > 0` being used to mean "seen".
+  test("nothing decides 'seen' from the success streak", () => {
+    const src = readFileSync(new URL("../../web/js/ui.js", import.meta.url), "utf8");
+    const offenders = src.split("\n")
+      .map((l, i) => [i + 1, l])
+      .filter(([, l]) => !l.trim().startsWith("//"))
+      .filter(([, l]) => /\.repetitions\s*>\s*0/.test(l));
+    assert.deepEqual(offenders, [],
+      "`repetitions` resets on a miss — a lapsed card is still seen; use totalReviews");
+  });
+
+  // The same fact from the SM-2 side, so the reasoning above is checked and not
+  // merely asserted: after a lapse the streak is gone but the card is still met.
+  test("a lapsed card has repetitions 0 and totalReviews above 0", () => {
+    const p = {};
+    const c = getCard(p, "เขา");
+    for (let i = 0; i < 3; i++) reviewCard(c, 5);
+    reviewCard(c, 1);
+    assert.equal(c.repetitions, 0, "a miss clears the success streak");
+    assert.ok(c.totalReviews > 0, "but the card has still been reviewed");
+  });
+
+  // 794 of the 978 romanisations carry a combining tone mark and no phone
+  // keyboard can produce ì á ǎ û, so the Vocab List could not find what the app
+  // itself displays: "sip" found none of สิบ, "naam" one of sixteen.
+  test("vocab search folds tone marks and separators", () => {
+    const src = readFileSync(new URL("../../web/js/ui.js", import.meta.url), "utf8");
+    const m = /function _vlFold\(s\) \{([\s\S]*?)\n\}/.exec(src);
+    assert.ok(m, "_vlFold should exist");
+    const fold = new Function("s", m[1] + "\n");
+    assert.equal(fold("sà-baai"), "sabaai");
+    assert.equal(fold("sìp"), "sip");
+    assert.equal(fold("khǎo"), "khao");
+    assert.equal(fold("náam"), "naam");
+    // and the search must actually consult it
+    assert.match(src, /_vlFold\(w\[1\]\)/,
+      "filterVocabList has to compare the folded romanisation, not just define the folder");
   });
 });

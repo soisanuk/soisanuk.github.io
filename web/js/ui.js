@@ -29,7 +29,7 @@ function _renderCategoryChips() {
     const words = key ? CAT_WORDS[key] : WORDS;
     const total = words.length;
     const mature = words.filter(w => progress[w[0]] && progress[w[0]].interval >= 21).length;
-    const seen   = words.filter(w => progress[w[0]] && progress[w[0]].repetitions > 0).length;
+    const seen   = words.filter(w => progress[w[0]] && progress[w[0]].totalReviews > 0).length;
     const pct = Math.round(mature / total * 100);
 
     const chip = document.createElement("div");
@@ -61,13 +61,24 @@ function _renderCategoryChips() {
   });
 }
 
+// 794 of the 978 romanisations carry a combining tone mark, and no Thai or
+// English phone keyboard offers ì á ǎ û — so searching for what the app itself
+// displays ("sà-baai") was impossible, and plain "sip" found none of สิบ.
+// Fold marks and separators off BOTH sides. This does not make the scheme's
+// vowel length optional: "sabaai" finds sà-baai, "sabai" still does not.
+// Found by the 2026-09-07 reference-screens round.
+function _vlFold(s) {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[-\s]/g, "").toLowerCase();
+}
+
 function filterVocabList(query) {
   const q = query.trim().toLowerCase();
+  const f = _vlFold(query);
   const base = _vocabListFilter ? [...CAT_WORDS[_vocabListFilter]].sort((a, b) => a[0].localeCompare(b[0], "th")) : _vocabListAll;
   const filtered = q
     ? base.filter(w =>
-        w[0].includes(query) ||
-        w[1].toLowerCase().includes(q) ||
+        w[0].includes(q) ||
+        w[1].toLowerCase().includes(q) || (f && _vlFold(w[1]).includes(f)) ||
         w[2].toLowerCase().includes(q))
     : base;
   _renderVocabList(filtered);
@@ -81,7 +92,18 @@ function _renderVocabList(list) {
   list.forEach(w => {
     const div = document.createElement("div");
     div.className = "vocab-list-item";
-    const seen = progress[w[0]] && progress[w[0]].repetitions > 0;
+    // `repetitions` is SM-2's CONSECUTIVE-SUCCESS counter and reviewCard resets it
+    // to 0 on any miss, so reading it as "have you met this word" made a lapsed
+    // card indistinguishable from one never opened. `totalReviews` increments
+    // unconditionally and survives a lapse, which is what "seen" actually means.
+    //
+    // The two definitions were in the same screen: showStats' headline counts
+    // records in `progress`, while its own category rows counted repetitions > 0 —
+    // so one wrong answer made "55 Cards Seen" sit 200px above rows summing to 40.
+    // The Vocab List then marked the lapsed word as never seen, which is exactly
+    // backwards: a lapse is the word you most need to find again.
+    // Found by the 2026-09-07 reference-screens round.
+    const seen = progress[w[0]] && progress[w[0]].totalReviews > 0;
     const mature = progress[w[0]] && progress[w[0]].interval >= 21;
     const dot = mature ? `<span style="color:var(--jade);font-size:0.65rem;margin-left:auto">●</span>`
               : seen   ? `<span style="color:var(--dim);font-size:0.65rem;margin-left:auto">○</span>`
@@ -116,7 +138,7 @@ function showStats() {
     const ws = CAT_WORDS[cat];
     const total = ws.length;
     const matCnt = ws.filter(w => progress[w[0]] && progress[w[0]].interval >= 21).length;
-    const seenCnt = ws.filter(w => progress[w[0]] && progress[w[0]].repetitions > 0).length;
+    const seenCnt = ws.filter(w => progress[w[0]] && progress[w[0]].totalReviews > 0).length;
     const pct = Math.round(matCnt / total * 100);
     const label = CAT_LABELS[cat] || cat;
     return `<div class="drill-row">
@@ -127,7 +149,7 @@ function showStats() {
 
   // Sentence SRS counts
   const sentKeys = WORDS.filter(w => EXAMPLES && EXAMPLES[w[0]]).map(w => `sent:${w[0]}`);
-  const sentSeen = sentKeys.filter(k => progress[k] && progress[k].repetitions > 0).length;
+  const sentSeen = sentKeys.filter(k => progress[k] && progress[k].totalReviews > 0).length;
   const sentMature = sentKeys.filter(k => progress[k] && progress[k].interval >= 21).length;
 
   // Review forecast: bar per day for the next week
