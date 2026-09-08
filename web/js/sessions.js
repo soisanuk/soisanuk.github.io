@@ -472,12 +472,17 @@ function drillShowVowelTone() {
   document.getElementById("drill-rtgs").textContent = `(${rtgs})`;
   // Single marks get the "sound, name" form (e.g. ◌า → "อา, สระอา");
   // compound patterns fall back to speaking the example word.
+  // The five TONE rows have no ◌, so this used to fall through to speaking the
+  // tone's NAME — "โท" for the falling row, which is itself mid tone. The one
+  // thing on the card that carries the tone is the example word, and it was
+  // never spoken. The Reference Charts render the same five rows and get it
+  // right (_buildToneChart carries an explicit `speak:` per row); this screen
+  // was left behind when that was fixed. Found by the 2026-09-09 round.
   const named = letterSpeech(symbol);
+  const exampleWord = (example.match(/^([^\s(（]+)/) || [])[1] || "";
   const speakText = named !== symbol.replace(/◌/g, "")
     ? letterSpeechParts(symbol)
-    : symbol.includes("◌")
-      ? (example.match(/^([^\s(（]+)/) || [])[1] || ""
-      : symbol;
+    : exampleWord || symbol;
   if (speakText) _tts.speak(speakText);
 
   let freqHtml = "";
@@ -716,8 +721,23 @@ const _TONE_MARK_DESC = { none: "no mark", ek: "่ mai ek", tho: "้ mai tho",
 function _toneRuleLine(thai) {
   const info = (typeof syllableToneInfo === "function") ? syllableToneInfo(thai) : null;
   if (!info) return "";
-  const label = (typeof TONE_LABELS !== "undefined" && TONE_LABELS[info.tone]) || info.tone;
-  return `${info.cls} class + ${_TONE_MARK_DESC[info.mark]} → ${label.toUpperCase()} tone`;
+  const lbl = t => ((typeof TONE_LABELS !== "undefined" && TONE_LABELS[t]) || t).toUpperCase();
+  // The answer key comes from toneOfWord, which honours TONE_EXCEPTIONS
+  // (ก็ falling, แอป high). syllableToneInfo derives from the spelling alone
+  // and knows nothing about them, so on those two words this line printed a
+  // CORRECT RULE WRONGLY APPLIED — "mid class + no mark → LOW tone" beside a
+  // green "Correct!" on a card whose key is falling. The rule line is the
+  // whole pedagogy of this drill; there it taught the learner to get it wrong.
+  //
+  // 43% of 100-card sessions draw one of the two. It regressed on 2026-09-05
+  // when TONE_EXCEPTIONS moved into toneOfWord to fix a tone COLOUR elsewhere:
+  // before that the two sides disagreed and the pool filter excluded both
+  // words, so the bug the filter's comment describes as fixed came back by a
+  // different door. Found by the 2026-09-09 ear-training round.
+  const key = (typeof toneOfWord === "function") ? toneOfWord(thai) : null;
+  if (key && info.tone && key !== info.tone)
+    return `${thai} is an exception — the spelling rule gives ${lbl(info.tone)}, but it is spoken ${lbl(key)}`;
+  return `${info.cls} class + ${_TONE_MARK_DESC[info.mark]} → ${lbl(info.tone)} tone`;
 }
 
 function toneDrillAnswer(chosen, liEl) {
