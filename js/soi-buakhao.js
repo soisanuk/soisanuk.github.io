@@ -63,7 +63,7 @@ const _SB_QS = {
     {
       q: "คุณมาพัทยาคนเดียวหรือเปล่าคะ?", rom: "Khun maa phát-thá-yaa khon-diao rǔue-plào khá?", en:"Did you come to Pattaya alone?",
       choices:[
-        {th:"ใช่ครับ มาคนเดียวเลยครับ",          rom: "Châi khráp. Maa khon-diao looei khráp.",                 en:"Yes, all alone.", ok:true},
+        {th:"ใช่ครับ มาคนเดียวเลยครับ",          rom: "Châi khráp. Maa khon-diao loei khráp.",                 en:"Yes, all alone.", ok:true},
         {th:"ผมมากับสุนัขครับ",                   rom: "Phǒm maa kàp sù-nák khráp.",                             en:"I came with my dog.",              ok:false},
         {th:"ผมไม่รู้จักพัทยาครับ",              rom: "Phǒm mâi rúu-jàk phát-thá-yaa khráp.",                   en:"I don't know Pattaya.",            ok:false},
         {th:"ผมต้องการน้ำแข็งครับ",              rom: "Phǒm tôong-kaan náam-khǎeng khráp.",                     en:"I need some ice.",                 ok:false},
@@ -93,7 +93,7 @@ const _SB_QS = {
     {
       q: "คุณคิดว่าฉันสวยไหมคะ?", rom: "Khun khít wâa chǎn sǔai mǎi khá?", en:"Do you think I'm beautiful?",
       choices:[
-        {th:"สวยมากครับ คุณสวยที่สุดในบาร์นี้เลย", rom: "Sǔai mâak khráp. Khun sǔai thîi-sùt nai baa níi looei.", en:"Very! You're the prettiest here.", ok:true},
+        {th:"สวยมากครับ คุณสวยที่สุดในบาร์นี้เลย", rom: "Sǔai mâak khráp. Khun sǔai thîi-sùt nai baa níi loei.", en:"Very! You're the prettiest here.", ok:true},
         {th:"ผมไม่แน่ใจครับ",                    rom: "Phǒm mâi nâe-jai khráp.",                                en:"I'm not sure.",                    ok:false},
         {th:"ห้องน้ำอยู่ที่ไหนครับ?",            rom: "Hôong-náam yùu thîi-nǎi khráp?",                         en:"Where is the bathroom?",           ok:false},
         {th:"ผมเหนื่อยมากครับ",                  rom: "Phǒm nùeai mâak khráp.",                                en:"I'm very tired.",                  ok:false},
@@ -130,7 +130,7 @@ const _SB_QS = {
 
   3: [
     {
-      q:"คืนนี้คุณหล่อมากเลยค่ะ", rom: "Khuuen-níi khun lòo mâak looei khâ.", en:"You look very handsome tonight.",
+      q:"คืนนี้คุณหล่อมากเลยค่ะ", rom: "Khuuen-níi khun lòo mâak loei khâ.", en:"You look very handsome tonight.",
       choices:[
         {th:"ขอบคุณครับ คุณก็สวยครับ", rom: "Khòop-khun khráp. Khun kôo sǔai khráp.", en:"Thanks! You're beautiful too.", ok:true},
         {th:"ผมรู้ครับ ผมหล่อทุกวันครับ", rom: "Phǒm rúu khráp. Phǒm lòo thúk wan khráp.", en:"I know. I am handsome every day.", ok:false},
