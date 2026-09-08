@@ -376,12 +376,15 @@ is where a round's pins go by default, so the file's existence is the record.
 | 17 | 2026-09-07 | Bee | chat-Thai, aimed at an hour-old commit |
 | 18 | 2026-09-07 | Kwan | winnability & language quality (bar games) |
 | 19 | 2026-09-07 | Ray | cross-screen data agreement |
+| 20 | 2026-09-08 | Nat | can a score be earned without the words (Quiz, flashcards) |
+| 21 | 2026-09-08 | Owen | production vs recognition (Sentence SRS) |
 
 Rounds 1-16 predate the convention and their pins live in the topic test files
 with a provenance comment; 17 onward have their own file. Genuinely unwalked as
-of round 19: the Vocab List, Statistics and Records display screens beyond
-Ray's pass, and Quiz / Flashcards / Sentence SRS at any lens but the lapsed
-learner's.
+of round 21: the tone drill and the two Browse screens at any lens but
+Margaret's data pass, Backup & Restore, and the Records screen under a long
+history. Nights 1-2 of Soi Buakhao still carry a weak length tell (40% of
+no-comprehension runs pass one night; the ending is unreachable).
 
 The unrecorded ones: a **games look-and-feel round** (2026-08-30) over
 `game.js`, `connect4.js`, `clock.js` and `numbers.js` — a *visual* lens only,
