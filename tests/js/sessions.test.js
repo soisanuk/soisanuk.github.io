@@ -139,7 +139,13 @@ test("_sentBlankThai blanks a single occurrence and leaks nothing outside it", (
   assert.equal((out.match(/class="sent-blank"/g) || []).length, 1);
   const stripped = out.replace(/<span class="sent-blank">.*?<\/span>/g, "•");
   assert.ok(!stripped.includes("หา"), "no unblanked copy of the headword remains");
-  assert.ok(out.includes(">หา<"), "the blanked span still carries the answer for the reveal to read");
+  // Was: "the blanked span still carries the answer for the reveal to read".
+  // It does not and never did — sentSrsReveal only toggles #sent-answer-area,
+  // which holds its own copy, and no CSS rule ever un-hides this span. The
+  // answer sat in the DOM behind `color: transparent`, selectable and readable
+  // by a screen reader, and sized the box to its own length. 2026-09-08 round.
+  assert.ok(!out.includes("หา"), "the answer must not be in the DOM at all");
+  assert.ok(out.includes("＿＿"), "a fixed-width placeholder stands in its place");
 });
 
 test("_sentBlankThai blanks BOTH occurrences when the headword repeats", () => {

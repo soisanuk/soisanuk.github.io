@@ -724,7 +724,7 @@ const EXAMPLES = {
   "ทำไม": ["ทำไมคุณถึงร้องไห้", "tham-mai khun thǔeng róong-hâi", "Why are you crying?"],
   "แต่": ["อาหารอร่อยแต่ราคาแพง", "aa-hǎan à-ròoi tàe raa-khaa phaeng", "The food is delicious but expensive"],
   "หรือ": ["จะกินข้าวหรือขนมปัง", "jà kin khâao rǔue khà-nǒm-pang", "Will you eat rice or bread?"],
-  "เพราะ": ["ฉันชอบไทยเพราะอาหารอร่อย", "chǎn chôop thai phrór aa-hǎan à-ròoi", "I like Thailand because the food is delicious"],
+  "เพราะ": ["ฉันชอบไทยเพราะอาหารอร่อย", "chǎn chôop thai phró aa-hǎan à-ròoi", "I like Thailand because the food is delicious"],
   "ถ้า": ["ถ้าฝนตกฉันจะอยู่บ้าน", "thâa fǒn tòk chǎn jà yùu bâan", "If it rains I will stay home"],
   "ด้วย": ["ฉันจะไปด้วย", "chǎn jà pai dûai", "I will go too"],
   "แค่": ["ขอแค่น้ำเปล่าก็พอ", "khǒo khâe náam-plào kôo phoo", "Just plain water is enough"],

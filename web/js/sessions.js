@@ -755,20 +755,70 @@ function startSentSRS() {
 // EXAMPLES data too), then split/join on the escaped target — Thai text never
 // contains &<>"', so the escaped target still matches inside the escaped
 // sentence, exactly as the original single-replace version relied on.
+// The blank must not CONTAIN the answer. It used to, hidden only by
+// `color: transparent`, so the answer was in the DOM: selectable with a drag,
+// read aloud by a screen reader, and — because the box sized itself to its own
+// hidden text — its WIDTH told you how long the word was. A test asserted the
+// answer belonged there "for the reveal to read", but sentSrsReveal only
+// toggles #sent-answer-area, which has its own text, and no rule ever un-hides
+// this span. The justification was not true and nothing depended on it.
+// Found by the 2026-09-08 production round.
+//
+// A fixed two-character placeholder, so every blank is the same width whatever
+// it hides — the same thing learn.js's _wClozeX does with ＿＿.
 function _sentBlankThai(sentThai, target) {
   const escSent = _esc(sentThai), escTarget = _esc(target);
   if (!escTarget) return escSent;
-  const blank = `<span class="sent-blank">${escTarget}</span>`;
+  const blank = `<span class="sent-blank">＿＿</span>`;
   return escSent.split(escTarget).join(blank);
 }
 
 // Same fix for the romanisation: split on whitespace/hyphen (RTGS compounds
 // are hyphenated, e.g. "khǎai-dii") so a hit inside a longer romanised word
 // is never blanked — only a standalone occurrence of the target.
+// Split on WHITESPACE only. Splitting on the hyphen too made a hyphenated
+// target unmatchable — "mâi-dii" became the three tokens mâi, -, dii and could
+// never equal itself — so of 525 multi-syllable targets in the corpus, ZERO
+// were ever blanked and 517 cards printed the answer verbatim under its own
+// blank. 526 of 960 cards, 54.8%. Found by the 2026-09-08 production round.
+//
+// The hyphen still does the job it was there for. A whitespace-delimited token
+// is one romanised WORD, so the target matches only a whole word: "hǎa" blanks
+// in "kam-lang hǎa krà-pǎo" and not inside "taam-hǎa", which is a different
+// word that merely ends with the same syllable.
+//
+// Trailing punctuation is stripped for the comparison and put back, or a
+// sentence-final target sitting against a "?" would silently fail the same way.
 function _sentBlankRtgs(sentRtgs, targetRtgs) {
   const blank = `<span style="color:var(--saffron)">___</span>`;
-  return sentRtgs.split(/(\s+|-)/).map(tok => tok === targetRtgs ? blank : _esc(tok)).join("");
+  if (!targetRtgs) return _esc(sentRtgs);
+  // Match on SYLLABLE boundaries — a hyphen, a space, or an edge — so the
+  // romanisation blanks exactly what the Thai side blanks.
+  //
+  // It used to split on /(\s+|-)/ and compare whole tokens, which made a
+  // hyphenated target unmatchable: "mâi-dii" became mâi, -, dii and could
+  // never equal itself. Of 525 multi-syllable targets in the corpus ZERO were
+  // ever blanked, and 517 of 960 cards printed the answer verbatim beneath its
+  // own blank. Found by the 2026-09-08 production round.
+  //
+  // Syllable-bounded rather than token-bounded because _sentBlankThai is
+  // substring-based on purpose (its own test: ดี inside ดีมาก is the correct
+  // blank). Token matching left the Thai reading ＿＿ผัด while the line under
+  // it read "khâao-phàt" — the two halves of the same card disagreeing.
+  // The separator inside a target is matched loosely for the same reason:
+  // พวกเขา is "phûak khǎo" in WORDS and may be hyphenated in a sentence.
+  const esc = t => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const body = esc(targetRtgs).replace(/[-\s]+/g, "[\\s-]");
+  const re = new RegExp("(^|[\\s-])(" + body + ")(?=[\\s-]|[.,!?;:]|$)", "g");
+  let out = "", last = 0, m;
+  while ((m = re.exec(sentRtgs)) !== null) {
+    out += _esc(sentRtgs.slice(last, m.index)) + _esc(m[1]) + blank;
+    last = m.index + m[0].length;
+    re.lastIndex = last;
+  }
+  return out + _esc(sentRtgs.slice(last));
 }
+
 
 function sentSrsShow() {
   const { deck, idx } = session;
@@ -795,6 +845,8 @@ function sentSrsShow() {
   // card ships unblanked. (data.js owns the rule.)
   const target = wordLiteral(thai);
   const targetRtgs = wordLiteral(rtgs);
+  // Kept for sentSrsReveal, which speaks it once the answer is showing.
+  session.sentThai = sentThai;
   document.getElementById("sent-sentence").innerHTML = _sentBlankThai(sentThai, target);
   document.getElementById("sent-rtgs").innerHTML = _sentBlankRtgs(sentRtgs, targetRtgs);
   document.getElementById("sent-en").textContent = sentEn;
@@ -810,13 +862,19 @@ function sentSrsShow() {
 
   _buildRatingHandler("sent-rating-row", key, sentSrsShow);
 
-  // Speak sentence with a slight delay so user can read first
-  setTimeout(() => _tts.speak(sentThai), 600);
+  // NOT spoken here. This used to say the whole sentence — the blanked word
+  // included — 600ms after the card appeared, so the app read you the answer
+  // before you had touched anything, on all 960 cards, with no way to turn it
+  // off. learn.js's _wClozeX drills the identical card and speaks it as its
+  // onRight callback, i.e. after you have answered. Same rule here: the
+  // sentence is spoken on reveal, in sentSrsReveal.
 }
 
 function sentSrsReveal() {
   document.getElementById("sent-answer-area").style.display = "";
   document.getElementById("sent-reveal-area").style.display = "none";
+  // Now that the answer is on screen, hearing it is help rather than a leak.
+  if (session && session.sentThai) _tts.speak(session.sentThai);
 }
 
 function _buildRatingHandler(rowId, key, nextFn) {
