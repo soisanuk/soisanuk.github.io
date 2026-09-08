@@ -109,6 +109,29 @@ test("words lacking an example entirely (informational — not an error)", () =>
 // two was the wrong one. The gloss generator had the rule right all along
 // (LENGTH_RULES declines to double an "o" before "ei"); only the hand-written
 // data disagreed with it.
+// The vowel table puts ◌ัว in the NOT-doubled group: "เ◌ือ `uea`; เ◌ีย `ia`
+// (not doubled); ◌ัว `ua`, ◌วย `uai`". No vowel in the table yields "uua", so
+// like "ooei" its presence is decidable rather than a judgement.
+//
+// It had drifted in 67 places (2026-09-08), and the drift cut through
+// identical shapes: สวน sǔan beside ส่วน sùuan, ง่วง ngûang beside ห่วง
+// hùuang, ขวด khùat beside ปวด pùuat, ตำรวจ tam-rùat beside ตรวจสอบ
+// trùuat-sòop. The gloss generator had it right all along (it maps uua -> ua),
+// so once again only the hand-written data disagreed with the spec.
+//
+// Compared on a MARK-STRIPPED view: the tone mark sits on the first of the
+// pair, so "pùuat" is p-ù-u-a-t and a literal search for "uua" misses every
+// toned case. Auditing this without stripping first reported 39 violations
+// that did not exist.
+test("no romanisation doubles the u in ◌ัว", () => {
+  const strip = r => r.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const bad = [];
+  for (const w of WORDS) if (strip(w[1]).includes("uua")) bad.push(`WORDS ${w[0]}: "${w[1]}"`);
+  for (const k of Object.keys(EXAMPLES))
+    if (strip(EXAMPLES[k][1]).includes("uua")) bad.push(`EXAMPLES ${k}: "${EXAMPLES[k][1]}"`);
+  assert.deepEqual(bad, [], "◌ัว is ua — uue is ◌ื and uea is เ◌ือ; no vowel gives uua");
+});
+
 test("no romanisation doubles the o in เ◌ย", () => {
   const bad = [];
   for (const w of WORDS) if (w[1].includes("ooei")) bad.push(`WORDS ${w[0]}: "${w[1]}"`);
