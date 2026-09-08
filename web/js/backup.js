@@ -24,7 +24,15 @@ function backupSnapshot() {
 // carry forward from BOTH sides regardless of which "last" wins.
 function _streakMerge(mine, theirs) {
   mine = mine || {}; theirs = theirs || {};
-  const newer = (theirs.last || "") > (mine.last || "") ? theirs : mine;
+  // On the SAME date, keep the longer streak. Strict > gave the tie to `mine`,
+  // so restoring on migration day cut a 214-day streak to 1 if she had
+  // answered a single card on the new phone first — and left it at 214 if she
+  // had not. The order of two taps decided seven months of history.
+  // Found by the 2026-09-09 backup round.
+  const mineLast = mine.last || "", theirsLast = theirs.last || "";
+  const newer = theirsLast > mineLast ? theirs
+    : theirsLast < mineLast ? mine
+    : ((theirs.days || 0) > (mine.days || 0) ? theirs : mine);
   const maxDays = Math.max(mine.maxDays || 0, theirs.maxDays || 0, newer.days || 0);
   const bestDay = [mine.bestDay, theirs.bestDay].filter(Boolean)
     .sort((a, b) => b.cards - a.cards)[0] || null;
@@ -34,26 +42,54 @@ function _streakMerge(mine, theirs) {
 
 function backupMerge(mine, theirs) {
   const prog = { ...mine.progress };
+  // Skip a record that is not a card rather than throwing on it. A single
+  // corrupted entry used to throw inside this loop, get swallowed by the
+  // blanket catch in _backupRestoreText, and report "That doesn't look like a
+  // soisanuk backup" — so 899 good cards were unimportable and the message
+  // told her she had picked the wrong file. The count is reported instead.
+  let skipped = 0;
   for (const [k, c] of Object.entries(theirs.progress || {})) {
+    if (!c || typeof c !== "object" || Array.isArray(c)) { skipped++; continue; }
     if (!prog[k] || (c.totalReviews || 0) > (prog[k].totalReviews || 0)) prog[k] = c;
   }
   const units = { ...((mine.path || {}).units || {}) };
   for (const [id, u] of Object.entries((theirs.path || {}).units || {})) {
     const cur = units[id];
-    units[id] = !cur ? u : { done: cur.done || u.done,
-      acc: Math.max(cur.acc || 0, u.acc || 0),
-      msAvg: Math.min(cur.msAvg || 1e9, u.msAvg || 1e9) === 1e9 ? undefined : Math.min(cur.msAvg || 1e9, u.msAvg || 1e9) };
+    if (!cur) { units[id] = u; continue; }
+    // acc only when a side HAS one. Math.max(cur.acc||0, u.acc||0) invented
+    // acc:0 for units that carry none — which _placementApply writes on
+    // purpose, {done:true, placed:true} — and startLearn renders a badge
+    // whenever acc != null. Placing out of the first four letter units and
+    // then restoring told her she had scored zero on them.
+    const accs = [cur.acc, u.acc].filter(a => typeof a === "number");
+    const msAvgs = [cur.msAvg, u.msAvg].filter(m => typeof m === "number");
+    const merged = { done: cur.done || u.done };
+    if (accs.length) merged.acc = Math.max(...accs);
+    if (msAvgs.length) merged.msAvg = Math.min(...msAvgs);
+    // `placed` is written by _placementApply and was dropped by the rebuild.
+    if (cur.placed || u.placed) merged.placed = true;
+    units[id] = merged;
   }
   // Personal-best read times (ms) — lower is better, so keep the faster side.
   const best = { ...((mine.path || {}).best || {}) };
   for (const [k, ms] of Object.entries((theirs.path || {}).best || {})) {
     if (!best[k] || ms < best[k]) best[k] = ms;
   }
-  return { progress: prog, path: { units, best }, streak: _streakMerge(mine.streak, theirs.streak) };
+  const out = { progress: prog, path: { units, best },
+                streak: _streakMerge(mine.streak, theirs.streak) };
+  // Non-enumerable so the shape stays exactly what it was for deepEqual.
+  Object.defineProperty(out, "skipped", { value: skipped, enumerable: false });
+  return out;
 }
 
+// typeof null === "object" and arrays are objects, so the old check waved
+// through progress:null and progress:[] — the latter importing a card keyed
+// "0" that no screen can reach. Per-record damage is handled in backupMerge,
+// which skips and counts it; this only has to reject things that are not a
+// backup at all.
 function backupValid(d) {
-  return d && d.app === "soisanuk" && typeof d.progress === "object";
+  return !!d && d.app === "soisanuk"
+    && !!d.progress && typeof d.progress === "object" && !Array.isArray(d.progress);
 }
 
 // A restore has to update the RUNNING app, not just localStorage.
@@ -85,7 +121,7 @@ function backupApply(theirs) {
   localStorage.setItem(STREAK_KEY, JSON.stringify(merged.streak));
   if (typeof progress !== "undefined") progress = merged.progress;
   if (typeof updateMenuStats === "function") updateMenuStats();
-  return Object.keys(merged.progress).length;
+  return { cards: Object.keys(merged.progress).length, skipped: merged.skipped || 0 };
 }
 
 // ── UI (runtime only) ──
@@ -101,9 +137,15 @@ async function backupExport() {
   a.download = name;
   a.click();
 }
+// writeText rejects on an unfocused tab and on any non-secure origin — a LAN
+// http:// server, which is how this app is often opened. Without a catch the
+// button did nothing at all, silently, on the route offered as the
+// belt-and-braces backup. Found by the 2026-09-09 backup round.
 function backupCopy() {
   navigator.clipboard.writeText(JSON.stringify(backupSnapshot()))
-    .then(() => alert("Backup copied — paste it somewhere safe."));
+    .then(() => alert("Backup copied — paste it somewhere safe."))
+    .catch(() => alert("Couldn't reach the clipboard — this needs a focused tab on "
+      + "an https:// or localhost page. Use Export backup instead; it saves a file."));
 }
 function backupImportFile(input) {
   const f = input.files && input.files[0];
@@ -119,8 +161,14 @@ function _backupRestoreText(t) {
   try {
     const d = JSON.parse(t);
     if (!backupValid(d)) throw new Error("not a backup");
-    const n = backupApply(d);
-    alert("Merged — " + n + " cards on this device now. Done stays done; the better record won.");
+    const r = backupApply(d);
+    // Say what was skipped. A damaged file used to be rejected wholesale with
+    // "that doesn't look like a backup"; now the good records import and the
+    // count of unreadable ones is stated rather than hidden.
+    alert("Merged — " + r.cards + " cards on this device now. "
+      + "Done stays done; the more-reviewed record won."
+      + (r.skipped ? "\n\n" + r.skipped + " record(s) in that file were unreadable and were skipped."
+                   : ""));
   } catch (e) { alert("That doesn't look like a soisanuk backup."); }
 }
 

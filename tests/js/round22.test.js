@@ -44,8 +44,9 @@ describe("round 22 — a restore must reach the running app", () => {
                                    "มา": { totalReviews: 3, interval: 6 } },
       path: {}, streak: {},
     };
-    const n = backupApply(theirs);
-    assert.equal(n, 2, "the import reports what it merged");
+    const r = backupApply(theirs);
+    assert.equal(r.cards, 2, "the import reports what it merged");
+    assert.equal(r.skipped, 0, "nothing in this file was unreadable");
     assert.equal(Object.keys(progress).length, 2,
       "the running app must see the restored cards, or the next save reverts them");
     assert.equal(progress["ไป"].totalReviews, 7);
@@ -67,5 +68,61 @@ describe("round 22 — a restore must reach the running app", () => {
     const stored = JSON.parse(localStorage.getItem(SRS_KEY));
     assert.deepEqual(Object.keys(stored).sort(), ["กิน", "ไป"],
       "the local card and the imported one both survive");
+  });
+
+  // On the SAME date, a strict > gave the tie to the local device — so
+  // restoring on migration day cut a 214-day streak to 1 if she had answered
+  // one card on the new phone first, and left it at 214 if she had not. The
+  // order of two taps decided seven months of history.
+  test("restoring on the same day keeps the longer streak", () => {
+    const today = "2026-09-09";
+    const fresh = { last: today, days: 1, maxDays: 1, today: { cards: 1 } };
+    const long  = { last: today, days: 214, maxDays: 214, today: { cards: 38 } };
+    assert.equal(_streakMerge(fresh, long).days, 214, "importing onto a fresh device");
+    assert.equal(_streakMerge(long, fresh).days, 214, "and the other way round");
+    // a genuinely newer date still wins on its own merits
+    assert.equal(_streakMerge(long, { last: "2026-09-10", days: 2, maxDays: 2 }).days, 2);
+  });
+
+  // _placementApply writes {done:true, placed:true} with no acc, on purpose.
+  // The merge rebuilt the unit as {done, acc: Math.max(0,0), msAvg} — dropping
+  // `placed` and inventing acc:0 — and startLearn renders a badge whenever
+  // acc != null. Placing out of four units and restoring said she scored zero.
+  test("a placed unit keeps its flag and grows no score", () => {
+    const path = { units: { b1: { done: true, placed: true } } };
+    const u = backupMerge({ progress: {}, path }, { progress: {}, path }).path.units.b1;
+    assert.equal(u.acc, undefined, "a unit with no accuracy must not acquire one");
+    assert.equal(u.placed, true, "placed survives the merge");
+    assert.equal(u.done, true);
+    // a real score still merges, highest wins
+    const a = { units: { b2: { done: true, acc: 0.8 } } };
+    const b = { units: { b2: { done: true, acc: 0.95 } } };
+    assert.equal(backupMerge({ progress: {}, path: a }, { progress: {}, path: b }).path.units.b2.acc, 0.95);
+  });
+
+  // One corrupted record used to throw inside backupMerge, be swallowed by the
+  // blanket catch, and report "That doesn't look like a soisanuk backup" — so
+  // 899 good cards were unimportable and the message blamed her file choice.
+  test("one damaged record does not reject the whole backup", () => {
+    const mine = { progress: {} }, theirs = { progress: {} };
+    for (let i = 0; i < 900; i++) {
+      mine.progress["w" + i] = { totalReviews: 3 };
+      theirs.progress["w" + i] = { totalReviews: 5 };
+    }
+    theirs.progress["w7"] = null;
+    const m = backupMerge(mine, theirs);
+    assert.equal(Object.keys(m.progress).length, 900, "the good records still merge");
+    assert.equal(m.skipped, 1, "and the unreadable one is counted, not hidden");
+    assert.equal(m.progress["w7"].totalReviews, 3, "the local copy of the damaged card survives");
+  });
+
+  // typeof null === "object" and arrays are objects, so progress:[] imported a
+  // card keyed "0" that no screen can reach.
+  test("backupValid rejects a top level that is not a backup", () => {
+    assert.ok(backupValid({ app: "soisanuk", progress: { "ไป": {} } }));
+    for (const bad of [null, {}, { app: "other", progress: {} },
+                       { app: "soisanuk" }, { app: "soisanuk", progress: null },
+                       { app: "soisanuk", progress: [] }])
+      assert.ok(!backupValid(bad), `should reject ${JSON.stringify(bad)}`);
   });
 });
