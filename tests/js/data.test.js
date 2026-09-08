@@ -97,6 +97,26 @@ test("words lacking an example entirely (informational — not an error)", () =>
 // second scheme (P2.3), and a later sweep found 19 Paiboon spellings still in
 // data.js and examples.js. It is a data-entry slip, not a design question, so
 // pin it rather than re-grep for it.
+// docs/architecture.md, the vowel table: "final ย is always `-i` (◌าย aai,
+// ◌อย ooi, เ◌ย oei)". So a long o can meet a final -i only as ◌อย → "ooi";
+// เ◌ย is /ɤɤj/, whose digraph is "oe", giving "oei" with ONE o. "ooei" cannot
+// be produced by any vowel in the table, which makes it a decidable invariant
+// rather than a judgement call.
+//
+// It had drifted in 40 places (2026-09-08): เลย was "looei" in data.js and in
+// 33 example sentences, and กะเทย was "kà-thooei", while เคย was correctly
+// "khoei" — so the same vowel carried two spellings and the commonest of the
+// two was the wrong one. The gloss generator had the rule right all along
+// (LENGTH_RULES declines to double an "o" before "ei"); only the hand-written
+// data disagreed with it.
+test("no romanisation doubles the o in เ◌ย", () => {
+  const bad = [];
+  for (const w of WORDS) if (w[1].includes("ooei")) bad.push(`WORDS ${w[0]}: "${w[1]}"`);
+  for (const k of Object.keys(EXAMPLES))
+    if (EXAMPLES[k][1].includes("ooei")) bad.push(`EXAMPLES ${k}: "${EXAMPLES[k][1]}"`);
+  assert.deepEqual(bad, [], "เ◌ย is oei — ooi is ◌อย, and no vowel gives ooei");
+});
+
 test("romanisations follow the house scheme, not raw Paiboon", () => {
   const VIOLATIONS = [
     [/(^|[- ])bp/, "bp — write p (ป)"],

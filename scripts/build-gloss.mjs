@@ -74,7 +74,12 @@ const SKIP_POS = new Set(["character", "romanization", "syllable", "punct", "sym
 const ONSET = { bp: "p", dt: "t", g: "k", k: "kh", p: "ph", t: "th" };
 const ONSET_RE = /^(bp|dt|g|k|p|t)/;
 const TONE_MARK = /[\u0300\u0301\u0302\u0303\u030c]/g;   //  ̀ ́ ̂ ̃ ̌
-const VOWELS = [[/ʉʉa/g, "uea"], [/ʉʉ/g, "uue"], [/ʉ/g, "ue"], [/əə/g, "ooe"],
+// əə before a final -i is เ◌ย, and the vowel table gives that ONE o:
+// "final ย is always `-i` (◌าย aai, ◌อย ooi, เ◌ย oei)". Without this the
+// generic əə→ooe rule wrote looei/khooei/kà-thooei for เลย/เคย/กะเทย —
+// the same drift the hand-written data had in 40 places (2026-09-08).
+const VOWELS = [[/ʉʉa/g, "uea"], [/ʉʉ/g, "uue"], [/ʉ/g, "ue"],
+  [/əəi/g, "oei"], [/əə/g, "ooe"],
   [/ə/g, "oe"], [/ɛɛ/g, "ae"], [/ɛ/g, "ae"], [/ɔɔ/g, "oo"], [/ɔ/g, "o"],
   [/iia/g, "ia"], [/uua/g, "ua"]];
 
@@ -217,7 +222,14 @@ if (MIGRATE) {
   const rows = THAI_GLOSS.split("\n").map(row => {
     const [w, en, roman] = row.split("\t");
     if (!roman) return row;
-    const fixed = lengthenFromSpelling(w, roman);
+    // The same two mechanical rules a regeneration would apply: lengthen from
+    // the spelling, then shorten เ◌ย, which the əəi rule above now handles at
+    // conversion time. Applied only where the Thai really is เ<C>ย, so a
+    // boundary-spanning "ooei" elsewhere cannot be caught by it.
+    let fixed = lengthenFromSpelling(w, roman);
+    // 1-3 consonants, not 1: เ◌ย wraps a cluster in เชลย (chá-loei) just as
+    // readily as a single consonant in เลย.
+    if (new RegExp("\u0E40" + TH_C + "{1,3}\u0E22").test(w)) fixed = fixed.replace(/ooei/g, "oei");
     if (fixed !== roman) changed++;
     return [w, en, fixed].join("\t");
   });
