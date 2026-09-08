@@ -56,11 +56,35 @@ function backupValid(d) {
   return d && d.app === "soisanuk" && typeof d.progress === "object";
 }
 
+// A restore has to update the RUNNING app, not just localStorage.
+//
+// app.js holds `let progress = loadProgress()` and every mode grades into that
+// one object; saveAndRefresh() writes it back. So an import that only wrote
+// storage was undone by the very next thing the learner touched — and the
+// Backup screen's own "← Menu" button is endSession(), which is
+// saveAndRefresh(). Import 900 cards, tap the only navigation control on the
+// screen, and all 900 are gone. Re-importing does not help: the stale global
+// is still stale. Only a full page reload recovers, which on an installed PWA
+// means force-quitting the app, and nothing said so.
+//
+// Cruellest part: restoring onto the device that ALREADY has the data cannot
+// fail, because memory is a superset of storage there. The rehearsal always
+// works and the real migration always loses. Found by the 2026-09-09
+// backup round.
+//
+// docs/architecture.md already records this exact failure for _learnRecord —
+// "a private copy's grades were silently reverted the moment the learner
+// tapped Menu". Same global, same trigger, a different writer.
+//
+// path and streak need no equivalent: _pathLoad and _streakLoad read
+// localStorage fresh on every call.
 function backupApply(theirs) {
   const merged = backupMerge(backupSnapshot(), theirs);
   saveProgress(merged.progress);
   localStorage.setItem(LEARN_KEY, JSON.stringify(merged.path));
   localStorage.setItem(STREAK_KEY, JSON.stringify(merged.streak));
+  if (typeof progress !== "undefined") progress = merged.progress;
+  if (typeof updateMenuStats === "function") updateMenuStats();
   return Object.keys(merged.progress).length;
 }
 
