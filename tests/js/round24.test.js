@@ -58,4 +58,25 @@ describe("round 24 — the tour a beginner follows", () => {
     assert.deepEqual(stray, [],
       "a tut-key outside .kb-hint is visible on mobile, where there is no keyboard");
   });
+
+  // Slide 5 promises "every character is labelled and hoverable". On
+  // 2026-09-08 the script tooltip's listeners were gated on (hover: hover) to
+  // stop it parking over the text after a tap — which left the decomposition
+  // glyphs completely inert on a phone: no title, no listener, no label, and
+  // no other route to what any of them is. Removing a broken affordance is
+  // half the job when it was the only one. Touch gets a tap now.
+  test("the decomposition is reachable without a mouse", () => {
+    const src = readFileSync(new URL("../../web/js/wordcard.js", import.meta.url), "utf8");
+    const fn = /_scriptTooltipHtml\(ch\)[\s\S]*?clusterDiv\.appendChild/.exec(src);
+    assert.ok(fn, "the decomposition wiring should still be there");
+    assert.match(fn[0], /if \(_WC_HOVER\)[\s\S]*\belse\b/,
+      "there must be a non-hover branch, not just an early-out");
+    assert.match(fn[0], /addEventListener\("click"/,
+      "touch needs a tap to open the glyph's entry");
+    assert.match(fn[0], /tabIndex\s*=\s*0/, "and it must be focusable");
+    assert.match(fn[0], /aria-label/, "and named for a screen reader");
+    // something has to close it again
+    assert.match(src, /!_WC_HOVER[\s\S]*?_stt\.hide\(\)/,
+      "a tap elsewhere must dismiss the tooltip a tap opened");
+  });
 });
