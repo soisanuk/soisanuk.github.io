@@ -123,6 +123,28 @@ test("words lacking an example entirely (informational — not an error)", () =>
 // pair, so "pùuat" is p-ù-u-a-t and a literal search for "uua" misses every
 // toned case. Auditing this without stripping first reported 39 violations
 // that did not exist.
+// There is a pin for every vowel that has drifted and none for the one that
+// was drifting. ไ◌/ใ◌ is short "ai" — its own VOWELS row says so — and a
+// doubled "aai" can only come from ◌าย. data.js contradicted itself on the
+// same morpheme: ผลไม้ "phǒn-lá-mái" against ต้นไม้/ดอกไม้/ใบไม้ "máai", and
+// the 2026-09-08 corpus pass duly corrected sentences in BOTH directions.
+// ไหว้ was "wâai", making it indistinguishable from ว่าย in the corpus.
+//
+// Also caught บาร์ไฟน์ "baa-fain": ไฟน์ ends in a น silenced by ์, so it is
+// /faj/, exactly like ไฟล์ "fai" two rows above it. The corpus had that right
+// and the pass overwrote it with the dictionary's error — the failure the pass
+// existed to prevent, running backwards. Found by the 2026-09-09 data audit.
+test("ไ◌ and ใ◌ are short — only ◌าย doubles", () => {
+  const strip = r => r.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const bad = [];
+  const check = (where, th, rom) => {
+    if (!/[\u0E44\u0E43]/.test(th) || /\u0E32\u0E22/.test(th)) return;   // has ไ/ใ, no ◌าย
+    if (strip(rom).includes("aai")) bad.push(`${where} ${th}: "${rom}"`);
+  };
+  for (const w of WORDS) check("WORDS", w[0], w[1]);
+  assert.deepEqual(bad, [], "ไ◌ is ai; aai is ◌าย");
+});
+
 test("no romanisation doubles the u in ◌ัว", () => {
   const strip = r => r.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const bad = [];

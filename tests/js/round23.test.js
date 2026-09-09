@@ -65,16 +65,29 @@ describe("round 23 — the drill must not teach the wrong rule", () => {
   // Charts render the same five rows and carry an explicit `speak:` per row;
   // this screen was left behind when that was fixed.
   test("a tone row speaks its example word, not the tone's name", () => {
+    // Runs the function's own decision rather than reading it. The previous
+    // version regexed the source for `exampleWord || symbol`; a mutation that
+    // KEPT that string and made exampleWord always empty put the bug straight
+    // back and the test stayed green. Found by the 2026-09-09 behaviour audit.
     const src = readFileSync(new URL("../../web/js/sessions.js", import.meta.url), "utf8");
-    const fn = /function drillShowVowelTone\(\)[\s\S]*?\n}/.exec(src);
-    assert.ok(fn, "drillShowVowelTone should exist");
-    assert.match(fn[0], /exampleWord \|\| symbol/,
-      "the example word must be preferred over the bare symbol");
-    // the data the fix depends on: every tone row has a leading Thai example
+    const body = /function drillShowVowelTone\(\)[\s\S]*?\n}/.exec(src);
+    assert.ok(body, "drillShowVowelTone should exist");
+    // lift the speak-choice expression out and evaluate it per row
+    const expr = /const named = letterSpeech\(symbol\);[\s\S]*?: exampleWord \|\| symbol;/.exec(body[0]);
+    assert.ok(expr, "the speak choice should still be one expression");
+    const decide = new Function("symbol", "example", "letterSpeech", "letterSpeechParts",
+      expr[0] + "\nreturn speakText;");
     for (const t of TONES) {
-      const word = (t[3].match(/^([^\s(（]+)/) || [])[1];
-      assert.ok(word && /[฀-๿]/.test(word),
-        `tone row ${t[0]} needs a Thai example word to speak, got "${t[3]}"`);
+      const spoken = decide(t[0], t[3], letterSpeech, letterSpeechParts);
+      const example = (t[3].match(/^([^\s(（]+)/) || [])[1];
+      assert.ok(example && /[฀-๿]/.test(example),
+        `tone row ${t[0]} needs a Thai example to speak, got "${t[3]}"`);
+      assert.equal(spoken, example,
+        `the ${t[0]} row must speak ${example}, not "${spoken}" — the tone's NAME carries its own tone`);
     }
+    // and the vowel rows must be unaffected
+    const v = VOWELS.find(x => x[0] === "◌า");
+    assert.notEqual(decide(v[0], v[3], letterSpeech, letterSpeechParts), v[3],
+      "a vowel row still speaks its sound, not its raw example string");
   });
 });

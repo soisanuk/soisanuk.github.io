@@ -529,3 +529,36 @@ caught only because it removed the string the test named.
 
 Rule of thumb: assert the operation, not the vocabulary. `/\*\s*dpr/` catches
 what `/devicePixelRatio/` does not.
+
+### And mutate in a way that KEEPS the shape (2026-09-09)
+
+The rule above is necessary and it is not sufficient. On 2026-09-09 an audit of
+one day's twenty-two commits applied eight mutations to a scratch tree — each a
+real behavioural regression — and **all eight test suites stayed green**, on
+guards written that same day and mutation-tested at the time.
+
+The mutations that were run when those guards were written all DELETED the
+thing the regex looks for. A source assertion catches that trivially, so every
+one of them "passed". The audit's mutations kept the token and broke the
+behaviour around it:
+
+| guard looks for | mutation that defeats it |
+|---|---|
+| `/_vlFold\(w\[1\]\)/` | `_vlFold(w[1]).includes(f + "zz")` |
+| `/exampleWord \|\| symbol/` | `const exampleWord = "" && (example.match…)` |
+| `/session\.wordList/` | `_quizDistractors(word, session.wordList ? WORDS : WORDS)` |
+| `/_tts\.speak/` in a function | `_tts.speak(session.nope)` |
+| `/sessionProgress\(/` in a function | keep the call, regress only the line beside it |
+| a CSS rule's text | append an overriding rule LATER in the stylesheet |
+
+So: **when a check reads source rather than behaviour, the mutation that proves
+it must leave the source matching.** If you cannot construct one, the check is
+probably behavioural after all. If you can, and it passes, the check is
+decorative — rewrite it to run the code.
+
+Two of the eight were rewritten to lift the real expression out of the source
+and evaluate it (`new Function` over the matched text), which keeps the test in
+`node --test` without a browser and makes it fail on the audit's own mutation.
+The rest are DOM-bound; the honest position is that `tools/sweep.mjs` and
+`spike/ext-check.mjs` cover the geometry and the extension, and the round files
+now say which guards are shape-only rather than implying otherwise.
