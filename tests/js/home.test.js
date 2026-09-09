@@ -123,10 +123,23 @@ describe("homeStats", () => {
 // ── homeForecastBars ───────────────────────────────────────────────────────
 
 describe("homeForecastBars", () => {
-  test("scales the tallest bucket to the max height", () => {
+  // Scaled to the peak of the FORWARD days, not to bucket 0. Bucket 0 carries
+  // everything overdue, so at any real backlog it dwarfed the week and put
+  // seven of eight bars on the 3px floor. Changed by the 2026-09-09 records
+  // round; today clamps to full height and its number is printed under it.
+  test("scales the forward week to its own peak", () => {
     const bars = homeForecastBars([10, 5, 0, 0], 40);
-    assert.equal(bars[0].px, 40);
-    assert.equal(bars[1].px, 20);
+    assert.equal(bars[0].px, 40, "today clamps to the top");
+    assert.equal(bars[1].px, 40, "and the tallest day ahead sets the scale");
+  });
+
+  test("a big backlog does not flatten the week behind it", () => {
+    const bars = homeForecastBars([713, 57, 35, 27, 49, 35, 51, 42], 34);
+    assert.equal(bars[0].px, 34, "today is still the tallest bar");
+    const ahead = bars.slice(1).map(b => b.px);
+    assert.ok(Math.max(...ahead) - Math.min(...ahead) >= 10,
+      `the week must stay readable, got ${ahead.join(",")}`);
+    assert.ok(ahead.every(px => px <= 34), "and nothing overflows the chart");
   });
 
   test("an all-zero forecast draws a flat baseline instead of dividing by zero", () => {

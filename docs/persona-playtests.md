@@ -383,6 +383,9 @@ is where a round's pins go by default, so the file's existence is the record.
 | 24 | 2026-09-09 | Tomás | are the first-run tutorial's promises true (as a beginner follows them) |
 | 25 | 2026-09-09 | Aroon | does Records tell the truth about a long, messy history |
 
+Rounds 17-25 are all closed: every finding either fixed and pinned, or
+recorded above as a deliberate non-fix.
+
 Rounds 1-16 predate the convention and their pins live in the topic test files
 with a provenance comment; 17 onward have their own file. Genuinely unwalked as
 of round 25: nothing large. The named surfaces have all been walked at least

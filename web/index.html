@@ -270,6 +270,23 @@ body.mobile .example-speak, body.mobile .rating-btn { min-height:44px; }
   justify-content: space-between;
 }
 .sidebar-section:hover { color: var(--saffron); }
+/* A plain heading that LOOKS like a section label without pretending to be a
+   control. The 🏁 Fastest reads heading used .sidebar-section — the sidebar's
+   collapsible nav header — so it inherited cursor:pointer, a hover colour, a
+   focus outline and a "▾" affordance, with no click handler behind any of it.
+   That class is also display:flex/space-between, which made the inline
+   text-align:center it was given a no-op, so the heading sat left while every
+   other line in the body was centred and its "8 of 420" qualifier floated off
+   in the middle looking like a separate statistic.
+   Found by the 2026-09-09 records round. */
+.stat-heading {
+  padding: 0.7rem 1.2rem 0.1rem;
+  font-size: 0.72rem;
+  color: var(--deep-saffron);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+}
 .sidebar-section::after { content: "▾"; opacity: 0.45; font-size: 0.8em; }
 .sidebar-section.collapsed::after { content: "▸"; }
 .sidebar-list.nav-hidden { display: none; }
