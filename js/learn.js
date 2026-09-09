@@ -1098,7 +1098,9 @@ function _streakRender() {
 // days" was told only what they had lost. The streak survives as a tail when
 // it is alive, because that IS the nudge once nothing is due.
 function _contText(plan, st, t) {
-  const kinds = { review: "review", script: "script review", sentence: "sentence review" };
+  // "vocabulary", not bare "review" — see homeCta. The Continue row sits in
+  // the same pane as a "due now" tile counting all three namespaces.
+  const kinds = { review: "vocabulary review", script: "script review", sentence: "sentence review" };
   const what = plan && kinds[plan.kind];
   const n = !what ? 0 : plan.n != null ? plan.n : plan.due.length;
   if (!n) return _streakText(st, t);
