@@ -26,11 +26,11 @@ for (const f of ["data.js", "examples.js", "srs.js", "wordcard.js", "app.js", "c
 describe("homeCta", () => {
   test("announces the review count when reviews are what Continue would run", () => {
     const c = homeCta({ kind: "review", due: [1, 2, 3, 4] }, { days: 0 });
-    assert.match(c.title, /^4 reviews ready$/);
+    assert.match(c.title, /^4 vocabulary reviews ready$/);
   });
 
   test("singularises a lone review", () => {
-    assert.match(homeCta({ kind: "review", due: [1] }, {}).title, /^1 review ready$/);
+    assert.match(homeCta({ kind: "review", due: [1] }, {}).title, /^1 vocabulary review ready$/);
   });
 
   test("nudges the streak only when there is one to keep", () => {
@@ -150,10 +150,27 @@ describe("homeForecastBars", () => {
 describe("homeWordPicks", () => {
   const seq = () => { let i = 0; return () => ((i = (i * 9301 + 49297) % 233280), i / 233280); };
 
+  // The fixture used to carry `repetitions` and nothing else — a shape
+  // reviewCard never writes — which is why this test kept passing while
+  // homeWordPicks bucketed on the wrong field. Real records carry both.
   test("prefers words you've actually met", () => {
-    const prog = { [WORDS[5][0]]: { repetitions: 3 }, [WORDS[9][0]]: { repetitions: 1 } };
+    const prog = { [WORDS[5][0]]: { repetitions: 3, totalReviews: 3 },
+                   [WORDS[9][0]]: { repetitions: 1, totalReviews: 1 } };
     const picks = homeWordPicks(WORDS, prog, 2, seq());
     assert.deepEqual(picks.map(w => w[0]).sort(), [WORDS[5][0], WORDS[9][0]].sort());
+  });
+
+  // A lapse zeroes `repetitions` but not `totalReviews`. Bucketing on the
+  // former made every lapsed word count as never met and drop into the
+  // top-up bucket, which never gets a slot — so the words most worth
+  // revisiting were the ones this strip could never show.
+  // Found by the 2026-09-09 records round.
+  test("a lapsed word is still a word you have met", () => {
+    const lapsed = { repetitions: 0, totalReviews: 9, interval: 1 };
+    const prog = { [WORDS[5][0]]: lapsed };
+    const picks = homeWordPicks(WORDS, prog, 1, seq());
+    assert.deepEqual(picks.map(w => w[0]), [WORDS[5][0]],
+      "a card you failed yesterday is not an unseen card");
   });
 
   test("tops up with unseen words so a new learner still gets a full strip", () => {
@@ -226,7 +243,7 @@ test("the review count is the backlog, not the ten-card batch", () => {
   // continuePlan caps `due` at ten so nobody is handed eighty cards at once.
   // The card must still say how many are actually waiting.
   const plan = { kind: "review", due: new Array(10), n: 25 };
-  assert.match(homeCta(plan, {}).title, /^25 reviews ready$/);
+  assert.match(homeCta(plan, {}).title, /^25 vocabulary reviews ready$/);
   // and without n (older shape) it still renders rather than throwing
-  assert.match(homeCta({ kind: "review", due: new Array(4) }, {}).title, /^4 reviews ready$/);
+  assert.match(homeCta({ kind: "review", due: new Array(4) }, {}).title, /^4 vocabulary reviews ready$/);
 });

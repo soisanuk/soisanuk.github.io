@@ -26,8 +26,15 @@ function homeCta(plan, streak) {
   if (!plan) return { title: "Start today", sub: "your first lesson is waiting" };
   if (plan.kind === "review") {
     // plan.n is the real backlog; plan.due is only the batch Continue serves.
+  // "review" alone read as ALL reviews. srsStats counts every namespace — 978
+  // vocab + 63 script + 960 sentence — while continuePlan counts only the one
+  // it picked, so a 15-month store showed "418 reviews ready" about 60px above
+  // "714 due now", both true, neither labelled. Aroon cleared the 418 and the
+  // tile he uses as a to-do list dropped by 296. script and sentence already
+  // named their scope; vocabulary did not. Found by the 2026-09-09 records
+  // round; same shape as round 5's streak and round 21's due count.
     const n = plan.n != null ? plan.n : plan.due.length;
-    return { title: `${n} review${n === 1 ? "" : "s"} ready`,
+    return { title: `${n} vocabulary review${n === 1 ? "" : "s"} ready`,
              sub: streak && streak.days ? "keep the streak alive" : "warm up on what you already know" };
   }
   if (plan.kind === "script") {
@@ -73,8 +80,19 @@ function homeWordPicks(words, progress, n = HOME_WORDS, rand = Math.random) {
     for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
     return a;
   };
-  const seen = shuffled(words.filter(w => progress[w[0]] && progress[w[0]].repetitions > 0));
-  const rest = shuffled(words.filter(w => !(progress[w[0]] && progress[w[0]].repetitions > 0)));
+  // totalReviews, not repetitions. `repetitions` is SM-2's consecutive-SUCCESS
+  // counter and reviewCard zeroes it on any miss, so every LAPSED word counted
+  // as never met and fell into `rest` — which never gets a slot, because `seen`
+  // alone always exceeds the strip's eight. Measured: 180 lapsed words across
+  // 400 word slots produced zero of them. The words most worth poking at were
+  // structurally unreachable. Found by the 2026-09-09 records round.
+  //
+  // The same defect was fixed in ui.js on 2026-09-08 across four surfaces, and
+  // this file was missed because the guard written for it read only ui.js. It
+  // now reads every source — grep for the accessor, not the symptom.
+  const met = w => progress[w[0]] && progress[w[0]].totalReviews > 0;
+  const seen = shuffled(words.filter(met));
+  const rest = shuffled(words.filter(w => !met(w)));
   return [...seen, ...rest].slice(0, n);
 }
 

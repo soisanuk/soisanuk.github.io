@@ -380,11 +380,14 @@ is where a round's pins go by default, so the file's existence is the record.
 | 21 | 2026-09-08 | Owen | production vs recognition (Sentence SRS) |
 | 22 | 2026-09-09 | Priya | can a restore lose data (Backup & Restore) |
 | 23 | 2026-09-09 | Jesse | is a listening drill passable by looking (Tone Drill, Browse) |
+| 24 | 2026-09-09 | Tomás | are the first-run tutorial's promises true (as a beginner follows them) |
+| 25 | 2026-09-09 | Aroon | does Records tell the truth about a long, messy history |
 
 Rounds 1-16 predate the convention and their pins live in the topic test files
 with a provenance comment; 17 onward have their own file. Genuinely unwalked as
-of round 23: the Records screen under a long history, and the first-run
-tutorial as a thing a beginner follows rather than a string to lint. Nights
+of round 25: nothing large. The named surfaces have all been walked at least
+once, most of them twice at different lenses. What is left is re-treading —
+which the doctrine above says is often the higher-yield choice anyway. Nights
 1-2 of Soi Buakhao still carry a weak length tell (40% of no-comprehension
 runs pass one night; the ending is unreachable).
 

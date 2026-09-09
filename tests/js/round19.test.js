@@ -6,7 +6,7 @@
 // the romanisation pin.
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import vm from "node:vm";
 
 for (const f of ["data.js", "srs.js", "tokeniser.js", "thai-script.js", "numbers.js", "idioms.js", "tutor.js"])
@@ -75,12 +75,19 @@ describe("round 19 — what the reference screens print", () => {
   // Asserted on the SOURCE because these are DOM-bound renderers, and on the
   // OPERATION rather than the vocabulary: what must never come back is the
   // predicate `repetitions > 0` being used to mean "seen".
+  // Scoped to ui.js when written, which is why home.js kept the same defect
+  // for a day: homeWordPicks bucketed by repetitions, so 180 lapsed words were
+  // unreachable in the "A few words" strip. Found by the 2026-09-09 records
+  // round. Reads EVERY source now — the bug class is the accessor, not the file.
   test("nothing decides 'seen' from the success streak", () => {
-    const src = readFileSync(new URL("../../web/js/ui.js", import.meta.url), "utf8");
-    const offenders = src.split("\n")
-      .map((l, i) => [i + 1, l])
-      .filter(([, l]) => !l.trim().startsWith("//"))
-      .filter(([, l]) => /\.repetitions\s*>\s*0/.test(l));
+    const dir = new URL("../../web/js/", import.meta.url);
+    const offenders = [];
+    for (const f of readdirSync(dir).filter(n => n.endsWith(".js"))) {
+      readFileSync(new URL(f, dir), "utf8").split("\n").forEach((l, i) => {
+        if (l.trim().startsWith("//") || l.trim().startsWith("*")) return;
+        if (/\.repetitions\s*>\s*0/.test(l)) offenders.push(`${f}:${i + 1}  ${l.trim()}`);
+      });
+    }
     assert.deepEqual(offenders, [],
       "`repetitions` resets on a miss — a lapsed card is still seen; use totalReviews");
   });
