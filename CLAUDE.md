@@ -33,7 +33,11 @@ node scripts/build-gloss-volubilis.mjs <VOLUBILIS Duo Max ENG.xlsx>  # → web/j
 
 # Structural sweep of every screen, desktop + iPhone: JS errors, overflow,
 # clipping, empty screens, and tap targets below the threshold for that input
-# (touch vs pointer). Prints "ALL SCREENS CLEAN" when there is nothing to say.
+# (touch vs pointer). Also walks the first-run tutorial slide by slide, which
+# is NOT a .screen and so was invisible to this tool until 2026-09-09 — three
+# real defects lived there, including a slide taller than the viewport whose
+# every control was off-screen. Prints "ALL SCREENS CLEAN" when there is
+# nothing to say.
 node tools/sweep.mjs
 
 # Browser-extension spike: can a content script tokenise Thai in someone else's
