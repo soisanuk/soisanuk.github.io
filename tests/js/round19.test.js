@@ -115,8 +115,22 @@ describe("round 19 — what the reference screens print", () => {
     assert.equal(fold("sìp"), "sip");
     assert.equal(fold("khǎo"), "khao");
     assert.equal(fold("náam"), "naam");
-    // and the search must actually consult it
-    assert.match(src, /_vlFold\(w\[1\]\)/,
-      "filterVocabList has to compare the folded romanisation, not just define the folder");
+
+    // Run the real predicate, do not look at it. The previous version matched
+    // the source for `_vlFold(w[1])`; a mutation that kept that call and
+    // compared it against `f + "zz"` broke the search completely and left this
+    // green. Found by the 2026-09-09 behaviour audit.
+    const pred = /const filtered = q\s*\?\s*base\.filter\(w =>([\s\S]*?)\)\s*:\s*base;/.exec(src);
+    assert.ok(pred, "filterVocabList's predicate should still be one expression");
+    const matches = new Function("w", "q", "f", "_vlFold", "return (" + pred[1] + ");");
+    const run = query => {
+      const q = query.trim().toLowerCase(), f = fold(query);
+      return WORDS.filter(w => matches(w, q, f, fold)).length;
+    };
+    assert.ok(run("sip") >= 1, "'sip' must find สิบ — no phone keyboard types ì");
+    assert.ok(run("naam") >= 10, `'naam' should reach the náam family, got ${run("naam")}`);
+    assert.ok(run("khao") >= 5, `'khao' should reach the khǎo family, got ${run("khao")}`);
+    assert.ok(run("sabaai") >= 1, "'sabaai' must find sà-baai");
+    assert.equal(run("zzzz"), 0, "and nonsense still matches nothing");
   });
 });
