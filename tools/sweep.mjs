@@ -114,6 +114,60 @@ for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 
     await page.evaluate(() => { if (typeof endSession === "function") endSession(); }).catch(() => {});
     await page.waitForTimeout(150);
   }
+  // ── the first-run tutorial ────────────────────────────────────────────────
+  // It is not a .screen and it is not in the nav, so every loop above walks
+  // straight past it — and line 31 above deliberately closes it so the rest of
+  // the sweep can work. That made the FIRST screen every user sees the only
+  // one nothing measured, and three real defects lived there until a persona
+  // read the tour: a slide 886px tall in a 664px viewport with every control
+  // off-screen and nothing scrollable, a 13x21 close button, and 8x8 dots —
+  // all three of which the checks below would have caught mechanically.
+  // Added 2026-09-09.
+  errs.length = 0;
+  const slides = await page.evaluate(() => {
+    if (typeof showTutorial !== "function") return 0;
+    showTutorial();
+    return typeof _TUT_TOTAL === "number" ? _TUT_TOTAL : 0;
+  }).catch(e => { errs.push("OPEN " + e.message.slice(0, 60)); return 0; });
+  for (let sl = 0; sl < slides; sl++) {
+    const m = await page.evaluate(([i, vw, touch]) => {
+      _tutGoTo(i);
+      const vh = window.innerHeight;
+      const out = { issues: [] };
+      const card = document.getElementById("tutorial-card");
+      if (!card) { out.issues.push("NO-CARD"); return out; }
+      if (document.documentElement.scrollWidth > vw + 2)
+        out.issues.push("H-OVERFLOW " + document.documentElement.scrollWidth + ">" + vw);
+      // Every control has to be REACHABLE: on screen, or inside something that
+      // scrolls. This is the check that would have caught the dead end.
+      const scrolls = card.scrollHeight > card.clientHeight
+        || getComputedStyle(document.getElementById("tutorial-overlay")).overflowY === "auto";
+      for (const id of ["tutorial-close-btn", "tutorial-next"]) {
+        const el = document.getElementById(id);
+        if (!el || el.offsetParent === null) continue;
+        const r = el.getBoundingClientRect();
+        if ((r.top < 0 || r.bottom > vh) && !scrolls)
+          out.issues.push("UNREACHABLE " + id + " @" + Math.round(r.top) + " vh=" + vh);
+      }
+      for (const el of card.querySelectorAll("button, [role=button]")) {
+        const r = el.getBoundingClientRect();
+        if (r.width <= 0 || el.offsetParent === null) continue;
+        const minW = touch ? 34 : 24, minH = touch ? 30 : 24;
+        if (r.width < minW || r.height < minH) {
+          out.issues.push("TINY-TAP " + (el.id || el.className.toString().slice(0, 16))
+            + " " + Math.round(r.width) + "x" + Math.round(r.height));
+          break;
+        }
+      }
+      return out;
+    }, [sl, opts.viewport ? opts.viewport.width : 390, label === "MOBILE"])
+      .catch(e => ({ issues: ["EVAL " + e.message.slice(0, 60)] }));
+    if (errs.length) m.issues.push("JS: " + errs.join(";"));
+    if (m.issues.length) report.push(`${label} tutorial slide ${sl + 1}/${slides}: ${m.issues.join(" | ")}`);
+    errs.length = 0;
+  }
+  await page.evaluate(() => { if (typeof closeTutorial === "function") closeTutorial(); }).catch(() => {});
+
   await ctx.close();
 }
 await browser.close();
