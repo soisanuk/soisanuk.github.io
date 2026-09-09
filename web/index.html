@@ -1359,6 +1359,11 @@ body.mobile .vocab-list-cats {
   top: 0.7rem; right: 0.9rem;
   background: none; border: none;
   color: var(--dim); font-size: 1.1rem; cursor: pointer;
+  /* was 13x21 — the first control on the first screen anyone ever sees,
+     at a third of the app's own minimum touch size. */
+  min-width: 40px; min-height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  margin: -0.5rem -0.4rem 0 0;
 }
 .tutorial-slide { display: none; }
 .tutorial-slide.active { display: block; min-height: 200px; }
@@ -1385,10 +1390,19 @@ kbd.tut-key {
 .tutorial-dots {
   display: flex; justify-content: center; gap: 0.5rem; margin: 1.2rem 0 0.9rem;
 }
+/* The dot stays 8px to look at; the TAP TARGET is 32px. It was 8x8, well
+   under the 34x30 floor tools/sweep.mjs enforces everywhere else — and the
+   sweep cannot see the tutorial, because it strips .open from the overlay
+   before it runs. Found by the 2026-09-09 beginner round.
+   background-clip: content-box keeps the padding transparent. */
 .tutorial-dot {
   width: 8px; height: 8px; border-radius: 50%;
   background: var(--border); cursor: pointer;
+  padding: 13px; background-clip: content-box;
+  margin: -13px -7px;              /* keep the visual spacing unchanged */
+  box-sizing: content-box;
 }
+.tutorial-dot:focus-visible { outline: 2px solid var(--saffron); outline-offset: -8px; }
 .tutorial-dot.active { background: var(--saffron); }
 #tutorial-nav { display: flex; justify-content: space-between; }
 #tutorial-nav button {
@@ -2861,8 +2875,8 @@ body.mobile #app-shell {
 
     <div class="tutorial-slide">
       <h2>✨ Tap Thai text to explore</h2>
-      <p>In any flashcard or vocab list, <strong style="color:var(--saffron)">tap the Thai word</strong> to open its detail card — romanisation, audio, and an example sentence in context.</p>
-      <p>Then <strong style="color:var(--saffron)">tap the Thai word inside the card</strong> to decompose it into syllable clusters. Every character is labelled and hoverable.</p>
+      <p>In the vocabulary flashcards or the vocab list, <strong style="color:var(--saffron)">tap the Thai word</strong> to open its detail card — romanisation, audio, and an example sentence in context.</p>
+      <p>Then <strong style="color:var(--saffron)">tap the Thai word inside the card</strong> to decompose it into syllable clusters. Every character is labelled<span class="kb-hint"> — hover any of them</span><span class="touch-hint"> — tap any of them</span>.</p>
       <p>Each cluster reads in <strong style="color:var(--saffron)">typing order</strong> — the order you press the keys on a Thai keyboard, which is also how Thai is stored. A tone mark always comes straight after its consonant, so where it appears in the list depends on which side the vowel sits: in <strong>แม่</strong> it is third, because แ is one of the five vowels written <em>before</em> its consonant; in <strong>ค้า</strong> it is second, because า comes after.</p>
       <div class="tut-decomp-demo">
         <span class="tut-cluster">ส</span><span class="tut-cluster">วั</span><span class="tut-cluster">ส</span><span class="tut-cluster">ดี</span>
@@ -2873,16 +2887,16 @@ body.mobile #app-shell {
     <div class="tutorial-slide">
       <h2>📖 Vocab List &amp; Script</h2>
       <p><strong>Vocab List</strong><span class="kb-hint"> (key <kbd class="tut-key">V</kbd>)</span> shows all <span class="tut-count" data-count="words"></span> words — search, filter by category, tap any word for the detail card with decomposition.</p>
-      <p><strong>Script cards</strong><span class="kb-hint"> (keys <kbd class="tut-key">5</kbd>, <kbd class="tut-key">6</kbd> and <kbd class="tut-key">9</kbd>)</span> teach consonants and vowels with SRS. <strong>Browse</strong><span class="kb-hint"> (<kbd class="tut-key">7</kbd>, <kbd class="tut-key">8</kbd>)</span> pages through the letters one at a time with class, name and frequency — reference, not review, nothing to answer. <strong>Reference Charts</strong><span class="kb-hint"> (<kbd class="tut-key">A</kbd>)</span> shows them all at once instead. <strong>Tone Drill</strong><span class="kb-hint"> (<kbd class="tut-key">T</kbd>)</span> plays audio and asks you to identify the tone class.</p>
+      <p><strong>Script cards</strong><span class="kb-hint"> (keys <kbd class="tut-key">5</kbd>, <kbd class="tut-key">6</kbd> and <kbd class="tut-key">9</kbd>)</span> teach consonants and vowels with SRS. <strong>Browse</strong><span class="kb-hint"> (<kbd class="tut-key">7</kbd>, <kbd class="tut-key">8</kbd>)</span> pages through them one at a time — consonants with their class and name, vowels and tones with their sound and an example, both with frequency. Reference, not review: nothing to answer. <strong>Reference Charts</strong><span class="kb-hint"> (<kbd class="tut-key">A</kbd>)</span> shows them all at once instead. <strong>Tone Drill</strong><span class="kb-hint"> (<kbd class="tut-key">T</kbd>)</span> plays a word and asks you which of the five tones it is.</p>
     </div>
 
     <div class="tutorial-dots">
-      <div class="tutorial-dot" onclick="_tutGoTo(0)"></div>
-      <div class="tutorial-dot" onclick="_tutGoTo(1)"></div>
-      <div class="tutorial-dot" onclick="_tutGoTo(2)"></div>
-      <div class="tutorial-dot" onclick="_tutGoTo(3)"></div>
-      <div class="tutorial-dot" onclick="_tutGoTo(4)"></div>
-      <div class="tutorial-dot" onclick="_tutGoTo(5)"></div>
+      <div class="tutorial-dot" role="button" tabindex="0" aria-label="Slide 1" onclick="_tutGoTo(0)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_tutGoTo(0)}"></div>
+      <div class="tutorial-dot" role="button" tabindex="0" aria-label="Slide 2" onclick="_tutGoTo(1)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_tutGoTo(1)}"></div>
+      <div class="tutorial-dot" role="button" tabindex="0" aria-label="Slide 3" onclick="_tutGoTo(2)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_tutGoTo(2)}"></div>
+      <div class="tutorial-dot" role="button" tabindex="0" aria-label="Slide 4" onclick="_tutGoTo(3)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_tutGoTo(3)}"></div>
+      <div class="tutorial-dot" role="button" tabindex="0" aria-label="Slide 5" onclick="_tutGoTo(4)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_tutGoTo(4)}"></div>
+      <div class="tutorial-dot" role="button" tabindex="0" aria-label="Slide 6" onclick="_tutGoTo(5)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_tutGoTo(5)}"></div>
     </div>
     <div id="tutorial-nav">
       <button id="tutorial-prev" onclick="_tutPrev()">← Back</button>
