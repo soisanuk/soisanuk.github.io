@@ -63,4 +63,50 @@ describe("round 25 — a long history, told honestly", () => {
     assert.match(undo[0], /STREAK_KEY/,
       "and undo must put it back, or Biggest day only ever climbs");
   });
+
+  // On the day a long streak breaks, the home tile read "0 / day streak" — a
+  // naked zero on the pane a daily user looks at first, with `ended` and
+  // `maxDays` already in hand and discarded. Records says "0 (ended) · best
+  // 256 days" from the same object.
+  test("a broken streak reports the best, not a bare zero", () => {
+    const ended = { days: 0, ended: true, maxDays: 256 };
+    const tile = homeStats({ dueNow: 714, mature: 400 }, ended, {}, []).find(t => /streak/.test(t[1]));
+    assert.equal(tile[0], 256, "the number worth showing is the one he reached");
+    assert.match(tile[1], /best/, "and it must be labelled as a best, not as a current run");
+    // a live streak is unchanged
+    const live = homeStats({ dueNow: 5, mature: 400 }, { days: 64, maxDays: 256 }, {}, [])
+      .find(t => /streak/.test(t[1]));
+    assert.deepEqual(live, [64, "day streak"]);
+  });
+
+  // Bucket 0 carries everything overdue, so at any real backlog it dwarfed the
+  // week: 713 against 27-57 a day put seven of eight bars on the 3px floor. A
+  // chart whose only readable statement is "you have a backlog" is not a
+  // forecast.
+  test("a backlog does not flatten the week behind it", () => {
+    const bars = homeForecastBars([713, 57, 35, 27, 49, 35, 51, 42], 34);
+    const ahead = bars.slice(1).map(b => b.px);
+    assert.ok(new Set(ahead).size >= 4,
+      `the forward days must be distinguishable, got ${ahead.join(",")}`);
+    assert.ok(ahead.every(px => px <= 34), "and none may overflow the chart");
+    assert.equal(bars[0].px, 34, "today stays the tallest");
+  });
+
+  // The 🏁 heading wore .sidebar-section — the sidebar's COLLAPSIBLE nav
+  // header — so it carried cursor:pointer, a hover colour, a focus outline and
+  // a "▾", with no handler behind any of it. That class is also
+  // display:flex/space-between, which made its inline text-align:center inert,
+  // so the heading sat left in a body where everything else is centred.
+  test("the fastest-reads heading is a heading, not a dead control", () => {
+    const src = readFileSync(new URL("../../web/js/learn.js", import.meta.url), "utf8");
+    assert.ok(!/sidebar-section[^"]*"[^`]*🏁/.test(src) && !/🏁[^`]*sidebar-section/.test(src),
+      "the records/speedometer heading must not use the collapsible nav class");
+    assert.equal((src.match(/class="stat-heading">🏁/g) || []).length, 2,
+      "both the Records screen and the path speedometer use the plain heading");
+    const html = readFileSync(new URL("../../web/index.html", import.meta.url), "utf8");
+    const rule = /\.stat-heading\s*\{([^}]*)\}/.exec(html);
+    assert.ok(rule, ".stat-heading should be defined");
+    assert.ok(!/cursor:\s*pointer/.test(rule[1]), "it is not clickable");
+    assert.match(rule[1], /text-align:\s*center/, "and it is centred, like the body it heads");
+  });
 });

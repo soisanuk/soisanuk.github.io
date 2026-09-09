@@ -62,7 +62,7 @@ function startLearn() {
   const sp = document.getElementById("learn-speed");
   if (sp) {
     sp.innerHTML = !bests.length ? "" :
-      `<div class="sidebar-section" style="text-align:center">🏁 Fastest reads` +
+      `<div class="stat-heading">🏁 Fastest reads` +
       (bests.length > 5 ? ` <span style="opacity:0.6;font-weight:normal">5 of ${bests.length}</span>` : "") +
       `</div>` +
       bests.slice(0, 5).map(([th, ms]) =>
@@ -1279,7 +1279,7 @@ function _placementFinish() {
 function showRecords() {
   const st = _streakNow(), path = _pathLoad();
   // path.best is uncapped and can hold every word ever hit in a speed card (up
-  // to 764). Both views truncate; neither used to admit it.
+  // to 973 — every word decodable at the last rung). Both views truncate.
   const allBests = Object.entries(path.best || {}).sort((a, b) => a[1] - b[1]);
   const bests = allBests.slice(0, 8);
   const done = COURSE.filter(u => _unitDone(path, u)).length;
@@ -1287,7 +1287,7 @@ function showRecords() {
     `<div class="learn-summary">Level: <b>${_levelName(done)}</b> · ${done}/${COURSE.length} units</div>
      <div class="learn-summary">🔥 Streak: <b>${st.days || 0}</b> ${st.ended ? "(ended)" : "now"} · best <b>${st.maxDays || 0}</b> days</div>
      <div class="learn-summary">📅 Biggest day: <b>${st.bestDay ? st.bestDay.cards + " cards (" + st.bestDay.date + ")" : "—"}</b></div>
-     <div class="sidebar-section" style="text-align:center">🏁 Fastest reads${
+     <div class="stat-heading">🏁 Fastest reads${
        allBests.length > bests.length ? ` <span style="opacity:0.6;font-weight:normal">${bests.length} of ${allBests.length}</span>` : ""}</div>
      <div style="text-align:center">${bests.length ? bests.map(([th, ms]) =>
        `<span class="learn-best">${_esc(th)} <b>${(ms / 1000).toFixed(1)}s</b></span>`).join(" ") : "run some speed reads"}</div>`;

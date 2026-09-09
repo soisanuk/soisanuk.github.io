@@ -57,7 +57,15 @@ function homeStats(srs, streak, path, course) {
   const done = (course || []).filter(u => _unitDone(path || {}, u)).length;
   return [
     [srs.dueNow, "due now"],
-    [(streak && streak.days) || 0, "day streak"],
+    // On the day a long streak breaks this tile said "0 / day streak" — a
+    // naked zero, on the pane a daily user looks at first, with `ended` and
+    // `maxDays` already in hand and thrown away. Records says "0 (ended) ·
+    // best 256 days" on the same store; this now agrees with it rather than
+    // reporting the most discouraging reading of the same fact.
+    // Found by the 2026-09-09 records round.
+    (streak && streak.ended && streak.maxDays)
+      ? [streak.maxDays, "best streak"]
+      : [(streak && streak.days) || 0, "day streak"],
     [srs.mature, "mature"],
     [`${done}/${(course || []).length}`, "units"],
   ];
@@ -66,9 +74,22 @@ function homeStats(srs, streak, path, course) {
 // Scale the forecast buckets to bar heights (px). Kept separate because an
 // all-zero forecast must not divide by zero — a brand-new learner sees a
 // flat baseline, not a broken chart.
+// Scaled to the peak of the FORWARD days, not to bucket 0.
+//
+// Bucket 0 carries everything overdue, so at any real backlog it dwarfs the
+// week: 713 overdue against 27-57 a day put seven of eight bars on the 3px
+// floor, and a chart whose only readable statement is "you have a backlog" is
+// not a forecast. Today's bar clamps to full height instead — its own number
+// is printed under it, so nothing is hidden by the clamp, and the week beside
+// it becomes legible. Found by the 2026-09-09 records round.
 function homeForecastBars(buckets, maxPx = 34) {
-  const peak = Math.max(...buckets, 0);
-  return buckets.map(n => ({ n, px: peak > 0 ? Math.max(Math.round((n / peak) * maxPx), n ? 3 : 1) : 1 }));
+  const ahead = buckets.slice(1);
+  const peak = Math.max(...ahead, 0) || Math.max(...buckets, 0);
+  return buckets.map(n => ({
+    n,
+    px: peak > 0 ? Math.min(Math.max(Math.round((n / peak) * maxPx), n ? 3 : 1), maxPx)
+                 : 1,
+  }));
 }
 
 // A few words to browse. Prefers ones you've already met (they mean
