@@ -153,6 +153,27 @@ function renderDecomposition(container, word) {
         span.addEventListener("mouseenter", e => _stt.show(tipHtml, e.clientX, e.clientY));
         span.addEventListener("mousemove",  e => _stt.show(tipHtml, e.clientX, e.clientY));
         span.addEventListener("mouseleave", () => _stt.hide());
+      } else {
+        // Touch gets a TAP instead. Gating the hover listeners on
+        // `(hover: hover)` stopped the tooltip parking itself over the text
+        // after a tap — but it also left these glyphs completely inert on a
+        // phone: no title, no listener, no label, and no other route to what
+        // any of them is. The tutorial meanwhile promises "every character is
+        // labelled and hoverable". Removing a broken affordance is only half
+        // the job if it was the sole one. Found by the 2026-09-09 beginner
+        // round; the gating was mine, the same day.
+        span.tabIndex = 0;
+        span.setAttribute("role", "button");
+        span.setAttribute("aria-label", ch + " — tap for its name and sound");
+        const show = e => {
+          const r = span.getBoundingClientRect();
+          _stt.show(tipHtml, r.left, r.bottom);
+          e.stopPropagation();          // a tap elsewhere is what closes it
+        };
+        span.addEventListener("click", show);
+        span.addEventListener("keydown", e => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); show(e); }
+        });
       }
 
       clusterDiv.appendChild(span);
@@ -292,6 +313,11 @@ const _tt = {
 
 if (typeof document !== "undefined" && _WC_HOVER) {
   document.addEventListener("mousemove", e => _tt.move(e.clientX, e.clientY));
+}
+// On touch the script tooltip is opened by a tap, so something has to close
+// it: any tap that is not on a glyph does (the glyph handler stops the bubble).
+if (typeof document !== "undefined" && !_WC_HOVER) {
+  document.addEventListener("click", () => { try { _stt.hide(); } catch (e) {} });
 }
 
 // ─── example sentence display ─────────────────────────────────────────────────
