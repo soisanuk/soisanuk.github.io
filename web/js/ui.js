@@ -218,14 +218,47 @@ function _tutFillCounts() {
   });
 }
 
+// Focusable things inside the card, in DOM order.
+function _tutFocusables() {
+  const card = document.getElementById("tutorial-card");
+  return card ? [...card.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+    .filter(e => e.offsetParent !== null || e === document.activeElement) : [];
+}
+
+// Tab used to walk straight out of the modal into the nav behind it: two
+// presses reached "▶ Continue" and Enter started a lesson UNDER the still-open
+// tour, with the seen-flag unset. The overlay's own buttons come after the
+// whole sidebar and menu in DOM order, so they were effectively unreachable by
+// Tab. Found by the 2026-09-09 beginner round.
+function _tutTrapTab(e) {
+  if (e.key !== "Tab") return;
+  const f = _tutFocusables();
+  if (!f.length) return;
+  const first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  else if (!document.getElementById("tutorial-card").contains(document.activeElement)) {
+    e.preventDefault(); first.focus();
+  }
+}
+
 function showTutorial() {
   _tutStep = 0;
   _tutFillCounts();
   _tutRender();
-  document.getElementById("tutorial-overlay").classList.add("open");
+  const overlay = document.getElementById("tutorial-overlay");
+  overlay.classList.add("open");
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  document.addEventListener("keydown", _tutTrapTab, true);
+  // Land inside the card, so the first Tab moves within it rather than out.
+  const next = document.getElementById("tutorial-next");
+  if (next) next.focus();
 }
 
 function closeTutorial() {
+  document.removeEventListener("keydown", _tutTrapTab, true);
   document.getElementById("tutorial-overlay").classList.remove("open");
   localStorage.setItem(_TUT_KEY, "1");
 }

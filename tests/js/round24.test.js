@@ -79,4 +79,43 @@ describe("round 24 — the tour a beginner follows", () => {
     assert.match(src, /!_WC_HOVER[\s\S]*?_stt\.hide\(\)/,
       "a tap elsewhere must dismiss the tooltip a tap opened");
   });
+
+  // Every control on the first screen anyone sees was under the app's own
+  // minimum touch size: ✕ at 13x21 and the six dots at 8x8, against the 34x30
+  // floor tools/sweep.mjs enforces on every .screen. It cannot enforce it here
+  // — it strips .open from the overlay before it runs — so this does.
+  test("the tour's own controls meet the app's touch floor", () => {
+    const rule = sel => {
+      const m = new RegExp(sel.replace(/[.#]/g, "\\$&") + "\\s*\\{([^}]*)\\}", "g");
+      return [...HTML.matchAll(m)].map(x => x[1]).join("\n");
+    };
+    const close = rule("#tutorial-close-btn");
+    assert.match(close, /min-width:\s*(\d+)px/, "the close button needs an explicit width");
+    assert.ok(+/min-width:\s*(\d+)px/.exec(close)[1] >= 34, "at least 34px wide");
+    assert.ok(+/min-height:\s*(\d+)px/.exec(close)[1] >= 30, "at least 30px tall");
+    const dot = rule(".tutorial-dot");
+    const pad = +/padding:\s*(\d+)px/.exec(dot)[1];
+    assert.ok(8 + pad * 2 >= 34, `a dot's hit area is ${8 + pad * 2}px, needs 34`);
+    assert.match(dot, /background-clip:\s*content-box/,
+      "the padding must stay transparent, or the dots become blobs");
+  });
+
+  // Tab walked out of the modal into the nav behind it — two presses reached
+  // "▶ Continue", and Enter started a lesson UNDER the still-open tour with
+  // the seen-flag unset. The overlay's own buttons come after the entire
+  // sidebar in DOM order, so they were effectively unreachable by Tab.
+  test("focus cannot leave the open tour", () => {
+    const src = readFileSync(new URL("../../web/js/ui.js", import.meta.url), "utf8");
+    const show = /function showTutorial\(\)[\s\S]*?\n}/.exec(src);
+    const close = /function closeTutorial\(\)[\s\S]*?\n}/.exec(src);
+    assert.ok(show && close, "both should exist");
+    assert.match(show[0], /addEventListener\("keydown", _tutTrapTab/, "the trap is armed on open");
+    assert.match(show[0], /\.focus\(\)/, "and focus starts inside the card");
+    assert.match(close[0], /removeEventListener\("keydown", _tutTrapTab/,
+      "and disarmed on close, or it outlives the modal");
+    assert.match(show[0], /aria-modal/, "screen readers need to know it is modal");
+    // the dots are controls, so they must be reachable and operable
+    assert.match(HTML, /class="tutorial-dot" role="button" tabindex="0"/);
+    assert.match(HTML, /tutorial-dot[^>]*onkeydown=/, "and operable from the keyboard");
+  });
 });
