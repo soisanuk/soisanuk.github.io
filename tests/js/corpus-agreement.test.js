@@ -37,13 +37,22 @@ describe("corpus agreement", () => {
   test("every example sentence romanises its words the way data.js does", () => {
     const map = new Map(WORDS.map(w => [w[0], w[1]]));
     const norm = s => s.replace(/[- ]/g, "").toLowerCase();
+    // Containment alone lets a LONGER wrong spelling through: three sentences
+    // read เพราะ as "phrór" while data.js says "phró", and "phror" contains
+    // "phro", so the check passed on all three. Match on syllable boundaries
+    // too — a hyphen, a space or an edge — which is the same rule
+    // _sentBlankRtgs had to learn. Found while vendoring the first one out.
+    const esc = t => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const bounded = (rom, want) =>
+      new RegExp("(^|[\\s-])" + esc(want).replace(/[-\s]+/g, "[\\s-]") +
+                 "(?=[\\s-]|[.,!?;:]|$)", "i").test(rom);
     const bad = [];
     for (const key of Object.keys(EXAMPLES)) {
       const [th, rom] = EXAMPLES[key];
       for (const tok of segmentThai(th)) {
         const t = tok.base || tok.text;
         if (!tok.known || tok.fragment || !map.has(t)) continue;
-        if (norm(rom).includes(norm(map.get(t)))) continue;
+        if (bounded(rom, map.get(t))) continue;
         bad.push(`${key}: "${rom}" — ${t} should read "${map.get(t)}"`);
       }
     }
