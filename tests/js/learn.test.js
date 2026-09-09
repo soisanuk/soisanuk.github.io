@@ -581,7 +581,7 @@ describe("_contText", () => {
 
   test("leads with pending reviews, not the broken streak", () => {
     const s = _contText({ kind: "review", due: new Array(25) }, dead, {});
-    assert.match(s, /^25 reviews due$/);
+    assert.match(s, /^25 vocabulary reviews due$/);
     assert.doesNotMatch(s, /best|ended/, "a lapsed learner needs the way back, not the eulogy");
   });
 
@@ -591,7 +591,7 @@ describe("_contText", () => {
   });
 
   test("keeps a live streak as a tail, since that is the nudge", () => {
-    assert.equal(_contText({ kind: "review", due: [1, 2, 3] }, live, {}), "3 reviews due · 🔥 4");
+    assert.equal(_contText({ kind: "review", due: [1, 2, 3] }, live, {}), "3 vocabulary reviews due · 🔥 4");
   });
 
   test("singular is singular", () => {

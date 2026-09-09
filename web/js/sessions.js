@@ -933,6 +933,13 @@ function _buildRatingHandler(rowId, key, nextFn) {
       correctBefore: session.correct,
       requeuedAt: -1,
       show: nextFn,
+      // The streak too. _streakRecord below bumps today.cards and can raise
+      // bestDay, and undo restored everything EXCEPT that — so rate/undo on
+      // one card five times read as five cards, and "📅 Biggest day", an
+      // all-time record on the Records screen, climbed with it. Undo exists to
+      // fix a misclick, so this was the normal path rather than an exploit.
+      // Found by the 2026-09-09 records round.
+      streak: localStorage.getItem(STREAK_KEY),
     };
     reviewCard(getCard(progress, key), q);
     if (q >= 3) session.correct++;
@@ -961,6 +968,9 @@ function undoLastRating() {
   if (u.requeuedAt >= 0) session.deck.splice(u.requeuedAt, 1);
   session.correct = u.correctBefore;
   session.idx = u.idx;
+  if (u.streak === null) localStorage.removeItem(STREAK_KEY);
+  else if (u.streak !== undefined) localStorage.setItem(STREAK_KEY, u.streak);
+  if (typeof _streakRender === "function") _streakRender();
   session.undo = null;
   saveProgress(progress);
   u.show();

@@ -1319,6 +1319,15 @@ body.mobile .vocab-list-cats {
 }
 
 /* ── Tutorial ────────────────────────────────────────────────────────────── */
+/* A slide taller than the viewport used to be centred and clipped at BOTH
+   ends at once: on an iPhone 13 slide 4 is 886px in a 664px viewport, so the
+   ✕ sat at -98 and Next at 720, the page did not scroll and neither did the
+   card. Every control the tour had shown the user was off-screen, on the
+   FIRST RUN, with the seen-flag still unset — so reloading returned to slide 1
+   and re-armed it. Escape still worked, which is why no keyboard-driven check
+   ever noticed. Found by the 2026-09-09 beginner round.
+   tools/sweep.mjs cannot see this: it removes .open from the overlay before it
+   sweeps, and only inspects elements inside .screen. */
 #tutorial-overlay {
   display: none;
   position: fixed;
@@ -1327,6 +1336,9 @@ body.mobile .vocab-list-cats {
   align-items: center;
   justify-content: center;
   background: rgba(0,0,0,0.85);
+  overflow-y: auto;          /* the overlay scrolls when the card cannot fit */
+  padding: 1rem 0;
+  -webkit-overflow-scrolling: touch;
 }
 #tutorial-overlay.open { display: flex; }
 #tutorial-card {
@@ -1337,6 +1349,10 @@ body.mobile .vocab-list-cats {
   max-width: 460px;
   width: 92%;
   position: relative;
+  /* never taller than the space it has; its own content scrolls if it is */
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  margin: auto;              /* stay centred while short, scroll when tall */
 }
 #tutorial-close-btn {
   position: absolute;
@@ -1382,6 +1398,17 @@ kbd.tut-key {
 }
 #tutorial-nav button:hover { border-color: var(--gold); color: var(--saffron); }
 #tutorial-prev { visibility: hidden; }
+/* Pinned to the bottom of the card, so a slide long enough to scroll never
+   hides the way forward. Without this, slide 4's Next sat at 847px in a 664px
+   viewport and the only clue it existed was to guess the card scrolls. */
+#tutorial-nav {
+  position: sticky;
+  bottom: 0;
+  background: var(--surface);
+  padding-top: 0.6rem;
+  margin-top: 0.2rem;
+}
+.tutorial-dots { position: sticky; bottom: 2.6rem; background: var(--surface); }
 
 /* ── Walking Street game ─────────────────────────────────────────────────── */
 #game-hud {
@@ -2798,7 +2825,7 @@ body.mobile #app-shell {
     <div class="tutorial-slide">
       <h2>🎓 Start here: the Guided Course</h2>
       <p><strong>Guided Course</strong> is the recommended way in — a step-by-step reading path from your first six Thai letters up to real street phrases. The app teaches, quizzes, and grades you as you go; you never have to rate yourself.</p>
-      <p>Once you've begun, <strong>▶ Continue</strong> on the menu always picks up where you left off — due reviews first, then your next lesson. Find the full tour again any time under <strong>Other → How to use</strong>.</p>
+      <p>Once you've begun, <strong>▶ Continue</strong> on the menu always picks up where you left off — due reviews first, then your next lesson. Find the full tour again any time<span class="kb-hint"> with <kbd class="tut-key">?</kbd></span><span class="touch-hint"> under <strong>More → How to use</strong> — tap <strong>More</strong> first, that section starts closed</span>.</p>
     </div>
 
     <div class="tutorial-slide">
