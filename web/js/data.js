@@ -1121,6 +1121,26 @@ const WORDS = [
   // "buys cigarettes at the shop" reads incomplete without naming the kind
   // of shop, and in Thailand that shop is the 7-Eleven on every corner.
   ["ร้านสะดวกซื้อ", "ráan-sà-dùak-súue", "convenience store", "noun", "places"],
+
+  // ── Requested by The Last Baht Bus (2026-10-08) ──────────────────────────
+  // What the player borrows, owes and pays with, plus two street-food words
+  // and a crocodile. Romanisations come from the shipped dictionary and were
+  // checked syllable by syllable against syllableTone; สตางค์/ตังค์ carry ์
+  // and are out of that engine's scope, and จระเข้ is noted below.
+  ["ยืม", "yuuem", "to borrow", "verb", "verbs_core"],
+  ["หนี้", "nîi", "debt", "noun", "work"],
+  ["ดอกเบี้ย", "dòok-bîa", "interest (on a loan)", "noun", "work"],
+  ["สตางค์", "sà-taang", "satang (1/100 baht); money", "noun", "general"],
+  ["ตังค์", "tang", "money (colloquial)", "noun", "general"],
+  ["เช็ค", "chék", "to check; cheque", "verb", "restaurant"],
+  ["ลา", "laa", "to take leave; to say goodbye", "verb", "verbs_core"],
+  ["ย้าย", "yáai", "to move house; to relocate", "verb", "verbs_core"],
+  ["หมูปิ้ง", "mǔu-pîng", "grilled pork skewers", "noun", "food"],
+  ["ครีม", "khriim", "cream", "noun", "food"],
+  // The engine reads a bare จ as a dead syllable and returns low ("jà"). The
+  // word is read จอ-ระ-เข้, with an implied long -อ the analyser cannot see in
+  // a syllable on its own, so the dictionary's joo- stands.
+  ["จระเข้", "joo-rá-khêe", "crocodile", "noun", "general"],
 ];
 
 const TOP_100 = [
