@@ -12,6 +12,25 @@
 // tests vm-load this file alone, so it can't borrow _thaiCharKind.
 function _tkDependent(cp) { return (cp >= 0x0E30 && cp <= 0x0E3A) || (cp >= 0x0E47 && cp <= 0x0E4E); }
 function _tkLeadVowel(cp) { return cp >= 0x0E40 && cp <= 0x0E44; }
+// True consonant clusters (ควบกล้ำ). A boundary may not fall between the two,
+// so a word match whose first letter would cluster with a stranded lone
+// consonant behind it is not a match: กลาง is ก+ลา only if ก can stand alone,
+// and it cannot. Kept as an explicit set rather than borrowed from
+// thai-script.js because this file loads first and is vm-loaded alone by its
+// own tests.
+const _TK_CLUSTERS = new Set([
+  "\u0E01\u0E23","\u0E01\u0E25","\u0E01\u0E27",
+  "\u0E02\u0E23","\u0E02\u0E25","\u0E02\u0E27",
+  "\u0E04\u0E23","\u0E04\u0E25","\u0E04\u0E27",
+  "\u0E15\u0E23",
+  "\u0E1B\u0E23","\u0E1B\u0E25",
+  "\u0E1C\u0E25",
+  "\u0E1E\u0E23","\u0E1E\u0E25",
+  "\u0E1F\u0E23","\u0E1F\u0E25",
+  "\u0E14\u0E23","\u0E1A\u0E23","\u0E1A\u0E25",
+  "\u0E17\u0E23","\u0E2A\u0E23",
+]);
+
 function _tkLegalBoundary(s, p) {
   if (p <= 0 || p >= s.length) return true;
   return !_tkDependent(s.charCodeAt(p)) && !_tkLeadVowel(s.charCodeAt(p - 1));
@@ -27,8 +46,12 @@ function makeTokeniser(wordMap, isWord) {
     let i = 0;
     while (i < sentence.length) {
       let matched = false;
+      const prev = tokens.length ? tokens[tokens.length - 1] : null;
+      const loneCons = prev && !prev.word && /^[\u0E01-\u0E2E]$/.test(prev.text)
+        ? prev.text : null;
       for (const key of keys) {
         // a match that would end mid-cluster is not a match
+        if (loneCons && _TK_CLUSTERS.has(loneCons + key[0])) continue;
         if (sentence.startsWith(key, i) && _tkLegalBoundary(sentence, i + key.length)) {
           tokens.push({ text: key, word: wordMap[key] });
           i += key.length;
