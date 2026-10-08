@@ -1134,7 +1134,15 @@ const WORDS = [
   ["ตังค์", "tang", "money (colloquial)", "noun", "general"],
   ["เช็ค", "chék", "to check; cheque", "verb", "restaurant"],
   ["ลา", "laa", "to take leave; to say goodbye", "verb", "verbs_core"],
-  ["ย้าย", "yáai", "to move house; to relocate", "verb", "verbs_core"],
+  // Round 27 (Dao): adding bare ลา made ตัดสินใจ's own example offer
+  // "ลา — to take leave" inside ลาออก ("to resign"), which the course did
+  // not have although its example sentence already used it. laa-òok from
+  // the shipped dictionary.
+  ["ลาออก", "laa-òok", "to resign (from a job or post)", "verb", "work"],
+  // Round 26 (Fon): led with "to move house", which is the meaning of the
+  // compound ย้ายบ้าน, not of the bare verb. Both shipped dictionaries lead
+  // with the general sense; data.js was losing to them.
+  ["ย้าย", "yáai", "to move, shift, transfer; to relocate", "verb", "verbs_core"],
   ["หมูปิ้ง", "mǔu-pîng", "grilled pork skewers", "noun", "food"],
   ["ครีม", "khriim", "cream", "noun", "food"],
   // The engine reads a bare จ as a dead syllable and returns low ("jà"). The

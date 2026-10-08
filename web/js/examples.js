@@ -981,10 +981,21 @@ const EXAMPLES = {
   "ยืม": ["ขอยืมเงินได้ไหม", "khǒo yuuem ngooen dâi mǎi", "Can I borrow some money?"],
   "หนี้": ["เขามีหนี้เยอะ", "khǎo mii nîi yóe", "He has a lot of debt."],
   "ดอกเบี้ย": ["ดอกเบี้ยสูงมาก", "dòok-bîa sǔung mâak", "The interest is very high."],
-  "สตางค์": ["กระเป๋าสตางค์อยู่ไหน", "krà-pǎo-sà-taang yùu nǎi", "Where is the wallet?"],
+  // Round 26 (Fon): the old example was กระเป๋าสตางค์อยู่ไหน / "Where is the
+  // wallet?" — an English sentence with no word for สตางค์ in it, under a
+  // gloss about money, while กระเป๋า one tap away already says "wallet". In
+  // Sentence SRS it became a cloze nothing in the prompt could answer.
+  "สตางค์": ["ขอยืมสตางค์หน่อย", "khǒo yuuem sà-taang nòoi", "Could I borrow some money?"],
   "ตังค์": ["ไม่มีตังค์", "mâi mii tang", "I have no money."],
-  "เช็ค": ["เช็คบิลครับ", "chék bin khráp", "The bill, please."],
-  "ลา": ["ลาก่อนครับ", "laa kòon khráp", "Goodbye."],
+  // Round 26 (Fon): "The bill, please." contained neither "check" nor
+  // "cheque", so the cloze invited ขอ — which is better Thai, and which the
+  // app teaches on บิล in this very sentence. The English now says check.
+  "เช็ค": ["เช็คบิลด้วยครับ", "chék bin dûai khráp", "Check the bill, please."],
+  // Round 26 (Fon): a bare "Goodbye." hid the register. ลาก่อน is a final
+  // farewell, not what you say leaving a 7-Eleven, and the bare English
+  // invited ไปก่อน — the everyday form, marked wrong.
+  "ลา": ["ลาก่อนครับ", "laa kòon khráp", "Farewell — a final goodbye."],
+  "ลาออก": ["เธอลาออกจากงานแล้ว", "thoe laa-òok jàak ngaan láeo", "She has resigned from her job."],
   "ย้าย": ["ผมจะย้ายบ้าน", "phǒm jà yáai bâan", "I am going to move house."],
   "หมูปิ้ง": ["ขอหมูปิ้งครับ", "khǒo mǔu-pîng khráp", "Grilled pork skewers, please."],
   "ครีม": ["ขอกาแฟใส่ครีม", "khǒo kaa-fae sài khriim", "Coffee with cream, please."],

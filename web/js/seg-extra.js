@@ -38,6 +38,10 @@ var SEG_EXTRA = [
   "ปาท่องโก๋",  // fried dough sticks
   "กาแฟเย็น",   // iced coffee
   "ชาเย็น",     // Thai iced tea
+  "หมูปิ้ง",    // grilled pork skewers — a course word (round 26/27: the
+                //   segmenter cut it into "pig" + "to cook by exposure to fire"
   // Shop names that appear as words in running text.
   "เซเว่น",     // 7-Eleven, as everyone actually writes it
+  "ร้านสะดวกซื้อ", // convenience store — a course word that read as
+                //   "shop convenient buy", with ซื้อ twice (round 26)
 ];
