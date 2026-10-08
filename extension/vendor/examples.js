@@ -973,4 +973,22 @@ const EXAMPLES = {
   "ไฟ": ["ช่วยเปิดไฟหน่อยได้ไหม", "chûai pòoet fai nòoi dâi mǎi", "Could you turn on the light please?"],
   "ขาว": ["เสื้อตัวนี้ขาวมาก", "sûea tua níi khǎao mâak", "This shirt is very white."],
   "อย่า": ["อย่าเดินกลับบ้านดึก", "yàa dooen klàp bâan dùek", "Do not walk home late."],
+
+  // ── Requested by The Last Baht Bus (2026-10-08) ──────────────────────────
+  // Every Thai token below is already a WORDS entry, so LBB's printed-Thai
+  // guard resolves all of them. The compounds the request mentioned in
+  // passing — เช็คบิล, ลาก่อน, กระเป๋าสตางค์, กระเป๋าตังค์ — live here as
+  // examples rather than as entries of their own; each splits into words the
+  // course already teaches.
+  "ยืม": ["ขอยืมเงินได้ไหม", "khǒo yuuem ngooen dâi mǎi", "Can I borrow some money?"],
+  "หนี้": ["เขามีหนี้เยอะ", "khǎo mii nîi yóe", "He has a lot of debt."],
+  "ดอกเบี้ย": ["ดอกเบี้ยสูงมาก", "dòok-bîa sǔung mâak", "The interest is very high."],
+  "สตางค์": ["กระเป๋าสตางค์อยู่ไหน", "krà-pǎo-sà-taang yùu nǎi", "Where is the wallet?"],
+  "ตังค์": ["ไม่มีตังค์", "mâi mii tang", "I have no money."],
+  "เช็ค": ["เช็คบิลครับ", "chék bin khráp", "The bill, please."],
+  "ลา": ["ลาก่อนครับ", "laa kòon khráp", "Goodbye."],
+  "ย้าย": ["ผมจะย้ายบ้าน", "phǒm jà yáai bâan", "I am going to move house."],
+  "หมูปิ้ง": ["ขอหมูปิ้งครับ", "khǒo mǔu-pîng khráp", "Grilled pork skewers, please."],
+  "ครีม": ["ขอกาแฟใส่ครีม", "khǒo kaa-fae sài khriim", "Coffee with cream, please."],
+  "จระเข้": ["จระเข้อยู่ในน้ำ", "joo-rá-khêe yùu nai náam", "The crocodile is in the water."],
 };
