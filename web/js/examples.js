@@ -996,6 +996,15 @@ const EXAMPLES = {
   // invited ไปก่อน — the everyday form, marked wrong.
   "ลา": ["ลาก่อนครับ", "laa kòon khráp", "Farewell — a final goodbye."],
   "ลาออก": ["เธอลาออกจากงานแล้ว", "thoe laa-òok jàak ngaan láeo", "She has resigned from her job."],
+
+  // ── Two notes from The Last Baht Bus (2026-10-09) ────────────────────────
+  // กด's example is the dispenser sign the note was about; the other four come
+  // from the child-directed passage, which is where จ๊ะ belongs.
+  "กด": ["กดดื่มได้ฟรีค่ะ", "kòt dùuem dâi frii khâ", "Press and drink — it is free."],
+  "เรียก": ["อันนี้ภาษาไทยเรียกว่าอะไร", "an-níi phaa-sǎa-thai rîak wâa à-rai", "What is this called in Thai?"],
+  "ยังไง": ["ภาษาไทยพูดว่ายังไง", "phaa-sǎa-thai phûut wâa yang-ngai", "How do you say it in Thai?"],
+  "อันนี้": ["อันนี้เท่าไหร่", "an-níi thâo-rài", "How much is this one?"],
+  "จ๊ะ": ["หนูไปไหนจ๊ะ", "nǔu pai nǎi já", "Where are you going, dear?"],
   "ย้าย": ["ผมจะย้ายบ้าน", "phǒm jà yáai bâan", "I am going to move house."],
   "หมูปิ้ง": ["ขอหมูปิ้งครับ", "khǒo mǔu-pîng khráp", "Grilled pork skewers, please."],
   "ครีม": ["ขอกาแฟใส่ครีม", "khǒo kaa-fae sài khriim", "Coffee with cream, please."],
