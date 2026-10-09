@@ -1124,6 +1124,25 @@ const WORDS = [
   // of shop, and in Thailand that shop is the 7-Eleven on every corner.
   ["ร้านสะดวกซื้อ", "ráan-sà-dùak-súue", "convenience store", "noun", "places"],
 
+  // ── Two notes from The Last Baht Bus (2026-10-09) ────────────────────────
+  // A tap-dispenser sign the game shows (กดดื่มได้ฟรีค่ะ) and a passage on how
+  // you speak to a small child. Five words of the two notes were missing.
+  //
+  // ยังไง and อันนี้ are compounds the course could already decompose, and
+  // both decomposed WRONGLY: ยัง|ไง read "still/yet" + "hey, so?" for a word
+  // that means "how", and เรียกว่า was carved as เรีย|กว่า because กว่า
+  // ("than") matched inside it. Adding the units fixes all three by
+  // longest-match. Measured over all 971 examples: 2 sentences changed, both
+  // improvements, nothing else touched.
+  ["กด", "kòt", "to press (a button, a tap)", "verb", "verbs_core"],
+  ["เรียก", "rîak", "to call; to call something by a name", "verb", "verbs_core"],
+  ["ยังไง", "yang-ngai", "how (colloquial อย่างไร)", "question", "pronouns"],
+  ["อันนี้", "an-níi", "this one", "demonstrative", "pronouns"],
+  // จ๊ะ is in neither shipped dictionary (Volubilis matches it to a homograph
+  // meaning "collide"), so this one is derived: จ is mid class and ไม้ตรี on a
+  // mid-class syllable gives high tone.
+  ["จ๊ะ", "já", "soft particle — to a child, or affectionate", "particle", "particles"],
+
   // ── Requested by The Last Baht Bus (2026-10-08) ──────────────────────────
   // What the player borrows, owes and pays with, plus two street-food words
   // and a crocodile. Romanisations come from the shipped dictionary and were

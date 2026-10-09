@@ -441,3 +441,27 @@ test("◌อ is a LONG vowel and is doubled before a final consonant", () => {
   }
   assert.deepEqual(bad, [], `◌อ + final wants a doubled o: ${bad.join(", ")}`);
 });
+
+// A compound the course teaches has to beat the shorter words inside it.
+// Added 2026-10-09 with กด / เรียก / ยังไง / อันนี้ / จ๊ะ, from two Last Baht
+// Bus notes. Three of these were already decomposable and all three
+// decomposed WRONGLY before the units existed:
+//   ยังไง    → ยัง|ไง      "still/yet" + "hey, so?"   for a word meaning "how"
+//   เรียกว่า → เรีย|กว่า   กว่า ("than") matched inside, stranding เรีย
+//   อันนี้   → อัน|นี้     classifier + "this" (harmless, but not "this one")
+// Greedy longest-match fixes each one the moment the unit is in WORDS, which
+// is also why this guard is behavioural: asserting the WORDS entry exists
+// would pass even if the tokeniser stopped preferring the longer key.
+test("a taught compound wins over the shorter words inside it", () => {
+  const glossed = s => _tokenise(s).filter(t => t.word).map(t => t.text);
+  const want = {
+    "ยังไง": ["ยังไง"],
+    "อันนี้": ["อันนี้"],
+    "เรียกว่า": ["เรียก", "ว่า"],
+    "อาหารเรียกน้ำย่อย": ["อาหารเรียกน้ำย่อย"],
+  };
+  for (const [text, expected] of Object.entries(want)) {
+    assert.deepEqual(glossed(text), expected,
+      `${text} tokenised as ${_tokenise(text).map(t => t.text).join("|")}`);
+  }
+});
