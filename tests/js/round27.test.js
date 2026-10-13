@@ -88,8 +88,15 @@ describe("the words ลา is still carved out of are kept out of app text", () 
   // ships one of these, it becomes a wrong gloss on a real card, and this
   // fails by name. ตุลาคม stays broken even with the lexicon loaded, because
   // คม is itself a word and the heal can never fire.
+  //
+  // 2026-10-14: เกลา and เหลา came OFF this list. Adding ลง for Last Baht Bus
+  // carved เพลง into เพ|ลง and หลง into ห|ลง, so the cluster rule grew to
+  // cover a leading vowel plus one consonant (เพ has no vowel body of its
+  // own) and the ห/อ leader pairs — which repaired these two as a side
+  // effect. This test is what caught the list going stale; it failed on
+  // exactly those two names and nothing else.
   const CARVED = ["ตุลาคม", "ยะลา", "ลายเซ็น", "สงขลา", "ดอลลาร์", "ซาลาเปา",
-                  "จลาจล", "ลามก", "อำลา", "บุคลากร", "เกลา", "เหลา",
+                  "จลาจล", "ลามก", "อำลา", "บุคลากร",
                   "ลาด", "ลาย", "ลาง"];
 
   test("the list is still accurate — each one is genuinely still carved", () => {
@@ -136,5 +143,36 @@ describe("a word the engine cannot read refuses to claim a tone", () => {
     // broken outright and returned null for everything.
     assert.equal(toneOfWord("หมู"), "rising");
     assert.equal(toneOfWord("ลา"), "mid");
+  });
+});
+
+describe("a leading vowel plus one consonant is also a stranded consonant", () => {
+  // 2026-10-14, adding ลง. The original cluster rule only fired when the
+  // stranded run was a BARE consonant, so it caught ก|ลา but not เพ|ลง: the เ
+  // of เพลง belongs to the พล cluster, leaving เพ with no vowel of its own.
+  // หลง needed the other half of the fix — ห and อ as silent leaders are not
+  // clusters phonetically, but a boundary cannot fall after them either.
+  //
+  // Measured before applying: over all 971 examples, 14 sentences changed and
+  // none gained a wrong short gloss. It also repaired จังหวัด, which had been
+  // offering วัด ("temple") from inside "province" in three examples since
+  // long before ลง existed.
+  const glossed = s => _tokenise(s).filter(t => t.word).map(t => t.text);
+  for (const [word, wrong] of [
+    ["เพลง", "ลง"],     // song → "to descend"
+    ["หลง", "ลง"],      // to be lost → "to descend"
+    ["แปลง", "ลง"],     // to convert → "to descend"
+    ["จังหวัด", "วัด"],  // province → "temple"
+  ]) {
+    test(`${word} is not offered as ${wrong}`, () => {
+      assert.ok(!glossed(word).includes(wrong),
+        `${word} tokenised as ${_tokenise(word).map(t => t.text).join("|")}`);
+    });
+  }
+
+  test("the compounds bare ลง would otherwise have broken up stay whole", () => {
+    // ลงทุน and ลงจอด were unglossed runs before; bare ลง would have split
+    // them into "descend" + "capital" / "park". Both added as words.
+    for (const w of ["ลงทุน", "ลงจอด"]) assert.deepEqual(glossed(w), [w]);
   });
 });

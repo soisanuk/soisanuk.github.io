@@ -31,6 +31,13 @@ const _TK_CLUSTERS = new Set([
   "\u0E1F\u0E23","\u0E1F\u0E25",
   "\u0E14\u0E23","\u0E1A\u0E23","\u0E1A\u0E25",
   "\u0E17\u0E23","\u0E2A\u0E23",
+  // ห and อ as silent leaders (อักษรนำ): not clusters phonetically, but a
+  // boundary may not fall between them either — the leader has no vowel of
+  // its own. หลง became ห|ลง ("to be lost" → "to descend") the moment ลง
+  // was a word.
+  "\u0E2B\u0E07","\u0E2B\u0E0D","\u0E2B\u0E19","\u0E2B\u0E21",
+  "\u0E2B\u0E22","\u0E2B\u0E23","\u0E2B\u0E25","\u0E2B\u0E27",
+  "\u0E2D\u0E22",
 ]);
 
 function _tkLegalBoundary(s, p) {
@@ -49,8 +56,14 @@ function makeTokeniser(wordMap, isWord) {
     while (i < sentence.length) {
       let matched = false;
       const prev = tokens.length ? tokens[tokens.length - 1] : null;
-      const loneCons = prev && !prev.word && /^[\u0E01-\u0E2E]$/.test(prev.text)
-        ? prev.text : null;
+      // "Lone" includes a leading vowel plus one consonant: in เพลง the เ
+      // belongs to the พล cluster, so the run เพ has no vowel body of its own
+      // and เพ|ลง is as wrong as ก|ลา. Captures the consonant, not the vowel,
+      // because it is the consonant that has to cluster with the match.
+      const loneCons = prev && !prev.word
+        ? (/^[\u0E01-\u0E2E]$/.test(prev.text) ? prev.text
+          : (/^[\u0E40-\u0E44]([\u0E01-\u0E2E])$/.exec(prev.text) || [])[1] || null)
+        : null;
       for (const key of keys) {
         // a match that would end mid-cluster is not a match
         if (loneCons && _TK_CLUSTERS.has(loneCons + key[0])) continue;

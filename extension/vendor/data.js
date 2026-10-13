@@ -1124,6 +1124,44 @@ const WORDS = [
   // of shop, and in Thailand that shop is the 7-Eleven on every corner.
   ["ร้านสะดวกซื้อ", "ráan-sà-dùak-súue", "convenience store", "noun", "places"],
 
+  // ── Requested by The Last Baht Bus (2026-10-14) ──────────────────────────
+  // Sixteen words its round-92 persona (a fluent speaker typing Thai script)
+  // hit as dead ends in the game's parser, plus five the request implied:
+  // รองเท้า (the request noted รองเท้าแตะ was splitting as รอ|ง|เท้า), ราตรี
+  // (the note assumed the course had it; it did not), and ลงทุน / ลงจอด /
+  // จังหวัด, which adding bare ลง would otherwise have broken up.
+  //
+  // Bare สวัสดิ์ was NOT added: it is not a word on its own, only the second
+  // half of ราตรีสวัสดิ์, which is here whole. Say so if the parser needs the
+  // bare token.
+  //
+  // Romanisations from the shipped dictionary, normalised to the house scheme
+  // — it gives รองเท้า as "roong-tháao", but เ◌า is "ao" here (เท้า is tháo,
+  // เขา khǎo), so roong-tháo. ควิซ, ออฟ, รองเท้าแตะ, ชุดชั้นใน and ลงจอด are
+  // in neither dictionary and are derived; every syllable of all twenty-one
+  // agrees with syllableTone.
+  ["แผน", "phǎen", "plan", "noun", "general"],
+  ["เหงา", "ngǎo", "lonely", "adjective", "adjectives"],
+  ["อุบล", "ù-bon", "Ubon (Ratchathani), a province in Isan", "noun", "places"],
+  ["อีสาน", "ii-sǎan", "Isan, the northeast of Thailand", "noun", "places"],
+  ["ตี", "tii", "to hit; (before a number) the small hours, 1-5 a.m.", "verb", "time"],
+  ["ควิซ", "khwís", "quiz", "noun", "education"],
+  ["กุหลาบ", "kù-làap", "rose", "noun", "nature"],
+  ["รองเท้า", "roong-tháo", "shoes", "noun", "general"],
+  ["รองเท้าแตะ", "roong-tháo-tàe", "sandals / flip-flops", "noun", "general"],
+  ["ชุดชั้นใน", "chút-chán-nai", "underwear / lingerie", "noun", "general"],
+  ["คุย", "khui", "to chat / to talk", "verb", "verbs_core"],
+  ["ลง", "long", "to go down / to descend / to get off", "verb", "verbs_core"],
+  ["ลงทุน", "long-thun", "to invest", "verb", "work"],
+  ["ลงจอด", "long-jòot", "to land (an aircraft)", "verb", "highway"],
+  ["บันได", "ban-dai", "stairs / ladder", "noun", "general"],
+  ["ออฟ", "òop", "barfine (bar slang, from English off)", "noun", "nightlife"],
+  ["โอน", "oon", "to transfer (money)", "verb", "work"],
+  ["กี่", "kìi", "how many", "question", "pronouns"],
+  ["ราตรี", "raa-trii", "night", "noun", "time"],
+  ["ราตรีสวัสดิ์", "raa-trii-sà-wàt", "good night", "phrase", "phrases"],
+  ["จังหวัด", "jang-wàt", "province", "noun", "places"],
+
   // ── Two notes from The Last Baht Bus (2026-10-09) ────────────────────────
   // A tap-dispenser sign the game shows (กดดื่มได้ฟรีค่ะ) and a passage on how
   // you speak to a small child. Five words of the two notes were missing.
