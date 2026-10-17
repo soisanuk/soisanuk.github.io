@@ -1123,6 +1123,13 @@ body.mobile .example-speak, body.mobile .rating-btn { min-height:44px; }
 .decomp-char.is-vowel { border-color: var(--royal-blue); }
 .decomp-char.is-tone  { border-color: var(--saffron); }
 .decomp-char.is-other { border-color: var(--border); color: var(--dim); }
+/* การันต์ and friends. Dashed rather than just a fifth colour: nothing in the
+   UI explains what these borders mean, so the style has to carry it alone —
+   dashed reads as "not sounded", which is what ์ does. border-color and
+   border-style as longhand on purpose; the `border` shorthand would reset
+   the width set on .decomp-char, the same trap that made the active
+   tutorial dot paint at 34px. */
+.decomp-char.is-diac  { border-color: var(--lotus); border-style: dashed; }
 .decomp-char:hover    { border-color: var(--gold) !important; color: var(--gold); }
 .decomp-label {
   font-size: 0.62rem;

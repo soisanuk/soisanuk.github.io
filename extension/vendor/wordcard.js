@@ -131,6 +131,16 @@ function _scriptTooltipHtml(ch) {
   return `<span class="st-char" lang="th">${ch}</span><div class="st-row">U+${cp.toString(16).toUpperCase().padStart(4,"0")}</div>`;
 }
 
+// The decomposition cell's CSS class for one character. Pure, and separate
+// from renderDecomposition on purpose: that function needs a live document, so
+// without this split the class mapping could only be checked by reading the
+// source — and the bug it now guards was exactly a wrong mapping that no test
+// could see. The CSS half (that .is-diac is actually styled, and dashed) is
+// behavioural in tools/sweep.mjs, which drives a real browser.
+function _wcCharClass(ch) {
+  return "decomp-char is-" + _thaiCharKind(String(ch).codePointAt(0));
+}
+
 function renderDecomposition(container, word) {
   const clusters = _buildDecomposition(word);
   const wrap = document.createElement("div");
@@ -142,10 +152,12 @@ function renderDecomposition(container, word) {
 
     // Render the cluster as one visual unit showing constituent chars
     cluster.forEach(ch => {
-      const cp = ch.codePointAt(0);
-      const kind = _thaiCharKind(cp);
       const span = document.createElement("span");
-      span.className = "decomp-char is-" + (kind === "diac" ? "tone" : kind);
+      // diac used to be folded into "is-tone", because no .is-diac rule
+      // existed and the alternative was an unstyled span. That painted
+      // การันต์ with the tone-mark border: a mark whose whole job is to
+      // SILENCE the letter beneath it, dressed as a tone. Round 27 (Dao).
+      span.className = _wcCharClass(ch);
       span.textContent = ch;
 
       const tipHtml = _scriptTooltipHtml(ch);
