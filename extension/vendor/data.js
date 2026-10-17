@@ -1162,6 +1162,56 @@ const WORDS = [
   ["ราตรีสวัสดิ์", "raa-trii-sà-wàt", "good night", "phrase", "phrases"],
   ["จังหวัด", "jang-wàt", "province", "noun", "places"],
 
+  // ── Requested by The Last Baht Bus (2026-10-18) ──────────────────────────
+  // Twenty-eight words a Thai-typing playtester needed, plus the seven parts
+  // the request itself flagged as missing (ค้าง ตู้ อาบ ฝัน บุญ พระ ล่าง) and
+  // พระราชวัง, which adding พระ would otherwise have carved up — ทหาร's
+  // example already romanised it as phrá-râat-chá-wang, so that reading is
+  // the house form and is reused verbatim.
+  //
+  // Measured over all 971 examples before applying: 11 sentences changed and
+  // every one is a word that had no gloss at all gaining the right one —
+  // ทีม, เลี้ยง, ออสเตรเลีย, ปิ้ง, เกม, ฝัน, เพลง, ทุ่ม. Nothing lost.
+  //
+  // ออสเตรเลีย also settles a drift: soi-buakhao.js romanised it
+  // "Àwt-sà-tree-lia", which is neither the house scheme (◌อ+final is oo) nor
+  // lowercase. Fixed there in the same commit so the two agree.
+  ["ชั่วคราว", "chûa-khraao", "temporary / short time", "adjective", "nightlife"],
+  ["ค้าง", "kháang", "to stay over / to be left over", "verb", "verbs_core"],
+  ["ค้างคืน", "kháang-khuuen", "to stay overnight", "verb", "nightlife"],
+  ["เลี้ยง", "líang", "to treat someone / to buy (a round); to raise", "verb", "nightlife"],
+  ["เจ้าของ", "jâo-khǒong", "owner", "noun", "general"],
+  ["ไลน์", "lai", "LINE (the messaging app)", "noun", "tech"],
+  ["ทีม", "thiim", "team", "noun", "general"],
+  ["เชียร์", "chia", "to cheer / to support", "verb", "nightlife"],
+  ["เกม", "keem", "game", "noun", "general"],
+  ["เพลง", "phleeng", "song", "noun", "general"],
+  ["สิงห์", "sǐng", "Singha (beer brand); lion", "noun", "nightlife"],
+  ["ลีโอ", "lii-oo", "Leo (beer brand)", "noun", "nightlife"],
+  ["บาย", "baai", "bye", "interjection", "phrases"],
+  ["ปิ้ง", "pîng", "grilled / to grill over a flame", "verb", "food"],
+  ["โทสต์", "thôot", "toast", "noun", "food"],
+  ["แซนวิช", "saen-wít", "sandwich", "noun", "food"],
+  ["ตู้", "tûu", "cabinet / cupboard", "noun", "general"],
+  ["ตู้เย็น", "tûu-yen", "fridge", "noun", "general"],
+  ["อาบ", "àap", "to bathe", "verb", "verbs_core"],
+  ["อาบน้ำ", "àap-náam", "to shower / to bathe", "verb", "verbs_core"],
+  ["ฝัน", "fǎn", "to dream; a dream", "verb", "general"],
+  ["ฝันดี", "fǎn-dii", "sweet dreams", "phrase", "phrases"],
+  ["ละคร", "lá-khoon", "TV drama / soap opera", "noun", "general"],
+  ["บุญ", "bun", "merit", "noun", "beliefs"],
+  ["ทำบุญ", "tham-bun", "to make merit", "verb", "beliefs"],
+  ["พระ", "phrá", "monk; Buddha image; sacred", "noun", "beliefs"],
+  ["วันพระ", "wan-phrá", "Buddhist holy day", "noun", "beliefs"],
+  ["ทุ่ม", "thûm", "o'clock (7-11 p.m.)", "noun", "time"],
+  ["อังกฤษ", "ang-krìt", "England / English", "noun", "places"],
+  ["ออสเตรเลีย", "òot-sà-tree-lia", "Australia", "noun", "places"],
+  ["โคราช", "khoo-râat", "Korat (Nakhon Ratchasima)", "noun", "places"],
+  ["น้อง", "nóong", "younger sibling; you (to someone younger)", "noun", "family"],
+  ["ล่าง", "lâang", "lower / below", "adjective", "general"],
+  ["ข้างล่าง", "khâang-lâang", "downstairs / below", "adverb", "general"],
+  ["พระราชวัง", "phrá-râat-chá-wang", "royal palace", "noun", "places"],
+
   // ── Two notes from The Last Baht Bus (2026-10-09) ────────────────────────
   // A tap-dispenser sign the game shows (กดดื่มได้ฟรีค่ะ) and a passage on how
   // you speak to a small child. Five words of the two notes were missing.
