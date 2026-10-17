@@ -113,7 +113,7 @@ const _SB_QS = {
       choices:[
         {th:"ผมทำงานด้านไอทีครับ",               rom: "Phǒm tham-ngaan dâan ai-thii khráp.",                    en:"I work in IT.",                    ok:true},
         {th:"ผมชอบสาวไทยครับ",                   rom: "Phǒm chôop sǎao Thai khráp.",                           en:"I like Thai girls.",               ok:false},
-        {th:"ผมมาจากออสเตรเลียครับ",             rom: "Phǒm maa-jàak Àwt-sà-tree-lia khráp.",                   en:"I'm from Australia.",              ok:false},
+        {th:"ผมมาจากออสเตรเลียครับ",             rom: "Phǒm maa-jàak òot-sà-tree-lia khráp.",                   en:"I'm from Australia.",              ok:false},
         {th:"ผมหิวครับ",                          rom: "Phǒm hǐu khráp.",                                         en:"I'm hungry.",                      ok:false},
       ],
     },
