@@ -168,6 +168,55 @@ for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 
   }
   await page.evaluate(() => { if (typeof closeTutorial === "function") closeTutorial(); }).catch(() => {});
 
+  // ── the word card's decomposition colours ─────────────────────────────────
+  // Round 27 (Dao) found การันต์ ์ painted with the tone-mark border, because
+  // renderDecomposition folded kind "diac" into "is-tone" — index.html had no
+  // .is-diac rule, so the choice was unstyled or mislabelled. The class half is
+  // pinned in tests/js/wordcard.test.js via _wcCharClass; this is the other
+  // half, and it has to run in a browser: a unit test cannot see whether
+  // .is-diac is actually STYLED, or whether a later edit to .decomp-char's
+  // `border` shorthand quietly resets the dashed style back to solid.
+  // Added 2026-10-18.
+  errs.length = 0;
+  {
+    const m = await page.evaluate(() => {
+      const out = { issues: [] };
+      // ตังค์ carries ์; any word with it would do.
+      // WORD_MAP is a top-level const, so it is in the global LEXICAL scope and
+      // never a property of window — `window.WORD_MAP` is always undefined here.
+      if (typeof openWordModal !== "function" || typeof WORD_MAP === "undefined" ||
+          !WORD_MAP["\u0E15\u0E31\u0E07\u0E04\u0E4C"]) {
+        out.issues.push("NO-CARD could not open a word card for ตังค์");
+        return out;
+      }
+      openWordModal(WORD_MAP["\u0E15\u0E31\u0E07\u0E04\u0E4C"]);
+      const head = document.querySelector(".wc-thai");
+      if (head) head.click();                        // reveals the decomposition
+      const cells = [...document.querySelectorAll(".decomp-char")];
+      if (!cells.length) { out.issues.push("NO-DECOMP no .decomp-char cells rendered"); return out; }
+      const karan = cells.find(c => c.textContent === "\u0E4C");
+      if (!karan) { out.issues.push("NO-KARAN ์ is not its own decomposition cell"); return out; }
+      if (karan.classList.contains("is-tone"))
+        out.issues.push("MISLABEL ์ carries is-tone — a silencer dressed as a tone mark");
+      if (!karan.classList.contains("is-diac"))
+        out.issues.push("MISLABEL ์ is " + karan.className + ", expected is-diac");
+      const cs = getComputedStyle(karan);
+      // The point of the rule: it must be visually distinct from a tone mark.
+      const tone = cells.find(c => c.classList.contains("is-tone"));
+      if (cs.borderTopStyle !== "dashed")
+        out.issues.push("UNSTYLED ์ border-style is " + cs.borderTopStyle + ", expected dashed");
+      if (tone && getComputedStyle(tone).borderTopColor === cs.borderTopColor)
+        out.issues.push("SAME-COLOUR ์ and the tone mark share " + cs.borderTopColor);
+      if (parseFloat(cs.borderTopWidth) < 1)
+        out.issues.push("NO-BORDER ์ border-width is " + cs.borderTopWidth);
+      return out;
+    }).catch(e => ({ issues: ["THREW " + String(e).slice(0, 80)] }));
+    if (errs.length) m.issues.push("JS: " + errs.join(";"));
+    if (m.issues.length) report.push(`${label} word card decomposition: ${m.issues.join(" | ")}`);
+    errs.length = 0;
+  }
+  await page.evaluate(() => { const m = document.getElementById("word-modal"); if (m) m.style.display = "none"; }).catch(() => {});
+
   await ctx.close();
 }
 await browser.close();

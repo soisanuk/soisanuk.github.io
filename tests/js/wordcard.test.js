@@ -55,3 +55,29 @@ test("_scriptTooltipHtml names tone marks", () => {
 test("_scriptTooltipHtml falls back to a codepoint for non-Thai input", () => {
   assert.match(_scriptTooltipHtml("A"), /U\+0041/);
 });
+
+// Round 27 (Dao): การันต์ was painted with the tone-mark border. renderDecomposition
+// built the class inline as `"decomp-char is-" + (kind === "diac" ? "tone" : kind)`,
+// because index.html defined no .is-diac rule and the alternative was an unstyled
+// span — so a mark whose whole job is to SILENCE the letter beneath it was dressed
+// as a tone. The tooltip was always correct ("Silences the letter beneath it"); only
+// the border lied.
+//
+// _wcCharClass exists so this is checkable at all: renderDecomposition needs a live
+// document, which this file deliberately does not have.
+test("_wcCharClass gives each mark its own kind, and never calls a silencer a tone", () => {
+  assert.equal(_wcCharClass("์"), "decomp-char is-diac", "การันต์ ์");
+  assert.equal(_wcCharClass("ํ"), "decomp-char is-diac", "นิคหิต ํ");
+  assert.equal(_wcCharClass("่"), "decomp-char is-tone", "ไม้เอก ่");
+  assert.equal(_wcCharClass("ก"), "decomp-char is-cons", "ก");
+  assert.equal(_wcCharClass("เ"), "decomp-char is-vowel", "เ");
+  assert.equal(_wcCharClass("ิ"), "decomp-char is-vowel", "ิ");
+  assert.equal(_wcCharClass("A"), "decomp-char is-other", "non-Thai");
+});
+
+// Guards the test above: every assertion there would also pass if _wcCharClass
+// returned a constant per call site, or if _thaiCharKind collapsed its buckets.
+test("the five kinds are actually distinct", () => {
+  const kinds = new Set(["ก", "เ", "่", "์", "A"].map(_wcCharClass));
+  assert.equal(kinds.size, 5, `expected five distinct classes, got ${[...kinds].join(", ")}`);
+});
