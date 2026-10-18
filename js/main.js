@@ -40,6 +40,7 @@ document.addEventListener("keydown", e => {
     else if (key === "g" || key === "G") startGame();
     else if (key === "k" || key === "K") startTutor();
     else if (key === "b" || key === "B") startSoiBuakhao();
+    else if (key === "m" || key === "M") startRestaurant();
     else if (key === "c" || key === "C") startConnect4();
     else if (key === "r" || key === "R") startBahtBus();
     else if (key === "n" || key === "N") startNumFlash();
