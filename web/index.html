@@ -1574,6 +1574,32 @@ body.mobile .tkey-lat { display:none; }
 }
 #tutor-stats strong { color:#ffe600; }
 
+/* ── The Restaurant (ordering beat) ─────────────────────────────────────── */
+/* Reuses Soi Buakhao's bubble, button and tappable-word classes; only the
+   ticket builder and the plate are its own. */
+#rst-screen { flex-direction:column; background:#120a00; }
+#rst-header { padding:.8rem 1rem .4rem; text-align:center; }
+#rst-title  { font-size:1.1rem; font-weight:700; color:#ffb347; }
+#rst-sub-label { color:#d9a05b; font-size:.78rem; min-height:.9rem; }
+#rst-body { flex:1; display:flex; flex-direction:column; align-items:center; gap:.9rem; padding:.6rem 1rem 2rem; overflow-y:auto; }
+.rst-target, .rst-arrive { text-align:center; padding:.6rem 1rem; border:1px dashed #ffb34760; border-radius:10px; min-width:240px; }
+.rst-target-label, .rst-arrive-label, .rst-ticket-label, .rst-shelf-label { color:#d9a05b; font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; }
+.rst-plate-e  { font-size:2.4rem; line-height:1.2; }
+.rst-plate-en { color:#f3e1c3; font-size:.95rem; }
+.rst-slots { display:flex; flex-direction:column; gap:.5rem; width:100%; max-width:520px; }
+.rst-slot-label { color:#d9a05b; font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom:.2rem; }
+.rst-chips { display:flex; flex-wrap:wrap; gap:.4rem; }
+.rst-chip { font-family:'Noto Sans Thai', sans-serif; font-size:1.05rem; padding:.45rem .8rem; min-height:40px; border-radius:999px;
+  border:1px solid #ffb34740; background:#1e1200; color:#f3e1c3; cursor:pointer; }
+.rst-chip:hover { border-color:#ffb347; }
+.rst-chip.on { background:#ffb347; color:#120a00; border-color:#ffb347; font-weight:700; }
+.rst-ticket { width:100%; max-width:520px; padding:.6rem .9rem; border-radius:10px; background:#1e1200; border:1px solid #ffb34730; }
+.rst-ticket .sb-q-thai { font-size:1.3rem; }
+.rst-wanted { color:#d9a05b; font-size:.9rem; }
+.rst-shelf { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:.5rem; max-width:520px; }
+.rst-shelf li { display:flex; gap:.6rem; align-items:center; color:#f3e1c3; font-size:.92rem; }
+.rst-shelf .rst-plate-e { font-size:1.6rem; }
+
 /* ── Soi Buakhao Dialogue Game ───────────────────────────────────────────── */
 #soi-screen { flex-direction:column; background:#0d0015; }
 #soi-header {
@@ -2304,6 +2330,7 @@ body.mobile #app-shell {
   <ul class="sidebar-list">
     <li id="nav-G" onclick="startGame()">          🌙 Walking Street</li>
     <li id="nav-B" onclick="startSoiBuakhao()">   🌺 Soi Buakhao</li>
+    <li id="nav-M" onclick="startRestaurant()">   🍽️ The Restaurant</li>
     <li id="nav-C" onclick="startConnect4()">     🍹 Soi 6: Connect สี่</li>
     <li id="nav-R" onclick="startBahtBus()">      🚌 Baht Bus</li>
     <li id="nav-L" onclick="startClock()">        ⏰ Last Bus</li>
@@ -2381,6 +2408,7 @@ body.mobile #app-shell {
   <ul class="menu-list">
     <li onclick="startGame()">        <span class="menu-key">G</span> 🌙 Walking Street</li>
     <li onclick="startSoiBuakhao()">  <span class="menu-key">B</span> 🌺 Soi Buakhao</li>
+    <li onclick="startRestaurant()">  <span class="menu-key">M</span> 🍽️ The Restaurant — order it right</li>
     <li onclick="startConnect4()">    <span class="menu-key">C</span> 🍹 Soi 6: Connect สี่</li>
     <li onclick="startBahtBus()">     <span class="menu-key">R</span> 🚌 Baht Bus</li>
     <li onclick="startClock()">       <span class="menu-key">L</span> ⏰ Last Bus — what time?</li>
@@ -2748,6 +2776,14 @@ body.mobile #app-shell {
 </div>
 
 <!-- ═══ SOI BUAKHAO DIALOGUE GAME ════════════════════════════════════════════ -->
+<div id="rst-screen" class="screen">
+  <div id="rst-header">
+    <div id="rst-title">🍽️ The Restaurant</div>
+    <div id="rst-sub-label"></div>
+  </div>
+  <div id="rst-body"></div>
+</div>
+
 <div id="soi-screen" class="screen">
   <div id="soi-header">
     <div id="soi-night-label">🌙 Soi Buakhao</div>
@@ -2953,6 +2989,7 @@ body.mobile #app-shell {
 <script src="js/backup.js"></script>
 <script src="js/tutor.js"></script>
 <script src="js/soi-buakhao.js"></script>
+<script src="js/restaurant.js"></script>
 <script src="js/connect4.js"></script>
 <script src="js/game.js"></script>
 <script src="js/baht-bus.js"></script>
