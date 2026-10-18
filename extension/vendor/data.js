@@ -398,7 +398,7 @@ const WORDS = [
   ["คน", "khon", "person/people", "noun", "general"],
   ["ผู้ชาย", "phûu-chaai", "man", "noun", "general"],
   ["ผู้หญิง", "phûu-yǐng", "woman", "noun", "general"],
-  ["หญิง", "yǐng", "woman (formal)", "noun", "general"],
+  ["หญิง", "yǐng", "female (formal, in compounds)", "noun", "general"],
   ["เด็ก", "dèk", "child", "noun", "general"],
   ["เพื่อน", "phûean", "friend", "noun", "general"],
   ["ครู", "khruu", "teacher", "noun", "general"],
@@ -670,7 +670,7 @@ const WORDS = [
   ["ประสบการณ์", "prà-sòp-kaan", "experience", "noun", "general"],
   ["ความรู้", "khwaam-rúu", "knowledge", "noun", "general"],
   ["ความคิด", "khwaam-khít", "thought/idea", "noun", "general"],
-  ["ความฝัน", "khwaam-fǎn", "dream", "noun", "general"],
+  ["ความฝัน", "khwaam-fǎn", "a dream (noun)", "noun", "general"],
   ["ความจริง", "khwaam-jing", "truth/reality", "noun", "general"],
   ["ปัญหา", "pan-hǎa", "problem", "noun", "general"],
   ["วิธี", "wí-thii", "method/way", "noun", "general"],
@@ -1196,7 +1196,7 @@ const WORDS = [
   ["ตู้เย็น", "tûu-yen", "fridge", "noun", "general"],
   ["อาบ", "àap", "to bathe", "verb", "verbs_core"],
   ["อาบน้ำ", "àap-náam", "to shower / to bathe", "verb", "verbs_core"],
-  ["ฝัน", "fǎn", "to dream; a dream", "verb", "general"],
+  ["ฝัน", "fǎn", "to dream (verb)", "verb", "general"],
   ["ฝันดี", "fǎn-dii", "sweet dreams", "phrase", "phrases"],
   ["ละคร", "lá-khoon", "TV drama / soap opera", "noun", "general"],
   ["บุญ", "bun", "merit", "noun", "beliefs"],
@@ -1240,7 +1240,7 @@ const WORDS = [
   ["หนี้", "nîi", "debt", "noun", "work"],
   ["ดอกเบี้ย", "dòok-bîa", "interest (on a loan)", "noun", "work"],
   ["สตางค์", "sà-taang", "satang (1/100 baht); money", "noun", "general"],
-  ["ตังค์", "tang", "money (colloquial)", "noun", "general"],
+  ["ตังค์", "tang", "cash (colloquial)", "noun", "general"],
   ["เช็ค", "chék", "to check; cheque", "verb", "restaurant"],
   ["ลา", "laa", "to take leave; to say goodbye", "verb", "verbs_core"],
   // Round 27 (Dao): adding bare ลา made ตัดสินใจ's own example offer
@@ -1365,6 +1365,30 @@ const TOP_100 = [
 
 const TOP_50 = TOP_100.slice(0, 50);
 const TOP_20 = TOP_100.slice(0, 20);
+
+// ── Register variants: one word, two forms ────────────────────────────────
+// Pairs the quiz must never offer as each other's distractors, because BOTH
+// options would be right. Prompt อย่างไร with "how" and "how (colloquial
+// อย่างไร)" on screen and a learner who knows the word has to guess which
+// gloss the app considers canonical. Round 26 (Fon) measured the เงิน/ตังค์
+// version of this at 3.7% of ตังค์ items.
+//
+// Deliberately a TABLE, not a computed rule. Thirteen same-category pairs mean
+// the same thing once the parenthetical is stripped, and eight of them are the
+// best distractors in the course — เก่า "old (thing)" vs แก่ "old (person)",
+// รู้ "to know (fact)" vs รู้จัก "to know (person)", หนึ่ง "one" vs เอ็ด
+// "one (in 11, 21…)", อิ่ม "full (from eating)" vs เต็ม "full (capacity)".
+// Any rule strict enough to catch the bad pairs deletes those too. The
+// difference is judgment, not syntax: the eight are different things that
+// share an English word, these are one thing in two registers.
+//
+// Three of the five bad pairs were fixed by rewording instead, which improved
+// the glosses anyway — ความฝัน/ฝัน are now noun/verb, ตังค์ is "cash", หญิง is
+// "female (formal, in compounds)". The two below are irreducible.
+const GLOSS_VARIANTS = [
+  ["อย่างไร", "ยังไง"],      // how — written / spoken
+  ["สีเขียว", "เขียว"],      // green — with and without สี
+];
 
 const CAT_LABELS = {
   "adjectives": "Adjectives",
