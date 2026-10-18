@@ -382,13 +382,21 @@ is where a round's pins go by default, so the file's existence is the record.
 | 23 | 2026-09-09 | Jesse | is a listening drill passable by looking (Tone Drill, Browse) |
 | 24 | 2026-09-09 | Tomás | are the first-run tutorial's promises true (as a beginner follows them) |
 | 25 | 2026-09-09 | Aroon | does Records tell the truth about a long, messy history |
+| 26 | 2026-10-08 | Fon | the eleven words added that day, judged where a learner meets them (word card, drill, cloze, example) |
+| 27 | 2026-10-08 | Dao | do newly added words survive tokenise → lookup → extension (the pipeline, not the glosses) |
 
-Rounds 17-25 are all closed: every finding either fixed and pinned, or
-recorded above as a deliberate non-fix.
+Rounds 17-27 are all closed: every finding either fixed and pinned, or
+recorded above as a deliberate non-fix. Rounds 26 and 27 were aimed at a
+commit that was hours old, on the doctrine of re-treading just-changed ground,
+and between them found a tokeniser regression that commit had introduced (bare
+ลา carved out of กลาง — see round27.test.js), three examples that did not teach
+their own word, and a quiz that could offer a distractor that was also the
+right answer. Two self-audits on the author's own diff had run before them
+without a round file; the numbering follows the files.
 
 Rounds 1-16 predate the convention and their pins live in the topic test files
 with a provenance comment; 17 onward have their own file. Genuinely unwalked as
-of round 25: nothing large. The named surfaces have all been walked at least
+of round 27: nothing large. The named surfaces have all been walked at least
 once, most of them twice at different lenses. What is left is re-treading —
 which the doctrine above says is often the higher-yield choice anyway. Nights
 1-2 of Soi Buakhao still carry a weak length tell (40% of no-comprehension
