@@ -1,6 +1,6 @@
 # A restaurant scenario — design proposal
 
-Status: **proposal, nothing built.** Written 2026-10-18. The question it answers
+Status: **the ordering beat is built** (`web/js/restaurant.js`, nav `M`, 2026-10-18) to the recommended v1 scope — diner only, no arrival or bill. The rest of this document is the proposal it was built from. The question it answers
 is the one that killed the first version of this idea: *how do you gamify
 restaurant interactions so they stay interesting?*
 
