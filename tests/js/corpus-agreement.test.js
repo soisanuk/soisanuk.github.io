@@ -76,14 +76,23 @@ describe("corpus agreement", () => {
     "เดฟ": "Dave — a character name",
     "แอลกอฮอล์": "alcohol — the course teaches เหล้า",
     "สุนัข": "dog (formal) — the course teaches หมา",
-    // Ordinary words the course does not teach yet. Listed so this test is a
-    // ratchet: a NEW untaught word in the game fails, while these stay known.
-    // Worth adding as vocabulary — none is obscure.
-    "เปล่า": "no / empty", "โสด": "single", "แน่ใจ": "sure",
-    "สาว": "young woman", "ใจดี": "kind", "ที่สุด": "the most",
-    "เดียว": "only / single", "ด้าน": "side / field", "ที": "time / occasion",
-    "โดยเฉพาะ": "especially", "การเงิน": "finance",
+    // A SEGMENTER artefact, not a word the game prints. The only line it
+    // appears in is ผมต้องการเงินคืนครับ, which segmentThai splits as
+    // ต้อง|การเงิน|คืน — two commoner lexicon entries (ranks 27 and 988)
+    // outbidding ต้องการ|เงิน (ต้องการ is rank 248). The curriculum tokeniser
+    // the game actually uses gets it right by longest match. Adding การเงิน to
+    // WORDS to silence this would make a tap on it show "finance" inside a
+    // sentence about wanting money back. The real fix is in segment.js's cost
+    // model; until then this entry names the defect rather than hiding it.
+    "การเงิน": "segmenter mis-split of ต้องการเงิน — see above",
   };
+  // 2026-10-18: eleven ordinary words came OFF this list and into WORDS —
+  // เปล่า โสด แน่ใจ สาว ใจดี ที่สุด เดียว ด้าน โดยเฉพาะ — plus ไอที, which was
+  // what "ที" actually was (half of ไอที, now in SEG_EXTRA so the segmenter
+  // keeps it whole), and ดูแล, which the curriculum tokeniser was carving ดู
+  // out of. The "exception list must not rot" test is what forces this: the
+  // moment a listed word is taught, it fails until the entry is removed.
+
 
   test("Soi Buakhao romanises its words the way data.js does", () => {
     const map = new Map(WORDS.map(w => [w[0], w[1]]));

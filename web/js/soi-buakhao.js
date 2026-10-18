@@ -120,7 +120,7 @@ const _SB_QS = {
     {
       q: "คุณชอบอาหารไทยไหมคะ?", rom: "Khun chôop aa-hǎan Thai mǎi khá?", en:"Do you like Thai food?",
       choices:[
-        {th:"ชอบมากครับ โดยเฉพาะผัดไทยครับ",    rom: "Chôop mâak khráp. Dooi-chà-phâaw phàt-thai khráp.",   en:"Love it, especially Pad Thai.",    ok:true},
+        {th:"ชอบมากครับ โดยเฉพาะผัดไทยครับ",    rom: "Chôop mâak khráp. dooi-chà-phó phàt-thai khráp.",   en:"Love it, especially Pad Thai.",    ok:true},
         {th:"กินไม่เป็นครับ",                    rom: "Kin mâi pen khráp.",                                      en:"I can't eat it.",                  ok:false},
         {th:"วันนี้ฝนตกครับ",                    rom: "Wan-níi fǒn tòk khráp.",                                  en:"It's raining today.",              ok:false},
         {th:"ผมต้องกลับโรงแรมครับ",              rom: "Phǒm tôong klàp roong-raem khráp.",                      en:"I have to go back to the hotel.",  ok:false},
