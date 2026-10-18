@@ -111,3 +111,84 @@ describe("round 20 — a score that means something", () => {
     assert.equal(sp.done, 5);
   });
 });
+
+// Round 26 (Fon) found this one, but it belongs here: the subject is the quiz's
+// distractor picker, which is round 20's territory.
+//
+// _quizDistractors rejected a distractor only when its gloss was the IDENTICAL
+// string, so "money" and "money (colloquial)" both went on screen and a learner
+// who knew ตังค์ had to guess which gloss the app considered canonical. Measured
+// at 3.7% of ตังค์ items and 4.1% of สตางค์ items.
+describe("round 26 — a distractor must not also be the right answer", () => {
+  const find = t => WORDS.find(w => w[0] === t);
+  const offered = (promptTh, distTh, cat, draws = 3000) => {
+    const pool = WORDS.filter(w => w[4] === cat), word = find(promptTh);
+    assert.ok(word, `${promptTh} is not in WORDS`);
+    let n = 0;
+    for (let i = 0; i < draws; i++)
+      if (_quizDistractors(word, pool).some(d => d[0] === distTh)) n++;
+    return n;
+  };
+
+  // Named explicitly, NOT derived from GLOSS_VARIANTS. The first version of
+  // this test iterated the table and asserted each group was blocked — which
+  // passed happily when a group was DELETED from the table, because it then
+  // had one fewer group to check. A guard that takes its expectations from the
+  // thing it guards cannot see the thing being removed. Found by mutation:
+  // dropping the อย่างไร/ยังไง row left the suite green.
+  test("the known register variants are blocked, in either direction", () => {
+    for (const [a, b, cat] of [
+      ["อย่างไร", "ยังไง", "pronouns"],   // how — written / spoken
+      ["สีเขียว", "เขียว", "colors"],     // green — with and without สี
+    ]) {
+      assert.equal(offered(a, b, cat), 0, `${b} was offered for ${a} — both are right`);
+      assert.equal(offered(b, a, cat), 0, `${a} was offered for ${b} — both are right`);
+    }
+  });
+
+  test("every group in the table is blocked too, whatever gets added later", () => {
+    // The generic half, which does catch a NEW group that is listed but not
+    // honoured — the case the named test above cannot cover.
+    for (const group of GLOSS_VARIANTS) {
+      const cat = find(group[0])[4];
+      for (const a of group) for (const b of group) {
+        if (a === b) continue;
+        assert.equal(offered(a, b, cat), 0,
+          `${b} was offered as a distractor for ${a} — both answers are right`);
+      }
+    }
+  });
+
+  // The guard that matters more, because the tempting fix breaks it. Thirteen
+  // same-category pairs share a meaning once the parenthetical is stripped, and
+  // these are the ones where that parenthetical IS the lesson. Any gloss-overlap
+  // rule strict enough to block the variants above also deletes these, which are
+  // among the best distractors in the course. If someone replaces GLOSS_VARIANTS
+  // with a computed rule, this fails.
+  test("pairs whose distinction is the lesson are still offered", () => {
+    for (const [prompt, dist, cat] of [
+      ["เก่า", "แก่", "adjectives"],        // old (thing) / old (person)
+      ["รู้", "รู้จัก", "verbs_core"],        // to know (fact) / (person)
+      ["หนึ่ง", "เอ็ด", "numbers"],          // one / one in 11, 21…
+      ["อิ่ม", "เต็ม", "adjectives"],        // full (eating) / full (capacity)
+      ["เมื่อ", "ตอนที่", "connectors"],      // when (past) / when (at the time)
+    ]) {
+      assert.ok(offered(prompt, dist, cat) > 0,
+        `${dist} is no longer offered for ${prompt} — the distinction it teaches is gone`);
+    }
+  });
+
+  test("GLOSS_VARIANTS members all exist and share a category", () => {
+    // A typo here would silently stop blocking rather than fail loudly.
+    for (const group of GLOSS_VARIANTS) {
+      assert.ok(group.length >= 2);
+      const cats = new Set(group.map(t => {
+        const w = find(t);
+        assert.ok(w, `GLOSS_VARIANTS names ${t}, which is not in WORDS`);
+        return w[4];
+      }));
+      assert.equal(cats.size, 1,
+        `${group.join("/")} span categories ${[...cats].join(", ")} — they never share a quiz pool`);
+    }
+  });
+});

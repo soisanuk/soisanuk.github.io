@@ -310,7 +310,14 @@ function _startQuiz(wordList) {
 // dominant one. In "All categories" the pool IS the corpus, and that mode was
 // already clean — twelve shape strategies all landed within 24.8-25.2%.
 function _quizDistractors(word, pool) {
-  const usable = w => w[0] !== word[0] && w[2] !== word[2];
+  // A register variant of the prompt is never usable as a distractor: both
+  // answers would be right. The table is in data.js, with the reasoning for
+  // why it is a table rather than a gloss-overlap rule.
+  const variants = new Set();
+  if (typeof GLOSS_VARIANTS !== "undefined")
+    for (const group of GLOSS_VARIANTS)
+      if (group.includes(word[0])) for (const v of group) variants.add(v);
+  const usable = w => w[0] !== word[0] && w[2] !== word[2] && !variants.has(w[0]);
   const near = shuffle((pool || WORDS).filter(usable)).slice(0, 3);
   if (near.length === 3) return near;
   const have = new Set(near.map(w => w[0]));
