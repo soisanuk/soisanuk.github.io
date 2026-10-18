@@ -132,11 +132,37 @@ describe("corpus agreement", () => {
   // prints resolves in the vendored vocab" — applied to this repo's OWN game,
   // which had no equivalent. A learner tapping a word the course does not teach
   // gets nothing back.
+  // Every Thai string the game puts in front of a learner. The prompts and
+  // choices were the first version of this; the hostess's reactions, the
+  // night-end titles and the finale titles were added 2026-10-18, when it
+  // turned out they held 34 more Thai runs and seven untaught words. The
+  // reactions and titles are tappable now (they go through _sbThai), so an
+  // untaught word there is a tap that returns nothing — the same defect as in
+  // a prompt. The four button labels are chrome, not tappable, and copied
+  // here by hand because they live inline in the rendering code.
+  const _SB_ALL_THAI = () => {
+    const out = [];
+    for (const night of Object.keys(_SB_QS)) for (const q of _SB_QS[night])
+      out.push(q.q, ...q.choices.map(c => c.th));
+    for (const k of ["good", "bad"]) out.push(..._SB_CHEERS[k]);
+    for (const k of ["happy", "sad"]) for (const e of _SB_ENDS[k]) out.push(e.title);
+    for (const k of Object.keys(_SB_FINALE)) out.push(_SB_FINALE[k].title);
+    out.push("เข้าไปเลย — Let's go →", "ต่อไป →", "สรุปคืนนี้ →", "จบแล้ว — The End");
+    return out;
+  };
+
+  test("the full-Thai sweep actually covers the reactions and titles", () => {
+    // Guards the test below against a refactor that moves the cheers back into
+    // a function, or renames the tables: 22 is the count of reaction + title
+    // + button strings when this was written, on top of the 75 QS lines.
+    assert.ok(_SB_ALL_THAI().length >= 75 + 22,
+      `only ${_SB_ALL_THAI().length} strings swept — a table went missing`);
+  });
+
   test("every Thai word Soi Buakhao prints is a course word, or a known exception", () => {
     const have = new Set(WORDS.map(w => w[0]));
     const untaught = new Set();
-    for (const night of Object.keys(_SB_QS)) for (const q of _SB_QS[night])
-      for (const th of [q.q].concat(q.choices.map(c => c.th)))
+    for (const th of _SB_ALL_THAI())
         for (const tok of segmentThai(th)) {
           const t = tok.base || tok.text;
           if (!/[\u0E01-\u0E4E]/.test(t)) continue;

@@ -192,6 +192,25 @@ const _SB_ENDS = {
   ],
 };
 
+// ── The hostess's reactions ────────────────────────────────────────────────
+// Data rather than locals inside _sbAnswer so the corpus-agreement guards can
+// scan them: every word here must be one the course teaches, because the line
+// is tappable. ถูกต้อง, เยี่ยม, ลอง, โอ๊ะ and คราวหน้า were not, until 2026-10-18.
+const _SB_CHEERS = {
+  good: [
+    "ใช่แล้วค่ะ! 😍 เก่งมากเลย",
+    "ถูกต้องค่ะ! ✨ คุณพูดไทยเก่งจัง",
+    "โอ้โห! 💕 ภาษาไทยคุณดีมากเลยค่ะ",
+    "เยี่ยมเลยค่ะ! 🥰",
+  ],
+  bad: [
+    "ไม่ใช่ค่ะ 😅 ลองใหม่นะคะ",
+    "เอาใหม่ได้นะคะ 🙈",
+    "โอ๊ะ ไม่ถูกค่ะ 😂 ไม่เป็นไรค่ะ",
+    "คราวหน้าจะดีกว่านี้นะคะ 😊",
+  ],
+};
+
 // ── Grand finales ──────────────────────────────────────────────────────────
 
 const _SB_FINALE = {
@@ -370,24 +389,17 @@ function _sbAnswer(btn, choice) {
   if (!choice.ok) btn.classList.add("sb-wrong");
 
   const h = _sbHost;
-  const good = [
-    `ใช่แล้วค่ะ! 😍 เก่งมากเลย`,
-    `ถูกต้องค่ะ! ✨ คุณพูดไทยเก่งจัง`,
-    `โอ้โห! 💕 ภาษาไทยคุณดีมากเลยค่ะ`,
-    `เยี่ยมเลยค่ะ! 🥰`,
-  ];
-  const bad = [
-    `ไม่ใช่ค่ะ 😅 ลองใหม่นะคะ`,
-    `เอาใหม่ได้นะคะ 🙈`,
-    `โอ๊ะ ไม่ถูกค่ะ 😂 ไม่เป็นไรค่ะ`,
-    `คราวหน้าจะดีกว่านี้นะคะ 😊`,
-  ];
-  const pool = choice.ok ? good : bad;
+  const pool = choice.ok ? _SB_CHEERS.good : _SB_CHEERS.bad;
   const line = pool[Math.floor(Math.random() * pool.length)];
 
+  // The hostess's reaction is the most colloquial Thai in the game, and it used
+  // to be the one line a learner could not tap — rendered through _sbEsc as
+  // plain text while every prompt and choice went through _sbThai. Now it is
+  // tokenised and tappable like the rest; the emoji ride along as non-words.
   const react = document.createElement("div");
   react.className = "sb-react " + (choice.ok ? "sb-react-ok" : "sb-react-bad");
-  react.innerHTML = `${h.e} <strong>${_sbEsc(h.name)}:</strong> "${_sbEsc(line)}"`;
+  react.innerHTML = `${h.e} <strong>${_sbEsc(h.name)}:</strong> "<span class="sb-react-line"></span>"`;
+  _sbThai(react.querySelector(".sb-react-line"), line);
   document.getElementById("sb-choices").after(react);
 
   const nxt = document.createElement("button");
@@ -411,7 +423,7 @@ function _sbShowNightEnd() {
   _sbBody().innerHTML = `
     <div class="sb-night-end ${happy ? "sb-he" : "sb-se"}">
       <div class="sb-end-avatar">${h.e}</div>
-      <div class="sb-end-title">${_sbEsc(end.title)}</div>
+      <div class="sb-end-title"></div>
       <div class="sb-end-score">${_sbScore} / ${_sbQs.length} correct</div>
       <div class="sb-end-scene">${_sbEsc(scene).replace(/\n/g,"<br>")}</div>
       ${_sbNight < 3
@@ -419,6 +431,7 @@ function _sbShowNightEnd() {
         : `<button class="sb-btn" onclick="_sbShowGameEnd()">จบการเดินทาง →</button>`}
       <button class="sb-btn sb-btn-ghost" onclick="endSession()">กลับบ้านก่อน</button>
     </div>`;
+  _sbThai(_sbBody().querySelector(".sb-end-title"), end.title);
 }
 
 function _sbNextNight() { _sbNight++; _sbStartNight(); }

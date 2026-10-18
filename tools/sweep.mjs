@@ -217,6 +217,40 @@ for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 
   }
   await page.evaluate(() => { const m = document.getElementById("word-modal"); if (m) m.style.display = "none"; }).catch(() => {});
 
+  // ── Soi Buakhao: the hostess's reaction is tappable ───────────────────────
+  // The reaction line (ใช่แล้วค่ะ! เก่งมากเลย …) is the most colloquial Thai in
+  // the game and used to be the one line a learner could not tap — rendered
+  // through _sbEsc as plain text while every prompt went through _sbThai. The
+  // unit tests can see that _SB_CHEERS is data and that its words are taught;
+  // only a browser can see that the rendered line actually carries .sb-w spans
+  // wired to WORD_MAP. Drives one answer and checks. Added 2026-10-18.
+  errs.length = 0;
+  {
+    const m = await page.evaluate(() => {
+      const out = { issues: [] };
+      if (typeof startSoiBuakhao !== "function" || typeof _sbNextQ !== "function") {
+        out.issues.push("NO-GAME Soi Buakhao entry points missing"); return out;
+      }
+      startSoiBuakhao(); _sbNextQ();
+      const choice = document.querySelector(".sb-choice");
+      if (!choice) { out.issues.push("NO-CHOICE no .sb-choice rendered after _sbNextQ"); return out; }
+      choice.click();
+      const line = document.querySelector(".sb-react-line");
+      if (!line) { out.issues.push("NO-REACTION no .sb-react-line after answering"); return out; }
+      const spans = [...line.querySelectorAll(".sb-w")];
+      if (!spans.length) out.issues.push("NOT-TAPPABLE reaction rendered with no .sb-w spans: " + line.textContent.slice(0, 40));
+      const dead = spans.filter(sp => typeof WORD_MAP === "undefined" || !WORD_MAP[sp.dataset.w]).map(sp => sp.dataset.w);
+      if (dead.length) out.issues.push("DEAD-TAP reaction spans with no WORD_MAP entry: " + dead.join(","));
+      const clickable = spans.filter(sp => sp.style.cursor === "pointer").length;
+      if (spans.length && clickable !== spans.length)
+        out.issues.push("UNWIRED " + (spans.length - clickable) + " of " + spans.length + " reaction spans have no pointer cursor");
+      return out;
+    }).catch(e => ({ issues: ["THREW " + String(e).slice(0, 80)] }));
+    if (errs.length) m.issues.push("JS: " + errs.join(";"));
+    if (m.issues.length) report.push(`${label} Soi Buakhao reaction: ${m.issues.join(" | ")}`);
+    errs.length = 0;
+  }
+
   await ctx.close();
 }
 await browser.close();

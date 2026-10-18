@@ -1190,6 +1190,28 @@ const WORDS = [
   // ไม้ is also the classifier the restaurant proposal needs for หมูปิ้ง.
   ["ไม้", "mái", "stick / wood; skewer (classifier)", "noun", "general"],
 
+  // ── Words in Soi Buakhao's reactions and titles (2026-10-18) ─────────────
+  // The hostess's cheers (ถูกต้องค่ะ! ลองใหม่นะคะ) and the night-end and finale
+  // titles were the one Thai in the game a learner could not tap — rendered as
+  // plain text while every prompt went through _sbThai. They are tappable now,
+  // which made these seven untaught words a tap that returned nothing.
+  //
+  // สรุป is sà-rùp, low tone, by the ส-นำ rule: a leading ส makes รุป behave
+  // as high class. The engine models only ห and อ as leaders and reads รุป
+  // alone as high; สนุก is already sà-nùk here on the same rule.
+  // เยี่ยมชม is here because adding bare เยี่ยม carved it into เยี่ยม|ชม,
+  // glossing "excellent" inside "to visit"; วัด's example already romanised
+  // the whole as yîam-chom.
+  ["ถูกต้อง", "thùuk-tôong", "correct / right", "adjective", "adjectives"],
+  ["เยี่ยม", "yîam", "excellent / great", "adjective", "adjectives"],
+  ["ยอดเยี่ยม", "yôot-yîam", "superb / outstanding", "adjective", "adjectives"],
+  ["เยี่ยมชม", "yîam-chom", "to visit (a place) / to tour", "verb", "verbs_core"],
+  ["ลอง", "loong", "to try / to have a go", "verb", "verbs_core"],
+  ["โอ๊ะ", "ó", "oops", "interjection", "particles"],
+  ["คราว", "khraao", "time / occasion", "noun", "time"],
+  ["คราวหน้า", "khraao-nâa", "next time", "adverb", "time"],
+  ["สรุป", "sà-rùp", "summary; to sum up", "noun", "classroom"],
+
   // ── Requested by The Last Baht Bus (2026-10-18) ──────────────────────────
   // Twenty-eight words a Thai-typing playtester needed, plus the seven parts
   // the request itself flagged as missing (ค้าง ตู้ อาบ ฝัน บุญ พระ ล่าง) and
