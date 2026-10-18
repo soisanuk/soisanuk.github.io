@@ -33,6 +33,7 @@ var SEG_EXTRA = [
   "ทวิต",       // tweet
   "ไอจี",       // IG, Instagram
   "อัพ",        // up- (upload, update)
+  "ไอที",       // IT — the lexicon has ไอ and ที but not the pair; Soi Buakhao prints it
   // Food and drink a reader meets on any menu or street sign.
   "โอเลี้ยง",   // Thai iced black coffee (from Teochew 烏涼)
   "ปาท่องโก๋",  // fried dough sticks
