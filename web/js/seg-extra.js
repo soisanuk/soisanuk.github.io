@@ -34,6 +34,7 @@ var SEG_EXTRA = [
   "ไอจี",       // IG, Instagram
   "อัพ",        // up- (upload, update)
   "ไอที",       // IT — the lexicon has ไอ and ที but not the pair; Soi Buakhao prints it
+  "คราวหน้า",   // next time — the lexicon splits it คราว|หน้า; a Soi Buakhao reaction line
   // Food and drink a reader meets on any menu or street sign.
   "โอเลี้ยง",   // Thai iced black coffee (from Teochew 烏涼)
   "ปาท่องโก๋",  // fried dough sticks
