@@ -442,6 +442,54 @@ test("◌อ is a LONG vowel and is doubled before a final consonant", () => {
   assert.deepEqual(bad, [], `◌อ + final wants a doubled o: ${bad.join(", ")}`);
 });
 
+// The same rule over the 580 hyphenated entries the test above skips. It
+// skipped them because checking a multi-syllable word means knowing WHICH
+// syllable the ◌อ sits in, and that needs the Thai split into syllables that
+// line up with the romanisation's hyphens. Greedy longest-prefix does not
+// work for that: on เติมในช่องว่าง it read ในช่ as one syllable (ช is a legal
+// final) and left a lone ง — four pieces, so a count check passed on garbage.
+// This splits by search instead: a segmentation into exactly as many pieces as
+// the romanisation has, every piece parseable by the engine and at least two
+// code points. Entries it cannot split that way are skipped, and a floor
+// asserts the skip rate stays where it is.
+//
+// Two live drifts the moment it ran, both from round 26's list and both
+// invisible to every other check because data.js and the example agreed with
+// each other: ท่องเที่ยว "thông-thîao" and เติมในช่องว่าง "…chông-wâang".
+// Added 2026-10-18.
+test("◌อ + final is a doubled o inside multi-syllable words too", () => {
+  const strip = r => r.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const ooSyll = /^[\u0E01-\u0E2E][\u0E48-\u0E4B]?\u0E2D[\u0E01\u0E07\u0E19\u0E21\u0E22\u0E27\u0E1A\u0E14\u0E08]$/;
+  // Split `cps` into exactly `n` engine-parseable pieces of >= 2 code points.
+  const split = (cps, n) => {
+    if (n === 0) return cps.length === 0 ? [] : null;
+    for (let j = 2; j <= cps.length - 2 * (n - 1); j++) {
+      const head = cps.slice(0, j).join("");
+      if (!_analyseSyllable(head)) continue;
+      const rest = split(cps.slice(j), n - 1);
+      if (rest) return [head, ...rest];
+    }
+    return null;
+  };
+  let aligned = 0;
+  const bad = [];
+  for (const w of WORDS) {
+    if (!/[-\s]/.test(w[1])) continue;
+    const ro = strip(w[1]).split(/[-\s]+/);
+    const th = split([...w[0]], ro.length);
+    if (!th) continue;
+    aligned++;
+    th.forEach((syl, k) => {
+      if (ooSyll.test(syl) && !/oo/.test(ro[k]))
+        bad.push(`${w[0]} "${w[1]}" — ${syl} is "${ro[k]}", wants oo`);
+    });
+  }
+  // 398 of 580 aligned when written. If this drops sharply the splitter broke,
+  // and the test would be passing by examining less.
+  assert.ok(aligned >= 380, `only ${aligned} hyphenated entries could be syllable-aligned`);
+  assert.deepEqual(bad, []);
+});
+
 // A compound the course teaches has to beat the shorter words inside it.
 // Added 2026-10-09 with กด / เรียก / ยังไง / อันนี้ / จ๊ะ, from two Last Baht
 // Bus notes. Three of these were already decomposable and all three
