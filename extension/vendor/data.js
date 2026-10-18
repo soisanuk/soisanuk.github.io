@@ -1162,6 +1162,34 @@ const WORDS = [
   ["ราตรีสวัสดิ์", "raa-trii-sà-wàt", "good night", "phrase", "phrases"],
   ["จังหวัด", "jang-wàt", "province", "noun", "places"],
 
+  // ── Words Soi Buakhao prints but could not gloss (2026-10-18) ────────────
+  // Surfaced by corpus-agreement's new "every Thai word the game prints is a
+  // course word" guard — the same check The Last Baht Bus runs on its own
+  // prose, which this repo lacked for its own game. A learner tapping any of
+  // these in the bar got nothing back.
+  //
+  // Two of the guard's fourteen were NOT words the game prints and are not
+  // here: การเงิน falls out of the segmenter mis-splitting ต้องการเงิน as
+  // ต้อง|การเงิน (recorded in the test), and ที was half of ไอที, which is.
+  // ดูแล is here because the curriculum tokeniser was carving ดู out of it in
+  // มาม่าดูแลสาวในบาร์, and adding สาว made the orphaned แล visible.
+  //
+  // โดยเฉพาะ: the engine reads เฉ as a rising syllable, but the เ belongs to
+  // พาะ and ฉ carries an implied short vowel — chà, as in จระเข้'s bare จ.
+  ["เปล่า", "plào", "no (as a reply); plain / empty", "particle", "particles"],
+  ["โสด", "sòot", "single (unmarried)", "adjective", "adjectives"],
+  ["แน่ใจ", "nâe-jai", "sure / certain", "adjective", "adjectives"],
+  ["สาว", "sǎao", "young woman / girl", "noun", "general"],
+  ["ใจดี", "jai-dii", "kind / kind-hearted", "adjective", "adjectives"],
+  ["ที่สุด", "thîi-sùt", "the most / -est", "adverb", "adverbs"],
+  ["เดียว", "diao", "only / single / alone", "adjective", "adjectives"],
+  ["ด้าน", "dâan", "side; field (of work)", "noun", "general"],
+  ["โดยเฉพาะ", "dooi-chà-phó", "especially", "adverb", "adverbs"],
+  ["ไอที", "ai-thii", "IT (information technology)", "noun", "tech"],
+  ["ดูแล", "duu-lae", "to look after / to take care of", "verb", "verbs_core"],
+  // ไม้ is also the classifier the restaurant proposal needs for หมูปิ้ง.
+  ["ไม้", "mái", "stick / wood; skewer (classifier)", "noun", "general"],
+
   // ── Requested by The Last Baht Bus (2026-10-18) ──────────────────────────
   // Twenty-eight words a Thai-typing playtester needed, plus the seven parts
   // the request itself flagged as missing (ค้าง ตู้ อาบ ฝัน บุญ พระ ล่าง) and
