@@ -199,6 +199,12 @@ function _rstFilled() { return _RST_SLOTS.every(s => s.optional || _rstSaid[s.ke
 
 function startRestaurant() {
   showScreen("rst-screen", "M");
+  // Round 29 (Mei): v1 had no exit until the fifth order's summary — no Quit,
+  // no Menu, Escape did nothing — so a stranger who could not build a valid
+  // order was stuck, and on a phone the only way out was the browser's Back,
+  // which leaves the app. Every other game has a Quit in its footer.
+  const f = document.getElementById("rst-footer");
+  if (f) f.style.display = "";
   _rstIdx = 0; _rstScore = 0; _rstShelf = [];
   _rstNewOrder();
 }

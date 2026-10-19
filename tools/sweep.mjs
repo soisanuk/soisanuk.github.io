@@ -251,6 +251,39 @@ for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 
     errs.length = 0;
   }
 
+  // ── Round 29 (Mei): three consistency checks that need a live DOM ──────────
+  errs.length = 0;
+  {
+    const m = await page.evaluate(() => {
+      const out = { issues: [] };
+      const byText = t => [...document.querySelectorAll(".menu-list li")].find(li => li.textContent.includes(t));
+      // F6: the shared category picker must say which mode it is picking for.
+      for (const [label, want] of [["Quiz", "Quiz"], ["SRS Review", "SRS Review"], ["Thai → English", "Thai → English"]]) {
+        const li = byText(label); if (!li) { out.issues.push("NO-MENU-ITEM " + label); continue; }
+        li.click();
+        const h = document.getElementById("cat-header");
+        if (!h || !h.textContent.includes(want)) out.issues.push(`PICKER-ANON after "${label}" the picker header is "${h && h.textContent}"`);
+        showMenu();
+      }
+      // F8: the SRS counter counts the card in hand as 1, like every other mode.
+      const li = byText("Script SRS"); if (li) { li.click();
+        const c = document.getElementById("srs-counter");
+        if (c && /\s0 \/ /.test(c.textContent)) out.issues.push("ZERO-BASED Script SRS counter reads " + c.textContent.trim());
+        showMenu(); }
+      // F11: inside a reader level there is a way back to the level list.
+      if (typeof startReader === "function" && typeof readerOpen === "function") {
+        startReader(); readerOpen(0);
+        const lv = [...document.querySelectorAll("#reader-screen button")].find(b => /Levels/.test(b.textContent));
+        if (!lv) out.issues.push("NO-LEVELS inside a reader level there is no control back to the level list");
+        showMenu();
+      }
+      return out;
+    }).catch(e => ({ issues: ["THREW " + String(e).slice(0, 80)] }));
+    if (errs.length) m.issues.push("JS: " + errs.join(";"));
+    if (m.issues.length) report.push(`${label} consistency: ${m.issues.join(" | ")}`);
+    errs.length = 0;
+  }
+
   // ── The Restaurant: a miss shows the right order, tappable ────────────────
   // Round 28 (Preeya): v1 quoted the wrong word on a miss and never printed
   // the right one, so the learner learned only "ทอด was wrong". The unit tests
@@ -263,6 +296,10 @@ for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 
       const out = { issues: [] };
       if (typeof startRestaurant !== "function") { out.issues.push("NO-GAME"); return out; }
       startRestaurant();
+      // Round 29 F4: a Quit must be visible from the FIRST order, not after the fifth.
+      const quit = [...document.querySelectorAll("#rst-screen .screen-footer button")].find(b => /Quit/.test(b.textContent));
+      if (!quit || getComputedStyle(quit).display === "none" || quit.getBoundingClientRect().width === 0)
+        out.issues.push("NO-EXIT the Restaurant shows no Quit control on order 1");
       // Round 28 F1: the chips must be re-shuffled per order. The unit pin
       // proves _rstShuffle permutes; only the rendered DOM proves the renderer
       // still USES it. Two orders with identical chip order on every slot is

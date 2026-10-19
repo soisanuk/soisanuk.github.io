@@ -249,7 +249,20 @@ function endSession() {
 // ═══════════════════════════════════════════════════════════════════════════
 // Category picker
 // ═══════════════════════════════════════════════════════════════════════════
-function pickCategory(onPick) {
+// Round 29 (Mei): every screen must answer Escape. These go to the menu;
+// lesson-screen ends its session (its own Menu button does); the games and
+// drills handle Escape themselves. main.js reads this, and round29.test.js
+// asserts every .screen in index.html is covered by one of the three.
+const ESCAPE_TO_MENU = ["learn-screen", "reader-screen", "paste-screen", "rst-screen",
+  "records-screen", "backup-screen", "vocab-list-screen", "idioms-screen",
+  "cat-screen", "stats-screen", "end-screen", "charts-screen"];
+
+// `title` names the mode the category is for. Round 29: four modes landed on
+// a picker headed only "Choose a category", so a mis-tap on Quiz instead of
+// Flashcards was invisible until the next screen.
+function pickCategory(onPick, title) {
+  const h = document.getElementById("cat-header");
+  if (h) h.textContent = title ? `Choose a category — ${title}` : "Choose a category";
   const list = document.getElementById("cat-list");
   list.innerHTML = "";
 

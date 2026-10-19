@@ -48,7 +48,7 @@ function startLearn() {
   });
   const done = COURSE.filter(u => _unitDone(path, u)).length;
   document.querySelector("#learn-screen .screen-header").textContent =
-    "🎓 " + _levelName(done) + (done ? " · " + done + "/" + COURSE.length : "");
+    "🎓 Guided Course · " + ("🎓 " + _levelName(done) + (done ? " · " + done + "/" + COURSE.length : "")).replace(/^🎓\s*/, "");
   const pl = document.getElementById("learn-placement");
   if (pl) pl.style.display = done === 0 ? "" : "none";
   const stats = srsStats(loadProgress(), allSrsKeys());

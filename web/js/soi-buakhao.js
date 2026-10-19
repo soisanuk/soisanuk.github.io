@@ -262,7 +262,7 @@ function _sbSample(arr, n) {
 function _sbBody() { return document.getElementById("soi-body"); }
 
 function _sbHead(sub) {
-  document.getElementById("soi-night-label").textContent = `🌙 Soi Buakhao — Night ${_sbNight} of 3`;
+  document.getElementById("soi-night-label").textContent = `🌺 Soi Buakhao — Night ${_sbNight} of 3`;
   document.getElementById("soi-sub-label").textContent   = sub || "";
 }
 
