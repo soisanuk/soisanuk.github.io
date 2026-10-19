@@ -251,6 +251,48 @@ for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 
     errs.length = 0;
   }
 
+  // ── The Restaurant: a miss shows the right order, tappable ────────────────
+  // Round 28 (Preeya): v1 quoted the wrong word on a miss and never printed
+  // the right one, so the learner learned only "ทอด was wrong". The unit tests
+  // see _rstWantedLine; only a browser sees that the rendered miss screen
+  // carries it as .sb-w spans wired to WORD_MAP. Forces a wrong method and
+  // checks. Added 2026-10-19.
+  errs.length = 0;
+  {
+    const m = await page.evaluate(() => {
+      const out = { issues: [] };
+      if (typeof startRestaurant !== "function") { out.issues.push("NO-GAME"); return out; }
+      startRestaurant();
+      // Round 28 F1: the chips must be re-shuffled per order. The unit pin
+      // proves _rstShuffle permutes; only the rendered DOM proves the renderer
+      // still USES it. Two orders with identical chip order on every slot is
+      // 1 in 120·720·6·6 by chance — a fixed layout, not luck.
+      const layout = () => _RST_SLOTS.map(s => [...document.querySelectorAll(`.rst-chip[data-slot="${s.key}"]`)].map(b => b.dataset.i).join(",")).join("|");
+      const first = layout(); _rstNewOrder(); const second = layout();
+      if (first === second) out.issues.push("FIXED-CHIPS two orders rendered the chips in the same positions on every slot");
+      const t = _rstTarget_;
+      _rstChoose("p", _RST_PROTEINS.indexOf(t.p));
+      _rstChoose("m", (_RST_METHODS.indexOf(t.m) + 1) % _RST_METHODS.length);   // deliberately wrong
+      if (t.q) _rstChoose("q", _RST_QTY.indexOf(t.q));
+      if (t.h) _rstChoose("h", _RST_HEAT.indexOf(t.h));
+      _rstChoose("pt", 0);
+      _rstOrder();
+      const wanted = document.getElementById("rst-wanted-th");
+      if (!wanted) { out.issues.push("NO-WANTED a miss rendered no wanted-order line"); return out; }
+      const spans = [...wanted.querySelectorAll(".sb-w")];
+      if (!spans.length) out.issues.push("NOT-TAPPABLE wanted line has no .sb-w spans: " + wanted.textContent.slice(0, 40));
+      const dead = spans.filter(sp => typeof WORD_MAP === "undefined" || !WORD_MAP[sp.dataset.w]).map(sp => sp.dataset.w);
+      if (dead.length) out.issues.push("DEAD-TAP " + dead.join(","));
+      if (!wanted.textContent.includes(t.p.th + t.m.th)) out.issues.push("WRONG-DISH wanted line lacks " + t.p.th + t.m.th);
+      const line = document.getElementById("rst-line");
+      if (!line || !line.querySelectorAll(".sb-w").length) out.issues.push("NO-QUOTE waitress line not tappable");
+      return out;
+    }).catch(e => ({ issues: ["THREW " + String(e).slice(0, 80)] }));
+    if (errs.length) m.issues.push("JS: " + errs.join(";"));
+    if (m.issues.length) report.push(`${label} Restaurant miss: ${m.issues.join(" | ")}`);
+    errs.length = 0;
+  }
+
   await ctx.close();
 }
 await browser.close();

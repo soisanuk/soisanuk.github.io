@@ -1,6 +1,21 @@
 # A restaurant scenario — design proposal
 
-Status: **the ordering beat is built** (`web/js/restaurant.js`, nav `M`, 2026-10-18) to the recommended v1 scope — diner only, no arrival or bill. The rest of this document is the proposal it was built from. The question it answers
+Status: **the ordering beat is built** (`web/js/restaurant.js`, nav `M`) and is at **v1.1** after round 28. The rest of this document is the proposal v1 was built from; the section at the end records what a teacher found wrong with v1 and what changed.
+
+## Round 28 (2026-10-19): a teacher's verdict on v1, and v1.1
+
+Khun Preeya — nineteen years teaching Thai to foreigners, judging drills by what a learner can do at a table afterwards — would not have put v1 in front of a class. Her findings, verified and fixed unless marked:
+
+- **Passable without reading Thai.** Chips sat in a fixed order, the target was English, and the arrival card translated whatever you tapped back into English, so every order taught four position→English facts. Her Thai-blind run scored 4/5 by the second sitting; my simulation of a dumber blind learner still climbed 0.4 → 3.1 over four. **v1.1 shuffles the chips per order**; the same strategy now scores 0.02 at every sitting. Pinned with the simulation in both directions (`round28.test.js`).
+- **A miss never showed the right word** — only the wrong one quoted back, and "the table wanted" in English. The learner learned "ทอด was wrong" and guessed among the rest, which is the position strategy above. **v1.1 prints the wanted order in Thai, tappable, with the learner's own particle**, and the shelf carries it too. Sweep-checked in a browser.
+- **Half the grid is not a dish.** Targets were drawn uniformly from protein × method, so ไก่นึ่ง, หมูต้ม and bare หมูผัด were rehearsed with TTS and ถูกต้องค่ะ. The doc called the sparsity "the feature"; she called it teaching that any cell of a grid is food. **v1.1 draws targets from 15 orderable dishes** (`_RST_DISHES`); the chips still offer every method, so the other 15 remain reachable as wrong answers. Also corrected: seven in-grid cells are WORDS entries, not eight — หมูปิ้ง's ปิ้ง is not a method chip.
+- **The fixed template taught three things wrong.** จาน on soup; spice as a mandatory slot on steamed fish; and ขอไก่ย่างครับ — the order g3 teaches — impossible to place, because all four slots were required. **v1.1: quantity and spice are optional, soup takes ถ้วย (added to the course), a dish that takes no spice has none in its target and stating one is a miss.**
+- **ครับ hard-wired for every learner.** **v1.1 adds a particle slot, ครับ or ค่ะ, never graded.**
+- **Quantity chips had no English**, so "But you said สาม." left the weakest learner with nothing. **Fixed.**
+- **The audio is decoration.** True, and still true: nothing in v1.1 depends on hearing anything. The waitress's question is now spoken, which makes it less silent, not listening practice. **Not fixed; recorded.**
+- **It is recognition with a composition step, not production.** Every word is on screen; nothing is retrieved from memory, said, or typed. v1.1 removes the position shortcut, so the recognition is at least honest — the Thai is the only route to the chip — but Owen (reads Thai, freezes producing it) is helped only a little. **Not fixed. The next stage is the one she named: chips face-down, the learner types or says the order.** That is the production beat, and it is where this goes next if v1.1 turns out to be worth continuing.
+
+Her verdict on v1 is worth keeping verbatim in spirit: a drill is judged by what the learner can do afterwards, and after v1 a learner who could not read ไก่ scored four plates in five. After v1.1 that learner scores none — which is the minimum a drill owes its class, not the maximum. The question it answers
 is the one that killed the first version of this idea: *how do you gamify
 restaurant interactions so they stay interesting?*
 
