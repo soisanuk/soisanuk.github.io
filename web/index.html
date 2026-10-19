@@ -1574,6 +1574,12 @@ body.mobile .tkey-lat { display:none; }
 }
 #tutor-stats strong { color:#ffe600; }
 
+/* Round 29 (Mei): on the Guided Course path and Statistics the only way back
+   was the footer, below the fold on a phone (1388px and 1280px screens in a
+   664px viewport), and Escape did nothing. A second "← Menu" at the top. */
+.top-back { display:flex; justify-content:flex-start; padding:.2rem 1.2rem 0; }
+.top-back .btn { font-size:.8rem; padding:.3rem .7rem; }
+
 /* ── The Restaurant (ordering beat) ─────────────────────────────────────── */
 /* Reuses Soi Buakhao's bubble, button and tappable-word classes; only the
    ticket builder and the plate are its own. */
@@ -2356,7 +2362,7 @@ body.mobile #app-shell {
 
   <div id="sidebar-footer">
     <div style="color:var(--lotus); font-size:0.9rem; margin-bottom:0.4rem;">❀ สวัสดี ❀</div>
-    <button onclick="showMenu()">Home</button>
+    <button onclick="showMenu()">← Menu</button>
   </div>
 </nav>
 
@@ -2408,7 +2414,7 @@ body.mobile #app-shell {
   <ul class="menu-list">
     <li onclick="startGame()">        <span class="menu-key">G</span> 🌙 Walking Street</li>
     <li onclick="startSoiBuakhao()">  <span class="menu-key">B</span> 🌺 Soi Buakhao</li>
-    <li onclick="startRestaurant()">  <span class="menu-key">M</span> 🍽️ The Restaurant — order it right</li>
+    <li onclick="startRestaurant()">  <span class="menu-key">M</span> 🍽️ The Restaurant</li>
     <li onclick="startConnect4()">    <span class="menu-key">C</span> 🍹 Soi 6: Connect สี่</li>
     <li onclick="startBahtBus()">     <span class="menu-key">R</span> 🚌 Baht Bus</li>
     <li onclick="startClock()">       <span class="menu-key">L</span> ⏰ Last Bus — what time?</li>
@@ -2435,7 +2441,7 @@ body.mobile #app-shell {
   <div class="screen-header" id="cat-header">Choose a category</div>
   <ul class="cat-list" id="cat-list"></ul>
   <div class="screen-footer">
-    <button class="btn" onclick="showMenu()">← Back</button>
+    <button class="btn" onclick="showMenu()">← Menu</button>
   </div>
 </div>
 
@@ -2503,6 +2509,7 @@ body.mobile #app-shell {
 
 <div id="learn-screen" class="screen">
   <div class="screen-header">🎓 Guided Course</div>
+  <div class="top-back"><button class="btn" onclick="showMenu()">← Menu</button></div>
   <div class="card-prompt" id="learn-intro" style="text-align:center; padding:0.4rem 1rem;"></div>
   <div id="learn-placement" class="btn-row" style="display:none">
     <button class="btn" onclick="startPlacement()">📍 Not a beginner? Take the placement test</button>
@@ -2525,7 +2532,7 @@ body.mobile #app-shell {
   <div class="card-body" id="lesson-body"></div>
   <div class="screen-footer">
     <button class="btn" onclick="startLearn()">← Path</button>
-    <button class="btn" onclick="endSession()">Menu</button>
+    <button class="btn" onclick="endSession()">← Menu</button>
   </div>
 </div>
 
@@ -2663,7 +2670,7 @@ body.mobile #app-shell {
     <div id="vocab-list-grid"></div>
   </div>
   <div class="screen-footer">
-    <button class="btn" onclick="showMenu()">← Back</button>
+    <button class="btn" onclick="showMenu()">← Menu</button>
   </div>
 </div>
 
@@ -2673,18 +2680,19 @@ body.mobile #app-shell {
   <p class="idioms-intro">The words that actually run the town — the debts, the wives, the price of everything. Tap a phrase for its breakdown, 🔊 to hear it.</p>
   <div id="idioms-body" class="idioms-body"></div>
   <div class="screen-footer">
-    <button class="btn" onclick="showMenu()">← Back</button>
+    <button class="btn" onclick="showMenu()">← Menu</button>
   </div>
 </div>
 
 <!-- ═══ STATS ══════════════════════════════════════════════════════════════════ -->
 <div id="stats-screen" class="screen">
   <div class="screen-header">Statistics</div>
+  <div class="top-back"><button class="btn" onclick="showMenu()">← Menu</button></div>
   <div class="screen-title">Your Progress</div>
   <div class="stats-grid" id="stats-grid"></div>
   <div id="stats-body" style="padding:0 1.5rem;"></div>
   <div class="screen-footer">
-    <button class="btn" onclick="showMenu()">← Back</button>
+    <button class="btn" onclick="showMenu()">← Menu</button>
   </div>
 </div>
 
@@ -2694,7 +2702,7 @@ body.mobile #app-shell {
   <div class="screen-header">Session Complete</div>
   <div class="session-end" id="end-body"></div>
   <div class="screen-footer">
-    <button class="btn btn-primary" onclick="showMenu()">← Back to Menu</button>
+    <button class="btn btn-primary" onclick="showMenu()">← Menu</button>
   </div>
 </div>
 
@@ -2782,6 +2790,9 @@ body.mobile #app-shell {
     <div id="rst-sub-label"></div>
   </div>
   <div id="rst-body"></div>
+  <div class="screen-footer" id="rst-footer">
+    <button class="btn" style="font-size:.78rem;padding:.1rem .5rem;" onclick="endSession()">Quit<span class="kb-hint"> (Esc)</span></button>
+  </div>
 </div>
 
 <div id="soi-screen" class="screen">

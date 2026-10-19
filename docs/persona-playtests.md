@@ -385,8 +385,9 @@ is where a round's pins go by default, so the file's existence is the record.
 | 26 | 2026-10-08 | Fon | the eleven words added that day, judged where a learner meets them (word card, drill, cloze, example) |
 | 27 | 2026-10-08 | Dao | do newly added words survive tokenise → lookup → extension (the pipeline, not the glosses) |
 | 28 | 2026-10-19 | Khun Preeya | pedagogy — what the Restaurant's ordering beat teaches, and what it teaches wrong (a teacher grading a drill) |
+| 29 | 2026-10-19 | Mei | UX across the whole app — every screen's way back, header, primary action and Escape, compared to each other (a product designer's heuristic review) |
 
-Rounds 17-28 are all closed: every finding either fixed and pinned, or
+Rounds 17-29 are closed: every finding either fixed and pinned, or
 recorded above as a deliberate non-fix. Rounds 26 and 27 were aimed at a
 commit that was hours old, on the doctrine of re-treading just-changed ground,
 and between them found a tokeniser regression that commit had introduced (bare
@@ -397,7 +398,7 @@ without a round file; the numbering follows the files.
 
 Rounds 1-16 predate the convention and their pins live in the topic test files
 with a provenance comment; 17 onward have their own file. Genuinely unwalked as
-of round 28: nothing large. The named surfaces have all been walked at least
+of round 29: nothing large. The named surfaces have all been walked at least
 once, most of them twice at different lenses. What is left is re-treading —
 which the doctrine above says is often the higher-yield choice anyway. Nights
 1-2 of Soi Buakhao still carry a weak length tell (40% of no-comprehension

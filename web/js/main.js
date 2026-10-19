@@ -156,12 +156,12 @@ document.addEventListener("keydown", e => {
     if (key === "n" || key === "N") nfNext();
     if (key === "Escape") endSession();
   }
-  if (active === "charts-screen") {
-    if (key === "Escape") showMenu();
-  }
-  if (["cat-screen","stats-screen","end-screen"].includes(active)) {
-    if (key === "Escape") showMenu();
-  }
+  // Round 29: Escape did nothing on nine screens, including the two a
+  // stranger spends their first ten minutes on, and on Android the hardware
+  // Back button is mapped to Escape — so Back was dead there too. The map
+  // lives in app.js so a test can see it.
+  if (key === "Escape" && ESCAPE_TO_MENU.includes(active)) showMenu();
+  if (key === "Escape" && active === "lesson-screen") endSession();
 });
 
 // ─── init ──────────────────────────────────────────────────────────────────

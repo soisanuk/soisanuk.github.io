@@ -73,7 +73,7 @@ function buildDeck(keys, { mode = "union", freshCap = 10, cap = null, fallback =
 // Flashcards
 // ═══════════════════════════════════════════════════════════════════════════
 function startVocab(mode) {
-  pickCategory(words => _startFlash(mode, words));
+  pickCategory(words => _startFlash(mode, words), mode === "en2th" ? "Flashcards English → Thai" : "Flashcards Thai → English");
 }
 
 function _startFlash(mode, wordList) {
@@ -275,7 +275,7 @@ function _scriptFlashShow() {
 // Quiz
 // ═══════════════════════════════════════════════════════════════════════════
 function startQuiz() {
-  pickCategory(words => _startQuiz(words));
+  pickCategory(words => _startQuiz(words), "Quiz");
 }
 
 function _startQuiz(wordList) {
@@ -530,7 +530,7 @@ function drillNext() {
 // SRS Reviews
 // ═══════════════════════════════════════════════════════════════════════════
 function startVocabSRS() {
-  pickCategory(words => _startSRS(words.map(w => w[0]), "Vocab SRS"));
+  pickCategory(words => _startSRS(words.map(w => w[0]), "Vocab SRS"), "SRS Review");
 }
 
 function startScriptSRS() {
@@ -577,7 +577,9 @@ function srsShow() {
 
   const sp = sessionProgress(deck, idx);
   setProgress("srs-prog", sp.done, sp.total);
-  document.getElementById("srs-counter").textContent = `${session.title}  ${sp.done} / ${sp.total}`;
+  // Round 29 (Mei): this read "0 / 20" with a card in hand while every other
+  // mode reads "1 / N". The card you are looking at is number one.
+  document.getElementById("srs-counter").textContent = `${session.title}  ${sp.done + 1} / ${sp.total}`;
   document.getElementById("srs-thai").textContent  = vowelDisp(thai, "อ"); // อ host: vowels read as their pure sound (no-op for consonants/marks)
   document.getElementById("srs-rtgs").textContent  = `(${rtgs})`;
   document.getElementById("srs-prompt").textContent = "Do you know this?";
@@ -890,7 +892,7 @@ function sentSrsShow() {
   const sp = sessionProgress(deck, idx);
   setProgress("sent-prog", sp.done, sp.total);
   document.getElementById("sent-counter").textContent =
-    `${session.allNew ? "New sentences" : "Sentence SRS"}  ${sp.done} / ${sp.total}`;
+    `${session.allNew ? "New sentences" : "Sentence SRS"}  ${sp.done + 1} / ${sp.total}`;   // round 29: 1-based like every other mode
 
   // Build sentence with target word blanked. A phrase-template headword
   // ("ขอ...") appears in its example sentence as only its fixed part (ขอ),

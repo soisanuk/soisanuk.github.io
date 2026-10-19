@@ -354,6 +354,7 @@ function _readerShow() {
     <div class="reader-rtgs">${_tcEsc(s.rtgs)}</div>
     <div class="reader-en">${_tcEsc(s.en)}</div>
     <div class="btn-row reader-controls">
+      <button class="btn btn-small" onclick="startReader()" aria-label="Back to the level list" title="Levels">‹ Levels</button>
       <button class="btn btn-small" onclick="_readerPrev()" ${_rd.at === 0 ? "disabled" : ""} aria-label="Previous sentence">‹</button>
       ${_speakBtn(s.th)}
       <button class="btn btn-primary" onclick="_readerNext()">${_rd.at + 1 === _rd.feed.length ? "Done" : "Next ›"}</button>
