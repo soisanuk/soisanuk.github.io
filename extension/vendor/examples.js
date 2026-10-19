@@ -1098,6 +1098,7 @@ const EXAMPLES = {
   "คราว": ["คราวนี้ผมเลี้ยง", "khraao níi phǒm líang", "This time it is on me."],
   "คราวหน้า": ["คราวหน้าผมจะมาอีก", "khraao-nâa phǒm jà maa ìik", "Next time I will come again."],
   "สรุป": ["สรุปคืนนี้", "sà-rùp khuuen-níi", "Tonight's summary."],
+  "ถ้วย": ["ขอต้มยำกุ้งหนึ่งถ้วย", "khǒo tôm-yam-kûng nùeng thûai", "One bowl of tom yum prawn soup, please."],
   "ย้าย": ["ผมจะย้ายบ้าน", "phǒm jà yáai bâan", "I am going to move house."],
   "หมูปิ้ง": ["ขอหมูปิ้งครับ", "khǒo mǔu-pîng khráp", "Grilled pork skewers, please."],
   "ครีม": ["ขอกาแฟใส่ครีม", "khǒo kaa-fae sài khriim", "Coffee with cream, please."],

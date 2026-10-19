@@ -1211,6 +1211,9 @@ const WORDS = [
   ["คราว", "khraao", "time / occasion", "noun", "time"],
   ["คราวหน้า", "khraao-nâa", "next time", "adverb", "time"],
   ["สรุป", "sà-rùp", "summary; to sum up", "noun", "classroom"],
+  // Round 28 (Preeya): the Restaurant put every soup on a จาน. ถ high class,
+  // ◌วย live, ไม้โท — falling; ◌วย is uai, never doubled.
+  ["ถ้วย", "thûai", "bowl / cup (classifier for soup)", "noun", "restaurant"],
 
   // ── Requested by The Last Baht Bus (2026-10-18) ──────────────────────────
   // Twenty-eight words a Thai-typing playtester needed, plus the seven parts

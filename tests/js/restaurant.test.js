@@ -30,7 +30,7 @@ describe("the restaurant stores no Thai the course cannot gloss", () => {
     // first step back towards Soi Buakhao's 499 unguarded syllables.
     for (const s of _RST_SLOTS) for (const it of s.list)
       for (const k of Object.keys(it))
-        assert.ok(["th", "en", "e", "n"].includes(k), `${it.th} has a "${k}" key — romanisation belongs in data.js`);
+        assert.ok(["th", "en", "e", "n", "cls"].includes(k), `${it.th} has a "${k}" key — romanisation belongs in data.js`);
   });
 
   test("the waitress's lines resolve, for every word she could quote back", () => {
@@ -49,7 +49,7 @@ describe("composition", () => {
     let n = 0; const bad = [];
     for (const p of _RST_PROTEINS) for (const m of _RST_METHODS) for (const q of _RST_QTY) for (const h of _RST_HEAT) {
       n++;
-      const th = _rstCompose({ p, m, q, h });
+      const th = _rstCompose({ p, m, q, h, pt: _RST_PARTICLES[n % 2] });
       const un = unresolved(th);
       if (un.length) bad.push(`${th}: ${un.join(",")}`);
     }
@@ -57,23 +57,23 @@ describe("composition", () => {
     assert.deepEqual(bad, []);
   });
 
-  test("the eight real compounds stay whole when tapped, the rest split cleanly", () => {
+  test("the seven real compounds stay whole when tapped, the rest split cleanly", () => {
     // ไก่ย่าง is an entry and should be one tappable token; กุ้งนึ่ง is not an
     // entry and should split into two taught words. Both are correct Thai.
     const toks = th => _tokenise(th).map(t => t.text);
-    assert.ok(toks(_rstCompose({ p: _RST_PROTEINS[1], m: _RST_METHODS[0], q: _RST_QTY[0], h: _RST_HEAT[0] })).includes("ไก่ย่าง"));
-    const t = toks(_rstCompose({ p: _RST_PROTEINS[4], m: _RST_METHODS[4], q: _RST_QTY[0], h: _RST_HEAT[0] }));
+    assert.ok(toks(_rstCompose({ p: _RST_PROTEINS[1], m: _RST_METHODS[0], q: _RST_QTY[0], h: _RST_HEAT[0], pt: null })).includes("ไก่ย่าง"));
+    const t = toks(_rstCompose({ p: _RST_PROTEINS[4], m: _RST_METHODS[4], q: _RST_QTY[0], h: _RST_HEAT[0], pt: null }));
     assert.ok(t.includes("กุ้ง") && t.includes("นึ่ง"));
   });
 
   test("the romanisation is assembled from data.js, word for word", () => {
-    const o = { p: _RST_PROTEINS[1], m: _RST_METHODS[0], q: _RST_QTY[1], h: _RST_HEAT[0] };
+    const o = { p: _RST_PROTEINS[1], m: _RST_METHODS[0], q: _RST_QTY[1], h: _RST_HEAT[0], pt: _RST_PARTICLES[0] };
     assert.equal(_rstRom(_rstCompose(o)), "khǒo kài-yâang sǒong jaan mâi-phèt khráp");
   });
 });
 
 describe("the kitchen is literal", () => {
-  const T = { p: _RST_PROTEINS[1], m: _RST_METHODS[0], q: _RST_QTY[0], h: _RST_HEAT[0] }; // 1 grilled chicken, not spicy
+  const T = { p: _RST_PROTEINS[1], m: _RST_METHODS[0], q: _RST_QTY[0], h: _RST_HEAT[0], pt: _RST_PARTICLES[0] }; // 1 grilled chicken, not spicy
 
   test("an exact order has no diff and gets ถูกต้องค่ะ", () => {
     assert.deepEqual(_rstDiff(T, { ...T }), []);
@@ -106,7 +106,9 @@ describe("a sitting is reproducible", () => {
     const rand = () => seq[i++ % seq.length];
     const a = _rstTarget(rand); i = 0; const b = _rstTarget(rand);
     assert.deepEqual(a, b);
-    assert.equal(a.p.th, _RST_PROTEINS[0].th);   // 0.1 * 6 → index 0
-    assert.equal(a.q.th, _RST_QTY[2].th);        // 0.9 * 3 → index 2
+    // 0.1 * 15 dishes → index 1 = หมูทอด; 0.5 ≥ 0.34 so quantity is stated: 0.9 * 3 → สาม
+    assert.equal(a.p.th + a.m.th, "หมูทอด");
+    assert.equal(a.q.th, _RST_QTY[2].th);
+    assert.equal(a.h, null, "fried pork takes no spice");
   });
 });
