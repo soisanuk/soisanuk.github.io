@@ -330,6 +330,52 @@ for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 
     errs.length = 0;
   }
 
+  // ── Round 29 F2/F3: Continue continues ────────────────────────────────────
+  // Mei's repro, verbatim: a unit at 5/N, ← Menu, Continue — it restarted at
+  // 1/N with a reshuffled queue, and a reload or an app switch did the same.
+  // The unit tests pin the pure save/restore layer; only a browser can see the
+  // counter, the menu hint, the path row and a real reload. Added 2026-10-26.
+  errs.length = 0;
+  {
+    const issues = [];
+    const counter = () => page.evaluate(() => document.getElementById("lesson-counter").textContent);
+    const r = await page.evaluate(() => {
+      const out = { issues: [] };
+      try { localStorage.removeItem("soisanuk_lesson"); } catch (e) {}
+      _unitStart(0, true);
+      for (let i = 0; i < 4; i++) _learnNext();
+      out.before = document.getElementById("lesson-counter").textContent;
+      endSession();                                                  // ← Menu
+      const hint = ["nav-cont-stats", "nav-cont-stats2"].map(id => (document.getElementById(id) || {}).textContent || "").join(" | ");
+      if (!/resume unit 1/.test(hint)) out.issues.push("NO-HINT the Continue row does not say it will resume: " + hint.trim());
+      startContinue();
+      out.after = document.getElementById("lesson-counter").textContent;
+      if (!out.after.startsWith("5/")) out.issues.push(`RESTARTED left at ${out.before}, Continue came back at ${out.after}`);
+      if (!/resumed/.test(out.after)) out.issues.push("SILENT the resumed card does not say so: " + out.after);
+      const rs = document.getElementById("lesson-restart");
+      if (!rs || rs.style.display === "none") out.issues.push("NO-RESTART a resumed unit offers no Start over");
+      startLearn();                                                   // ← Path, then the unit's own row
+      const row = document.querySelector("#learn-units li");
+      if (!row || !/resume 5\//.test(row.textContent)) out.issues.push("NO-PATH-BADGE the path row does not show the unit in progress: " + (row && row.textContent.trim()));
+      row && row.click();
+      const viaPath = document.getElementById("lesson-counter").textContent;
+      if (!viaPath.startsWith("5/")) out.issues.push(`PATH-RESTARTED tapping the unit's row came back at ${viaPath}`);
+      return out;
+    }).catch(e => ({ issues: ["THREW " + String(e).slice(0, 80)] }));
+    issues.push(...r.issues);
+    // A real reload — what an app switch on a phone usually is.
+    await page.reload(); await page.waitForTimeout(500);
+    await page.evaluate(() => { try { closeTutorial(); } catch (e) {} startContinue(); }).catch(e => issues.push("THREW " + String(e).slice(0, 60)));
+    const afterReload = await counter().catch(() => "?");
+    if (!afterReload.startsWith("5/")) issues.push(`RELOAD-LOST after a reload Continue came back at ${afterReload}`);
+    // Finishing the unit clears it: a passed unit is not "in progress".
+    const stale = await page.evaluate(() => { _lu.at = _lu.queue.length; _learnStep(); return localStorage.getItem("soisanuk_lesson"); }).catch(() => "threw");
+    if (stale) issues.push("FINISH-STALE a finished unit is still saved as in progress");
+    if (errs.length) issues.push("JS: " + errs.join(";"));
+    if (issues.length) report.push(`${label} Continue: ${issues.join(" | ")}`);
+    errs.length = 0;
+  }
+
   await ctx.close();
 }
 await browser.close();
