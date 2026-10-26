@@ -376,6 +376,39 @@ for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 
     errs.length = 0;
   }
 
+  // ── The recall card hides its answer until asked ─────────────────────────
+  // The Pimsleur pause only works if the Thai is not on screen while you try
+  // to say it. learn.test.js pins that the PROMPT has no Thai; only a browser
+  // sees that the rendered card does not show the answer before Show me, and
+  // does after. Added 2026-10-26.
+  errs.length = 0;
+  {
+    const m = await page.evaluate(() => {
+      const out = { issues: [] };
+      try { localStorage.removeItem("soisanuk_lesson"); } catch (e) {}
+      _unitStart(0, true);
+      const i = _lu.queue.findIndex(x => x.kind === "recall");
+      if (i < 0) { out.issues.push("NO-RECALL unit 1 has no recall card"); return out; }
+      const th = (_lu.queue[i].word || _lu.queue[i].line)[0];
+      _lu.at = i; _lu.max = i; _learnStep();
+      const body = document.getElementById("lesson-body");
+      if (body.textContent.includes(th)) out.issues.push(`LEAK the recall card shows ${th} before Show me`);
+      const show = [...body.querySelectorAll("button")].find(b => /Show me/.test(b.textContent));
+      if (!show) { out.issues.push("NO-SHOW no Show me control"); return out; }
+      show.click();
+      if (!body.textContent.includes(th)) out.issues.push(`NO-REVEAL Show me did not reveal ${th}`);
+      const next = [...body.querySelectorAll("button")].find(b => /Next/.test(b.textContent));
+      if (!next) out.issues.push("NO-NEXT the revealed card has no way on");
+      else { const before = _lu.at; next.click(); if (_lu.at !== before + 1) out.issues.push("STUCK Next did not advance"); }
+      try { localStorage.removeItem("soisanuk_lesson"); } catch (e) {}
+      showMenu();
+      return out;
+    }).catch(e => ({ issues: ["THREW " + String(e).slice(0, 80)] }));
+    if (errs.length) m.issues.push("JS: " + errs.join(";"));
+    if (m.issues.length) report.push(`${label} Recall: ${m.issues.join(" | ")}`);
+    errs.length = 0;
+  }
+
   await ctx.close();
 }
 await browser.close();

@@ -462,7 +462,8 @@ test("no unit demands a flawless run", () => {
   // 80% of a 4-card sample IS 4/4. All eight chunk units grade 2-4 cards, so
   // every one of them required perfection — and units are strictly gated, so a
   // learner who knew the material could simply be stuck.
-  const TEACH = new Set(["glyph", "wordintro", "toneIntro", "tonecalc", "chunkIntro", "chunk"]);
+  // recall is ungraded (see _wRecall), so it must not inflate the graded count.
+  const TEACH = new Set(["glyph", "wordintro", "toneIntro", "tonecalc", "chunkIntro", "chunk", "recall"]);
   const passes = (graded, misses) => {
     const acc = graded ? (graded - misses) / graded : 1;
     return acc >= COURSE_PASS || (graded < COURSE_PASS_MIN_SAMPLE && misses <= 1);
@@ -665,7 +666,8 @@ test("no letters unit GRADES a word it has never introduced", () => {
   //
   // Distractors from the wider pool are fine — a wrong answer you have not met
   // is fair. A QUESTION you have not met is not.
-  const TARGET_KINDS = ["speed", "match", "typeth", "listen", "mc", "mcth", "typeen", "clozex"];
+  // recall asks for a word too, so it is held to the same rule.
+  const TARGET_KINDS = ["speed", "match", "typeth", "listen", "mc", "mcth", "typeen", "clozex", "recall"];
   for (const u of COURSE) {
     if (u.kind !== "letters") continue;
     const seen = new Set();
@@ -679,4 +681,62 @@ test("no letters unit GRADES a word it has never introduced", () => {
       }
     }
   }
+});
+
+// ── Recall: the Pimsleur pause (2026-10-26) ─────────────────────────────────
+// Read against the five learning laws, the course asked a learner to PRODUCE
+// anything in 7.4% of its steps, all of it typing, and nothing anywhere asked
+// for recall aloud with the source closed. _wRecall is Pimsleur's anticipation
+// step: the meaning, say the Thai, then hear it. These pin what makes it that.
+
+test("every unit that teaches words or phrases has recall; the tone unit does not", () => {
+  for (const u of COURSE) {
+    const n = _unitQueue(u, []).filter(x => x.kind === "recall").length;
+    if (u.kind === "tone") assert.equal(n, 0, "the tone unit drills pitch, not words to recall");
+    else assert.ok(n >= 1, `${u.label || u.kind} has no recall card`);
+  }
+});
+
+test("a recall card never prints its own answer", () => {
+  // The prompt is the English; if it carried Thai the card would show what it
+  // asks for. Built several times, since _recallPick shuffles.
+  for (let rep = 0; rep < 5; rep++) for (const u of COURSE)
+    for (const it of _unitQueue(u, []).filter(x => x.kind === "recall")) {
+      const row = it.word || it.line;
+      const prompt = _recallPrompt(row);
+      assert.ok(prompt.length > 0, `empty prompt for ${row[0]}`);
+      assert.doesNotMatch(prompt, /[฀-๿]/, `the prompt for ${row[0]} shows Thai: "${prompt}"`);
+    }
+});
+
+test("recall comes after the word was introduced, with graded practice in between", () => {
+  // Spacing inside the unit: produced straight after its introduction, the
+  // word is still in working memory and the attempt proves little.
+  for (const u of COURSE) {
+    const q = _unitQueue(u, []);
+    q.forEach((it, i) => {
+      if (it.kind !== "recall") return;
+      const th = (it.word || it.line)[0];
+      const intro = q.findIndex(x => (x.kind === "wordintro" && x.word[0] === th) || (x.kind === "chunk" && x.line[0] === th));
+      assert.ok(intro >= 0 && intro < i, `${th} is recalled before it is introduced`);
+      const gradedBetween = q.slice(intro + 1, i).filter(x => !_TEACH_KINDS.has(x.kind)).length;
+      assert.ok(gradedBetween >= 2, `${th}: only ${gradedBetween} graded cards between its introduction and its recall`);
+    });
+  }
+});
+
+test("recall is never graded", () => {
+  // The course promises "you never grade yourself here". As a teach kind it
+  // records nothing (no _learnRecord), cannot move a unit's pass mark, and
+  // re-renders live on revisit rather than as a graded recap.
+  assert.ok(_TEACH_KINDS.has("recall"));
+});
+
+test("the course asks for production in at least an eighth of its steps", () => {
+  // 7.4% before recall, 14.7% with it. A floor, so a later edit that quietly
+  // drops recall from a unit type is caught.
+  const PRODUCE = new Set(["typeen", "typeth", "recall"]);
+  let produce = 0, total = 0;
+  for (const u of COURSE) for (const it of _unitQueue(u, [], true)) { total++; if (PRODUCE.has(it.kind)) produce++; }
+  assert.ok(produce / total >= 0.125, `production is ${(100 * produce / total).toFixed(1)}% of the course`);
 });
