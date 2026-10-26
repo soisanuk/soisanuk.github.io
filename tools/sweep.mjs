@@ -376,6 +376,32 @@ for (const [label, opts] of [["DESKTOP", { viewport: { width: 1280, height: 850 
     errs.length = 0;
   }
 
+  // ── Reference Charts: the Hidden letters tab renders ──────────────────────
+  // orthography.test.js pins the DATA; only a browser sees that the tab exists,
+  // switches, and renders a tile per example with nothing undefined in it.
+  // Added 2026-10-26.
+  errs.length = 0;
+  {
+    const m = await page.evaluate(() => {
+      const out = { issues: [] };
+      showCharts();
+      const tab = document.querySelector('.chart-tab[data-tab="hidden"]');
+      if (!tab) { out.issues.push("NO-TAB no Hidden letters tab"); return out; }
+      tab.click();
+      const sec = document.getElementById("chart-hidden");
+      if (!sec || sec.style.display === "none") { out.issues.push("NOT-SHOWN the tab did not show its section"); return out; }
+      const tiles = sec.querySelectorAll(".hidden-ex").length;
+      const want = HIDDEN_RULES.reduce((n, r) => n + r.ex.length, 0);
+      if (tiles !== want) out.issues.push(`TILES rendered ${tiles} examples of ${want}`);
+      if (/undefined|null|NaN/.test(sec.textContent)) out.issues.push("UNDEFINED the section prints undefined/null");
+      showMenu();
+      return out;
+    }).catch(e => ({ issues: ["THREW " + String(e).slice(0, 80)] }));
+    if (errs.length) m.issues.push("JS: " + errs.join(";"));
+    if (m.issues.length) report.push(`${label} Hidden letters: ${m.issues.join(" | ")}`);
+    errs.length = 0;
+  }
+
   // ── The recall card hides its answer until asked ─────────────────────────
   // The Pimsleur pause only works if the Thai is not on screen while you try
   // to say it. learn.test.js pins that the PROMPT has no Thai; only a browser

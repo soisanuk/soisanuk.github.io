@@ -117,7 +117,110 @@ function _buildCharts() {
   _buildVowelChart();
   _buildToneChart();
   _buildNumChart();
+  _buildHiddenChart();
   showChartTab("alphabet");
+}
+
+// ─── Hidden letters ───────────────────────────────────────────────────────────
+// Letters written and not said, and sounds said and not written. Added
+// 2026-10-26 from a reference guide the user brought in, after every example
+// was checked against the course data, the shipped dictionary and the tone
+// engine. Three of the guide's claims were wrong and are corrected here: อ นำ
+// moves ย to MID class (the guide said low — it confused low tone with low
+// class); a final ร after a consonant with no written vowel reads -oon, so
+// นคร is ná-khoon, not "na-khon"; and one romanisation system instead of four
+// (the guide's "pâap" was Paiboon, where p is the aspirated พ). Three things
+// it left out are added, the first by far the most important: a leader that
+// IS said — it takes the hidden a AND lends its class to the next syllable,
+// which is why ถนน is thà-nǒn, rising. The app's own tone engine has that blind
+// spot too: alone, it reads the รุป of สรุป as high.
+//
+// Every `rom` is the course's own where the word is a course word, else the
+// shipped dictionary's; every `alone` claim — the tone a syllable would have
+// WITHOUT its leader — is the engine's. tests/js/orthography.test.js fails on
+// drift in either, and checks that every leader really changes the tone.
+const HIDDEN_RULES = [
+  { title: "Silent ห leads", th: "ห นำ",
+    body: "Written before ง ญ น ม ย ร ล ว and never said. It moves the next letter to HIGH-class tone rules.",
+    ex: [
+      { th: "หยุด", rom: "yùt", en: "to stop", alone: ["ยุด", "high"] },
+      { th: "หมอ", rom: "mǒo", en: "doctor", alone: ["มอ", "mid"] },
+      { th: "หนู", rom: "nǔu", en: "mouse; I (a young woman)", alone: ["นู", "mid"] },
+    ] },
+  { title: "Silent อ leads", th: "อ นำ",
+    body: "Only before ย, and only in these four words. อ is a MID-class letter, so ย follows mid-class rules.",
+    ex: [
+      { th: "อยู่", rom: "yùu", en: "to be at; to live", alone: ["ยู่", "falling"] },
+      { th: "อย่า", rom: "yàa", en: "don't", alone: ["ย่า", "falling"] },
+      { th: "อย่าง", rom: "yàang", en: "kind; like", alone: ["ย่าง", "falling"] },
+      { th: "อยาก", rom: "yàak", en: "to want", alone: ["ยาก", "falling"] },
+    ] },
+  { title: "Leaders you DO say", th: "อักษรนำ",
+    body: "A high- or mid-class letter before ง ญ น ม ย ร ล ว is said, with a short a — and it still lends its class to the next syllable.",
+    ex: [
+      { th: "สนุก", rom: "sà-nùk", en: "fun", alone: ["นุก", "high"] },
+      { th: "ตลาด", rom: "tà-làat", en: "market", alone: ["ลาด", "falling"] },
+      { th: "ถนน", rom: "thà-nǒn", en: "road", alone: ["นน", "mid"] },
+      { th: "สรุป", rom: "sà-rùp", en: "to sum up", alone: ["รุป", "high"] },
+    ] },
+  { title: "ร you don't hear", th: "ควบไม่แท้",
+    body: "After จ ซ ศ ส the ร is written and not said. After ท, the pair ทร is said as ซ — an s.",
+    ex: [
+      { th: "จริง", rom: "jing", en: "true" },
+      { th: "สร้าง", rom: "sâang", en: "to build" },
+      { th: "ทราบ", rom: "sâap", en: "to know (polite)" },
+      { th: "ทราย", rom: "saai", en: "sand" },
+    ] },
+  { title: "Hidden o", body: "Two consonants and no vowel make a closed syllable: say a short o between them.",
+    ex: [
+      { th: "คน", rom: "khon", en: "person" },
+      { th: "ลม", rom: "lom", en: "wind" },
+      { th: "ฝน", rom: "fǒn", en: "rain" },
+    ] },
+  { title: "Hidden a", body: "A consonant with no vowel and nothing after it in its syllable: say a short a. One letter can do two jobs — close one syllable and open the next.",
+    ex: [
+      { th: "สบาย", rom: "sà-baai", en: "comfortable" },
+      { th: "ตุ๊กตา", rom: "túk-kà-taa", en: "doll", note: "one ก does two jobs: tú·k|kà" },
+    ] },
+  { title: "Final ร says -oon", body: "A consonant then ร, with no vowel written: the vowel is ออ, and ร at the end sounds n.",
+    ex: [
+      { th: "นคร", rom: "ná-khoon", en: "city" },
+      { th: "พร", rom: "phoon", en: "blessing" },
+      { th: "อักษร", rom: "àk-sǒon", en: "letter (of an alphabet)" },
+    ] },
+  { title: "Double ร says a", th: "ร หัน",
+    body: "รร stands for a short a. With a final after it, that final ends the syllable; with nothing after it, add n.",
+    ex: [
+      { th: "กรรม", rom: "kam", en: "karma; action" },
+      { th: "ธรรม", rom: "tham", en: "dharma" },
+      { th: "สวรรค์", rom: "sà-wǎn", en: "heaven" },
+    ] },
+  { title: "The silencer ์", th: "การันต์",
+    body: "Silences the letter it sits on — sometimes the letter before it too, or that letter's vowel with it.",
+    ex: [
+      { th: "ศุกร์", rom: "sùk", en: "Friday", note: "ร is silent" },
+      { th: "ภาพยนตร์", rom: "phâap-phá-yon", en: "film", note: "ต and ร are silent; พ is said twice" },
+      { th: "สิทธิ์", rom: "sìt", en: "right; entitlement", note: "ธ and its vowel are silent" },
+      { th: "ศักดิ์", rom: "sàk", en: "rank; prestige", note: "ด and its vowel are silent" },
+    ] },
+];
+
+function _hiddenEsc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+function _buildHiddenChart() {
+  const el = document.getElementById("chart-hidden");
+  if (!el) return;
+  el.innerHTML = `<p class="hidden-intro">Letters you write and don't say, and sounds you say and don't write. Tap a word to hear it.</p>` +
+    HIDDEN_RULES.map(r => `<section class="hidden-rule">
+      <h3 class="hidden-title">${_hiddenEsc(r.title)}${r.th ? ` <span class="hidden-th" lang="th">${_hiddenEsc(r.th)}</span>` : ""}</h3>
+      <p class="hidden-body">${_hiddenEsc(r.body)}</p>
+      <div class="hidden-exs">${r.ex.map(e => `<button class="hidden-ex" onclick="_tts.speak(${_hiddenEsc(JSON.stringify(e.th))})">
+          <span class="hidden-ex-th" lang="th">${_hiddenEsc(e.th)}</span>
+          <span class="hidden-ex-rom">${_hiddenEsc(e.rom)}</span>
+          <span class="hidden-ex-en">${_hiddenEsc(e.en)}</span>
+          ${e.alone ? `<span class="hidden-ex-why">on its own, <span lang="th">${_hiddenEsc(e.alone[0])}</span> would be ${_hiddenEsc(e.alone[1])}</span>` : ""}
+          ${e.note ? `<span class="hidden-ex-why">${_hiddenEsc(e.note)}</span>` : ""}
+        </button>`).join("")}</div>
+    </section>`).join("");
 }
 
 function _alphaCellSpeak(ch) {
