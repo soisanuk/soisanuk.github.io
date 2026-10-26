@@ -184,7 +184,9 @@ export async function openApp(opts = {}) {
 
     // ── entry points ────────────────────────────────────────────────────────
     startCourse:  () => app.safe("startCourse",  () => { startLearn(); return document.querySelector(".screen.active")?.id; }),
-    startUnit:    i  => app.safe("startUnit",    n => { _unitStart(n); return _lu ? _lu.queue.length : null; }, i),
+    // fresh: a round asking to START a unit means a new queue. Since round 29
+    // a plain _unitStart resumes a half-done unit — use ▶ Continue for that.
+    startUnit:    i  => app.safe("startUnit",    n => { _unitStart(n, true); return _lu ? _lu.queue.length : null; }, i),
     startSRS:     () => app.safe("startSRS",     () => { startVocabSRS(); return document.querySelector(".screen.active")?.id; }),
     openReader:   l  => app.safe("openReader",   n => { startReader(); readerOpen(n); return document.getElementById("reader-thai")?.textContent; }, l),
     menu:         () => app.safe("menu",         () => { showMenu(); return document.querySelector(".screen.active")?.id; }),

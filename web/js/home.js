@@ -24,6 +24,10 @@ const HOME_FORECAST_DAYS = 7;
 // card and the button can never disagree (see continuePlan in learn.js).
 function homeCta(plan, streak) {
   if (!plan) return { title: "Start today", sub: "your first lesson is waiting" };
+  if (plan.kind === "resume") {
+    return { title: `Resume: ${plan.unit.label}`,
+             sub: `${Math.min(plan.at + 1, plan.total)} of ${plan.total} — where you left off` };
+  }
   if (plan.kind === "review") {
     // plan.n is the real backlog; plan.due is only the batch Continue serves.
   // "review" alone read as ALL reviews. srsStats counts every namespace — 978

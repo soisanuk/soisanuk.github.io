@@ -29,6 +29,7 @@ function _unitUnlocked(path, idx) {
 // ── The path screen ──────────────────────────────────────────────────────────
 function startLearn() {
   const path = _pathLoad();
+  const saved = _luLoad();
   const list = document.getElementById("learn-units");
   list.innerHTML = "";
   COURSE.forEach((u, idx) => {
@@ -42,6 +43,7 @@ function startLearn() {
       // reader tells you which unit a band needs — and an unnumbered list
       // gives that nothing to land on.
       `<span class="learn-label">${idx + 1}. ${_esc(u.label)}</span>` +
+      (saved && saved.idx === idx ? `<span class="learn-acc">resume ${Math.min(_luRestore(saved).at + 1, saved.queue.length)}/${saved.queue.length}</span>` : "") +
       (rec && rec.acc != null ? `<span class="learn-acc">${Math.round(rec.acc * 100)}%${rec.msAvg ? " · " + (rec.msAvg / 1000).toFixed(1) + "s/word" : ""}</span>` : "");
     if (open) li.onclick = () => _unitStart(idx);
     list.appendChild(li);
@@ -243,7 +245,131 @@ function _unitQueue(unit, dueWords, audio = true) {
   return queue;
 }
 
-function _unitStart(idx) {
+// ── Resume: Continue continues (round 29, F2/F3/F10) ────────────────────────
+// A course unit lived only in memory, and _unitStart built a freshly shuffled
+// queue every time — so ← Menu, Escape, Back, a reload, or a switch to LINE
+// and back all restarted the unit at 1/40, while tutorial slide 2 promised
+// that Continue "always picks up where you left off". Mei found it doing
+// exactly that: 5/40, Menu, Continue, 1/40. Nothing said the place was lost.
+//
+// What is saved is the queue ITSELF, not a seed to rebuild it from: a unit's
+// warm-up cards are drawn from what is DUE, and grading during the unit
+// changes what is due, so a rebuild would not reproduce the unit. Only course
+// units (idx >= 0) are saved. Continue's review and speed rounds are rebuilt
+// from what is still due, which already resumes them, and placement measures
+// where to start and must not.
+//
+// Word rows are stored as references and re-read from WORDS on resume. Each
+// clozex card carries the whole taught vocabulary as its pool, so the raw
+// queue of the last unit serialises to 867 KB — too much to write on every
+// tap — and a reference also means a romanisation corrected between leaving
+// and returning is the corrected one. A reference to a word that no longer
+// exists discards the saved unit rather than resuming into a hole.
+const _LU_KEY = "soisanuk_lesson";
+
+function _luWordMap() { return new Map(WORDS.map(w => [w[0], w])); }
+
+// Two encodings keep the save small. A WORDS row becomes {"~w": key}. And an
+// array shared by several cards is written ONCE, into `refs`, and referenced
+// as {"~r": n}: unit 20's thirteen clozex cards share one 1,068-word pool, so
+// writing it per card made the save 243 KB even with word references. On
+// resume each ref is rebuilt once and handed to every card that shared it, so
+// the restored queue shares the pool exactly as the built one did.
+function _luPack(v, ctx) {
+  if (Array.isArray(v)) {
+    const row = v.length === 5 && typeof v[0] === "string" ? ctx.map.get(v[0]) : null;
+    if (row && row.every((x, i) => x === v[i])) return { "~w": v[0] };
+    if (v.length > 8) {
+      let i = ctx.ids.get(v);
+      if (i === undefined) {
+        i = ctx.refs.length;
+        ctx.ids.set(v, i);
+        ctx.refs.push(null);                       // reserve the slot before recursing
+        ctx.refs[i] = v.map(x => _luPack(x, ctx));
+      }
+      return { "~r": i };
+    }
+    return v.map(x => _luPack(x, ctx));
+  }
+  if (v && typeof v === "object") {
+    const o = {};
+    for (const k of Object.keys(v)) o[k] = _luPack(v[k], ctx);
+    return o;
+  }
+  return v;
+}
+function _luUnpack(v, ctx) {
+  if (Array.isArray(v)) return v.map(x => _luUnpack(x, ctx));
+  if (v && typeof v === "object") {
+    const keys = Object.keys(v);
+    if (keys.length === 1 && keys[0] === "~w") {
+      const row = ctx.map.get(v["~w"]);
+      if (!row) ctx.miss++;
+      return row || null;
+    }
+    if (keys.length === 1 && keys[0] === "~r") {
+      const i = v["~r"];
+      if (!Array.isArray(ctx.refs[i])) { ctx.miss++; return []; }
+      if (!ctx.done.has(i)) ctx.done.set(i, _luUnpack(ctx.refs[i], ctx));
+      return ctx.done.get(i);
+    }
+    const o = {};
+    for (const k of keys) o[k] = _luUnpack(v[k], ctx);
+    return o;
+  }
+  return v;
+}
+
+function _luSave() {
+  if (!_lu || !(_lu.idx >= 0)) return;
+  const ctx = { map: _luWordMap(), ids: new Map(), refs: [] };
+  try {
+    // Element-wise: the queue itself is never interned. The first version
+    // packed the whole array, and any unit with more than eight cards saved
+    // its queue as {"~r": 0} — which _luLoad rightly refused, so every long
+    // unit silently failed to resume. Found by the round-29 pin.
+    const queue = _lu.queue.map(it => _luPack(it, ctx));
+    localStorage.setItem(_LU_KEY, JSON.stringify({
+      course: COURSE.length, idx: _lu.idx, at: _lu.at, max: _lu.max || 0,
+      answered: _lu.answered != null ? _lu.answered : -1,
+      results: _lu.results, refs: ctx.refs, queue,
+    }));
+  } catch (e) {}
+}
+
+// The saved unit, rehydrated — or null when there is none, or it cannot be
+// trusted: a different course, an unknown unit, a position past the end, or
+// a word that has since left WORDS.
+function _luLoad() {
+  let s;
+  try { s = JSON.parse(localStorage.getItem(_LU_KEY) || "null"); } catch (e) { return null; }
+  if (!s || s.course !== COURSE.length || !COURSE[s.idx] || !Array.isArray(s.queue) ||
+      !(s.at >= 0) || s.at > s.queue.length) return null;
+  const ctx = { map: _luWordMap(), refs: Array.isArray(s.refs) ? s.refs : [], done: new Map(), miss: 0 };
+  const queue = _luUnpack(s.queue, ctx);
+  if (ctx.miss) return null;
+  return { ...s, queue, refs: undefined };
+}
+function _luClear() { try { localStorage.removeItem(_LU_KEY); } catch (e) {} }
+
+// The _lu a saved unit resumes as. Pure, so it is testable without a DOM.
+// A card graded just before leaving is NOT served again: _learnRecord writes
+// the SRS at grade time, so a second showing would grade one answer twice.
+function _luRestore(s) {
+  let at = s.at;
+  if (s.answered === at) at++;
+  return { idx: s.idx, unit: COURSE[s.idx], queue: s.queue, at,
+           max: Math.max(s.max || 0, at), results: s.results || [], resumed: at };
+}
+function _luResume(s) { _lu = _luRestore(s); _learnStep(); }
+
+// `fresh` skips the saved unit: Try again, and ↺ Start over. Anything else —
+// the path's row, Continue — resumes the unit where it was left.
+function _unitStart(idx, fresh) {
+  if (!fresh) {
+    const s = _luLoad();
+    if (s && s.idx === idx) { _luResume(s); return; }
+  }
   const unit = COURSE[idx];
   const prog = loadProgress();
   const due = dueCards(prog, WORDS.map(w => w[0])).slice(0, 4)
@@ -277,7 +403,10 @@ function _learnStep() {
   prog.style.width = Math.round((_lu.at / _lu.queue.length) * 100) + "%";
   document.getElementById("lesson-counter").textContent =
     `${_lu.at + 1}/${_lu.queue.length}` +
-    (review ? " ↩" : item.tag === "review" ? " · warm-up" : "");
+    (review ? " ↩" : item.tag === "review" ? " · warm-up" : "") +
+    (_lu.resumed === _lu.at ? " · resumed" : "");
+  const restart = document.getElementById("lesson-restart");
+  if (restart) restart.style.display = _lu.resumed != null && _lu.idx >= 0 ? "" : "none";
   const back = document.getElementById("lesson-back");
   const fwd = document.getElementById("lesson-fwd");
   if (back) back.style.visibility = _lu.at > 0 ? "visible" : "hidden";
@@ -293,6 +422,7 @@ function _learnStep() {
        toneIntro: _wToneIntro, tonecalc: _wToneCalc, toneear: _wToneEar, toneread: _wToneRead }[item.kind])(item, body);
   }
   _ensureCardEndVisible(body);
+  _luSave();
 }
 
 // A tall card (decomposition chips, an example sentence, chunk prose) can
@@ -335,6 +465,8 @@ function _learnRecord(key, quality, ms) {
     saveProgress(prog);
   }
   _lu.results.push({ key, q: quality, ms: ms || 0 });
+  _lu.answered = _lu.at;
+  _luSave();
   if (typeof _streakRecord === "function") _streakRecord(ms || 0);
 }
 
@@ -429,6 +561,7 @@ function _unitFinish() {
     _lu = null;
     return;
   }
+  _luClear();
   const id = _unitId(_lu.unit);
   path.units = path.units || {};
   const prev = path.units[id] || {};
@@ -452,7 +585,7 @@ function _unitFinish() {
     <div class="learn-summary">${Math.round(acc * 100)}% first-try accuracy` +
     (msAvg ? ` · ${(msAvg / 1000).toFixed(1)}s per word read` : "") + `</div>
     <div class="btn-row">
-      ${passed ? "" : `<button class="btn btn-primary" onclick="_unitStart(${_lu.idx})">Try again</button>`}
+      ${passed ? "" : `<button class="btn btn-primary" onclick="_unitStart(${_lu.idx}, true)">Try again</button>`}
       <button class="btn ${passed ? "btn-primary" : ""}" onclick="startLearn()">Back to the path</button>
     </div>`;
   document.getElementById("lesson-prog").style.width = "100%";
@@ -1098,6 +1231,8 @@ function _streakRender() {
 // days" was told only what they had lost. The streak survives as a tail when
 // it is alive, because that IS the nudge once nothing is due.
 function _contText(plan, st, t) {
+  if (plan && plan.kind === "resume")
+    return `resume unit ${plan.unitIdx + 1} · ${Math.min(plan.at + 1, plan.total)}/${plan.total}`;
   // "vocabulary", not bare "review" — see homeCta. The Continue row sits in
   // the same pane as a "due now" tile counting all three namespaces.
   const kinds = { review: "vocabulary review", script: "script review", sentence: "sentence review" };
@@ -1128,6 +1263,14 @@ function _streakText(st, t) {
 // had no way to be resumed at all. Vocabulary keeps first claim, since it is
 // what the course itself teaches.
 function continuePlan() {
+  // A unit left half-done comes first: it is literally where you left off,
+  // and its own first cards are already warm-ups drawn from what is due.
+  const saved = _luLoad();
+  if (saved) {
+    const r = _luRestore(saved);
+    return { kind: "resume", unitIdx: saved.idx, unit: COURSE[saved.idx],
+             at: r.at, total: saved.queue.length, saved };
+  }
   const prog = loadProgress();
   const sets = srsKeySets();
   // `due` is the BATCH (ten at a time — a backlog of eighty should not be
@@ -1151,6 +1294,7 @@ function continuePlan() {
 // ▶ Continue: act on the plan above.
 function startContinue() {
   const plan = continuePlan();
+  if (plan.kind === "resume") { _luResume(plan.saved); return; }
   if (plan.kind === "review") {
     _lu = { idx: -1, unit: { kind: "review", label: "Review" },
       queue: plan.due.map(w => ({ kind: "mc", word: w, tag: "review" })), at: 0, results: [] };
