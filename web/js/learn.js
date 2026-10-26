@@ -88,6 +88,16 @@ let _lu = null; // { idx, unit, queue:[items], at, results:[{key,q,first,ms}], t
 // budget of 1, so on a browser with no Thai voice the unit was unpassable —
 // and every later unit is locked behind it. Found by the 2026-08-30
 // first-timer round.
+// Recall candidates: shuffled, and only those whose English prompt carries no
+// Thai — a gloss like "hi (colloquial สวัสดี)" would print a Thai word on a
+// card whose whole point is that the Thai is hidden. The prompt is the gloss
+// before any " — " annotation, which is how chunk lines carry their notes.
+function _recallPrompt(row) { return String(row[2] || "").split(" — ")[0].trim(); }
+function _recallPick(rows, n) {
+  return _shuffle(rows.filter(r => r && r[0] && _recallPrompt(r) &&
+    !/[\u0E00-\u0E7F]/.test(_recallPrompt(r)))).slice(0, n);
+}
+
 function _unitQueue(unit, dueWords, audio = true) {
   const queue = [];
   for (const w of dueWords || []) queue.push({ kind: "mc", word: w, tag: "review" });
@@ -192,6 +202,10 @@ function _unitQueue(unit, dueWords, audio = true) {
                      other: aFresh ? pair.b : pair.a, pool });
       }
     }
+    // Recall — the Pimsleur pause (see _wRecall). Last in the unit, so every
+    // graded card sits between a word's introduction and the attempt to
+    // produce it: spacing inside the unit, not just across days.
+    for (const w of _recallPick(fresh, 3)) queue.push({ kind: "recall", word: w });
   } else if (unit.kind === "tone") {
     // the tone unit: teach the rule (intro + interactive calculator), then
     // drill it — hear a tone and pick the script (ear), read a real word and
@@ -241,6 +255,9 @@ function _unitQueue(unit, dueWords, audio = true) {
       queue.push({ kind: "chunk", line: p, sign: lesson.id === "g5" ? i % 3 : null }));
     for (const pr of lesson.practice) queue.push({ kind: pr.kind === "cloze" ? "cloze" : "mc2", item: pr });
     if (lesson.pattern.length >= 4) queue.push({ kind: "match", pairs: lesson.pattern.slice(0, 4) });
+    // The chunk cards above say "Say it out loud" with the Thai on screen —
+    // reading aloud. These ask for the same lines with the Thai hidden.
+    for (const p of _recallPick(lesson.pattern, 2)) queue.push({ kind: "recall", line: p });
   }
   return queue;
 }
@@ -387,7 +404,7 @@ function _unitStart(idx, fresh) {
 // cards — they route through _wReviewCard on revisit same as any other quiz,
 // which is why their target is chosen at queue-build time (item.pick), not
 // per-render: a stable recap needs a stable question.
-const _TEACH_KINDS = new Set(["glyph", "wordintro", "chunkIntro", "chunk",
+const _TEACH_KINDS = new Set(["glyph", "wordintro", "chunkIntro", "chunk", "recall",
   "toneIntro", "tonecalc", "scriptnote", "conspair"]);
 
 function _learnStep() {
@@ -419,7 +436,8 @@ function _learnStep() {
        pairpick: _wPairPick, glyphpick: _wGlyphPick, mc: _wMC, mc2: _wMC2, speed: _wMC, listen: _wListen,
        mcth: _wMCTH, typeen: _wTypeEN, typeth: _wTypeTH, clozex: _wClozeX,
        cloze: _wCloze, match: _wMatch, chunkIntro: _wChunkIntro, chunk: _wChunk,
-       toneIntro: _wToneIntro, tonecalc: _wToneCalc, toneear: _wToneEar, toneread: _wToneRead }[item.kind])(item, body);
+       toneIntro: _wToneIntro, tonecalc: _wToneCalc, toneear: _wToneEar, toneread: _wToneRead,
+       recall: _wRecall }[item.kind])(item, body);
   }
   _ensureCardEndVisible(body);
   _luSave();
@@ -1044,6 +1062,43 @@ function _wChunkIntro(item, body) {
     <div class="card-prompt learn-intro-text">${_esc(l.intro)}</div>
     <div class="btn-row"><button class="btn btn-primary" onclick="_learnNext()">Learn the chunks →</button></div>`;
 }
+// ── Recall: the Pimsleur pause ──────────────────────────────────────────────
+// Until 2026-10-26 the course asked a learner to PRODUCE something in 42 of
+// its 571 steps — 7.4%, all of it typing — and its 36 chunk cards say "Say it
+// out loud" with the Thai, the romanisation and the English all on screen,
+// which is reading aloud, not recall. This is Paul Pimsleur's anticipation
+// step (graduated interval recall, 1967): the meaning, a pause in which you
+// say the Thai with the source closed, then the answer in your ear. Retrieval
+// (the testing effect) done aloud from memory, in the order the research on
+// it asks for: attempt first, feedback second.
+//
+// Not graded, on purpose. The course's own intro promises "you never grade
+// yourself here", and marking your own spoken answer is exactly that; it
+// would also let a learner pass a unit on their own say-so. It records
+// nothing, so it cannot move a unit's pass mark or an SRS interval. The value
+// is in the attempt, and the reveal is the feedback.
+function _wRecall(item, body) {
+  body.innerHTML = `<div class="learn-teach-tag">SAY IT</div>
+    <div class="card-prompt">How do you say…</div>
+    <div class="learn-recall-en">${_esc(_recallPrompt(item.word || item.line))}</div>
+    <div class="card-prompt" id="learn-recall-hint">Say it out loud first — then check.</div>
+    <div id="learn-recall-ans"></div>
+    <div class="btn-row" id="learn-recall-row"><button class="btn btn-primary" onclick="_recallReveal()">Show me →</button></div>`;
+}
+function _recallReveal() {
+  const item = _lu && _lu.queue[_lu.at];
+  if (!item || item.kind !== "recall") return;
+  const [th, rt] = item.word || item.line;
+  document.getElementById("learn-recall-ans").innerHTML =
+    `<div class="thai-big" lang="th" onclick="_tts.speak(${_toneSpeak(th)})">${_esc(th)}</div>
+     <div class="rtgs">${_esc(rt)} ${_speakBtn(th)}</div>`;
+  document.getElementById("learn-recall-hint").textContent = "Did yours match? Say it once more with the audio.";
+  document.getElementById("learn-recall-row").innerHTML =
+    `${_wordCardBtn(item.word || item.line)}<button class="btn btn-primary" onclick="_learnNext()">Next →</button>`;
+  _tts.speak(th);
+  _ensureCardEndVisible(document.getElementById("lesson-body"));
+}
+
 function _wChunk(item, body) {
   const [th, rtgs, en] = item.line;
   // the signage lesson renders as street furniture: font-shock is the training

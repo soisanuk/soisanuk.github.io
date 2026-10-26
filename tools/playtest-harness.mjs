@@ -60,7 +60,7 @@ const APP_URL = `file://${REPO}/web/index.html`;
 // been added precisely to be read. Silent, and exactly the wrong kind of quiet.
 // openApp now asks the page for the real set, which is this module's whole
 // stated philosophy: the app already knows what step it is on, so do not guess.
-const TEACH_STEPS = new Set(["glyph", "wordintro", "toneIntro", "tonecalc", "chunkIntro", "chunk", "scriptnote"]);
+const TEACH_STEPS = new Set(["glyph", "wordintro", "toneIntro", "tonecalc", "chunkIntro", "chunk", "scriptnote", "recall"]);
 const CHOICE_STEPS = new Set(["mc", "mc2", "speed", "listen", "mcth", "clozex", "cloze", "toneear", "toneread"]);
 
 // Every browser this module launches, so the process cannot exit while one is
