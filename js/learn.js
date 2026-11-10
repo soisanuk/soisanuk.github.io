@@ -635,20 +635,7 @@ function _speakBtn(text) {
 }
 
 // a letter/vowel/tone-mark introduction card — tap to hear, then on
-// One sentence about what this glyph does, correct for the ones that are not
-// consonants and not tone marks either.
-const _GLYPH_NOTE = {
-  "ฤ": "Neither a consonant nor a vowel: ฤ is a whole syllable in one character, \u201cr\u00fa\u201d or \u201cr\u00ed\u201d, borrowed from Sanskrit. It has no class and no name of its own. You need it for อังกฤษ (English) and พฤหัสบดี (Thursday), and then almost never again.",
-  // Two script notes lean on อ — เอา at rung 2, อร่อย at rung 3 — and this
-  // card was where a learner met it: "อ · ออ่าง · basin", then "Tap the glyph
-  // to hear it." CONSONANTS gives อ an initial sound of "-", so the one
-  // letter in the alphabet whose whole point is that it has no sound was the
-  // one the card could say nothing about. The notes then said "the consonant
-  // you say first" over a word whose first consonant is silent.
-  "อ": "A consonant that makes no sound of its own. Thai vowels have to be written around a consonant, so when a syllable STARTS with a vowel, อ stands in as the chair for it to sit on — that is the อ at the front of เอา (“ao”) and of อร่อย (“à-ròoi”). It has a second job as the vowel “aw”: ขอ, and the second อ in อร่อย. Same letter, two jobs, and as a consonant it is only ever a placeholder.",
-  "ๆ": "ไม้ยมก. It sits AFTER a word and repeats it — เด็กๆ is \u201cchildren\u201d, ช้าๆ is \u201cslowly\u201d. It is not a tone mark and it does not ride above anything.",
-  "็": "ไม้ไต่คู้. It SHORTENS the vowel beneath it — เป็น, not เปน. Vowel length is half of every tone rule, so this small hook matters twice.",
-};
+// (its one-sentence note is GLYPH_NOTES in curriculum.js)
 // The SOUND, and what the name means. Both are in CONSONANTS and VOWELS and
 // neither reached this card: it printed "ก · กอไก่" and nothing else, so with
 // no Thai voice the first six cards of the course carried no information about
@@ -666,7 +653,7 @@ function _glyphSound(g) {
   return v ? `  ·  /${v[1]}/  ·  ${v[2]}` : "";
 }
 function _glyphNote(g, isToneMark) {
-  if (_GLYPH_NOTE[g]) return _GLYPH_NOTE[g];
+  if (GLYPH_NOTES[g]) return GLYPH_NOTES[g].text;
   // Stands on its own at rung 2, where this card first appears. It used to end
   // "with the consonant's class and the vowel's length, it is the third thing
   // the rule needs" — class, length and "the rule" all arrive in the tone unit,
