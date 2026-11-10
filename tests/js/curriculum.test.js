@@ -254,3 +254,67 @@ describe("a unit that promises reading can actually be read", () => {
         `${common} is far commoner than ${rare} but is taught later (batch ${at(common)} vs ${at(rare)})`);
   });
 });
+
+// ── Glyph notes ─────────────────────────────────────────────────────────────
+// GLYPH_NOTES says what a glyph does on the card that introduces it. It came
+// over from learn.js on 2026-11-11 with a fifth entry, ว, because Mario met
+// นวด on a massage sign (through trellis, which builds its pack from this
+// file) and had to ask Google why it had no vowel. ว is taught at rung 3 as
+// "w", and courseDecodable counted นวด readable from that same rung.
+describe("glyph notes", () => {
+  const batchOf = g => LETTER_BATCHES.findIndex(b => b.glyphs.includes(g));
+  const ROM = new Map(WORDS.map(w => [w[0], w[1]]));
+
+  test("every noted glyph is one the ladder teaches", () => {
+    for (const g of Object.keys(GLYPH_NOTES))
+      assert.ok(batchOf(g) >= 0, `GLYPH_NOTES has ${g}, which no batch teaches`);
+  });
+
+  test("ว says that it can be the vowel ua, and the rung that teaches ว shows one", () => {
+    const n = GLYPH_NOTES["ว"];
+    assert.ok(n && /“ua”/.test(n.text), "ว's card no longer says it can be the vowel");
+    const i = batchOf("ว");
+    // the anchor is a reduced-ua word: consonant + ว + final, no other vowel
+    assert.match(n.word, /^[ก-ฮ]ว[ก-ฮ]$/);
+    assert.ok(courseUnitWords(i).some(w => w[0] === n.word),
+      `rung ${i + 1} states the rule and never shows ${n.word}`);
+  });
+
+  test("an anchored glyph's word is decodable at, and shown in, its own unit", () => {
+    for (const [g, n] of Object.entries(GLYPH_NOTES)) {
+      if (!n.word) continue;
+      const i = batchOf(g);
+      assert.ok(courseDecodable(i, WORDS).some(w => w[0] === n.word), `${g}: ${n.word} is not decodable at rung ${i + 1}`);
+      assert.ok(courseUnitWords(i).some(w => w[0] === n.word), `${g}: rung ${i + 1} never shows ${n.word}`);
+    }
+  });
+
+  test("every romanisation a glyph note quotes for a course word is the course's own", () => {
+    // "นวด is “nûat”", "วัน, “wan”", "เอา (“ao”)" — a Thai word, then its
+    // romanisation in curly quotes within a few characters. The same shape
+    // also quotes MEANINGS ("ช้าๆ is “slowly”"), so a quote that is part of
+    // the word's own gloss is a meaning, not a romanisation.
+    const GLOSS = new Map(WORDS.map(w => [w[0], w[2]]));
+    const bad = [];
+    for (const [g, n] of Object.entries(GLYPH_NOTES))
+      for (const m of n.text.matchAll(/([ก-๎]+)[^“฀-๿]{0,6}“([^”]+)”/g))
+        if (ROM.has(m[1]) && ROM.get(m[1]) !== m[2] && !GLOSS.get(m[1]).includes(m[2])) bad.push(`${g}: ${m[1]} “${m[2]}”, course says “${ROM.get(m[1])}”`);
+    assert.deepEqual(bad, []);
+  });
+
+  test("no glyph note contains a combining mark with nothing to attach to", () => {
+    // Unlike a batch note, a glyph note is printed as-is (no vowelDisp), so
+    // not even ◌ rescues a bare mark here.
+    const COMB = /[ัิ-ฺ็-๎]/;
+    const CONS = /[ก-ฮ]/;
+    for (const [g, n] of Object.entries(GLYPH_NOTES)) {
+      const t = n.text;
+      for (let i = 0; i < t.length; i++) {
+        if (!COMB.test(t[i])) continue;
+        let j = i - 1;
+        while (j >= 0 && COMB.test(t[j])) j--;   // stacked: ู then ้ in คู้
+        assert.ok(j >= 0 && CONS.test(t[j]), `${g}: orphan ${t[i]} in "...${t.slice(Math.max(0, i - 20), i + 10)}..."`);
+      }
+    }
+  });
+});

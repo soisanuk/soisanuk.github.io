@@ -105,6 +105,33 @@ const LETTER_BATCHES = [
   { id: "b11", title: "The last eight", glyphs: ["ฆ", "ฏ", "ฒ", "ฎ", "ฌ", "ฐ", "ฑ", "ฬ"] },
 ];
 
+// ── What a glyph does, on the card that introduces it ────────────────────────
+// One note for each glyph the default card would get wrong: the ones that are
+// not plain consonants and not tone marks, and the consonants with a second
+// job. Course content, so it lives here with the ladder rather than in
+// learn.js's renderer. `word`, when given, is a course word the glyph's unit
+// must SHOW (courseUnitWords pulls it in), for the same reason a batch note's
+// anchor is: a rule the unit states and never demonstrates does not teach.
+const GLYPH_NOTES = {
+  "ฤ": { text: "Neither a consonant nor a vowel: ฤ is a whole syllable in one character, “rú” or “rí”, borrowed from Sanskrit. It has no class and no name of its own. You need it for อังกฤษ (English) and พฤหัสบดี (Thursday), and then almost never again." },
+  // Two script notes lean on อ — เอา at rung 2, อร่อย at rung 3 — and this
+  // card was where a learner met it: "อ · ออ่าง · basin", then "Tap the glyph
+  // to hear it." CONSONANTS gives อ an initial sound of "-", so the one
+  // letter in the alphabet whose whole point is that it has no sound was the
+  // one the card could say nothing about. The notes then said "the consonant
+  // you say first" over a word whose first consonant is silent.
+  "อ": { text: "A consonant that makes no sound of its own. Thai vowels have to be written around a consonant, so when a syllable STARTS with a vowel, อ stands in as the chair for it to sit on — that is the อ at the front of เอา (“ao”) and of อร่อย (“à-ròoi”). It has a second job as the vowel “aw”: ขอ, and the second อ in อร่อย. Same letter, two jobs, and as a consonant it is only ever a placeholder." },
+  // ว is taught as "w" here, and from this rung on courseDecodable() counts
+  // นวด, รวย and รวม as readable — but a learner who knows only "ว = w" sees
+  // three consonants and no vowel. The ◌ัว vowel drops its ั before a final
+  // consonant; the tone engine has always read it so (thai-script.js,
+  // "reduced ◌ัว") and the course never said. Found 2026-11-11 by Mario
+  // meeting นวด on a massage sign through trellis, and having to ask Google.
+  "ว": { word: "นวด", text: "Three jobs. At the start of a syllable ว is “w”: วัน, “wan”. At the end it closes the vowel, as in ยาว, “yaao”. And between two consonants with no other vowel in sight, it IS the vowel “ua”: นวด is “nûat” (massage — read it off any massage-shop sign), and รวย is “ruai”. Written out in full that vowel is the one in ตัว, “tua”; Thai drops the little mark on top when a final consonant follows, and leaves only the ว. If the syllable already has a vowel, as in กว่า, “kwàa”, the ว is back to being a “w”." },
+  "ๆ": { text: "ไม้ยมก. It sits AFTER a word and repeats it — เด็กๆ is “children”, ช้าๆ is “slowly”. It is not a tone mark and it does not ride above anything." },
+  "็": { text: "ไม้ไต่คู้. It SHORTENS the vowel beneath it — เป็น, not เปน. Vowel length is half of every tone rule, so this small hook matters twice." },
+};
+
 // every glyph taught up to and including batch index i
 function taughtGlyphs(batchIdx) {
   const set = new Set();
@@ -198,10 +225,14 @@ function confusableFor(ch) {
 // note's anchor when the note names a word that is not among them.
 function courseUnitWords(batchIdx, words) {
   let fresh = courseNewWords(batchIdx, words).slice(0, 8);
-  const note = LETTER_BATCHES[batchIdx] && LETTER_BATCHES[batchIdx].note;
-  if (note) {
-    const src = words || (typeof WORDS !== "undefined" ? WORDS : []);
-    const nw = src.find(w => w[0] === note.word);
+  const batch = LETTER_BATCHES[batchIdx];
+  if (!batch) return fresh;
+  // the batch note's anchor, then any glyph note's, each pulled in once
+  const anchors = [batch.note && batch.note.word,
+    ...batch.glyphs.map(g => GLYPH_NOTES[g] && GLYPH_NOTES[g].word)].filter(Boolean);
+  const src = words || (typeof WORDS !== "undefined" ? WORDS : []);
+  for (const a of anchors.reverse()) {
+    const nw = src.find(w => w[0] === a);
     if (nw && !fresh.some(w => w[0] === nw[0])) fresh = [nw, ...fresh];
   }
   return fresh;
