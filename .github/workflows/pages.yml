@@ -26,6 +26,8 @@ jobs:
       # derived from.
       - name: Check the grammar export matches its sources
         run: node scripts/export-grammar.mjs --check
+      - name: Check the listening export matches its sources
+        run: node scripts/export-listening.mjs --check
 
   deploy:
     needs: test

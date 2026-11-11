@@ -36,6 +36,8 @@ node scripts/build-gloss-volubilis.mjs <VOLUBILIS Duo Max ENG.xlsx>  # → web/j
 # data.js / grammar.js — never edit export/grammar.json by hand. CI runs --check.
 node scripts/export-grammar.mjs           # write export/grammar.json
 node scripts/export-grammar.mjs --check   # verify; exit 1 on drift
+node scripts/export-listening.mjs          # export/listening.json (the Listening screen's tracks)
+node scripts/export-listening.mjs --check
 
 # Re-cut the 42 native consonant recordings (web/audio/letters/) from the DLI
 # Thai SOLT workbook track. The source is a download, not checked in; the

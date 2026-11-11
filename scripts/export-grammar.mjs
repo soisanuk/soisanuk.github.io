@@ -12,44 +12,13 @@
 //
 //   node scripts/export-grammar.mjs           # write export/grammar.json
 //   node scripts/export-grammar.mjs --check   # verify; exit 1 on drift
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
-import vm from "node:vm";
+import { g, tokens, writeOrCheck } from "./lib/app-data.mjs";
 
-const ROOT = new URL("..", import.meta.url).pathname;
-const OUT = ROOT + "export/grammar.json";
-
-// Load order matters only for the gloss and segmenter tables, which are
-// initialised below rather than at load.
-for (const f of ["data.js", "examples.js", "thai-script.js", "tokeniser.js", "wordcard.js",
-                 "curriculum.js", "lexicon-th.js", "seg-extra.js", "seg-phrases.js", "segment.js",
-                 "gloss-extra.js", "gloss.js", "gloss-th.js", "gloss-vol.js", "grammar.js"]) {
-  vm.runInThisContext(readFileSync(ROOT + "web/js/" + f, "utf8"), { filename: f });
-}
-const g = s => vm.runInThisContext(s);
-g("_segInit(_segEffective(THAI_LEXICON.split('\\n'))); _glossInit(THAI_GLOSS); _volInit(GLOSS_VOL);");
-
-const WORDS = g("WORDS"), EXAMPLES = g("EXAMPLES"), LESSONS = g("GRAMMAR_LESSONS"), COURSE = g("COURSE");
-const segmentThai = g("segmentThai"), thaiGloss = g("thaiGloss"), thaiRoman = g("thaiRoman");
-const glossSource = g("glossSource"), exampleReview = g("exampleReview"), exampleSolt = g("exampleSolt");
+const EXAMPLES = g("EXAMPLES"), LESSONS = g("GRAMMAR_LESSONS"), COURSE = g("COURSE");
+const exampleReview = g("exampleReview"), exampleSolt = g("exampleSolt");
 const grammarPatternsOf = g("grammarPatternsOf"), grammarExamples = g("grammarExamples");
-const course = new Map(WORDS.map(w => [w[0], w]));
 
 const byCodePoint = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
-
-function tokens(thai) {
-  return segmentThai(thai).filter(t => t.text.trim()).map(t => {
-    const key = t.base || t.text;
-    const w = course.get(key);
-    return {
-      text: t.text,
-      key,
-      course: !!w,
-      roman: w ? w[1] : (thaiRoman(key) || null),
-      gloss: w ? w[2] : (thaiGloss(key) || null),
-      glossSource: glossSource(key),
-    };
-  });
-}
 
 const lessons = LESSONS.map(l => {
   const at = COURSE.findIndex(u => u.kind === "chunks" && u.lesson === l.id);
@@ -116,17 +85,4 @@ const out = {
   sentences,
 };
 
-const json = JSON.stringify(out, null, 1) + "\n";
-
-if (process.argv.includes("--check")) {
-  const cur = existsSync(OUT) ? readFileSync(OUT, "utf8") : "";
-  if (cur !== json) {
-    console.error("export/grammar.json is out of date — run: node scripts/export-grammar.mjs");
-    process.exit(1);
-  }
-  console.log(`export/grammar.json in sync (${sentences.length} sentences, ${lessons.length} lessons)`);
-} else {
-  mkdirSync(ROOT + "export", { recursive: true });
-  writeFileSync(OUT, json);
-  console.log(`wrote export/grammar.json — ${JSON.stringify(out.counts)}`);
-}
+writeOrCheck("grammar.json", out, `${sentences.length} sentences, ${lessons.length} lessons`);

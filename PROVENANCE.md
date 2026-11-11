@@ -163,3 +163,30 @@ Modules I-VI, with the workbooks' own questions and answer keys.
   only.
 - **Licence:** as for the other SOLT material above: believed public domain
   (US Government work), not verified.
+
+## SOLT rights: new evidence (2026-11-11, later the same day)
+
+The original Word files of the SOLT course were found in a second download
+("DLI-Thai-Complete", byte-identical audio and PDFs plus the .doc sources).
+Their metadata weakens the "US Government work" assumption recorded above:
+
+- **Company fields:** "Anthony Inc.", "U of A South", "Arizona State
+  University".
+- **Authors:** Anthony Burgard, Charatpim Burgard, C Prayutsenee. The last
+  editor is "gerda" / Ruth Hjelm.
+- **Created:** 2000-09 to 2004-03.
+- **Statements:** no copyright, distribution, public-release or DLI
+  statement anywhere, in any file. The only provenance text is the cover
+  "Special Operations Language Training (SOLT)".
+
+Special Operations language training has often been delivered by
+contractors and universities. If this course was produced under contract,
+the contractor may hold copyright, and the public-domain assumption would
+be wrong. **The licence of everything marked SOLT in this file is therefore
+unknown, not "believed public domain".** That covers the letter
+recordings, the Listening tracks and questions, and the 56 quoted
+sentences. The owner has been asked how to proceed.
+
+By contrast, the DLIFLC **Language Survival Guides** (Thai Basic and Thai
+Naval, May 2008) state that DLIFLC produced them. They are a much clearer
+case of a US Government work. Nothing from them has been used yet.
