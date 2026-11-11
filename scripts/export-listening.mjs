@@ -48,9 +48,9 @@ const out = {
   provenance: {
     source: "DLI Thai SOLT (Special Operations Language Training) Supplementary Listening Comprehension " +
       "Workbooks, Modules I-VI: recordings, printed audio scripts, comprehension questions and answer keys.",
-    licence: "believed public domain as a US Government work, NOT verified: no file carries a copyright, " +
-      "distribution or public-release statement, and the source documents' metadata names private and " +
-      "university organisations, so contractor authorship is possible. See PROVENANCE.md.",
+    licence: "UNKNOWN, under verification by the owner. No file carries a copyright, distribution or " +
+      "public-release statement, and the source documents' metadata names private and university " +
+      "organisations, so the course may be contractor-made rather than a US Government work. See PROVENANCE.md.",
     questions: "Every question, option and answer is the workbook's own. None is written by us. Questions the " +
       "workbook prints no key for are omitted; a `note` marks keys that seem not to match the transcript.",
     translation: "The English per line is ours.",

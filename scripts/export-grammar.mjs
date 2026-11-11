@@ -64,8 +64,9 @@ const out = {
     checks: "Every course romanisation is checked against the tone engine in thai-script.js; " +
       "every sentence contains its headword; AI persona rounds reviewed the content. " +
       "Sentences with `reviewed` set were approved by a fluent native Thai reader in the exact wording shown. " +
-      "Sentences with `solt` set are quoted word for word from the DLI Thai SOLT course (believed public domain, " +
-      "a US Government work; see PROVENANCE.md): native-written Thai, with our English.",
+      "Sentences with `solt` set are quoted word for word from the DLI Thai SOLT course: native-written Thai, " +
+      "with our English. Their licence is UNKNOWN and under verification: the course may be contractor-made " +
+      "(see PROVENANCE.md).",
     licence: "unknown — not yet chosen by the owner for authored thaicab content",
     patterns: "A sentence's `patterns` are found by matching each lesson's `markers` against its tokens. " +
       "That is a pointer to the pattern, not a grammatical parse.",
