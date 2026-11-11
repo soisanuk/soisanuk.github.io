@@ -1,7 +1,7 @@
 // Thai Trainer service worker — cache-first for all app assets
-// "soisanuk-a873101" is replaced with "soisanuk-<commit sha>" by CI on deploy,
+// "soisanuk-13f0215" is replaced with "soisanuk-<commit sha>" by CI on deploy,
 // so every release invalidates the previous cache automatically.
-const CACHE = "soisanuk-a873101";
+const CACHE = "soisanuk-13f0215";
 
 const PRECACHE = [
   "./index.html",
