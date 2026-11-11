@@ -1,4 +1,5 @@
-// Listening — the DLI Thai SOLT listening workbooks (Modules 1-6) as a study
+// Listening — the Thai SOLT listening workbooks (Modules 1-6; developed by the
+// US Army JFK Special Warfare Center and School with the University of Arizona) as a study
 // set: a native recording, its transcript, and the workbook's own questions,
 // from everyday exchanges (ordering at a bar, asking the way, the bank, the
 // doctor) up to level-2 reports. Bonus material beside the course, not part
@@ -2603,7 +2604,7 @@ function _dlDialogueHtml(d) {
     `</div>` +
     `<div id="dl-lines">${_dlLinesHtml(d)}</div>` +
     `<div id="dl-quiz">${_dlQuizHtml(d)}</div>` +
-    `<p class="dl-credit">Thai, recording${hasQs ? ", questions and answers" : ""}: DLI Thai SOLT course, ` +
+    `<p class="dl-credit">Thai, recording${hasQs ? ", questions and answers" : ""}: Thai SOLT course (US Army JFK Special Warfare Center and School, University of Arizona; public domain in the US), ` +
       `Module ${d.module} Lesson ${d.lesson}, listening track ${d.track}. English: written for this app.</p>`;
 }
 
