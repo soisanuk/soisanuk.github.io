@@ -1,12 +1,12 @@
 {
   "recorded": "2026-11-11",
-  "commit": "86f35ee",
+  "commit": "84eb8ac",
   "projectLicence": "unknown",
   "open": [
     "origin of thaicab/data/words.py and thai_script.py (the removed Python app data.js and examples.js were first generated or imported from)",
     "licence for first-party material (no LICENSE file exists)",
-    "first 7 commits (2026-07-02..03) authored as a former work email address",
-    "identity and credentials of the native reviewer behind b71a3af and fbd2933"
+    "first 7 commits (2026-07-02..03) were made under a former work email address; history rewritten 2026-11-12 so all 7 carry Mario De Tore <soisanuk@users.noreply.github.com>, which changed every commit hash in the repository (the hashes cited here are the rewritten ones)",
+    "identity and credentials of the native reviewer behind 1bba41f and dc3e5bb"
   ],
   "sources": [
     {
@@ -16,14 +16,14 @@
       "licence": "unknown",
       "attribution": "unknown",
       "evidence": [
-        "git show 2011e8e:web/js/data.js header",
-        "2011e8e Co-Authored-By Claude Sonnet 4.6"
+        "git show 255576b:web/js/data.js header",
+        "255576b Co-Authored-By Claude Sonnet 4.6"
       ],
       "confidence": "low"
     },
     {
       "file": "web/js/data.js",
-      "part": "WORDS rows added and corrected since 2011e8e",
+      "part": "WORDS rows added and corrected since 255576b",
       "author": "Mario De Tore with Claude",
       "licence": "first-party, unstated",
       "attribution": "none known",
@@ -39,7 +39,7 @@
       "licence": "unknown",
       "attribution": "none known",
       "evidence": [
-        "git show 2011e8e:web/js/data.js header"
+        "git show 255576b:web/js/data.js header"
       ],
       "confidence": "medium"
     },
@@ -50,7 +50,7 @@
       "licence": "first-party, unstated",
       "attribution": "none (ideas from Thai SOLT I, no text)",
       "evidence": [
-        "b7c6945"
+        "406d7c3"
       ],
       "confidence": "high"
     },
@@ -61,7 +61,7 @@
       "licence": "first-party, unstated",
       "attribution": "none",
       "evidence": [
-        "1578eee",
+        "654390e",
         "curriculum.js:12-16"
       ],
       "confidence": "high"
@@ -73,7 +73,7 @@
       "licence": "first-party, unstated",
       "attribution": "none (ideas from Thai SOLT I, no text)",
       "evidence": [
-        "b7c6945",
+        "406d7c3",
         "curriculum.js:134-142"
       ],
       "confidence": "high"
@@ -85,13 +85,13 @@
       "licence": "unknown",
       "attribution": "unknown",
       "evidence": [
-        "2011e8e"
+        "255576b"
       ],
       "confidence": "low"
     },
     {
       "file": "web/js/examples.js",
-      "part": "edits and additions since 2011e8e",
+      "part": "edits and additions since 255576b",
       "author": "Mario De Tore with Claude",
       "licence": "first-party, unstated",
       "attribution": "none known",
@@ -118,8 +118,8 @@
       "licence": "n/a (a record of review, not content)",
       "attribution": "none",
       "evidence": [
-        "b71a3af (7 sentences)",
-        "fbd2933 (18 of 19 sentences; ขาว rewritten after review, not counted)",
+        "1bba41f (7 sentences)",
+        "dc3e5bb (18 of 19 sentences; ขาว rewritten after review, not counted)",
         "transcript 6dd22337…jsonl:8080"
       ],
       "confidence": "medium"
@@ -155,16 +155,16 @@
       "source": "gloss-th.js (Wiktionary, CC BY-SA 3.0)",
       "kind": "individual gloss/romanisation facts cross-checked during corrections; no bulk copy",
       "evidence": [
-        "56b2365",
-        "45e758d",
-        "299ca09"
+        "9217bf0",
+        "0ff476c",
+        "bc62e01"
       ]
     },
     {
       "source": "Thai SOLT I (believed DLIFLC; unverified)",
       "kind": "ideas only, no text",
       "evidence": [
-        "b7c6945"
+        "406d7c3"
       ]
     }
   ],
