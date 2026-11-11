@@ -263,9 +263,20 @@ function courseTaughtWords(batchIdx, words) {
 // pattern: the chunks to absorb (tap-to-hear). practice: active recall — cloze
 // picks the missing word, mc picks the meaning. `key` words that exist in
 // WORDS feed the shared SRS store.
+// markers: the tokens that show the lesson's pattern at work. grammar.js uses
+// them to find EXAMPLES sentences for the Grammar & Examples screen and the
+// trellis export. A marker matches a whole token, as the segmenter splits it.
+// "ไม่…" (a trailing …) also matches any token that starts with ไม่, so
+// ไม่ดี counts. "ของ ฉัน" (a space) means consecutive tokens. Matching on a
+// marker is a pointer to the pattern, not a grammatical parse: it is how the
+// examples are picked, and it says so wherever they are shown.
+// bonus: true means the lesson is NOT on the COURSE spine. It is extra material,
+// reachable only from the Grammar & Examples screen, so the Guided Course
+// keeps its own order.
 const GRAMMAR_LESSONS = [
   {
     id: "g1", title: "The good news", scenario: "how Thai works",
+    markers: ["ไม่…"],
     intro: "No conjugation. No plurals. No articles. Thai words never change " +
       "shape — you line them up, subject-verb-object, and you're speaking. " +
       "ไม่ (mâi) in front of a verb makes it negative. That's lesson one.",
@@ -282,6 +293,7 @@ const GRAMMAR_LESSONS = [
   },
   {
     id: "g2", title: "Polite armour", scenario: "every sentence, everywhere",
+    markers: ["ครับ", "ค่ะ", "คะ"],
     intro: "ครับ (khráp) if you're a man, ค่ะ (khâ) if you're a woman — ends " +
       "almost any sentence and makes the whole thing polite. One catch for " +
       "women: on a QUESTION the particle is คะ (khá, high tone), not ค่ะ — " +
@@ -301,6 +313,7 @@ const GRAMMAR_LESSONS = [
   },
   {
     id: "g3", title: "Ordering food", scenario: "the food stall",
+    markers: ["เอา", "ขอ", "หน่อย"],
     intro: "เอา (ao) = I'll take. ขอ (khǒo) = may I have (softer). Point, say " +
       "the dish, add หน่อย (nòi — 'a little', softens anything) and your " +
       "particle. ไม่เผ็ด (mâi phèt) = not spicy. You now survive any menu.",
@@ -318,6 +331,7 @@ const GRAMMAR_LESSONS = [
   },
   {
     id: "g4", title: "Haggling", scenario: "the market",
+    markers: ["เท่าไหร่", "แพง", "ลด"],
     intro: "เท่าไหร่ (thâo-rài) = how much. แพง (phaeng) = expensive; แพงไป = " +
       "TOO expensive. ลดหน่อยได้ไหม (lót nòi dâai mǎi) = can you come down a " +
       "little? — ได้ไหม turns anything into a request. Smile the whole time; " +
@@ -336,6 +350,7 @@ const GRAMMAR_LESSONS = [
   },
   {
     id: "g5", title: "Reading the street", scenario: "signage",
+    markers: ["ห้าม…"],
     intro: "The signs that matter, in the order they matter. ห้าม (hâam) in " +
       "front of anything = forbidden — the most useful prefix in the country.",
     pattern: [
@@ -354,6 +369,7 @@ const GRAMMAR_LESSONS = [
   },
   {
     id: "g6", title: "This one, that one", scenario: "pointing at things",
+    markers: ["นี้", "นั้น", "นี่"],
     intro: "นี่ (nîi) this, นั่น (nân) that. อันนี้ = this one — อัน is the " +
       "all-purpose classifier and nobody minds a beginner using it for " +
       "everything. Point + อันนี้ + เท่าไหร่ and you can shop anywhere alive.",
@@ -370,6 +386,7 @@ const GRAMMAR_LESSONS = [
   },
   {
     id: "g7", title: "Getting around", scenario: "the baht bus",
+    markers: ["ตรง ไป"],
     intro: "You flag a สองแถว (sǒong-thǎeo — 'two rows', the red baht bus). " +
       "Hop in the back; when you want out, press the buzzer or call จอด (jòot, " +
       "stop). ตรงไป is straight, เลี้ยว is turn. Ten baht down Beach Road — no " +
@@ -389,6 +406,7 @@ const GRAMMAR_LESSONS = [
   },
   {
     id: "g8", title: "Prices and counting", scenario: "the bar tab",
+    markers: ["ละ"],
     intro: "Prices run on ...ละ (lá, 'per'): ขวดละร้อย = a hundred a bottle, " +
       "คนละ = per person. Count things with number + classifier — ขวด for " +
       "bottles, อัน for anything else. เท่าไหร่ asks the price; คิดเงิน " +
@@ -405,6 +423,26 @@ const GRAMMAR_LESSONS = [
       { kind: "cloze", th: "เบียร์ขวด___เท่าไหร่", answer: "ละ", options: ["ละ", "ไม่", "มา", "ดี"], en: "how much PER bottle?" },
       { kind: "cloze", th: "เอาสอง___", answer: "ขวด", options: ["ขวด", "บาท", "คน", "อัน"], en: "I'll take two BOTTLES" },
       { kind: "mc", th: "คิดเงินด้วยครับ", answer: "the bill, please", options: ["the bill, please", "two more beers", "how much is this", "not spicy"] },
+    ],
+  },
+  {
+    id: "g9", title: "Whose is it?", scenario: "lost and found", bonus: true,
+    markers: ["ของ ฉัน", "ของ ผม", "ของ คุณ", "ของ เขา", "ของ เรา", "ของ เธอ", "ของ ใคร"],
+    intro: "ของ (khǒong) means 'of', and the owner comes after it: " +
+      "กระเป๋าของฉัน is 'bag of me', my bag. With family and close people ของ " +
+      "is usually dropped, so แม่ผม is my mum. To ask whose something is, " +
+      "say ของใคร.",
+    pattern: [
+      ["กระเป๋าของฉัน", "krà-pǎo khǒong chǎn", "my bag — the owner comes after ของ"],
+      ["บ้านของเขา", "bâan khǒong khǎo", "his/her house"],
+      ["แม่ผม", "mâe phǒm", "my mum — with family, ของ is usually dropped"],
+      ["อันนี้ของใคร", "an níi khǒong khrai", "whose is this one?"],
+      ["ของผมครับ", "khǒong phǒm khráp", "it's mine"],
+    ],
+    practice: [
+      { kind: "cloze", th: "กระเป๋า___ฉัน", answer: "ของ", options: ["ของ", "ไม่", "ไหม", "นี้"], en: "MY bag (bag OF me)" },
+      { kind: "cloze", th: "อันนี้ของ___", answer: "ใคร", options: ["ใคร", "อะไร", "ไหม", "นี้"], en: "WHOSE is this one?" },
+      { kind: "mc", th: "บ้านของเขา", answer: "his/her house", options: ["his/her house", "my house", "that house", "a new house"] },
     ],
   },
 ];
