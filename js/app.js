@@ -216,6 +216,11 @@ function showScreen(id, navKey) {
   // screen, so navigating away used to leave it floating over the menu still
   // open and interactive. Leaving a screen dismisses it.
   if (typeof closeWordModal === "function") closeWordModal();
+  // A recording playing on the screen being left (a Dialogues track) would
+  // otherwise carry on over whatever comes next
+  document.querySelectorAll(".screen audio").forEach(a => {
+    if (!a.closest("#" + id)) a.pause();
+  });
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
   _audioScreen(id); // start/stop game background music
@@ -254,7 +259,7 @@ function endSession() {
 // drills handle Escape themselves. main.js reads this, and round29.test.js
 // asserts every .screen in index.html is covered by one of the three.
 const ESCAPE_TO_MENU = ["learn-screen", "reader-screen", "paste-screen", "rst-screen",
-  "records-screen", "backup-screen", "vocab-list-screen", "idioms-screen", "grammar-screen",
+  "records-screen", "backup-screen", "vocab-list-screen", "idioms-screen", "grammar-screen", "dialogues-screen",
   "cat-screen", "stats-screen", "end-screen", "charts-screen"];
 
 // `title` names the mode the category is for. Round 29: four modes landed on

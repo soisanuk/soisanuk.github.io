@@ -54,6 +54,7 @@ document.addEventListener("keydown", e => {
     else if (key === "x" || key === "X") showScreen("backup-screen", "X");
     else if (key === "i" || key === "I") showIdioms();
     else if (key === "e" || key === "E") showGrammar();
+    else if (key === "h" || key === "H") showDialogues();
     // ▶ Continue is the primary action and has no letter of its own; Enter is
     // the natural key. Guard on the body so it can't double-fire when a row
     // or button already holds focus and is handling its own Enter.

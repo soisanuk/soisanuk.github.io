@@ -1,7 +1,7 @@
 // Thai Trainer service worker — cache-first for all app assets
-// "soisanuk-af5756f" is replaced with "soisanuk-<commit sha>" by CI on deploy,
+// "soisanuk-a873101" is replaced with "soisanuk-<commit sha>" by CI on deploy,
 // so every release invalidates the previous cache automatically.
-const CACHE = "soisanuk-af5756f";
+const CACHE = "soisanuk-a873101";
 
 const PRECACHE = [
   "./index.html",
@@ -39,6 +39,7 @@ const PRECACHE = [
   "./js/numbers.js",
   "./js/idioms.js",
   "./js/grammar.js",
+  "./js/dialogues.js",
   "./js/home.js",
   "./js/main.js",
   "./manifest.json",
@@ -107,6 +108,11 @@ self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
   e.respondWith(
     caches.match(e.request).then(cached => {
+      // <audio> asks for byte ranges, and Safari will not play a recording
+      // served whole in reply to a range request. Slice cached audio
+      // (the letter clips, any dialogue already played) into a proper 206.
+      const range = e.request.headers.get("range");
+      if (cached && range) return _rangeResponse(cached, range);
       if (cached) return cached;
       return fetch(e.request)
         .then(res => {
@@ -130,3 +136,24 @@ self.addEventListener("fetch", e => {
     })
   );
 });
+
+// A 206 Partial Content reply for `range` ("bytes=start-end") cut from a
+// cached full response. A malformed or unsatisfiable range gets the whole
+// body, which is what a server ignoring Range would do.
+function _rangeResponse(full, range) {
+  return full.arrayBuffer().then(buf => {
+    const m = /^bytes=(\d*)-(\d*)$/.exec(range.trim());
+    const size = buf.byteLength;
+    let start = m && m[1] !== "" ? +m[1] : NaN, end = m && m[2] !== "" ? +m[2] : size - 1;
+    if (m && m[1] === "" && m[2] !== "") { start = Math.max(0, size - +m[2]); end = size - 1; }
+    if (!m || isNaN(start) || start >= size || end < start) {
+      return new Response(buf, { status: 200, headers: full.headers });
+    }
+    end = Math.min(end, size - 1);
+    const headers = new Headers(full.headers);
+    headers.set("Content-Range", `bytes ${start}-${end}/${size}`);
+    headers.set("Content-Length", String(end - start + 1));
+    headers.set("Accept-Ranges", "bytes");
+    return new Response(buf.slice(start, end + 1), { status: 206, statusText: "Partial Content", headers });
+  });
+}
