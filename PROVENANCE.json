@@ -135,6 +135,19 @@
         "CI: export-grammar.mjs --check"
       ],
       "confidence": "high"
+    },
+    {
+      "file": "web/audio/letters/*.mp3",
+      "part": "42 consonant recordings (letter + name)",
+      "author": "DLI Thai SOLT I listening workbook M1-3, Track 1 (speaker not named; course authors per metadata: Anthony Burgard, Charatpim Burgard)",
+      "licence": "believed public domain (US Government work); not verified, since no notice is in the files and federal-employee vs contractor status is unknown",
+      "attribution": "credited in PROVENANCE.md",
+      "evidence": [
+        "scripts/cut-letter-audio.mjs",
+        "Audio WB 1-3_Instr_Feb03Final.pdf p.2",
+        "fsi-language-courses.org: 'These courses are in the public domain and free to use'"
+      ],
+      "confidence": "medium"
     }
   ],
   "thirdPartyContact": [

@@ -56,6 +56,8 @@ const _tts = (() => {
   // Generation counter: a new speak() invalidates any pending chained parts
   // from the previous one (cancel() alone can't stop a queued setTimeout).
   let _gen = 0;
+  // The letter recording currently playing (letter-audio.js), if any.
+  let _clip = null;
 
   return {
     ready() { return _ready || !!_capTTS(); },
@@ -64,10 +66,37 @@ const _tts = (() => {
     // separate utterances with a real pause between them — a comma inside
     // one utterance is read straight through by Thai voices, flattening
     // "ก, กอไก่" into even syllables.
-    speak(text, btn, rate) {
+    // A request for exactly a consonant's sound and name plays the native
+    // recording instead (letter-audio.js); if it cannot play, TTS takes over.
+    // `noClip` is that fallback's way back in.
+    speak(text, btn, rate, noClip) {
       const parts = (Array.isArray(text) ? text : [text]).filter(Boolean);
       if (!parts.length) return;
       const gen = ++_gen;
+      if (_clip) { _clip.pause(); _clip = null; }
+      const src = !noClip && typeof Audio !== "undefined" && typeof letterClipSrc === "function"
+        ? letterClipSrc(parts) : null;
+      if (src) {
+        const cap = _capTTS();
+        if (cap) cap.stop().catch(() => {});
+        if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
+        const a = new Audio(src);
+        _clip = a;
+        if (btn) btn.classList.add("speaking");
+        const done = () => { if (btn) btn.classList.remove("speaking"); };
+        let failed = false;
+        const fail = () => {
+          if (failed) return;
+          failed = true;
+          done();
+          if (gen === _gen) _tts.speak(parts, btn, rate, true);
+        };
+        a.onended = a.onpause = done;   // pause: the next speak() cut it short
+        a.onerror = fail;
+        const p = a.play();
+        if (p && p.catch) p.catch(fail);
+        return;
+      }
       const cap = _capTTS();
       if (cap) {
         if (btn) btn.classList.add("speaking");

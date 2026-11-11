@@ -37,6 +37,11 @@ node scripts/build-gloss-volubilis.mjs <VOLUBILIS Duo Max ENG.xlsx>  # → web/j
 node scripts/export-grammar.mjs           # write export/grammar.json
 node scripts/export-grammar.mjs --check   # verify; exit 1 on drift
 
+# Re-cut the 42 native consonant recordings (web/audio/letters/) from the DLI
+# Thai SOLT workbook track. The source is a download, not checked in; the
+# script header names the file and the boundaries are kept as data in it.
+node scripts/cut-letter-audio.mjs "<…/Thai L Workbook 2 Audio M1-6/01 Track 1.wma>"
+
 # Structural sweep of every screen, desktop + iPhone: JS errors, overflow,
 # clipping, empty screens, and tap targets below the threshold for that input
 # (touch vs pointer). Also walks the first-run tutorial slide by slide, which

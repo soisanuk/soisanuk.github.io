@@ -87,3 +87,30 @@ Audio and images are out of scope: no consumer of this file needs them.
   Not verified." and licence **unknown**. Its per-token glosses for non-course
   words come from Wiktionary (CC BY-SA 3.0) or VOLUBILIS (CC BY-SA 4.0), and
   each token is tagged with its gloss source.
+
+## Consonant recordings (added 2026-11-11)
+
+`web/audio/letters/*.mp3` holds 42 clips, each a consonant followed by its
+name, in a native speaker's voice. They were cut by
+`scripts/cut-letter-audio.mjs` from **DLI Thai SOLT I, Supplementary Listening
+Comprehension Workbook, Modules I-III, Track 1**. The local file is "Thai L
+Workbook 2 Audio M1-6/01 Track 1.wma". Its script is on p.2 of "Audio WB
+1-3_Instr_Feb03Final.pdf". The only changes are the cuts, mono downmix, 3 dB
+of gain reduction and 20-40 ms fades.
+
+- **Author:** the Defense Language Institute's Special Operations Language
+  Training course. The PDF metadata names Anthony Burgard and Charatpim
+  (Prayutsenee) Burgard. The speaker is not named.
+- **Licence:** believed to be a US Government work and so public domain
+  (17 U.S.C. §105). The mirror these files came from
+  (fsi-language-courses.org) states "These courses are in the public domain
+  and free to use". No file carries its own copyright notice or a
+  public-release statement, and **whether the authors were federal employees
+  or contractors is unknown**, so this is the owner's call. It is not a
+  verified fact.
+- **Attribution:** none legally required if public domain. Credited here
+  anyway.
+- **Content check:** the clips' order follows the printed script, and the
+  owner confirmed that the track speaks each letter with its name. A
+  listen-through of all 42 in alphabet order is recorded in the commit that
+  ships them.
