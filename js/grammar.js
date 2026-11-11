@@ -45,6 +45,79 @@ const EXAMPLE_REVIEWS = {
   "อย่า":      ["อย่าเดินกลับบ้านดึก", "fbd2933"],
 };
 
+// Example sentences quoted word for word from the DLI Thai SOLT course: Thai
+// written by the course's native-speaker authors, not by us. Keyed by
+// headword, holding the exact sentence and where SOLT prints it (lesson and
+// page; the student book unless the cite says Instructor). Like a review, the mark lasts only while the sentence
+// still reads exactly as quoted. Checked by substring match against the
+// extracted SOLT text (2026-11-11). Sentences we adapted from SOLT patterns
+// (adding ผม or ครับ) are NOT listed: they are ours.
+const EXAMPLE_SOLT = {
+  "เลี้ยว": ["ให้เลี้ยวขวา", "M4L5, PDF p.19"],
+  "จอด": ["จอดรถในที่ห้ามจอด", "M4L5, PDF p.19"],
+  "ไกล": ["ไกลไหมครับ", "M4L3, PDF p.29"],
+  "ไฟแดง": ["ผ่านไฟแดงที่สามแล้วเลี้ยวซ้าย", "M4L3, PDF p.29"],
+  "กลับรถ": ["ห้ามกลับรถ", "M4L5, PDF p.17"],
+  "ถูกกว่า": ["ถูกกว่านี้มีไหม", "M3L2, PDF p.15"],
+  "ข้าม": ["เราขับรถข้ามแม่น้ำ", "M4L3, PDF p.18"],
+  "รถเมล์": ["รถเมล์ออกกี่โมง", "M4L8, PDF p.6"],
+  "หลงทาง": ["ขอโทษนะครับผมหลงทาง", "M4L3, PDF p.29"],
+  "ผิดทาง": ["คุณมาผิดทางครับ", "M4L3, PDF p.29"],
+  "ข้างใน": ["เชิญข้างใน", "M3L1, PDF p.7"],
+  "รถทัวร์": ["แล้วรถทัวร์ล่ะครับ", "M4L7, PDF p.5"],
+  "เติมน้ำมัน": ["เติมน้ำมันอะไรครับ", "M4L8, PDF p.37"],
+  "น้ำมัน": ["รถคุณใช้น้ำมันอะไร", "M4L7, PDF p.8"],
+  "แลกเงิน": ["ผมขอแลกเงินหน่อยครับ", "M3L4, PDF p.50"],
+  "ตั๋ว": ["เอาตั๋วไปด้วย", "M4L8, PDF p.26"],
+  "เช่า": ["ไม่ว่างครับมีคนเช่าแล้ว", "M3L2, PDF p.57"],
+  "ให้เช่า": ["บ้านหลังนี้ให้เช่า", "M3L2, PDF p.28"],
+  "มัดจำ": ["มีค่ามัดจำไหมครับ", "M3L2, PDF p.5"],
+  "ล่วงหน้า": ["กรุณาโทรนัดล่วงหน้า", "M5L4, PDF p.22"],
+  "สัญญาเช่า": ["สัญญาเช่ากี่ปี", "M3L2, PDF p.26"],
+  "พัก": ["พักที่โรงแรมอะไร", "M4L8, PDF p.39"],
+  "แอร์": ["แอร์เสีย", "M3L2, PDF p.16"],
+  "พัดลม": ["พัดลมเสีย", "M3L2, PDF p.16"],
+  "ค่าน้ำ": ["แล้วค่าน้ำล่ะครับ", "M3L2, PDF p.7"],
+  "ชั้น": ["อยู่ชั้นสามครับ", "M4L3, PDF p.10"],
+  "กุญแจ": ["ขอฝากกุญแจห้องด้วย", "M3L2, PDF p.19"],
+  "ประตู": ["ช่วยเปิดประตูให้ผมหน่อยได้ไหม", "M3L2, PDF p.28"],
+  "หนังสือเดินทาง": ["ขอดูหนังสือเดินทางคุณหน่อยครับ", "M3L4, PDF p.50"],
+  "บัตรเครดิต": ["คุณรับบัตรเครดิตไหม", "M3L2, PDF p.44"],
+  "แบบฟอร์ม": ["กรุณากรอกแบบฟอร์มนี่หน่อยนะคะ", "M3L4, PDF p.10"],
+  "ทอน": ["ไม่ต้องทอนนะ", "M3L1, PDF p.23"],
+  "น้ำดื่ม": ["ขอน้ำดื่มขวดหนึ่ง", "M3L2, PDF p.16"],
+  "แทน": ["เขาทำแทนผม", "M3L1, PDF p.30"],
+  "ถอน": ["จำนวนเงินที่ถอน", "M3L4, PDF p.28"],
+  "ฝาก": ["จำนวนเงินที่ฝาก", "M3L4, PDF p.46"],
+  "โทรกลับ": ["จะให้โทรกลับที่ไหนคะ", "Instructor book M3L5, PDF p.54"],
+  "สักครู่": ["สักครู่นะคะ", "M4L8, PDF p.22"],
+  "ต่างประเทศ": ["ร้านแลกเงินต่างประเทศอยู่ที่ไหน", "M3L6, PDF p.44"],
+  "ไม่ค่อย": ["สายไม่ค่อยดี", "M3L5, PDF p.4"],
+  "ไปรษณีย์": ["เห็นไปรษณีย์แล้วไปยังไงต่อครับ", "Instructor book M4L3, PDF p.65"],
+  "แสตมป์": ["ขอซื้อแสตมป์หน่อย", "M3L3, PDF p.30"],
+  "ลงทะเบียน": ["ผมไปส่งจดหมายลงทะเบียน", "M3L3, PDF p.38"],
+  "หน้าร้อน": ["หน้าร้อนนี้คุณจะไปเที่ยวที่ไหนหรือเปล่า", "M4L8, PDF p.3"],
+  "ปวด": ["ผมปวดขาข้างขวา", "M5L3, PDF p.9"],
+  "ไข้หวัดใหญ่": ["คุณเป็นไข้หวัดใหญ่", "M5L3, PDF p.9"],
+  "บวม": ["มือซ้ายผมบวมและปวดมาก", "M5L3, PDF p.9"],
+  "ตรวจ": ["ตรวจตั๋วและกระเป๋าเดินทาง", "M4L8, PDF p.20"],
+  "ผู้ป่วย": ["ผู้ป่วยเป็นโรคอะไรคะ", "M5L6, PDF p.16"],
+  "นอนไม่หลับ": ["ผมนอนไม่หลับ", "M5L3, PDF p.11"],
+  "หมดสติ": ["มีคนหมดสติ", "M5L4, PDF p.4"],
+  "ไม่สบาย": ["ผมรู้สึกไม่สบาย", "M5L3, PDF p.10"],
+  "หาย": ["คุณทำกระเป๋าเงินหาย", "M3L4, PDF p.46"],
+  "หายเร็วๆนะ": ["หายเร็วๆนะ", "M5L3, PDF p.6"],
+  "ไม่ต้องกังวล": ["ไม่ต้องกังวล", "M4L8, PDF p.41"],
+  "ร้านขายยา": ["ร้านขายยาอยู่ชั้นไหน", "Instructor book M3L2, PDF p.55"],
+};
+
+// The SOLT citation for an example quoted from it, or null.
+function exampleSolt(key) {
+  const r = EXAMPLE_SOLT[key];
+  const ex = typeof EXAMPLES !== "undefined" && EXAMPLES[key];
+  return (r && ex && ex[0] === r[0]) ? r[1] : null;
+}
+
 // The commit that recorded the review, or null if this sentence was never
 // reviewed or has changed since.
 function exampleReview(key) {
@@ -87,14 +160,14 @@ function grammarPatternsOf(thai) {
     .map(l => l.id);
 }
 
-// EXAMPLES headwords whose sentence shows a lesson's pattern. Reviewed
-// sentences first, then shorter ones (easier to read), then by headword so
+// EXAMPLES headwords whose sentence shows a lesson's pattern. Native Thai
+// first (reviewed by a fluent reader, or quoted from SOLT), then shorter ones (easier to read), then by headword so
 // the order is stable across runs.
 function grammarExamples(lessonId) {
   if (typeof EXAMPLES === "undefined") return [];
   const out = Object.keys(EXAMPLES).filter(k => grammarPatternsOf(EXAMPLES[k][0]).includes(lessonId));
   return out.sort((a, b) =>
-    (exampleReview(b) ? 1 : 0) - (exampleReview(a) ? 1 : 0) ||
+    (exampleReview(b) || exampleSolt(b) ? 1 : 0) - (exampleReview(a) || exampleSolt(a) ? 1 : 0) ||
     [...EXAMPLES[a][0]].length - [...EXAMPLES[b][0]].length ||
     (a < b ? -1 : a > b ? 1 : 0));
 }
@@ -117,7 +190,9 @@ function _grSentenceHtml(key) {
       : _grEsc(t.text);
   }).join("");
   const reviewed = exampleReview(key)
-    ? `<span class="gr-reviewed" title="Reviewed by a fluent Thai reader">✓ reviewed</span>` : "";
+    ? `<span class="gr-reviewed" title="Reviewed by a fluent Thai reader">✓ reviewed</span>`
+    : exampleSolt(key)
+      ? `<span class="gr-reviewed" title="Quoted from the DLI Thai SOLT course, ${_grEsc(exampleSolt(key))}">✓ from DLI SOLT</span>` : "";
   const speak = _tts.available()
     ? `<button class="gr-spk" data-say="${_grEsc(thai)}" aria-label="listen">🔊</button>` : "";
   return `<div class="gr-ex"><div class="gr-ex-thai" lang="th">${speak}${thaiHtml}</div>` +
