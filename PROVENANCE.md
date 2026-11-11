@@ -135,3 +135,31 @@ Pattaya, from the DLI Thai SOLT course", with an example each in
 - **Side effects:** `seg-phrases.js` was regenerated from VISTEC-TP-TH-2021
   (downloaded 2026-11-11), because ข้างใน and ไม่ค่อย are now course words
   and must not be pruned.
+
+## Listening recordings, transcripts and questions (added 2026-11-11)
+
+`web/js/dialogues.js` and `web/audio/dialogues/*.mp3` hold 73 tracks from
+the **DLI Thai SOLT Supplementary Listening Comprehension Workbooks**,
+Modules I-VI, with the workbooks' own questions and answer keys.
+
+- **Recordings:** the course's WMA tracks, converted to mono MP3 with loudness
+  normalisation and a peak limiter. They are not cut or edited. The folder
+  and file of each track are recorded in `dialogues.js`.
+- **Transcripts:** the instructor workbooks' "Audio Script" for each track.
+  Only text-extraction damage was repaired, and every repair is listed in
+  that track's `repairs`. Thai wording and digits are as printed.
+- **Questions and answers:** verbatim from the instructor workbooks (263
+  questions). None is written by us. Questions the workbook gives no key for
+  are omitted. Where a key seems not to match the transcript, the learner
+  sees a note, and the key itself is unchanged.
+- **English translations:** written for this app (by Claude, reviewed in
+  session). They are not SOLT's.
+- **Excluded:** military or operational tracks; drills and word lists; a
+  track whose printed script is cut short (Module 1 Lesson 5 Track 13); and
+  "At the garage" (Module 4, Track 20), whose printed speaker turns
+  contradict each other.
+- **Not verified by ear:** each track is matched to its script by duration,
+  speech rate and pause counts. The owner listened to the alphabet track
+  only.
+- **Licence:** as for the other SOLT material above: believed public domain
+  (US Government work), not verified.

@@ -2293,6 +2293,38 @@ body.mobile #app-shell {
   right:  env(safe-area-inset-right,  0px);
   bottom: env(safe-area-inset-bottom, 0px);
 }
+/* ── Dialogues ── */
+.dialogues-intro { padding: 0 1.2rem; margin: 0 0 .5rem; color: var(--dim); font-size: .9rem; line-height: 1.45; }
+.dialogues-body { flex: 1; overflow-y: auto; padding: 0 1.2rem 1rem; }
+.dl-item { display: flex; flex-direction: column; gap: .2rem; width: 100%; min-height: 44px; margin: 0 0 .6rem; padding: .65rem .8rem; border: 1px solid var(--border); border-radius: 10px; background: rgba(127,127,127,.06); color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.dl-title { font-weight: 700; color: var(--gold); font-size: 1.02rem; }
+.dl-scn { color: var(--dim); font-size: .88rem; line-height: 1.4; }
+.dl-meta { color: var(--dim); font-size: .78rem; }
+.dl-head { margin: .2rem 0 .6rem; }
+.dl-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: 0 0 .8rem; }
+.dl-audio { width: 100%; max-width: 420px; height: 44px; }
+.dl-line { padding: .5rem 0; border-top: 1px solid var(--border); }
+.dl-who { font-size: .8rem; font-weight: 700; color: var(--gold); }
+.dl-who span { font-weight: 400; color: var(--dim); }
+.dl-th { font-size: 1.2rem; line-height: 1.7; }
+.dl-th .w-token { border-radius: 5px; padding: 0 1px; }
+.dl-th .w-token:hover { background: rgba(255,212,71,0.18); }
+.dl-en { font-size: .9rem; color: var(--dim); }
+.dl-level { margin: 1rem 0 .5rem; font-weight: 700; color: var(--gold); font-size: .95rem; border-bottom: 1px solid var(--border); padding-bottom: .25rem; }
+.dl-hidden { padding: .8rem 0; color: var(--dim); border-top: 1px solid var(--border); }
+.dl-quiz-head { margin: 1.2rem 0 .4rem; font-weight: 700; color: var(--gold); }
+.dl-quiz-head span { font-weight: 400; color: var(--dim); font-size: .85rem; }
+.dl-q { padding: .6rem 0; border-top: 1px solid var(--border); }
+.dl-q-prompt { margin-bottom: .4rem; line-height: 1.45; }
+.dl-opts { display: flex; flex-direction: column; gap: .35rem; }
+.dl-opt { min-height: 44px; padding: .45rem .7rem; border: 1px solid var(--border); border-radius: 8px; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.dl-opt:disabled { cursor: default; opacity: .75; }
+.dl-opt.right { border-color: #3ecf8e; background: rgba(62,207,142,.15); opacity: 1; }
+.dl-opt.wrong { border-color: #ff5c7a; background: rgba(255,92,122,.15); opacity: 1; }
+.dl-q-key { margin-top: .35rem; font-size: .9rem; color: var(--gold); }
+.dl-q-note { margin-top: .25rem; font-size: .78rem; color: var(--dim); }
+.dl-scene { margin: .8rem 0 .2rem; font-weight: 700; font-size: .85rem; color: var(--dim); text-transform: uppercase; letter-spacing: .05em; }
+.dl-credit { margin: 1rem 0 0; font-size: .78rem; color: var(--dim); line-height: 1.4; }
 /* ── Grammar & Examples ── */
 .grammar-intro { padding: 0 1.2rem; margin: 0 0 .5rem; color: var(--dim); font-size: .9rem; line-height: 1.45; }
 .grammar-body { flex: 1; overflow-y: auto; padding: 0 1.2rem 1rem; }
@@ -2394,6 +2426,7 @@ body.mobile #app-shell {
     <li id="nav-A" onclick="showCharts()">     Reference Charts</li>
     <li id="nav-V" onclick="showVocabList()">       Vocab List</li>
     <li id="nav-E" onclick="showGrammar()">         📐 Grammar &amp; Examples</li>
+    <li id="nav-H" onclick="showDialogues()">       🎧 Listening</li>
     <li id="nav-I" onclick="showIdioms()">          🎭 Pattaya Idioms</li>
     <li id="nav-0" onclick="showStats()">           Statistics</li>
     <li onclick="showTutorial()">                   How to use</li>
@@ -2469,6 +2502,7 @@ body.mobile #app-shell {
     <li onclick="showCharts()">   <span class="menu-key">A</span> Reference Charts</li>
     <li onclick="showVocabList()"> <span class="menu-key">V</span> Vocab List</li>
     <li onclick="showGrammar()">   <span class="menu-key">E</span><span class="menu-icon">📐</span> Grammar &amp; Examples</li>
+    <li onclick="showDialogues()"> <span class="menu-key">H</span><span class="menu-icon">🎧</span> Listening</li>
     <li onclick="showIdioms()">    <span class="menu-key">I</span><span class="menu-icon">🎭</span> Pattaya Idioms</li>
     <li onclick="showStats()">     <span class="menu-key">0</span> Statistics</li>
     <li onclick="showTutorial()">  <span class="menu-key">?</span> How to use this app</li>
@@ -2712,6 +2746,16 @@ body.mobile #app-shell {
   </div>
   <div class="screen-footer">
     <button class="btn" onclick="showMenu()">← Menu</button>
+  </div>
+</div>
+
+<!-- ═══ DIALOGUES ══════════════════════════════════════════════════════════════ -->
+<div id="dialogues-screen" class="screen">
+  <div class="screen-header">🎧 Listening</div>
+  <p class="dialogues-intro">Native recordings from the DLI Thai SOLT course, from simple exchanges (at the bar, asking the way, at the bank) up to news reports, each with its transcript and the course's own questions. Tap a word for its card; hide the text for a listening test.</p>
+  <div id="dialogues-body" class="dialogues-body"></div>
+  <div class="screen-footer">
+    <button class="btn" id="dialogues-back" onclick="_dlBack()">← Menu</button>
   </div>
 </div>
 
@@ -3062,6 +3106,7 @@ body.mobile #app-shell {
 <script src="js/numbers.js"></script>
 <script src="js/idioms.js"></script>
 <script src="js/grammar.js"></script>
+<script src="js/dialogues.js"></script>
 <script src="js/home.js"></script>
 <script src="js/main.js"></script>
 <!-- ═══ WORD DETAIL MODAL ════════════════════════════════════════════════════ -->

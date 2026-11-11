@@ -42,6 +42,10 @@ node scripts/export-grammar.mjs --check   # verify; exit 1 on drift
 # script header names the file and the boundaries are kept as data in it.
 node scripts/cut-letter-audio.mjs "<…/Thai L Workbook 2 Audio M1-6/01 Track 1.wma>"
 
+# Re-make the Listening recordings (web/audio/dialogues/) from the DLI Thai
+# SOLT workbook tracks named in web/js/dialogues.js. The source is a download.
+node scripts/convert-dialogue-audio.mjs "<…/Thai-SOLT>"
+
 # Structural sweep of every screen, desktop + iPhone: JS errors, overflow,
 # clipping, empty screens, and tap targets below the threshold for that input
 # (touch vs pointer). Also walks the first-run tutorial slide by slide, which
