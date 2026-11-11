@@ -81,7 +81,7 @@ Thai syllables, not just curriculum words:
 สวย    {"cls":"high","mark":"none","live":true,"shortVowel":false,"tone":"rising"}
 ```
 
-**~~Known gap: initial consonant clusters return `null`.~~ FIXED** (commit `168f852`).
+**~~Known gap: initial consonant clusters return `null`.~~ FIXED** (commit `efa4267`).
 `_analyseSyllable` now reads ควบกล้ำ clusters — the class comes from the first
 consonant, with guards for the two shapes that only look like clusters (a
 trailing ร/ล/ว is a final: พร; C+ว+final with no written vowel is the reduced
@@ -93,7 +93,7 @@ trailing ร/ล/ว is a final: พร; C+ว+final with no written vowel is th
 เคร่ง  {cls:"low", mark:"ek", cluster:"ร", tone:"falling"}
 ```
 
-A follow-up commit (`cbcb517`) fixed เ◌ิ, which `_vowelLength` treated as short;
+A follow-up commit (`9d46707`) fixed เ◌ิ, which `_vowelLength` treated as short;
 it is the long "oe" (เดิน, เกิด, เลิก). Over the 431 monosyllabic curriculum
 words the parser now agrees with the RTGS diacritic on 415, declines 11
 (การันต์ + เถอะ/เยอะ), and disagrees on 5 — all loanwords or irregulars.

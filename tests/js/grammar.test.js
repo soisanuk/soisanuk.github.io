@@ -41,7 +41,7 @@ test("an edited sentence loses its review mark", () => {
     EXAMPLES["รูป"] = ["รูปนั้นสวยมาก", saved[1], saved[2]];
     assert.equal(exampleReview("รูป"), null);
   } finally { EXAMPLES["รูป"] = saved; }
-  assert.equal(exampleReview("รูป"), "fbd2933");
+  assert.equal(exampleReview("รูป"), "dc3e5bb");
 });
 
 test("markers: whole token, … prefix, and space-separated sequence", () => {

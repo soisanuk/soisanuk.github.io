@@ -1,5 +1,5 @@
 // Round 17 (2026-09-07) — Bee, a commuter who reads LINE Thai (lens: chat-Thai,
-// aimed at an hour-old commit). All five fixes in 1584446 held; the finding was
+// aimed at an hour-old commit). All five fixes in c9b5edb held; the finding was
 // beside them. segmentThai's fall-through advances one CODE UNIT, and an astral
 // character is one character in two, so every emoji in a pasted message became
 // two tokens holding a lone surrogate each. It rendered correctly only because

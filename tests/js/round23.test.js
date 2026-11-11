@@ -3,7 +3,7 @@
 // screens). It is not gameable, which was the hypothesis. What it did instead
 // was explain the answer wrongly, and teach tones without playing any.
 //
-// NOTE: the two fixes these guard landed in 943ba4d, whose message describes
+// NOTE: the two fixes these guard landed in 18b7b77, whose message describes
 // only the backup restore. They rode along in web/js/sessions.js and should
 // have been their own commit.
 import { test, describe } from "node:test";

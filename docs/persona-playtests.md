@@ -413,7 +413,7 @@ round** (2026-09-01) over `tutor.js`. Genuinely unwalked as of 2026-09-07:
 Records display screens.
 
 **Bee — a commuter who reads LINE Thai, pointed at an hour-old commit.** Aimed
-at the five fixes in `1584446` on the doctrine below. All five held under
+at the five fixes in `c9b5edb` on the doctrine below. All five held under
 checking — the reader's new "needs letters through unit N" claim is true for
 0/959 sentences graded above it, the new rung-1 note's rule is demonstrated by
 its own unit, no second surface named a rung, no fourth hover affordance
