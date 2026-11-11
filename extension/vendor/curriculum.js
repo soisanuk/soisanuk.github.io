@@ -388,7 +388,7 @@ const GRAMMAR_LESSONS = [
   },
   {
     id: "g7", title: "Getting around", scenario: "the baht bus",
-    markers: ["ตรง ไป"],
+    markers: ["ตรง ไป", "เลี้ยว", "จอด", "ไฟแดง", "สี่แยก"],
     intro: "You flag a สองแถว (sǒong-thǎeo — 'two rows', the red baht bus). " +
       "Hop in the back; when you want out, press the buzzer or call จอด (jòot, " +
       "stop). ตรงไป is straight, เลี้ยว is turn. Ten baht down Beach Road — no " +
@@ -445,6 +445,46 @@ const GRAMMAR_LESSONS = [
       { kind: "cloze", th: "กระเป๋า___ฉัน", answer: "ของ", options: ["ของ", "ไม่", "ไหม", "นี้"], en: "MY bag (bag OF me)" },
       { kind: "cloze", th: "อันนี้ของ___", answer: "ใคร", options: ["ใคร", "อะไร", "ไหม", "นี้"], en: "WHOSE is this one?" },
       { kind: "mc", th: "บ้านของเขา", answer: "his/her house", options: ["his/her house", "my house", "that house", "a new house"] },
+    ],
+  },
+  {
+    id: "g10", title: "Asking the way", scenario: "on foot, lost", bonus: true,
+    markers: ["ไป ยังไง", "ที่ไหน", "ไกล", "ใกล้"],
+    intro: "Name the place, then add ไปยังไง (pai yang-ngai, 'go how?'): " +
+      "ตลาดไปยังไง, how do I get to the market? The answer comes in steps " +
+      "joined by แล้ว (láeo, 'then'): ตรงไป แล้วเลี้ยวขวา. ที่ marks where: " +
+      "เลี้ยวซ้ายที่ไฟแดง. Before you set off, ask ไกลไหม: is it far?",
+    pattern: [
+      ["ขอโทษครับ ตลาดไปยังไงครับ", "khǒo-thôot khráp tà-làat pai yang-ngai khráp", "excuse me, how do I get to the market? — place + ไปยังไง"],
+      ["ไกลไหมครับ", "klai mǎi khráp", "is it far?"],
+      ["ตรงไปแล้วเลี้ยวขวา", "trong pai láeo líao khwǎa", "go straight, then turn right — แล้ว chains the steps"],
+      ["เลี้ยวซ้ายที่ไฟแดง", "líao sáai thîi fai-daeng", "turn left at the traffic light — ที่ marks the place"],
+      ["อยู่ทางซ้ายหรือขวา", "yùu thaang sáai rǔue khwǎa", "is it on the left or the right?"],
+    ],
+    practice: [
+      { kind: "cloze", th: "ตลาดไป___ครับ", answer: "ยังไง", options: ["ยังไง", "ที่ไหน", "ไหม", "อะไร"], en: "HOW do I get to the market?" },
+      { kind: "cloze", th: "เลี้ยว___ที่ไฟแดง", answer: "ซ้าย", options: ["ซ้าย", "ขวา", "ตรง", "ไกล"], en: "turn LEFT at the traffic light" },
+      { kind: "mc", th: "ไกลไหมครับ", answer: "is it far?", options: ["is it far?", "is it near?", "where is it?", "turn right"] },
+    ],
+  },
+  {
+    id: "g11", title: "Cheaper, better, best", scenario: "shopping around", bonus: true,
+    markers: ["กว่า", "ถูกกว่า", "ที่สุด"],
+    intro: "To compare, put กว่า (kwàa, 'more than') after the adjective: " +
+      "หมูถูกกว่าเนื้อวัว, pork is cheaper than beef. ที่สุด (thîi-sùt) after " +
+      "it makes it the most: ร้านนี้อร่อยที่สุด. In a shop, ถูกกว่านี้มีไหม " +
+      "asks for something cheaper, and อันนี้ดีกว่า says this one is better.",
+    pattern: [
+      ["หมูถูกกว่าเนื้อวัว", "mǔu thùuk kwàa núea-wua", "pork is cheaper than beef — adjective + กว่า + the other thing"],
+      ["ถูกกว่านี้มีไหม", "thùuk kwàa níi mii mǎi", "anything cheaper than this?"],
+      ["อันนี้ดีกว่า", "an níi dii kwàa", "this one is better"],
+      ["ร้านนี้อร่อยที่สุด", "ráan níi à-ròoi thîi-sùt", "this place is the most delicious — ที่สุด, the most"],
+      ["ใหญ่ที่สุด", "yài thîi-sùt", "the biggest"],
+    ],
+    practice: [
+      { kind: "cloze", th: "หมูถูก___เนื้อวัว", answer: "กว่า", options: ["กว่า", "ที่สุด", "มาก", "ไหม"], en: "pork is cheaper THAN beef" },
+      { kind: "cloze", th: "ร้านนี้อร่อย___", answer: "ที่สุด", options: ["ที่สุด", "กว่า", "ไหม", "มาก"], en: "this place is the MOST delicious" },
+      { kind: "mc", th: "ถูกกว่านี้มีไหม", answer: "anything cheaper than this?", options: ["anything cheaper than this?", "is this the cheapest?", "how much is this?", "is it expensive?"] },
     ],
   },
 ];

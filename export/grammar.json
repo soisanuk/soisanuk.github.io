@@ -10,7 +10,7 @@
   "tokens": "Split by the 12k-word segmenter (segment.js). `roman` and `gloss` come from the course (WORDS) when `course` is true, else from the gloss layers named in `glossSource`: extra (hand-curated, this project), wiktionary (English Wiktionary via kaikki.org, CC BY-SA 3.0), volubilis (VOLUBILIS by Belisan, CC BY-SA 4.0). Those third-party glosses carry their own licence and attribution duty."
  },
  "counts": {
-  "lessons": 9,
+  "lessons": 11,
   "sentences": 1206,
   "reviewed": 25,
   "solt": 56,
@@ -1407,7 +1407,11 @@
    "courseUnit": 15,
    "intro": "You flag a สองแถว (sǒong-thǎeo — 'two rows', the red baht bus). Hop in the back; when you want out, press the buzzer or call จอด (jòot, stop). ตรงไป is straight, เลี้ยว is turn. Ten baht down Beach Road — no haggling, just name where you're going and add your particle.",
    "markers": [
-    "ตรง ไป"
+    "ตรง ไป",
+    "เลี้ยว",
+    "จอด",
+    "ไฟแดง",
+    "สี่แยก"
    ],
    "pattern": [
     {
@@ -1588,7 +1592,18 @@
     }
    ],
    "examples": [
-    "ตรง"
+    "เลี้ยว",
+    "จอด",
+    "ตรง",
+    "ไฟแดง",
+    "หยุด",
+    "สามแยก",
+    "ลงจอด",
+    "สี่แยก",
+    "ไหล่ทาง",
+    "ทางแยก",
+    "วงเวียน",
+    "เครื่องบิน"
    ]
   },
   {
@@ -2113,6 +2128,559 @@
     "ความสูง",
     "อาศัย",
     "ครอบครัว"
+   ]
+  },
+  {
+   "id": "g10",
+   "title": "Asking the way",
+   "scenario": "on foot, lost",
+   "inCourse": false,
+   "courseUnit": null,
+   "intro": "Name the place, then add ไปยังไง (pai yang-ngai, 'go how?'): ตลาดไปยังไง, how do I get to the market? The answer comes in steps joined by แล้ว (láeo, 'then'): ตรงไป แล้วเลี้ยวขวา. ที่ marks where: เลี้ยวซ้ายที่ไฟแดง. Before you set off, ask ไกลไหม: is it far?",
+   "markers": [
+    "ไป ยังไง",
+    "ที่ไหน",
+    "ไกล",
+    "ใกล้"
+   ],
+   "pattern": [
+    {
+     "thai": "ขอโทษครับ ตลาดไปยังไงครับ",
+     "roman": "khǒo-thôot khráp tà-làat pai yang-ngai khráp",
+     "en": "excuse me, how do I get to the market? — place + ไปยังไง",
+     "tokens": [
+      {
+       "text": "ขอโทษ",
+       "key": "ขอโทษ",
+       "course": true,
+       "roman": "khǒo-thôot",
+       "gloss": "sorry/excuse me",
+       "glossSource": "course"
+      },
+      {
+       "text": "ครับ",
+       "key": "ครับ",
+       "course": true,
+       "roman": "khráp",
+       "gloss": "polite particle (male)",
+       "glossSource": "course"
+      },
+      {
+       "text": "ตลาด",
+       "key": "ตลาด",
+       "course": true,
+       "roman": "tà-làat",
+       "gloss": "market",
+       "glossSource": "course"
+      },
+      {
+       "text": "ไป",
+       "key": "ไป",
+       "course": true,
+       "roman": "pai",
+       "gloss": "to go",
+       "glossSource": "course"
+      },
+      {
+       "text": "ยังไง",
+       "key": "ยังไง",
+       "course": true,
+       "roman": "yang-ngai",
+       "gloss": "how (colloquial อย่างไร)",
+       "glossSource": "course"
+      },
+      {
+       "text": "ครับ",
+       "key": "ครับ",
+       "course": true,
+       "roman": "khráp",
+       "gloss": "polite particle (male)",
+       "glossSource": "course"
+      }
+     ]
+    },
+    {
+     "thai": "ไกลไหมครับ",
+     "roman": "klai mǎi khráp",
+     "en": "is it far?",
+     "tokens": [
+      {
+       "text": "ไกล",
+       "key": "ไกล",
+       "course": true,
+       "roman": "klai",
+       "gloss": "far",
+       "glossSource": "course"
+      },
+      {
+       "text": "ไหม",
+       "key": "ไหม",
+       "course": true,
+       "roman": "mǎi",
+       "gloss": "question particle (yes/no)",
+       "glossSource": "course"
+      },
+      {
+       "text": "ครับ",
+       "key": "ครับ",
+       "course": true,
+       "roman": "khráp",
+       "gloss": "polite particle (male)",
+       "glossSource": "course"
+      }
+     ]
+    },
+    {
+     "thai": "ตรงไปแล้วเลี้ยวขวา",
+     "roman": "trong pai láeo líao khwǎa",
+     "en": "go straight, then turn right — แล้ว chains the steps",
+     "tokens": [
+      {
+       "text": "ตรง",
+       "key": "ตรง",
+       "course": true,
+       "roman": "trong",
+       "gloss": "straight/direct/exactly",
+       "glossSource": "course"
+      },
+      {
+       "text": "ไป",
+       "key": "ไป",
+       "course": true,
+       "roman": "pai",
+       "gloss": "to go",
+       "glossSource": "course"
+      },
+      {
+       "text": "แล้ว",
+       "key": "แล้ว",
+       "course": true,
+       "roman": "láeo",
+       "gloss": "already/then",
+       "glossSource": "course"
+      },
+      {
+       "text": "เลี้ยว",
+       "key": "เลี้ยว",
+       "course": true,
+       "roman": "líao",
+       "gloss": "to turn",
+       "glossSource": "course"
+      },
+      {
+       "text": "ขวา",
+       "key": "ขวา",
+       "course": true,
+       "roman": "khwǎa",
+       "gloss": "right",
+       "glossSource": "course"
+      }
+     ]
+    },
+    {
+     "thai": "เลี้ยวซ้ายที่ไฟแดง",
+     "roman": "líao sáai thîi fai-daeng",
+     "en": "turn left at the traffic light — ที่ marks the place",
+     "tokens": [
+      {
+       "text": "เลี้ยว",
+       "key": "เลี้ยว",
+       "course": true,
+       "roman": "líao",
+       "gloss": "to turn",
+       "glossSource": "course"
+      },
+      {
+       "text": "ซ้าย",
+       "key": "ซ้าย",
+       "course": true,
+       "roman": "sáai",
+       "gloss": "left",
+       "glossSource": "course"
+      },
+      {
+       "text": "ที่",
+       "key": "ที่",
+       "course": true,
+       "roman": "thîi",
+       "gloss": "at/which/that",
+       "glossSource": "course"
+      },
+      {
+       "text": "ไฟแดง",
+       "key": "ไฟแดง",
+       "course": true,
+       "roman": "fai-daeng",
+       "gloss": "traffic light (lit. red light)",
+       "glossSource": "course"
+      }
+     ]
+    },
+    {
+     "thai": "อยู่ทางซ้ายหรือขวา",
+     "roman": "yùu thaang sáai rǔue khwǎa",
+     "en": "is it on the left or the right?",
+     "tokens": [
+      {
+       "text": "อยู่",
+       "key": "อยู่",
+       "course": true,
+       "roman": "yùu",
+       "gloss": "to be at/to stay",
+       "glossSource": "course"
+      },
+      {
+       "text": "ทาง",
+       "key": "ทาง",
+       "course": true,
+       "roman": "thaang",
+       "gloss": "way/path/direction/via",
+       "glossSource": "course"
+      },
+      {
+       "text": "ซ้าย",
+       "key": "ซ้าย",
+       "course": true,
+       "roman": "sáai",
+       "gloss": "left",
+       "glossSource": "course"
+      },
+      {
+       "text": "หรือ",
+       "key": "หรือ",
+       "course": true,
+       "roman": "rǔue",
+       "gloss": "or",
+       "glossSource": "course"
+      },
+      {
+       "text": "ขวา",
+       "key": "ขวา",
+       "course": true,
+       "roman": "khwǎa",
+       "gloss": "right",
+       "glossSource": "course"
+      }
+     ]
+    }
+   ],
+   "practice": [
+    {
+     "kind": "cloze",
+     "th": "ตลาดไป___ครับ",
+     "answer": "ยังไง",
+     "options": [
+      "ยังไง",
+      "ที่ไหน",
+      "ไหม",
+      "อะไร"
+     ],
+     "en": "HOW do I get to the market?"
+    },
+    {
+     "kind": "cloze",
+     "th": "เลี้ยว___ที่ไฟแดง",
+     "answer": "ซ้าย",
+     "options": [
+      "ซ้าย",
+      "ขวา",
+      "ตรง",
+      "ไกล"
+     ],
+     "en": "turn LEFT at the traffic light"
+    },
+    {
+     "kind": "mc",
+     "th": "ไกลไหมครับ",
+     "answer": "is it far?",
+     "options": [
+      "is it far?",
+      "is it near?",
+      "where is it?",
+      "turn right"
+     ]
+    }
+   ],
+   "examples": [
+    "ไกล",
+    "โทรกลับ",
+    "ไปรษณีย์",
+    "ต่างประเทศ",
+    "หน้าร้อน",
+    "ที่ไหน",
+    "ข้าวเย็น",
+    "ตอนนี้",
+    "โรงแรม",
+    "ที่พัก",
+    "บ้าน",
+    "บ้านฉาง",
+    "ป้ายรถเมล์",
+    "เจ้าของบ้าน",
+    "ถาม",
+    "บ้านบึง",
+    "ซ่อม",
+    "ใกล้",
+    "เกาะสีชัง",
+    "โรงเรียน",
+    "ระยะทาง"
+   ]
+  },
+  {
+   "id": "g11",
+   "title": "Cheaper, better, best",
+   "scenario": "shopping around",
+   "inCourse": false,
+   "courseUnit": null,
+   "intro": "To compare, put กว่า (kwàa, 'more than') after the adjective: หมูถูกกว่าเนื้อวัว, pork is cheaper than beef. ที่สุด (thîi-sùt) after it makes it the most: ร้านนี้อร่อยที่สุด. In a shop, ถูกกว่านี้มีไหม asks for something cheaper, and อันนี้ดีกว่า says this one is better.",
+   "markers": [
+    "กว่า",
+    "ถูกกว่า",
+    "ที่สุด"
+   ],
+   "pattern": [
+    {
+     "thai": "หมูถูกกว่าเนื้อวัว",
+     "roman": "mǔu thùuk kwàa núea-wua",
+     "en": "pork is cheaper than beef — adjective + กว่า + the other thing",
+     "tokens": [
+      {
+       "text": "หมู",
+       "key": "หมู",
+       "course": true,
+       "roman": "mǔu",
+       "gloss": "pork/pig",
+       "glossSource": "course"
+      },
+      {
+       "text": "ถูก",
+       "key": "ถูก",
+       "course": true,
+       "roman": "thùuk",
+       "gloss": "cheap/correct",
+       "glossSource": "course"
+      },
+      {
+       "text": "กว่า",
+       "key": "กว่า",
+       "course": true,
+       "roman": "kwàa",
+       "gloss": "more than/than/over",
+       "glossSource": "course"
+      },
+      {
+       "text": "เนื้อวัว",
+       "key": "เนื้อวัว",
+       "course": true,
+       "roman": "núea-wua",
+       "gloss": "beef",
+       "glossSource": "course"
+      }
+     ]
+    },
+    {
+     "thai": "ถูกกว่านี้มีไหม",
+     "roman": "thùuk kwàa níi mii mǎi",
+     "en": "anything cheaper than this?",
+     "tokens": [
+      {
+       "text": "ถูก",
+       "key": "ถูก",
+       "course": true,
+       "roman": "thùuk",
+       "gloss": "cheap/correct",
+       "glossSource": "course"
+      },
+      {
+       "text": "กว่า",
+       "key": "กว่า",
+       "course": true,
+       "roman": "kwàa",
+       "gloss": "more than/than/over",
+       "glossSource": "course"
+      },
+      {
+       "text": "นี้",
+       "key": "นี้",
+       "course": true,
+       "roman": "níi",
+       "gloss": "this",
+       "glossSource": "course"
+      },
+      {
+       "text": "มี",
+       "key": "มี",
+       "course": true,
+       "roman": "mii",
+       "gloss": "to have/there is",
+       "glossSource": "course"
+      },
+      {
+       "text": "ไหม",
+       "key": "ไหม",
+       "course": true,
+       "roman": "mǎi",
+       "gloss": "question particle (yes/no)",
+       "glossSource": "course"
+      }
+     ]
+    },
+    {
+     "thai": "อันนี้ดีกว่า",
+     "roman": "an níi dii kwàa",
+     "en": "this one is better",
+     "tokens": [
+      {
+       "text": "อัน",
+       "key": "อัน",
+       "course": true,
+       "roman": "an",
+       "gloss": "one/piece (classifier for small things)",
+       "glossSource": "course"
+      },
+      {
+       "text": "นี้",
+       "key": "นี้",
+       "course": true,
+       "roman": "níi",
+       "gloss": "this",
+       "glossSource": "course"
+      },
+      {
+       "text": "ดี",
+       "key": "ดี",
+       "course": true,
+       "roman": "dii",
+       "gloss": "good",
+       "glossSource": "course"
+      },
+      {
+       "text": "กว่า",
+       "key": "กว่า",
+       "course": true,
+       "roman": "kwàa",
+       "gloss": "more than/than/over",
+       "glossSource": "course"
+      }
+     ]
+    },
+    {
+     "thai": "ร้านนี้อร่อยที่สุด",
+     "roman": "ráan níi à-ròoi thîi-sùt",
+     "en": "this place is the most delicious — ที่สุด, the most",
+     "tokens": [
+      {
+       "text": "ร้าน",
+       "key": "ร้าน",
+       "course": true,
+       "roman": "ráan",
+       "gloss": "shop/restaurant/stall",
+       "glossSource": "course"
+      },
+      {
+       "text": "นี้",
+       "key": "นี้",
+       "course": true,
+       "roman": "níi",
+       "gloss": "this",
+       "glossSource": "course"
+      },
+      {
+       "text": "อร่อย",
+       "key": "อร่อย",
+       "course": true,
+       "roman": "à-ròoi",
+       "gloss": "delicious",
+       "glossSource": "course"
+      },
+      {
+       "text": "ที่สุด",
+       "key": "ที่สุด",
+       "course": true,
+       "roman": "thîi-sùt",
+       "gloss": "the most / -est",
+       "glossSource": "course"
+      }
+     ]
+    },
+    {
+     "thai": "ใหญ่ที่สุด",
+     "roman": "yài thîi-sùt",
+     "en": "the biggest",
+     "tokens": [
+      {
+       "text": "ใหญ่",
+       "key": "ใหญ่",
+       "course": true,
+       "roman": "yài",
+       "gloss": "big",
+       "glossSource": "course"
+      },
+      {
+       "text": "ที่สุด",
+       "key": "ที่สุด",
+       "course": true,
+       "roman": "thîi-sùt",
+       "gloss": "the most / -est",
+       "glossSource": "course"
+      }
+     ]
+    }
+   ],
+   "practice": [
+    {
+     "kind": "cloze",
+     "th": "หมูถูก___เนื้อวัว",
+     "answer": "กว่า",
+     "options": [
+      "กว่า",
+      "ที่สุด",
+      "มาก",
+      "ไหม"
+     ],
+     "en": "pork is cheaper THAN beef"
+    },
+    {
+     "kind": "cloze",
+     "th": "ร้านนี้อร่อย___",
+     "answer": "ที่สุด",
+     "options": [
+      "ที่สุด",
+      "กว่า",
+      "ไหม",
+      "มาก"
+     ],
+     "en": "this place is the MOST delicious"
+    },
+    {
+     "kind": "mc",
+     "th": "ถูกกว่านี้มีไหม",
+     "answer": "anything cheaper than this?",
+     "options": [
+      "anything cheaper than this?",
+      "is this the cheapest?",
+      "how much is this?",
+      "is it expensive?"
+     ]
+    }
+   ],
+   "examples": [
+    "ถูกกว่า",
+    "เต้น",
+    "ที่สุด",
+    "สำคัญ",
+    "กว่า",
+    "หมู",
+    "อื่น",
+    "เตี้ย",
+    "ชั่วโมง",
+    "ลองไทม์",
+    "บ่าย",
+    "สีม่วง",
+    "ปริมาณ",
+    "เนื้อสันใน",
+    "ประสบการณ์",
+    "เนื้อสุก",
+    "แม่น้ำ"
    ]
   }
  ],
@@ -3319,7 +3887,9 @@
    "en": "Thai is harder than I thought",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g11"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -6595,7 +7165,9 @@
    "en": "Where shall we have dinner?",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g10"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -10725,7 +11297,8 @@
     "cite": "M4L5, PDF p.19"
    },
    "patterns": [
-    "g5"
+    "g5",
+    "g7"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -12311,7 +12884,9 @@
    "en": "I have been waiting for over two hours",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g11"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -13566,7 +14141,9 @@
    "en": "The mechanic repaired the car at a nearby garage.",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g10"
+   ],
    "allCourseWords": false,
    "tokens": [
     {
@@ -15600,7 +16177,9 @@
    "en": "Where are you right now?",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g10"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -17180,7 +17759,9 @@
     "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
     "cite": "M3L6, PDF p.44"
    },
-   "patterns": [],
+   "patterns": [
+    "g10"
+   ],
    "allCourseWords": false,
    "tokens": [
     {
@@ -18022,7 +18603,9 @@
    "en": "He asked where the bathroom is",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g10"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -18368,7 +18951,8 @@
     "cite": "M3L2, PDF p.15"
    },
    "patterns": [
-    "g6"
+    "g6",
+    "g11"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -19549,7 +20133,9 @@
    "en": "Turn left at the next junction.",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g7"
+   ],
    "allCourseWords": false,
    "tokens": [
     {
@@ -20397,7 +20983,8 @@
    "reviewed": null,
    "solt": null,
    "patterns": [
-    "g9"
+    "g9",
+    "g10"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -20555,7 +21142,8 @@
    "reviewed": null,
    "solt": null,
    "patterns": [
-    "g6"
+    "g6",
+    "g11"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -20600,7 +21188,9 @@
    "en": "Where are you?",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g10"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -25160,7 +25750,9 @@
    "en": "In the afternoon it is hotter than in the morning",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g11"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -25229,7 +25821,8 @@
    "reviewed": null,
    "solt": null,
    "patterns": [
-    "g9"
+    "g9",
+    "g10"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -25350,7 +25943,9 @@
    "en": "Ban Chang is close to Map Ta Phut.",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g10"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -25395,7 +25990,8 @@
    "reviewed": null,
    "solt": null,
    "patterns": [
-    "g1"
+    "g1",
+    "g10"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -25839,7 +26435,9 @@
    "en": "He has more than ten years of work experience",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g11"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -26158,7 +26756,8 @@
    "reviewed": null,
    "solt": null,
    "patterns": [
-    "g6"
+    "g6",
+    "g11"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -28074,7 +28673,8 @@
    "reviewed": null,
    "solt": null,
    "patterns": [
-    "g2"
+    "g2",
+    "g10"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -35362,7 +35962,9 @@
    "en": "The distance from home to work is very far",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g10"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -36985,7 +37587,9 @@
    "en": "The plane has landed.",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g7"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -37440,7 +38044,8 @@
    "reviewed": null,
    "solt": null,
    "patterns": [
-    "g4"
+    "g4",
+    "g11"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -38468,7 +39073,9 @@
    "en": "You need to go around the roundabout before turning right.",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g7"
+   ],
    "allCourseWords": false,
    "tokens": [
     {
@@ -42406,7 +43013,9 @@
    "en": "Turn right at the T-junction.",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g7"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -42642,7 +43251,9 @@
    "en": "Health is more important than money",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g11"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -43545,7 +44156,9 @@
    "en": "She likes purple flowers the most.",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g11"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -43989,7 +44602,9 @@
    "en": "Stop and wait for the red light at the intersection.",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g7"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -45664,7 +46279,8 @@
     "cite": "M4L8, PDF p.3"
    },
    "patterns": [
-    "g6"
+    "g6",
+    "g10"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -46294,7 +46910,9 @@
    "en": "Pork is cheaper than beef.",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g11"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -46835,7 +47453,9 @@
    "en": "The car stopped at the red light",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g7"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -51194,7 +51814,8 @@
    "reviewed": null,
    "solt": null,
    "patterns": [
-    "g6"
+    "g6",
+    "g11"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -52034,7 +52655,8 @@
    "reviewed": null,
    "solt": null,
    "patterns": [
-    "g1"
+    "g1",
+    "g10"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -53263,7 +53885,9 @@
    "en": "The airplane landed at Suvarnabhumi Airport",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g7"
+   ],
    "allCourseWords": false,
    "tokens": [
     {
@@ -54136,7 +54760,8 @@
    "reviewed": null,
    "solt": null,
    "patterns": [
-    "g2"
+    "g2",
+    "g10"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -55370,7 +55995,9 @@
    "en": "My younger brother is shorter than me.",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g11"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -55533,7 +56160,9 @@
     "ref": "fbd2933"
    },
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g11"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -56539,7 +57168,9 @@
    "en": "Tenderloin is softer than other cuts of beef.",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g11"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -56667,7 +57298,9 @@
    "en": "I prefer eating well-done beef over rare beef.",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g11"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -60185,7 +60818,9 @@
     "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
     "cite": "M4L5, PDF p.19"
    },
-   "patterns": [],
+   "patterns": [
+    "g7"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -63921,7 +64556,8 @@
    "reviewed": null,
    "solt": null,
    "patterns": [
-    "g6"
+    "g6",
+    "g11"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -65574,7 +66210,8 @@
     "cite": "Instructor book M3L5, PDF p.54"
    },
    "patterns": [
-    "g2"
+    "g2",
+    "g10"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -66060,7 +66697,8 @@
    "reviewed": null,
    "solt": null,
    "patterns": [
-    "g9"
+    "g9",
+    "g10"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -66130,7 +66768,8 @@
    "reviewed": null,
    "solt": null,
    "patterns": [
-    "g6"
+    "g6",
+    "g10"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -66567,7 +67206,9 @@
    "en": "The convenience store is near my house",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g10"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -67664,7 +68305,8 @@
     "cite": "M4L3, PDF p.29"
    },
    "patterns": [
-    "g2"
+    "g2",
+    "g10"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -68539,7 +69181,8 @@
     "cite": "Instructor book M4L3, PDF p.65"
    },
    "patterns": [
-    "g2"
+    "g2",
+    "g10"
    ],
    "allCourseWords": true,
    "tokens": [
@@ -68858,7 +69501,9 @@
     "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
     "cite": "M4L3, PDF p.29"
    },
-   "patterns": [],
+   "patterns": [
+    "g7"
+   ],
    "allCourseWords": true,
    "tokens": [
     {
@@ -70001,7 +70646,9 @@
    "en": "The broken-down car is parked on the road shoulder.",
    "reviewed": null,
    "solt": null,
-   "patterns": [],
+   "patterns": [
+    "g7"
+   ],
    "allCourseWords": true,
    "tokens": [
     {

@@ -80,25 +80,28 @@ test("examples come back native first, then shortest, in a stable order", () => 
   assert.deepEqual(tail, [...tail].sort((a, b) => a - b));
 });
 
-test("the ของ lesson is bonus material, off the course spine", () => {
-  const g9 = GRAMMAR_LESSONS.find(l => l.id === "g9");
-  assert.equal(g9.bonus, true);
-  assert.ok(!COURSE.some(u => u.kind === "chunks" && u.lesson === "g9"));
+test("bonus lessons are off the course spine", () => {
+  for (const id of ["g9", "g10", "g11"]) {
+    const g = GRAMMAR_LESSONS.find(l => l.id === id);
+    assert.equal(g.bonus, true, id);
+    assert.ok(!COURSE.some(u => u.kind === "chunks" && u.lesson === id), id);
+  }
   for (const l of GRAMMAR_LESSONS.filter(l => !l.bonus)) {
     assert.ok(COURSE.some(u => u.kind === "chunks" && u.lesson === l.id), l.id + " should be on the spine");
   }
 });
 
-test("the ของ lesson uses only course words, romanised as the course has them", () => {
+test("every bonus lesson uses only course words, romanised as the course has them", () => {
   const map = Object.fromEntries(WORDS.map(w => [w[0], w]));
-  const g9 = GRAMMAR_LESSONS.find(l => l.id === "g9");
+  for (const g9 of GRAMMAR_LESSONS.filter(l => l.bonus)) {
   for (const [th, rom] of g9.pattern) {
-    const toks = segmentThai(th).map(t => t.base || t.text);
+    const toks = segmentThai(th).map(t => t.base || t.text).filter(t => t.trim());
     for (const t of toks) assert.ok(map[t], `${th}: ${t} is not a course word`);
     assert.equal(rom.replace(/\s+/g, " "), toks.map(t => map[t][1]).join(" "), th);
   }
   for (const p of g9.practice) {
     assert.ok(p.options.includes(p.answer));
     if (p.kind === "cloze") for (const o of p.options) assert.ok(map[o], `${o} is not a course word`);
+  }
   }
 });
