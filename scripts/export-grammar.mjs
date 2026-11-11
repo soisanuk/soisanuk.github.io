@@ -30,7 +30,7 @@ g("_segInit(_segEffective(THAI_LEXICON.split('\\n'))); _glossInit(THAI_GLOSS); _
 
 const WORDS = g("WORDS"), EXAMPLES = g("EXAMPLES"), LESSONS = g("GRAMMAR_LESSONS"), COURSE = g("COURSE");
 const segmentThai = g("segmentThai"), thaiGloss = g("thaiGloss"), thaiRoman = g("thaiRoman");
-const glossSource = g("glossSource"), exampleReview = g("exampleReview");
+const glossSource = g("glossSource"), exampleReview = g("exampleReview"), exampleSolt = g("exampleSolt");
 const grammarPatternsOf = g("grammarPatternsOf"), grammarExamples = g("grammarExamples");
 const course = new Map(WORDS.map(w => [w[0], w]));
 
@@ -77,6 +77,7 @@ const sentences = Object.keys(EXAMPLES).sort(byCodePoint).map(id => {
     roman,
     en,
     reviewed: ref ? { by: "fluent native Thai reader (not named in the record)", ref } : null,
+    solt: exampleSolt(id) ? { source: "DLI Thai SOLT course (student book unless the cite says Instructor)", cite: exampleSolt(id) } : null,
     patterns: grammarPatternsOf(thai),
     allCourseWords: toks.every(t => t.course),
     tokens: toks,
@@ -89,10 +90,13 @@ const out = {
     source: "thaicab (Soi Sanuk) — web/js/curriculum.js, examples.js, data.js, grammar.js",
     origin: "Lessons and example sentences were written for this course with an LLM (Claude), " +
       "starting 2026-07-02, and are not taken from any published source. See PROVENANCE.md.",
-    label: "LLM-authored course content, machine-checked, partially native-reviewed. Not verified.",
+    label: "LLM-authored course content, machine-checked, partially native-reviewed. Not verified. " +
+      "Sentences marked `solt` are native-written (DLI Thai SOLT).",
     checks: "Every course romanisation is checked against the tone engine in thai-script.js; " +
       "every sentence contains its headword; AI persona rounds reviewed the content. " +
-      "Sentences with `reviewed` set were approved by a fluent native Thai reader in the exact wording shown.",
+      "Sentences with `reviewed` set were approved by a fluent native Thai reader in the exact wording shown. " +
+      "Sentences with `solt` set are quoted word for word from the DLI Thai SOLT course (believed public domain, " +
+      "a US Government work; see PROVENANCE.md): native-written Thai, with our English.",
     licence: "unknown — not yet chosen by the owner for authored thaicab content",
     patterns: "A sentence's `patterns` are found by matching each lesson's `markers` against its tokens. " +
       "That is a pointer to the pattern, not a grammatical parse.",
@@ -105,6 +109,7 @@ const out = {
     lessons: lessons.length,
     sentences: sentences.length,
     reviewed: sentences.filter(s => s.reviewed).length,
+    solt: sentences.filter(s => s.solt).length,
     allCourseWords: sentences.filter(s => s.allCourseWords).length,
   },
   lessons,

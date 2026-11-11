@@ -114,3 +114,24 @@ of gain reduction and 20-40 ms fades.
   owner confirmed that the track speaks each letter with its name. A
   listen-through of all 42 in alphabet order is recorded in the commit that
   ships them.
+
+## Vocabulary from DLI Thai SOLT (added 2026-11-11)
+
+153 words were appended to `WORDS` in `data.js` under the heading "Everyday
+Pattaya, from the DLI Thai SOLT course", with an example each in
+`examples.js`.
+
+- **Selection:** from SOLT Modules 3-5 vocabulary lists (food, lodging,
+  banking, post, directions, transport, weather, health). The words are
+  everyday Thai, so the list itself carries no copyright weight. The
+  romanisation, glosses and categories are ours.
+- **Examples:** 56 are quoted word for word from SOLT. They are recorded in
+  `grammar.js` `EXAMPLE_SOLT`, each with its lesson and page, and checked by
+  substring match against the extracted SOLT text. These are native-written
+  Thai. 11 more were adapted from SOLT patterns (ผม or ครับ added), and 86
+  were written for this course. Neither group counts as native-sourced.
+- **Licence:** as for the recordings above: believed public domain (US
+  Government work), not verified.
+- **Side effects:** `seg-phrases.js` was regenerated from VISTEC-TP-TH-2021
+  (downloaded 2026-11-11), because ข้างใน and ไม่ค่อย are now course words
+  and must not be pruned.

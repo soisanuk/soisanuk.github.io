@@ -76,11 +76,12 @@ describe("a match may not strand a lone consonant it clusters with", () => {
 });
 
 describe("the words ลา is still carved out of are kept out of app text", () => {
-  // Her finding 4, recorded as a NON-FIX. Fifteen ordinary words still split
+  // Her finding 4, recorded as a NON-FIX. Fourteen ordinary words still split
   // wrongly, because the stranded piece is not a lone consonant and so the
-  // cluster rule cannot see it: ตุลาคม → ตุ|ลา|คม, ยะลา → ยะ|ลา, ลายเซ็น →
-  // ลา|ยเซ็น, and ดอลลาร์ ซาลาเปา จลาจล ลามก อำลา บุคลากร เกลา เหลา ลาด ลาย
-  // ลาง สงขลา. None is reachable from any app surface today, and repairing
+  // cluster rule cannot see it: ตุลาคม → ตุ|ลา|คม, ยะลา → ยะ|ลา, and ดอลลาร์
+  // ซาลาเปา จลาจล ลามก อำลา บุคลากร เกลา เหลา ลาด ลาย ลาง สงขลา. ลายเซ็น was
+  // the fifteenth until 2026-11-11, when it became a course word itself
+  // (the DLI Thai SOLT vocabulary batch). None is reachable from any app surface today, and repairing
   // them needs a real word list — which is what segment.js and its 12k
   // lexicon are for, and which the open-text surfaces already use.
   //
@@ -95,7 +96,7 @@ describe("the words ลา is still carved out of are kept out of app text", () 
   // own) and the ห/อ leader pairs — which repaired these two as a side
   // effect. This test is what caught the list going stale; it failed on
   // exactly those two names and nothing else.
-  const CARVED = ["ตุลาคม", "ยะลา", "ลายเซ็น", "สงขลา", "ดอลลาร์", "ซาลาเปา",
+  const CARVED = ["ตุลาคม", "ยะลา", "สงขลา", "ดอลลาร์", "ซาลาเปา",
                   "จลาจล", "ลามก", "อำลา", "บุคลากร",
                   "ลาด", "ลาย", "ลาง"];
 

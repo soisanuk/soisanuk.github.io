@@ -27,6 +27,14 @@ test("every recorded review still matches its sentence word for word", () => {
   assert.equal(Object.keys(EXAMPLES).filter(k => exampleReview(k)).length, 25);
 });
 
+test("every SOLT quotation still matches its sentence word for word", () => {
+  const stale = Object.entries(EXAMPLE_SOLT)
+    .filter(([k, [s]]) => !EXAMPLES[k] || EXAMPLES[k][0] !== s).map(([k]) => k);
+  assert.deepEqual(stale, []);
+  assert.equal(Object.keys(EXAMPLES).filter(k => exampleSolt(k)).length, 56);
+  for (const [, cite] of Object.values(EXAMPLE_SOLT)) assert.match(cite, /^(Instructor book )?M[1-5]L\d/);
+});
+
 test("an edited sentence loses its review mark", () => {
   const saved = EXAMPLES["รูป"];
   try {
@@ -62,12 +70,13 @@ test("every lesson has markers, and every marker token is a course word", () => 
   }
 });
 
-test("examples come back reviewed first, then shortest, in a stable order", () => {
+test("examples come back native first, then shortest, in a stable order", () => {
   const ks = grammarExamples("g6");
   assert.deepEqual(ks, grammarExamples("g6"));
-  const rev = ks.map(k => !!exampleReview(k));
-  assert.equal(rev.indexOf(false), rev.filter(Boolean).length, "reviewed sentences lead");
-  const tail = ks.filter(k => !exampleReview(k)).map(k => [...EXAMPLES[k][0]].length);
+  const native = k => !!(exampleReview(k) || exampleSolt(k));
+  const rev = ks.map(native);
+  assert.equal(rev.indexOf(false), rev.filter(Boolean).length, "reviewed and SOLT sentences lead");
+  const tail = ks.filter(k => !native(k)).map(k => [...EXAMPLES[k][0]].length);
   assert.deepEqual(tail, [...tail].sort((a, b) => a - b));
 });
 
