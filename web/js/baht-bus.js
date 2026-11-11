@@ -7,6 +7,11 @@
 // time (unit-tested via node:vm).
 
 // ── Thai numbers (1–999) ───────────────────────────────────────────────────
+// _bbThaiNum and _bbRomanNum are also used OUTSIDE this repo: the trellis
+// coach's pack build loads this file in a sandbox and calls both to make its
+// price-reading and fare-and-change chat games. Renaming them, or changing
+// what they return, breaks that build (loudly, at build time), so tell the
+// trellis session first. clock.js reuses them here too.
 
 const _BB_DIG   = ["", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า"];
 const _BB_DIG_R = ["", "nùeng", "sǒong", "sǎam", "sìi", "hâa", "hòk", "jèt", "pàet", "kâo"];
