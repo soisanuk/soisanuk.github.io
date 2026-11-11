@@ -254,7 +254,7 @@ function endSession() {
 // drills handle Escape themselves. main.js reads this, and round29.test.js
 // asserts every .screen in index.html is covered by one of the three.
 const ESCAPE_TO_MENU = ["learn-screen", "reader-screen", "paste-screen", "rst-screen",
-  "records-screen", "backup-screen", "vocab-list-screen", "idioms-screen",
+  "records-screen", "backup-screen", "vocab-list-screen", "idioms-screen", "grammar-screen",
   "cat-screen", "stats-screen", "end-screen", "charts-screen"];
 
 // `title` names the mode the category is for. Round 29: four modes landed on

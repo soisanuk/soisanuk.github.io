@@ -1,0 +1,89 @@
+# Provenance of the course data
+
+Recorded 2026-11-11 against commit `86f35ee`, from the git history, the
+commit messages and file headers, and what is still on disk. It covers the
+files a content pack would export (`data.js`, `curriculum.js`,
+`examples.js`). The machine-readable copy is [PROVENANCE.json](PROVENANCE.json).
+Where something could not be established, this file says **unknown** rather
+than guessing.
+
+## Summary
+
+All three files were written in this repository by Mario De Tore working with
+Claude (Anthropic). Of the commits touching them, all but three to four per
+file carry a `Co-Authored-By: Claude …` trailer. No third-party word list,
+dictionary or textbook text was found copied into them. There are three open
+questions, and only Mario can answer them:
+
+1. **What the original Python app's data came from.** `data.js` was imported
+   whole in the first commit (`2011e8e`, 2026-07-02): 884 word rows, plus the
+   consonant, vowel and tone tables. Its header at the time read
+   `// Auto-generated from thaicab/data/thai_script.py and thaicab/data/words.py`.
+   That Python project was never committed here. It is not on disk at
+   `~/thaicab` or elsewhere, and no transcript of its creation survives. The
+   first commit is co-authored by Claude Sonnet 4.6, which suggests the data
+   was LLM-generated, but suggests is all the evidence allows. **Unknown.**
+2. **The licence for this project's own material.** There is no LICENSE file
+   and there never has been one in history. **Unknown — not yet chosen.**
+3. **The commit identity on the first seven commits.** Seven commits from
+   2026-07-02 to 2026-07-03 are authored as `a former work email address`.
+   Every later commit uses a personal identity. This record says nothing
+   about what machine or time they were made on, and the repo cannot tell.
+
+## Per source
+
+| Source | Author / upstream | Licence | Attribution owed | Evidence | Confidence |
+|---|---|---|---|---|---|
+| `data.js` WORDS, as imported (884 rows: Thai, romanisation, gloss, category) | Generated from an unrecorded Python app (`words.py`), authorship of its contents **unknown** | **unknown** | **unknown** | `git show 2011e8e:web/js/data.js` header; initial commit co-authored by Claude Sonnet 4.6 | low |
+| `data.js` WORDS, rows added since (884 → current) and corrections | Mario De Tore with Claude; many words requested by The Last Baht Bus (Mario's own project) | none stated (first-party) | none known | 50 commits, 47 with Claude co-author trailers | high |
+| `data.js` consonant, vowel and tone tables | Imported with the above from `thai_script.py`; the contents are standard facts of the Thai script | **unknown** for the original file; the facts themselves are not copyrightable | none known | as above | medium |
+| `data.js` CONS_NAME_EN (13 glosses for acrophonic letter names) | Mario De Tore with Claude, 2026-09-05; prompted by reading a Thai SOLT I lesson, whose wording was not copied | none stated (first-party) | none | `b7c6945` ("The prose is all ours") | high |
+| `curriculum.js` LETTER_BATCHES, COURSE, GRAMMAR_LESSONS, TONE_READ_WORDS, TONE_EXCEPTIONS, teaching notes | Mario De Tore's brief (2026-07-17) built by Claude. The letter order was computed to maximise decodable words from WORDS, not taken from a corpus or course | none stated (first-party) | none | `1578eee`; curriculum.js:12-16; 23 commits, 19 with Claude trailers | high |
+| `curriculum.js` CONS_CONTRASTS, CONFUSABLE_CONS | Mario De Tore with Claude. The idea for the drills came from comparing the course against a Thai SOLT I alphabet lesson. The pairs are derived from WORDS | none stated (first-party) | none — ideas only were taken | `b7c6945`; curriculum.js:134-142 | high |
+| Tone and decodability helpers' outputs | Computed by this repo's code from the data above | follows the data | follows the data | curriculum.js, thai-script.js | high |
+| `examples.js` (sentence, romanisation, translation) | Imported with the first commit (no generator header), then edited and extended by Mario De Tore with Claude | **unknown** for the 2026-07-02 import; first-party since | **unknown** for the import | `2011e8e`; 37 commits, 35 with Claude trailers | medium |
+
+## Contact with the third-party sources
+
+The CC0 and CC BY-SA files in this repo are `lexicon-th.js` (CC0),
+`gloss-th.js` (Wiktionary, CC BY-SA 3.0) and `gloss-vol.js` (VOLUBILIS,
+CC BY-SA 4.0). None of the three is imported by `data.js`, `curriculum.js` or
+`examples.js`, and no bulk copy from them was found. Two kinds of contact did
+happen, and they are disclosed here because they would not show up in a grep:
+
+- **Corrections were made by cross-checking against Wiktionary.** In
+  `56b2365`, about 950 glosses were checked, and fixes such as เงาะ
+  "rambutan" were made. In `45e758d`, กะเทย took the dictionary's romanisation
+  *thooei*. In `299ca09`, about 50 words were corrected. Each correction
+  changed a single fact (one gloss or one romanisation), and most were
+  decided by the tone engine and by the sibling entries in WORDS.
+- **Tests compare WORDS with gloss-th.js** (corpus agreement). That checks
+  the data; it does not copy from the dictionary.
+
+The Thai SOLT I material is understood to be a Defense Language Institute
+publication. That has not been verified. Only ideas were taken from it (which
+drills the course lacked), and ideas are not copyrightable.
+
+Audio and images are out of scope: no consumer of this file needs them.
+
+## Native review, the bonus lesson and the grammar export (added 2026-11-11)
+
+- **Native review record.** `EXAMPLE_REVIEWS` in `web/js/grammar.js` lists
+  the 25 example sentences a fluent native Thai reader approved, each with
+  the exact wording they approved and the commit that recorded it: 7 in
+  `b71a3af`, and 18 of the 19 in `fbd2933`. The 19th, ขาว, is not counted,
+  because its sentence was rewritten after the review and never re-read. A
+  sentence keeps its ✓ only while it still reads exactly as approved, and a
+  test fails if one drifts. The record does not name the reviewer
+  (**unknown**). Everything else in `examples.js` is LLM-authored and
+  machine-checked, not natively verified.
+- **Bonus lesson g9 "Whose is it?" (ของ)** and each lesson's `markers` were
+  written by Mario De Tore with Claude. g9 is not on the Guided Course
+  spine. It appears only on the in-app Grammar & Examples screen and in the
+  export.
+- **`export/grammar.json`** is generated by `scripts/export-grammar.mjs`, and
+  CI fails if it drifts. It carries its own provenance block with the label
+  "LLM-authored course content, machine-checked, partially native-reviewed.
+  Not verified." and licence **unknown**. Its per-token glosses for non-course
+  words come from Wiktionary (CC BY-SA 3.0) or VOLUBILIS (CC BY-SA 4.0), and
+  each token is tagged with its gloss source.

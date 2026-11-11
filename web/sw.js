@@ -37,6 +37,7 @@ const PRECACHE = [
   "./js/clock.js",
   "./js/numbers.js",
   "./js/idioms.js",
+  "./js/grammar.js",
   "./js/home.js",
   "./js/main.js",
   "./manifest.json",

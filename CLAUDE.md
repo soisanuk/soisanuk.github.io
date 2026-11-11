@@ -31,6 +31,12 @@ node scripts/build-gloss.mjs <kaikki.org-dictionary-Thai.jsonl>       # → web/
 node scripts/build-gloss.mjs --migrate       # vowel-length rules only, no dump needed
 node scripts/build-gloss-volubilis.mjs <VOLUBILIS Duo Max ENG.xlsx>  # → web/js/gloss-vol.js   (CC BY-SA 4.0)
 
+# Export the grammar lessons + every example sentence as JSON for trellis
+# (the Signal learning coach). Derived from curriculum.js / examples.js /
+# data.js / grammar.js — never edit export/grammar.json by hand. CI runs --check.
+node scripts/export-grammar.mjs           # write export/grammar.json
+node scripts/export-grammar.mjs --check   # verify; exit 1 on drift
+
 # Structural sweep of every screen, desktop + iPhone: JS errors, overflow,
 # clipping, empty screens, and tap targets below the threshold for that input
 # (touch vs pointer). Also walks the first-run tutorial slide by slide, which
