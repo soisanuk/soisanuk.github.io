@@ -1,5 +1,6 @@
 // Cut the 42 consonant clips (each letter, then its name: "ก … ไก่") out of
-// the DLI Thai SOLT I listening workbook, Module 1 Lesson 1, Track 1.
+// the Thai SOLT I listening workbook (US Army JFK Special Warfare Center and
+// School with the University of Arizona), Module 1 Lesson 1, Track 1.
 // Native-speaker audio for the one thing device text-to-speech does worst:
 // a single letter read on its own.
 //

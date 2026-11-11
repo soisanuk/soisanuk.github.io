@@ -45,7 +45,8 @@ const EXAMPLE_REVIEWS = {
   "อย่า":      ["อย่าเดินกลับบ้านดึก", "fbd2933"],
 };
 
-// Example sentences quoted word for word from the DLI Thai SOLT course: Thai
+// Example sentences quoted word for word from the Thai SOLT course (US Army
+// JFK Special Warfare Center and School with the University of Arizona): Thai
 // written by the course's native-speaker authors, not by us. Keyed by
 // headword, holding the exact sentence and where SOLT prints it (lesson and
 // page; the student book unless the cite says Instructor). Like a review, the mark lasts only while the sentence
@@ -192,7 +193,7 @@ function _grSentenceHtml(key) {
   const reviewed = exampleReview(key)
     ? `<span class="gr-reviewed" title="Reviewed by a fluent Thai reader">✓ reviewed</span>`
     : exampleSolt(key)
-      ? `<span class="gr-reviewed" title="Quoted from the DLI Thai SOLT course, ${_grEsc(exampleSolt(key))}">✓ from DLI SOLT</span>` : "";
+      ? `<span class="gr-reviewed" title="Quoted from the Thai SOLT course, ${_grEsc(exampleSolt(key))}">✓ from SOLT</span>` : "";
   const speak = _tts.available()
     ? `<button class="gr-spk" data-say="${_grEsc(thai)}" aria-label="listen">🔊</button>` : "";
   return `<div class="gr-ex"><div class="gr-ex-thai" lang="th">${speak}${thaiHtml}</div>` +

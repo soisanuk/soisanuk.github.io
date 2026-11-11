@@ -140,7 +140,7 @@
       "file": "web/audio/letters/*.mp3",
       "part": "42 consonant recordings (letter + name)",
       "author": "DLI Thai SOLT I listening workbook M1-3, Track 1 (speaker not named; course authors per metadata: Anthony Burgard, Charatpim Burgard)",
-      "licence": "believed public domain (US Government work); not verified, since no notice is in the files and federal-employee vs contractor status is unknown",
+      "licence": "public domain in the US by owner's determination 2026-11-11 (see determinations)",
       "attribution": "credited in PROVENANCE.md",
       "evidence": [
         "scripts/cut-letter-audio.mjs",
@@ -166,6 +166,22 @@
       "evidence": [
         "b7c6945"
       ]
+    }
+  ],
+  "determinations": [
+    {
+      "date": "2026-11-11",
+      "subject": "Thai SOLT course (all SOLT-derived material)",
+      "by": "owner",
+      "finding": "public domain in the US (17 U.S.C. § 105; DoD Unlimited Rights; no institutional endorsement)",
+      "origin": "US Army JFK Special Warfare Center and School with the University of Arizona and contracted partners (South Camber / Advanced Computer Learning Company)",
+      "evidenceKept": [
+        "source .doc metadata names Anthony Inc., U of A South, Arizona State University",
+        "no copyright/distribution/public-release notice in any file",
+        "open distribution ~20 years (FSI Language Courses archive, Live Lingua, yojik.eu) without challenge",
+        "§105 covers federal-employee works; contractor works ordinarily rest on the government licence — recorded as owner's decision, not independent legal verification"
+      ],
+      "text": "PROVENANCE.md, 'SOLT rights: the owner's determination'"
     }
   ]
 }

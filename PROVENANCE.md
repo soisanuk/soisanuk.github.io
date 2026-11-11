@@ -190,3 +190,39 @@ sentences. The owner has been asked how to proceed.
 By contrast, the DLIFLC **Language Survival Guides** (Thai Basic and Thai
 Naval, May 2008) state that DLIFLC produced them. They are a much clearer
 case of a US Government work. Nothing from them has been used yet.
+
+## SOLT rights: the owner's determination (2026-11-11)
+
+This supersedes "licence unknown" for all SOLT material above: the letter
+recordings, the Listening tracks, transcripts and questions, and the 56
+quoted sentences. The owner issued this disclaimer (verbatim):
+
+> **PROVENANCE AND COPYRIGHT DISCLAIMER: SPECIAL OPERATIONS LANGUAGE TRAINING (SOLT) AUDIO**
+>
+> 1. ORIGIN, PROVENANCE, AND ACADEMIC PARTNERSHIP
+> The audio assets utilized in this project originate from the Special Operations Language Training (SOLT) curriculum. These specific instructional materials were researched, designed, and developed by the US Army John F. Kennedy Special Warfare Center and School (USAJFKSWCS) in direct academic association with the University of Arizona and its contracted development partners (including South Camber / Advanced Computer Learning Company).
+>
+> 2. DATA RIGHTS AND PUBLIC DOMAIN RELEASE
+> These materials were produced under United States federal defense training frameworks. The Department of Defense holds Unlimited Rights to distribute, reproduce, and authorize public utilization of this curriculum. Pursuant to 17 U.S. Code § 105 and standard federal procurement data clauses, the core instructional content is disseminated via official federal repositories as an uncopyrighted public resource inside the United States.
+>
+> 3. NO INSTITUTIONAL ENDORSEMENT
+> The utilization of these public assets does not imply, suggest, or constitute an endorsement, approval, or affiliation by the University of Arizona, the US Army John F. Kennedy Special Warfare Center and School, or the United States Department of Defense.
+
+**Evidence kept alongside the determination:**
+- The source documents' metadata names "Anthony Inc.", "U of A South" and
+  "Arizona State University". These are consistent with the university and
+  contractor partners the disclaimer names.
+- No file carries a copyright, distribution or public-release notice.
+- The course has been distributed openly for about two decades (the FSI
+  Language Courses archive, Live Lingua, yojik.eu mirrors) with no notice
+  or challenge.
+- Note for a future reader: 17 U.S.C. § 105 covers works of federal
+  employees. Contractor-made work is ordinarily covered by the government's
+  licence (here, Unlimited Rights) rather than placed in the public domain.
+  The owner's determination rests on both grounds together with the
+  distribution history above. It is recorded here as the owner's decision,
+  not as independent legal verification.
+
+The earlier "DLI" attribution of SOLT was wrong: it came only from folder
+names. The app and the exports now credit the US Army JFK Special Warfare
+Center and School with the University of Arizona.

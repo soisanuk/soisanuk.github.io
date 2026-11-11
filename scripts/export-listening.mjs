@@ -25,7 +25,7 @@ const tracks = DIALOGUES.map(d => {
     scenario: d.scenario,
     level: d.level,
     topic: d.topic,
-    source: { course: "DLI Thai SOLT", workbook: `Supplementary Listening Comprehension Workbook, Module ${d.module} Lesson ${d.lesson}`, track: d.track },
+    source: { course: "Thai SOLT (USAJFKSWCS with the University of Arizona)", workbook: `Supplementary Listening Comprehension Workbook, Module ${d.module} Lesson ${d.lesson}`, track: d.track },
     audio: "web/" + dialogueAudioSrc(d),
     durationSec: d.durationSec,
     provenance: {
@@ -46,11 +46,12 @@ const tracks = DIALOGUES.map(d => {
 const out = {
   format: "thaicab-listening/1",
   provenance: {
-    source: "DLI Thai SOLT (Special Operations Language Training) Supplementary Listening Comprehension " +
+    source: "Thai SOLT (Special Operations Language Training; US Army JFK Special Warfare Center and School " +
+      "with the University of Arizona) Supplementary Listening Comprehension " +
       "Workbooks, Modules I-VI: recordings, printed audio scripts, comprehension questions and answer keys.",
-    licence: "UNKNOWN, under verification by the owner. No file carries a copyright, distribution or " +
-      "public-release statement, and the source documents' metadata names private and university " +
-      "organisations, so the course may be contractor-made rather than a US Government work. See PROVENANCE.md.",
+    licence: "Public domain in the US by the owner's determination of 2026-11-11 (17 U.S.C. § 105; DoD " +
+      "Unlimited Rights; no institutional endorsement). PROVENANCE.md holds the full disclaimer and the " +
+      "evidence, including the contractor names in the source documents' metadata.",
     questions: "Every question, option and answer is the workbook's own. None is written by us. Questions the " +
       "workbook prints no key for are omitted; a `note` marks keys that seem not to match the transcript.",
     translation: "The English per line is ours.",

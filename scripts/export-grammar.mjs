@@ -46,7 +46,7 @@ const sentences = Object.keys(EXAMPLES).sort(byCodePoint).map(id => {
     roman,
     en,
     reviewed: ref ? { by: "fluent native Thai reader (not named in the record)", ref } : null,
-    solt: exampleSolt(id) ? { source: "DLI Thai SOLT course (student book unless the cite says Instructor)", cite: exampleSolt(id) } : null,
+    solt: exampleSolt(id) ? { source: "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)", cite: exampleSolt(id) } : null,
     patterns: grammarPatternsOf(thai),
     allCourseWords: toks.every(t => t.course),
     tokens: toks,
@@ -60,13 +60,14 @@ const out = {
     origin: "Lessons and example sentences were written for this course with an LLM (Claude), " +
       "starting 2026-07-02, and are not taken from any published source. See PROVENANCE.md.",
     label: "LLM-authored course content, machine-checked, partially native-reviewed. Not verified. " +
-      "Sentences marked `solt` are native-written (DLI Thai SOLT).",
+      "Sentences marked `solt` are native-written (Thai SOLT).",
     checks: "Every course romanisation is checked against the tone engine in thai-script.js; " +
       "every sentence contains its headword; AI persona rounds reviewed the content. " +
       "Sentences with `reviewed` set were approved by a fluent native Thai reader in the exact wording shown. " +
-      "Sentences with `solt` set are quoted word for word from the DLI Thai SOLT course: native-written Thai, " +
-      "with our English. Their licence is UNKNOWN and under verification: the course may be contractor-made " +
-      "(see PROVENANCE.md).",
+      "Sentences with `solt` set are quoted word for word from the Thai SOLT course (developed by the US Army " +
+      "JFK Special Warfare Center and School with the University of Arizona and its contracted partners): " +
+      "native-written Thai, with our English. Public domain in the US by the owner's determination (17 U.S.C. " +
+      "§ 105; DoD Unlimited Rights); see PROVENANCE.md, which also records the evidence.",
     licence: "unknown — not yet chosen by the owner for authored thaicab content",
     patterns: "A sentence's `patterns` are found by matching each lesson's `markers` against its tokens. " +
       "That is a pointer to the pattern, not a grammatical parse.",

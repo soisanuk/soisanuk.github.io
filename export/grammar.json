@@ -3,8 +3,8 @@
  "provenance": {
   "source": "thaicab (Soi Sanuk) — web/js/curriculum.js, examples.js, data.js, grammar.js",
   "origin": "Lessons and example sentences were written for this course with an LLM (Claude), starting 2026-07-02, and are not taken from any published source. See PROVENANCE.md.",
-  "label": "LLM-authored course content, machine-checked, partially native-reviewed. Not verified. Sentences marked `solt` are native-written (DLI Thai SOLT).",
-  "checks": "Every course romanisation is checked against the tone engine in thai-script.js; every sentence contains its headword; AI persona rounds reviewed the content. Sentences with `reviewed` set were approved by a fluent native Thai reader in the exact wording shown. Sentences with `solt` set are quoted word for word from the DLI Thai SOLT course: native-written Thai, with our English. Their licence is UNKNOWN and under verification: the course may be contractor-made (see PROVENANCE.md).",
+  "label": "LLM-authored course content, machine-checked, partially native-reviewed. Not verified. Sentences marked `solt` are native-written (Thai SOLT).",
+  "checks": "Every course romanisation is checked against the tone engine in thai-script.js; every sentence contains its headword; AI persona rounds reviewed the content. Sentences with `reviewed` set were approved by a fluent native Thai reader in the exact wording shown. Sentences with `solt` set are quoted word for word from the Thai SOLT course (developed by the US Army JFK Special Warfare Center and School with the University of Arizona and its contracted partners): native-written Thai, with our English. Public domain in the US by the owner's determination (17 U.S.C. § 105; DoD Unlimited Rights); see PROVENANCE.md, which also records the evidence.",
   "licence": "unknown — not yet chosen by the owner for authored thaicab content",
   "patterns": "A sentence's `patterns` are found by matching each lesson's `markers` against its tokens. That is a pointer to the pattern, not a grammatical parse.",
   "tokens": "Split by the 12k-word segmenter (segment.js). `roman` and `gloss` come from the course (WORDS) when `course` is true, else from the gloss layers named in `glossSource`: extra (hand-curated, this project), wiktionary (English Wiktionary via kaikki.org, CC BY-SA 3.0), volubilis (VOLUBILIS by Belisan, CC BY-SA 4.0). Those third-party glosses carry their own licence and attribution duty."
@@ -3534,7 +3534,7 @@
    "en": "No U-turn.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L5, PDF p.17"
    },
    "patterns": [
@@ -4809,7 +4809,7 @@
    "en": "Please keep my room key for me.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L2, PDF p.19"
    },
    "patterns": [
@@ -6679,7 +6679,7 @@
    "en": "Please come in.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L1, PDF p.7"
    },
    "patterns": [],
@@ -6778,7 +6778,7 @@
    "en": "We drive across the river.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L3, PDF p.18"
    },
    "patterns": [],
@@ -10045,7 +10045,7 @@
    "en": "And what about the water bill?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L2, PDF p.7"
    },
    "patterns": [
@@ -11293,7 +11293,7 @@
    "en": "Parking in a no-parking zone.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L5, PDF p.19"
    },
    "patterns": [
@@ -12954,7 +12954,7 @@
    "en": "It's on the third floor.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L3, PDF p.10"
    },
    "patterns": [
@@ -15866,7 +15866,7 @@
    "en": "Check the ticket and the suitcase.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L8, PDF p.20"
    },
    "patterns": [],
@@ -16685,7 +16685,7 @@
    "en": "Take your ticket with you.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L8, PDF p.26"
    },
    "patterns": [
@@ -17756,7 +17756,7 @@
    "en": "Where is the foreign-currency exchange shop?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L6, PDF p.44"
    },
    "patterns": [
@@ -18441,7 +18441,7 @@
    "en": "The amount withdrawn.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L4, PDF p.28"
    },
    "patterns": [],
@@ -18947,7 +18947,7 @@
    "en": "Do you have anything cheaper?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L2, PDF p.15"
    },
    "patterns": [
@@ -19366,7 +19366,7 @@
    "en": "Keep the change.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L1, PDF p.23"
    },
    "patterns": [
@@ -22152,7 +22152,7 @@
    "en": "I can't sleep.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M5L3, PDF p.11"
    },
    "patterns": [
@@ -24028,7 +24028,7 @@
    "en": "Could I have a bottle of drinking water?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L2, PDF p.16"
    },
    "patterns": [
@@ -24199,7 +24199,7 @@
    "en": "What fuel does your car use?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L7, PDF p.8"
    },
    "patterns": [],
@@ -24716,7 +24716,7 @@
    "en": "My left hand is swollen and hurts a lot.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M5L3, PDF p.9"
    },
    "patterns": [],
@@ -24940,7 +24940,7 @@
    "en": "Do you accept credit cards?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L2, PDF p.44"
    },
    "patterns": [],
@@ -26310,7 +26310,7 @@
    "en": "Can you open the door for me please?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L2, PDF p.28"
    },
    "patterns": [
@@ -27290,7 +27290,7 @@
    "en": "My right leg hurts.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M5L3, PDF p.9"
    },
    "patterns": [],
@@ -29271,7 +29271,7 @@
    "en": "You've come the wrong way.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L3, PDF p.29"
    },
    "patterns": [
@@ -29654,7 +29654,7 @@
    "en": "What illness does the patient have?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M5L6, PDF p.16"
    },
    "patterns": [
@@ -30254,7 +30254,7 @@
    "en": "The amount deposited.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L4, PDF p.46"
    },
    "patterns": [],
@@ -30955,7 +30955,7 @@
    "en": "Which hotel are you staying at?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L8, PDF p.39"
    },
    "patterns": [],
@@ -31122,7 +31122,7 @@
    "en": "The fan is broken.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L2, PDF p.16"
    },
    "patterns": [],
@@ -32678,7 +32678,7 @@
    "en": "Is there a deposit?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L2, PDF p.5"
    },
    "patterns": [
@@ -34943,7 +34943,7 @@
    "en": "And what about the tour bus?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L7, PDF p.5"
    },
    "patterns": [
@@ -35063,7 +35063,7 @@
    "en": "What time does the bus leave?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L8, PDF p.6"
    },
    "patterns": [],
@@ -37382,7 +37382,7 @@
    "en": "Which floor is the pharmacy on?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "Instructor book M3L2, PDF p.55"
    },
    "patterns": [],
@@ -37633,7 +37633,7 @@
    "en": "I'm going to send a registered letter.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L3, PDF p.38"
    },
    "patterns": [],
@@ -38798,7 +38798,7 @@
    "en": "Please call to make an appointment in advance.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M5L4, PDF p.22"
    },
    "patterns": [],
@@ -42261,7 +42261,7 @@
    "en": "Just a moment, please.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L8, PDF p.22"
    },
    "patterns": [
@@ -42386,7 +42386,7 @@
    "en": "How many years is the lease?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L2, PDF p.26"
    },
    "patterns": [],
@@ -45754,7 +45754,7 @@
    "en": "May I see your passport, please?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L4, PDF p.50"
    },
    "patterns": [
@@ -46275,7 +46275,7 @@
    "en": "Where are you going this summer?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L8, PDF p.3"
    },
    "patterns": [
@@ -46549,7 +46549,7 @@
    "en": "Someone has lost consciousness.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M5L4, PDF p.4"
    },
    "patterns": [],
@@ -47629,7 +47629,7 @@
    "en": "Excuse me, I'm lost.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L3, PDF p.29"
    },
    "patterns": [
@@ -48695,7 +48695,7 @@
    "en": "You've lost your wallet.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L4, PDF p.46"
    },
    "patterns": [],
@@ -48750,7 +48750,7 @@
    "en": "Get well soon.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M5L3, PDF p.6"
    },
    "patterns": [],
@@ -55216,7 +55216,7 @@
    "en": "It's not available; someone has already rented it.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L2, PDF p.57"
    },
    "patterns": [
@@ -55840,7 +55840,7 @@
    "en": "What kind of fuel would you like?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L8, PDF p.37"
    },
    "patterns": [
@@ -60815,7 +60815,7 @@
    "en": "Turn right.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L5, PDF p.19"
    },
    "patterns": [
@@ -63372,7 +63372,7 @@
    "en": "He did it instead of me.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L1, PDF p.30"
    },
    "patterns": [],
@@ -63737,7 +63737,7 @@
    "en": "Please fill in this form.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L4, PDF p.10"
    },
    "patterns": [
@@ -64782,7 +64782,7 @@
    "en": "I'd like to change some money, please.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L4, PDF p.50"
    },
    "patterns": [
@@ -65128,7 +65128,7 @@
    "en": "I'd like to buy some stamps.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L3, PDF p.30"
    },
    "patterns": [
@@ -65473,7 +65473,7 @@
    "en": "The air-conditioner is broken.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L2, PDF p.16"
    },
    "patterns": [],
@@ -66206,7 +66206,7 @@
    "en": "Where should I ask them to call back?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "Instructor book M3L5, PDF p.54"
    },
    "patterns": [
@@ -68244,7 +68244,7 @@
    "en": "This house is for rent.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L2, PDF p.28"
    },
    "patterns": [
@@ -68301,7 +68301,7 @@
    "en": "Is it far?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L3, PDF p.29"
    },
    "patterns": [
@@ -68766,7 +68766,7 @@
    "en": "You have the flu.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M5L3, PDF p.9"
    },
    "patterns": [],
@@ -69177,7 +69177,7 @@
    "en": "Once I see the post office, how do I carry on?",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "Instructor book M4L3, PDF p.65"
    },
    "patterns": [
@@ -69498,7 +69498,7 @@
    "en": "Go past the third traffic light, then turn left.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L3, PDF p.29"
    },
    "patterns": [
@@ -69653,7 +69653,7 @@
    "en": "The line isn't very good.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M3L5, PDF p.4"
    },
    "patterns": [
@@ -69749,7 +69749,7 @@
    "en": "Don't worry.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M4L8, PDF p.41"
    },
    "patterns": [
@@ -69906,7 +69906,7 @@
    "en": "I feel sick.",
    "reviewed": null,
    "solt": {
-    "source": "DLI Thai SOLT course (student book unless the cite says Instructor)",
+    "source": "Thai SOLT course, USAJFKSWCS with the University of Arizona (student book unless the cite says Instructor)",
     "cite": "M5L3, PDF p.10"
    },
    "patterns": [
