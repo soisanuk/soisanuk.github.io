@@ -49,3 +49,26 @@ test("every recording is in the service worker's precache", () => {
   }
   assert.ok(sw.includes('"./js/letter-audio.js"'));
 });
+
+test("every word recording is a course word, and every file is accounted for", () => {
+  const words = new Set(WORDS.map(w => w[0]));
+  for (const w of WORD_CLIPS) {
+    assert.ok(words.has(w), `${w} has a recording but is not a course word`);
+    assert.ok(existsSync(new URL(wordClipSrc(w), WEB)), `${w}: ${wordClipSrc(w)} is missing`);
+  }
+  const files = readdirSync(new URL("audio/words/", WEB)).filter(f => f.endsWith(".mp3"));
+  assert.equal(files.length, WORD_CLIPS.size, "a stray or missing word recording");
+  assert.ok(WORD_CLIPS.size >= 10);
+});
+
+test("a word recording answers exactly that word, nothing longer", () => {
+  // the lookup itself, independent of which words are cleared to ship
+  const had = WORD_CLIPS.has("น้ำ"); WORD_CLIPS.add("น้ำ");
+  assert.equal(wordClipSrc("น้ำ"), "audio/words/0E190E490E33.mp3");
+  assert.equal(wordClipSrc(["น้ำ"]), "audio/words/0E190E490E33.mp3");
+  if (!had) WORD_CLIPS.delete("น้ำ");
+  assert.equal(wordClipSrc("ห้า"), "audio/words/0E2B0E490E32.mp3");
+  assert.equal(wordClipSrc("ขอน้ำหน่อย"), null, "a sentence is TTS's job");
+  assert.equal(wordClipSrc(["น้ำ", "น้ำ"]), null);
+  assert.equal(wordClipSrc(letterSpeechParts("ก")), null, "letters have their own recordings");
+});

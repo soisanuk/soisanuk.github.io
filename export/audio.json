@@ -1,0 +1,387 @@
+{
+ "format": "thaicab-audio/1",
+ "provenance": {
+  "letters": {
+   "producer": "Thai SOLT I Supplementary Listening Comprehension Workbook, Modules I-III, Track 1 (US Army JFK Special Warfare Center and School with the University of Arizona). Public domain in the US by the owner's determination of 2026-11-11 (17 U.S.C. § 105; DoD Unlimited Rights; no endorsement). See PROVENANCE.md.",
+   "cut": "scripts/cut-letter-audio.mjs",
+   "says": "each letter, then its name (ก … ไก่)"
+  },
+  "words": {
+   "producer": "DLIFLC Thai Language Survival Guides (Basic and Naval), May 2008. The guides state they were produced by the Defense Language Institute Foreign Language Center, a US Government work, so public domain in the US (17 U.S.C. § 105). No copyright or distribution statement appears in the guides. See PROVENANCE.md.",
+   "cut": "scripts/cut-word-audio.mjs",
+   "note": "Only entries whose recording is exactly the course word; mismatches found by ear or by the guide's own transliteration are excluded and listed in the script."
+  },
+  "format": "Mono MP3. Paths relative to the thaicab repo root.",
+  "reviewedByEar": "The owner listened to every clip in this file before it shipped (words are added as they are cleared)."
+ },
+ "counts": {
+  "letters": 42,
+  "words": 10
+ },
+ "letters": [
+  {
+   "letter": "ก",
+   "name": "ไก่",
+   "says": "ก, กอไก่",
+   "file": "web/audio/letters/0E01.mp3"
+  },
+  {
+   "letter": "ข",
+   "name": "ไข่",
+   "says": "ข, ขอไข่",
+   "file": "web/audio/letters/0E02.mp3"
+  },
+  {
+   "letter": "ค",
+   "name": "ควาย",
+   "says": "ค, คอควาย",
+   "file": "web/audio/letters/0E04.mp3"
+  },
+  {
+   "letter": "ฆ",
+   "name": "ระฆัง",
+   "says": "ฆ, ฆอระฆัง",
+   "file": "web/audio/letters/0E06.mp3"
+  },
+  {
+   "letter": "ง",
+   "name": "งู",
+   "says": "ง, งองู",
+   "file": "web/audio/letters/0E07.mp3"
+  },
+  {
+   "letter": "จ",
+   "name": "จาน",
+   "says": "จ, จอจาน",
+   "file": "web/audio/letters/0E08.mp3"
+  },
+  {
+   "letter": "ฉ",
+   "name": "ฉิ่ง",
+   "says": "ฉ, ฉอฉิ่ง",
+   "file": "web/audio/letters/0E09.mp3"
+  },
+  {
+   "letter": "ช",
+   "name": "ช้าง",
+   "says": "ช, ชอช้าง",
+   "file": "web/audio/letters/0E0A.mp3"
+  },
+  {
+   "letter": "ซ",
+   "name": "โซ่",
+   "says": "ซ, ซอโซ่",
+   "file": "web/audio/letters/0E0B.mp3"
+  },
+  {
+   "letter": "ฌ",
+   "name": "เฌอ",
+   "says": "ฌ, ฌอเฌอ",
+   "file": "web/audio/letters/0E0C.mp3"
+  },
+  {
+   "letter": "ญ",
+   "name": "หญิง",
+   "says": "ญ, ญอหญิง",
+   "file": "web/audio/letters/0E0D.mp3"
+  },
+  {
+   "letter": "ฎ",
+   "name": "ชฎา",
+   "says": "ฎ, ฎอชฎา",
+   "file": "web/audio/letters/0E0E.mp3"
+  },
+  {
+   "letter": "ฏ",
+   "name": "ปฏัก",
+   "says": "ฏ, ฏอปฏัก",
+   "file": "web/audio/letters/0E0F.mp3"
+  },
+  {
+   "letter": "ฐ",
+   "name": "ฐาน",
+   "says": "ฐ, ฐอฐาน",
+   "file": "web/audio/letters/0E10.mp3"
+  },
+  {
+   "letter": "ฑ",
+   "name": "มณโฑ",
+   "says": "ฑ, ฑอมณโฑ",
+   "file": "web/audio/letters/0E11.mp3"
+  },
+  {
+   "letter": "ฒ",
+   "name": "ผู้เฒ่า",
+   "says": "ฒ, ฒอผู้เฒ่า",
+   "file": "web/audio/letters/0E12.mp3"
+  },
+  {
+   "letter": "ณ",
+   "name": "เณร",
+   "says": "ณ, ณอเณร",
+   "file": "web/audio/letters/0E13.mp3"
+  },
+  {
+   "letter": "ด",
+   "name": "เด็ก",
+   "says": "ด, ดอเด็ก",
+   "file": "web/audio/letters/0E14.mp3"
+  },
+  {
+   "letter": "ต",
+   "name": "เต่า",
+   "says": "ต, ตอเต่า",
+   "file": "web/audio/letters/0E15.mp3"
+  },
+  {
+   "letter": "ถ",
+   "name": "ถุง",
+   "says": "ถ, ถอถุง",
+   "file": "web/audio/letters/0E16.mp3"
+  },
+  {
+   "letter": "ท",
+   "name": "ทหาร",
+   "says": "ท, ทอทหาร",
+   "file": "web/audio/letters/0E17.mp3"
+  },
+  {
+   "letter": "ธ",
+   "name": "ธง",
+   "says": "ธ, ธอธง",
+   "file": "web/audio/letters/0E18.mp3"
+  },
+  {
+   "letter": "น",
+   "name": "หนู",
+   "says": "น, นอหนู",
+   "file": "web/audio/letters/0E19.mp3"
+  },
+  {
+   "letter": "บ",
+   "name": "ใบไม้",
+   "says": "บ, บอใบไม้",
+   "file": "web/audio/letters/0E1A.mp3"
+  },
+  {
+   "letter": "ป",
+   "name": "ปลา",
+   "says": "ป, ปอปลา",
+   "file": "web/audio/letters/0E1B.mp3"
+  },
+  {
+   "letter": "ผ",
+   "name": "ผึ้ง",
+   "says": "ผ, ผอผึ้ง",
+   "file": "web/audio/letters/0E1C.mp3"
+  },
+  {
+   "letter": "ฝ",
+   "name": "ฝา",
+   "says": "ฝ, ฝอฝา",
+   "file": "web/audio/letters/0E1D.mp3"
+  },
+  {
+   "letter": "พ",
+   "name": "พาน",
+   "says": "พ, พอพาน",
+   "file": "web/audio/letters/0E1E.mp3"
+  },
+  {
+   "letter": "ฟ",
+   "name": "ฟัน",
+   "says": "ฟ, ฟอฟัน",
+   "file": "web/audio/letters/0E1F.mp3"
+  },
+  {
+   "letter": "ภ",
+   "name": "สำเภา",
+   "says": "ภ, ภอสำเภา",
+   "file": "web/audio/letters/0E20.mp3"
+  },
+  {
+   "letter": "ม",
+   "name": "ม้า",
+   "says": "ม, มอม้า",
+   "file": "web/audio/letters/0E21.mp3"
+  },
+  {
+   "letter": "ย",
+   "name": "ยักษ์",
+   "says": "ย, ยอยักษ์",
+   "file": "web/audio/letters/0E22.mp3"
+  },
+  {
+   "letter": "ร",
+   "name": "เรือ",
+   "says": "ร, รอเรือ",
+   "file": "web/audio/letters/0E23.mp3"
+  },
+  {
+   "letter": "ล",
+   "name": "ลิง",
+   "says": "ล, ลอลิง",
+   "file": "web/audio/letters/0E25.mp3"
+  },
+  {
+   "letter": "ว",
+   "name": "แหวน",
+   "says": "ว, วอแหวน",
+   "file": "web/audio/letters/0E27.mp3"
+  },
+  {
+   "letter": "ศ",
+   "name": "ศาลา",
+   "says": "ศ, ศอศาลา",
+   "file": "web/audio/letters/0E28.mp3"
+  },
+  {
+   "letter": "ษ",
+   "name": "ฤๅษี",
+   "says": "ษ, ษอฤๅษี",
+   "file": "web/audio/letters/0E29.mp3"
+  },
+  {
+   "letter": "ส",
+   "name": "เสือ",
+   "says": "ส, สอเสือ",
+   "file": "web/audio/letters/0E2A.mp3"
+  },
+  {
+   "letter": "ห",
+   "name": "หีบ",
+   "says": "ห, หอหีบ",
+   "file": "web/audio/letters/0E2B.mp3"
+  },
+  {
+   "letter": "ฬ",
+   "name": "จุฬา",
+   "says": "ฬ, ฬอจุฬา",
+   "file": "web/audio/letters/0E2C.mp3"
+  },
+  {
+   "letter": "อ",
+   "name": "อ่าง",
+   "says": "อ, อออ่าง",
+   "file": "web/audio/letters/0E2D.mp3"
+  },
+  {
+   "letter": "ฮ",
+   "name": "นกฮูก",
+   "says": "ฮ, ฮอนกฮูก",
+   "file": "web/audio/letters/0E2E.mp3"
+  }
+ ],
+ "words": [
+  {
+   "th": "สอง",
+   "roman": "sǒong",
+   "gloss": "two",
+   "file": "web/audio/words/0E2A0E2D0E07.mp3",
+   "source": {
+    "guide": "Thai Basic",
+    "file": "en_th_bc_05_03.mp3",
+    "part": "first Thai rendition (natural speed)"
+   }
+  },
+  {
+   "th": "สาม",
+   "roman": "sǎam",
+   "gloss": "three",
+   "file": "web/audio/words/0E2A0E320E21.mp3",
+   "source": {
+    "guide": "Thai Basic",
+    "file": "en_th_bc_05_04.mp3",
+    "part": "first Thai rendition (natural speed)"
+   }
+  },
+  {
+   "th": "สิบ",
+   "roman": "sìp",
+   "gloss": "ten",
+   "file": "web/audio/words/0E2A0E340E1A.mp3",
+   "source": {
+    "guide": "Thai Basic",
+    "file": "en_th_bc_05_11.mp3",
+    "part": "first Thai rendition (natural speed)"
+   }
+  },
+  {
+   "th": "สี่",
+   "roman": "sìi",
+   "gloss": "four",
+   "file": "web/audio/words/0E2A0E350E48.mp3",
+   "source": {
+    "guide": "Thai Basic",
+    "file": "en_th_bc_05_05.mp3",
+    "part": "first Thai rendition (natural speed)"
+   }
+  },
+  {
+   "th": "หก",
+   "roman": "hòk",
+   "gloss": "six",
+   "file": "web/audio/words/0E2B0E01.mp3",
+   "source": {
+    "guide": "Thai Basic",
+    "file": "en_th_bc_05_07.mp3",
+    "part": "first Thai rendition (natural speed)"
+   }
+  },
+  {
+   "th": "หนึ่ง",
+   "roman": "nùeng",
+   "gloss": "one",
+   "file": "web/audio/words/0E2B0E190E360E480E07.mp3",
+   "source": {
+    "guide": "Thai Basic",
+    "file": "en_th_bc_05_02.mp3",
+    "part": "first Thai rendition (natural speed)"
+   }
+  },
+  {
+   "th": "ห้า",
+   "roman": "hâa",
+   "gloss": "five",
+   "file": "web/audio/words/0E2B0E490E32.mp3",
+   "source": {
+    "guide": "Thai Basic",
+    "file": "en_th_bc_05_06.mp3",
+    "part": "first Thai rendition (natural speed)"
+   }
+  },
+  {
+   "th": "เก้า",
+   "roman": "kâo",
+   "gloss": "nine",
+   "file": "web/audio/words/0E400E010E490E32.mp3",
+   "source": {
+    "guide": "Thai Basic",
+    "file": "en_th_bc_05_10.mp3",
+    "part": "first Thai rendition (natural speed)"
+   }
+  },
+  {
+   "th": "เจ็ด",
+   "roman": "jèt",
+   "gloss": "seven",
+   "file": "web/audio/words/0E400E080E470E14.mp3",
+   "source": {
+    "guide": "Thai Basic",
+    "file": "en_th_bc_05_08.mp3",
+    "part": "first Thai rendition (natural speed)"
+   }
+  },
+  {
+   "th": "แปด",
+   "roman": "pàet",
+   "gloss": "eight",
+   "file": "web/audio/words/0E410E1B0E14.mp3",
+   "source": {
+    "guide": "Thai Basic",
+    "file": "en_th_bc_05_09.mp3",
+    "part": "first Thai rendition (natural speed)"
+   }
+  }
+ ]
+}

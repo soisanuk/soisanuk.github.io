@@ -232,3 +232,24 @@ quoted sentences. The owner issued this disclaimer (verbatim):
 The earlier "DLI" attribution of SOLT was wrong: it came only from folder
 names. The app and the exports now credit the US Army JFK Special Warfare
 Center and School with the University of Arizona.
+
+## Word recordings from the DLIFLC Language Survival Guides (added 2026-11-12)
+
+`web/audio/words/*.mp3` holds native recordings of course words, cut by
+`scripts/cut-word-audio.mjs` from the **DLIFLC Thai Language Survival
+Guides** (Thai Basic and Thai Naval, May 2008).
+
+- **Source:** each guide entry is one MP3: the English, then the Thai, then
+  the Thai again more slowly. We keep the first Thai rendition. Only entries
+  whose recording is exactly a course word are used.
+- **Excluded:** two entries whose recording does not say the printed word.
+  The guide's own transliteration gives them away: กี่ (the recording says
+  กี่อัน) and เรือ (the recording says เรือโท).
+- **Producer:** the guides state they were produced by the Defense Language
+  Institute Foreign Language Center. As a US Government work they are
+  public domain in the US (17 U.S.C. § 105). The guides carry no copyright
+  or distribution statement. The only distribution text is a contact
+  address at conus.army.mil.
+- **Listened to by the owner before shipping:** words ship only once cleared
+  by ear (`CLEARED` in the script). The first batch is the numbers one to
+  ten, cleared 2026-11-12. The rest follow as they are cleared.

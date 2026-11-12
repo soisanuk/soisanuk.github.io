@@ -148,6 +148,19 @@
         "fsi-language-courses.org: 'These courses are in the public domain and free to use'"
       ],
       "confidence": "medium"
+    },
+    {
+      "file": "web/audio/words/*.mp3",
+      "part": "native recordings of course words (first Thai rendition of each guide entry)",
+      "author": "DLIFLC Thai Language Survival Guides (Basic, Naval), May 2008",
+      "licence": "public domain in the US (US Government work, 17 U.S.C. § 105; producer stated in the guides)",
+      "attribution": "credited in PROVENANCE.md and export/audio.json",
+      "evidence": [
+        "scripts/cut-word-audio.mjs (source table, CLEARED list)",
+        "guide front matter: produced by DLIFLC",
+        "owner listened before shipping (numbers 2026-11-12)"
+      ],
+      "confidence": "high"
     }
   ],
   "thirdPartyContact": [
