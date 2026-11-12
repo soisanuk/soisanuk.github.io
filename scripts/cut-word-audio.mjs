@@ -17,6 +17,7 @@
 //   node scripts/cut-word-audio.mjs "<dir holding th_bc_audio and th_nv_audio>"
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdirSync, readdirSync, rmSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import { checkLevels } from "./lib/audio-check.mjs";
 
 // Imported by export-audio.mjs for CLIPS alone; cut only when run directly.
 const MAIN = process.argv[1] && import.meta.url.endsWith(process.argv[1].split("/").pop());
@@ -271,5 +272,7 @@ for (const [th, src, file] of CLIPS) {
 const LA = WEB + "js/letter-audio.js";
 const src = readFileSync(LA, "utf8").replace(/const WORD_CLIPS = [^\n]*\n/, `const WORD_CLIPS = new Set(${JSON.stringify(done.sort())});\n`);
 writeFileSync(LA, src);
+const bad = checkLevels(done.map(th => [th, OUT + clipName(th)]));
+if (bad.length) { console.error("LEVEL CHECK:\n  " + bad.join("\n  ")); process.exitCode = 1; }
 console.log(`wrote ${done.length} word clips to web/audio/words/; skipped ${skipped.length}: ${skipped.join(", ")}`);
 }
