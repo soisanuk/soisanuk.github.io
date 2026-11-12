@@ -70,6 +70,13 @@ var GLOSS_EXTRA = {
   "พงษ์":      ["",            "-phong (element in personal names: lineage)"],
   "แอน":       ["aen",         "Ann (name)"],
 
+  // ── For the trellis coach's cultural notes (2026-11-12) ─────────────────
+  // trellis may print a Thai word only if thaicab romanises it. ไตรรงค์ came
+  // to it with a hand-written "trai-rong", which is correct: ไตร is mid (mid
+  // class ต, live -ai) and รงค์ is mid (low class ร, live -ng, no mark); the
+  // ค์ is silent under the karan. Both syllables are checked by syllableTone.
+  "ไตรรงค์":   ["trai-rong",   "the Thai tricolour, the national flag"],
+
   // ── From The Last Baht Bus (2026-09-04) ────────────────────────────────
   // Sent by the game, which meets colloquial Thai the course does not teach.
   // Five words came over; three were already glossed by Wiktionary (ขาว, อย่า,
