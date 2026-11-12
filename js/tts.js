@@ -75,7 +75,7 @@ const _tts = (() => {
       const gen = ++_gen;
       if (_clip) { _clip.pause(); _clip = null; }
       const src = !noClip && typeof Audio !== "undefined" && typeof letterClipSrc === "function"
-        ? letterClipSrc(parts) : null;
+        ? (letterClipSrc(parts) || wordClipSrc(parts)) : null;
       if (src) {
         const cap = _capTTS();
         if (cap) cap.stop().catch(() => {});
